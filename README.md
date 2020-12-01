@@ -30,4 +30,4 @@ actors and shows you may want to know more about.
 The data is extracted from downloaded IMDb .gz files. See
 [https://www.imdb.com/interfaces/]() for details of the data they contain.
 
-***[Learn more about this project](USAGE.md)***
+***[Learn more about this project...](USAGE.md)***
