@@ -266,11 +266,13 @@ rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1 | sort -f | uniq -d >$DUPES
 rg -IN -f $DUPES $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$CONFLICTS
 cut -f 6 $RAW_SHOWS | sort -f | uniq -d >>$CONFLICTS
 if [ -s $CONFLICTS ]; then
-    printf "\n==> [Error] Translation conflicts are listed below. Fix them then rerun this script.\n"
-    printf "\n==> These shows have more than one tconst.\n"
+    printf "\n==> [Error] Conflicts are listed below. Fix them then rerun this script.\n"
+    printf "\n==> These shows have more than one tconst for the same title.\n"
     rg -H -f $CONFLICTS $RAW_SHOWS
     printf "\n"
-    printf "==> Make sure to delete corresponding lines in Episode.tconst and Episode.xlate.\n"
+    printf "==> You need to delete all but one tconst per title in any files listed below.\n"
+    printf "    It may help to look up each tconst on IMDb to pick the best one to keep.\n"
+    printf "    Make sure to delete corresponding .tconst lines if more than one file is listed.\n"
     rg -f $CONFLICTS $XLATE_FILES $TCONST_FILES
     printf "\n"
     exit 1
