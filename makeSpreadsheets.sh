@@ -346,10 +346,10 @@ rg -wNz -f $KNOWNFOR_LIST title.basics.tsv.gz | perl -p -f $XLATE_PL | cut -f 1,
     perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >$TCONST_KNOWN_PL
 
 # Create a spreadsheet of associated titles gained from IMDb knownFor data
-printf "tconst\tShow Title\n" >$ASSOCIATED_TITLES
-perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL |
-    perl -F"\t" -lane 'print "@F[0]\t@F[1]";' | sort -fu --field-separator="$TAB" --key=2,2 |
-    rg -wv -f $TCONST_LIST >>$ASSOCIATED_TITLES
+printf "tconst\tShow Title\tHyperlink to Title\n" >$ASSOCIATED_TITLES
+perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL | perl -F"\t" -lane \
+    'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
+    sort -fu --field-separator="$TAB" --key=2,2 | rg -wv -f $TCONST_LIST >>$ASSOCIATED_TITLES
 
 # Add episodes into raw shows
 perl -p -f $TCONST_EPISODES_PL $RAW_EPISODES >>$RAW_SHOWS
