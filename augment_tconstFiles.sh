@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+#
+# Expand the IDs in a .tconst file to add Primary and Original Titles
+
+function help() {
+    cat <<EOF
+Expand the IDs in .tconst files to add Type, Primary Title, and Original Title
+
+      For example, expand:
+          tt1606375
+          tt1399664
+          tt3351208
+
+      To:
+          tt1606375	tvSeries	Downton Abbey	Downton Abbey
+          tt1399664	tvMiniSeries	The Night Manager	The Night Manager
+          tt3351208	tvMovie	Two Little Girls in Blue	Deux petites filles en bleu
+
+USAGE:
+    ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]
+
+OPTIONS:
+    -h      Print this message.
+    -i      In place -- overwrite original file
+
+EXAMPLES:
+    ./augment_tconstFiles.sh Contrib/OPB.tconst
+    ./augment_tconstFiles.sh -i Contrib/*.tconst
+
+EOF
+}
+
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+
+# Make sort consistent between Mac and Linux
+export LC_COLLATE="C"
+
+while getopts ":hi" opt; do
+    case $opt in
+    h)
+        help
+        exit
+        ;;
+    i)
+        INPLACE="yes"
+        ;;
+    \?)
+        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+# Need some tempfiles
+RESULT=$(mktemp)
+TMPFILE=$(mktemp)
+
+# trap ctrl-c and call cleanup
+trap cleanup INT
+#
+function cleanup() {
+    rm -rf $RESULT $TMPFILE
+    printf "\n"
+    exit 130
+}
+
+# Make sure a file was supplied
+if [ $# -eq 0 ]; then
+    printf "==> [Error] Please supply a tconst filename on the command line.\n\n"
+    exit 1
+fi
+
+# Can't use /t in "sort --field-separator", so setup a TAB variable
+TAB=$(printf "\t")
+
+for file in "$@"; do
+    [ -z "$INPLACE" ] && printf "==> $file\n"
+
+    # Gather comments and blank lines
+    rg -Ne "^#" -e "^$" "$file" >$RESULT
+
+    # Gather all the tconsts in column 1
+    rg -Ne "^tt" "$file" | cut -f 1 >$TMPFILE
+
+    # Look them up, get fields 1-4, and sort by Primary Title
+    rg -wNz -f "$TMPFILE" title.basics.tsv.gz | cut -f 1-4 |
+        sort -f --field-separator="$TAB" --key=3,3 >>$RESULT
+
+    # Either overwrite or print on stdout
+    if [ -n "$INPLACE" ]; then
+        read -r -p "OK to overwrite $file? [y/N] " YESNO
+        if [ "$YESNO" == "y" ]; then
+            cp $RESULT $file
+        fi
+    else
+        cat $RESULT
+        printf "\n"
+    fi
+done
+
+# Clean up
+rm -rf $RESULT $TMPFILE

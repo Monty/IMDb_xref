@@ -1,0 +1,51 @@
+# This is a manually managed tab separated file of show title translations
+
+# Some IMDB titles default to non-english names, e.g. "Hodejegerne" for the movie "Headhunters"
+# or you may prefer a more familiar title, e.g. "The Durrells in Corfu" rather than "The Durrells"
+
+# Create a similar file of any translations you'd like. If it has a .xlate extension, it will be
+# automatically used. Alternatively, it can be specified as a command line option with the -x switch.
+
+# Hint:
+#   rg -wNz tt4080728 title.basics.tsv.gz | cut -f 1-4
+
+Brandvägg	Wallander: The Original Episodes
+Capitaine Marleau	Captain Marleau
+Den fjärde mannen	The Fourth Man
+Den fördömde	Sebastian Bergman
+Der Zürich-Krimi	Money Murder Zurich
+Die Toten vom Bodensee	Murder by the Lake
+En man som heter Ove	A Man Called Ove
+En pilgrims död	Death of a Pilgrim
+Engrenages	Spiral
+Flickan som lekte med elden	The Girl Who Played with Fire
+Frikjent	Acquitted
+Gåsmamman	Gasmamman
+Hodejegerne	Headhunters
+I bastardi di Pizzofalcone	The Bastards of Pizzofalcone
+Il commissario Manara	Inspector Manara
+Il commissario Montalbano	Detective Montalbano
+Il giovane Montalbano	Young Montalbano
+Imma Tataranni	Imma Tataranni - Deputy Prosecutor
+Jägarna	The Hunters
+Karppi	Deadwind
+Kennedys Hirn	Kennedy's Brain
+Kielergata	Kieler Street
+Kommissar Dupin	Inspector Dupin
+Kommissarin Lucas	Detective Ellen Lucas
+L'art du crime	The Art of Crime
+Le sang de la vigne	Blood of the Vine
+Luftslottet som sprängdes	The Girl Who Kicked the Hornet's Nest
+Män som hatar kvinnor	The Girl with the Dragon Tattoo
+Morden i Sandhamn	The Sandhamn Murders
+Mrs Wilson	Mrs. Wilson
+Mustat lesket	Black Widows (2014)
+Ófærð	Trapped
+Perfect Crimes	Perfect Murders
+Rosemary & Thyme	Rosemary and Thyme
+Spooks	MI-5
+Springfloden	Spring Tide
+The Durrells	The Durrells in Corfu
+TWIN	Twin
+Tyskungen	Camilla Lackberg
+Una pallottola nel cuore	Bulletproof Heart

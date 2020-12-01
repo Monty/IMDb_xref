@@ -1,0 +1,118 @@
+# This is a sample tab separated file of IMDb tconst identifiers
+#       See https://www.imdb.com/interfaces/ for a description of IMDb Datasets
+#       tconst (string) - alphanumeric unique identifier of the title
+#
+# The tconst for any show can be found in its IMDb URL, -e.g. the URL for "The Crown" is
+#       https://www.imdb.com/title/tt4786824/?ref_=fn_al_tt_1
+
+# Create a similar tconst file of shows you've watched or are interested in. If it
+# has a .tconst extension, it will be automatically processed. However it can have any
+# name and extension and be passed as a parameter on the command line, e.g. Netflix.tconst.txt
+
+# Only the tconst field is used. Additional fields are not needed, but useful for documentation.
+
+# Hint:
+#    rg -wNz tt4380324 title.basics.tsv.gz | cut -f 1-4
+
+# tconst	Service	Primary Title	Original Title
+tt4380324	Acorn	800 Words	800 Words
+tt5433600	Acorn	Black Widows	Black Widows
+tt0408381	Acorn	Doc Martin	Doc Martin
+tt0310455	Acorn	Foyle's War	Foyle's War
+tt1430509	Acorn	Inspector George Gently	Inspector George Gently
+tt2303687	Acorn	Line of Duty	Line of Duty
+tt1091909	Acorn	Murdoch Mysteries	Murdoch Mysteries
+tt10584446	Acorn	My Life Is Murder	My Life Is Murder
+tt7298596	Acorn	Mystery Road	Mystery Road
+tt3922704	Acorn	No Offence	No Offence
+tt0094525	Acorn	Poirot	Poirot
+tt6623682	Acorn	Rebecka Martinsson	Rebecka Martinsson
+tt3640276	Acorn	The Brokenwood Mysteries	The Brokenwood Mysteries
+tt9855482	Acorn	The Gulf	The Gulf
+tt4902046	Acorn	The Secret Agent	The Secret Agent
+tt11081102	Acorn	The Sommerdahl Murders	The Sommerdahl Murders
+tt10505762	Acorn	The Sounds	The Sounds
+tt1693592	Acorn	Vera	Vera
+tt4397640	Acorn	Winter	Winter
+tt0337792	Acorn	Wire in the Blood	Wire in the Blood
+tt4271918	Amazon	An Inspector Calls	An Inspector Calls
+tt2992876	Amazon	Black Widows (2014)	Mustat lesket
+tt3561180	Amazon	Trapped	Ófærð
+tt0108967	Britbox	A Touch of Frost	A Touch of Frost
+tt1888075	Britbox	Death in Paradise	Death in Paradise
+tt2215842	Britbox	Father Brown	Father Brown
+tt0092379	Britbox	Inspector Morse	Inspector Morse
+tt0478942	Britbox	Life on Mars	Life on Mars
+tt2303687	Britbox	Line of Duty	Line of Duty
+tt10720914	Britbox	McDonald & Dodds	McDonald & Dodds
+tt0160904	Britbox	MI-5	Spooks
+tt0094525	Britbox	Poirot	Poirot
+tt0098898	Britbox	Prime Suspect	Prime Suspect
+tt4258440	Britbox	River	River
+tt0377253	Britbox	Rosemary and Thyme	Rosemary & Thyme
+tt1843678	Britbox	Scott & Bailey	Scott & Bailey
+tt2396135	Britbox	Shetland	Shetland
+tt0115355	Britbox	Silent Witness	Silent Witness
+tt2375720	Britbox	The Doctor Blake Mysteries	The Doctor Blake Mysteries
+tt9204128	Britbox	The Mallorca Files	The Mallorca Files
+tt1693592	Britbox	Vera	Vera
+tt0259733	Britbox	Waking the Dead	Waking the Dead
+tt2802850	FX	Fargo	Fargo
+tt3582458	MHz	Acquitted	Frikjent
+tt7684260	MHz	Arde Madrid	Arde Madrid
+tt0907683	MHz	Beck	Beck
+tt1809792	MHz	Blood of the Vine	Le sang de la vigne
+tt3175512	MHz	Bulletproof Heart	Una pallottola nel cuore
+tt2216856	MHz	Camilla Lackberg	Tyskungen
+tt5684214	MHz	Captain Marleau	Capitaine Marleau
+tt2602070	MHz	Death of a Pilgrim	En pilgrims död
+tt0907688	MHz	Detective Ellen Lucas	Kommissarin Lucas
+tt0920489	MHz	Detective Montalbano	Il commissario Montalbano
+tt4716466	MHz	Gasmamman	Gåsmamman
+tt10895664	MHz	Imma Tataranni - Deputy Prosecutor	Imma Tataranni
+tt8613776	MHz	Inspector Dupin	Kommissar Dupin
+tt1100935	MHz	Inspector Manara	Il commissario Manara
+tt1353097	MHz	Kennedy's Brain	Kennedys Hirn
+tt8235246	MHz	Kieler Street	Kielergata
+tt5700562	MHz	Money Murder Zurich	Der Zürich-Krimi
+tt8648176	MHz	Murder by the Lake	Die Toten vom Bodensee
+tt7770794	MHz	Perfect Murders	Perfect Crimes
+tt1790954	MHz	Sebastian Bergman	Den fördömde
+tt0477507	MHz	Spiral	Engrenages
+tt5194410	MHz	Spring Tide	Springfloden
+tt6190050	MHz	The Art of Crime	L'art du crime
+tt6438886	MHz	The Bastards of Pizzofalcone	I bastardi di Pizzofalcone
+tt3456290	MHz	The Fourth Man	Den fjärde mannen
+tt1343097	MHz	The Girl Who Kicked the Hornet's Nest	Luftslottet som sprängdes
+tt1216487	MHz	The Girl Who Played with Fire	Flickan som lekte med elden
+tt1132620	MHz	The Girl with the Dragon Tattoo	Män som hatar kvinnor
+tt7059774	MHz	The Hunters	Jägarna
+tt1846197	MHz	The Sandhamn Murders	Morden i Sandhamn
+tt3681610	MHz	The Team	The Team
+tt6710454	MHz	Twin	TWIN
+tt0484335	MHz	Wallander: The Original Episodes	Brandvägg
+tt2259665	MHz	Young Montalbano	Il giovane Montalbano
+tt4080728	Netflix	A Man Called Ove	En man som heter Ove
+tt6616260	Netflix	Deadwind	Karppi
+tt1614989	Netflix	Headhunters	Hodejegerne
+tt1226774	Netflix	In the Loop	In the Loop
+tt3168230	Netflix	Mr. Holmes	Mr. Holmes
+tt9100822	Netflix	The Valhalla Murders	The Valhalla Murders
+tt9359220	Netflix	Young Wallander	Young Wallander
+tt0094416	PBS	American Experience	American Experience
+tt1008108	PBS	Ashes to Ashes	Ashes to Ashes
+tt2249364	PBS	Broadchurch	Broadchurch
+tt0974077	PBS	Cranford	Cranford
+tt1606375	PBS	Downton Abbey	Downton Abbey
+tt2701582	PBS	Endeavour	Endeavour
+tt3747572	PBS	Grantchester	Grantchester
+tt1077744	PBS	Lark Rise to Candleford	Lark Rise to Candleford
+tt2216156	PBS	Last Tango in Halifax	Last Tango in Halifax
+tt2310212	PBS	Mr Selfridge	Mr Selfridge
+tt6859806	PBS	Mrs. Wilson	Mrs Wilson
+tt10846250	PBS	Roadkill	Roadkill
+tt4786824	PBS	The Crown	The Crown
+tt5014882	PBS	The Durrells in Corfu	The Durrells
+tt1399664	PBS	The Night Manager	The Night Manager
+tt4192812	PBS	Unforgotten	Unforgotten
+tt9128874	PBS	Van der Valk	Van der Valk
