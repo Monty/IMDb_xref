@@ -1,0 +1,28 @@
+## MAC OS
+.DS_Store
+
+# IMDb ID and translation files manually created by user
+*.tconst
+*.xlate
+
+# Output from running any commands
+*.gz
+*.csv
+*.txt
+
+# In case you save a spreadsheet
+*.xls
+*.ods
+
+# Hide temporary versions of files from git by numbering them
+# or put them in a "Hidden" directory
+*[0-9].sh
+/Hidden/
+
+# Local backups
+*.bak
+
+# Subdirectories used for processing and test results
+/baseline/
+/secondary/
+/test_results/
