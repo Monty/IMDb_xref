@@ -15,7 +15,7 @@ even more fun learning about actors and shows. You might enjoy that as well.
 With it you can run simple queries to instantly answer questions about your
 favorites such as:
 
-+ Who stars in "The Crown"?
+* Who stars in "The Crown"?
 * What actresses have played Queen Elisabeth II and Princess Diana?
 * What other shows I've seen were they in?
 * Did anyone play in both "The Crown" and "The Durrells in Corfu"
