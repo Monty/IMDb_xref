@@ -367,7 +367,7 @@ perl -pi -f $NCONST_PL $PERSONS
 cut -f 2 $RAW_PERSONS | sort -fu >$UNIQUE_PERSONS
 
 # Create the SHOWS spreadsheet by removing duplicate field from RAW_SHOWS
-printf "Show Title\tShow Type\tOriginal or Episode Title\tSn_#\tEp_#\tStart\tEnd\tMinutes\tGenres\n" >$SHOWS
+printf "Show Title\tShow Type\tShow or Episode Title\tSn_#\tEp_#\tStart\tEnd\tMinutes\tGenres\n" >$SHOWS
 # Sort by Show Title (1), Show Type (2r), Sn_# (4n), Ep_# (5n), Start (6)
 perl -F"\t" -lane 'printf "%s\t%s\t'\''%s\t%s\t%s\t%s\t%s\t%s\t%s\n", @F[0,3,5,1,2,6,7,8,9]' $RAW_SHOWS |
     sort -f --field-separator="$TAB" --key=1,1 --key=2,2r --key=4,4n --key=5,5n --key=6,6 >>$SHOWS
