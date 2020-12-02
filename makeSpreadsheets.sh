@@ -35,9 +35,11 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -d      Create a 'diff' file comparing against a baseline of previously saved results.
+    -d      Diff -- Create a 'diff' file comparing current against previously saved results.
+    -o      Output -- Save file that can -later be used for queries with "xrefCast.sh -f"
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
     -v      Debug mode -- set -v, enable 'breakpoint' function when editing this script.
+    -x      Xlate -- Use a specific translation file instead of *xlate.
 EOF
 }
 
@@ -66,7 +68,7 @@ cd $DIRNAME
 # Make sort consistent between Mac and Linux
 export LC_COLLATE="C"
 
-while getopts ":x:hdtv" opt; do
+while getopts ":o:x:hdtv" opt; do
     case $opt in
     h)
         help
@@ -80,6 +82,9 @@ while getopts ":x:hdtv" opt; do
         ;;
     v)
         DEBUG="yes"
+        ;;
+    o)
+        OUTPUT_FILE="$OPTARG"
         ;;
     x)
         XLATE_FILES="$OPTARG"
@@ -378,6 +383,9 @@ printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" | tee $C
 sort -f --field-separator="$TAB" --key=1,2 --key=4,4 --key=3,3 $UNSORTED_CREDITS >>$CREDITS_PERSON
 # Sort by Show Title (2), Episode Title (3), Rank (4)
 sort -f --field-separator="$TAB" --key=2,4 $UNSORTED_CREDITS >>$CREDITS_SHOW
+
+# Save file for later searching
+[ -n "$OUTPUT_FILE" ] && cp -p $CREDITS_PERSON "$OUTPUT_FILE"
 
 [ -n "$DEBUG" ] && set -
 

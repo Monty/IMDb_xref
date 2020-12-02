@@ -24,11 +24,12 @@ function help() {
 Cross-reference shows, actors, and the characters they portray using data from IMDB.
 
 USAGE:
-    ./xrefCast.sh [OPTIONS] SEARCH_TERM [SEARCH_TERM ...]
+    ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] SEARCH_TERM [SEARCH_TERM ...]
 
 OPTIONS:
     -h      Print this message.
     -a      All -- Only print 'All names' section.
+    -f      File -- Query a specific file rather than "Credits-Person*csv".
     -s      Summarize -- Only print 'Duplicated names' section.
     -i      Print info about any files that are searched.
 
@@ -48,7 +49,7 @@ cd $DIRNAME
 # Make sort consistent between Mac and Linux
 export LC_COLLATE="C"
 
-while getopts ":hasi" opt; do
+while getopts ":f:hasi" opt; do
     case $opt in
     h)
         help
@@ -63,6 +64,9 @@ while getopts ":hasi" opt; do
     i)
         INFO="yes"
         ;;
+    f)
+        SEARCH_FILE="$OPTARG"
+        ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
@@ -76,13 +80,13 @@ shift $((OPTIND - 1))
 
 # Need some tempfiles
 TMPFILE=$(mktemp)
-SRCHFILE=$(mktemp)
+SEARCH_TERMS=$(mktemp)
 
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
 function cleanup() {
-    rm -rf $TMPFILE $SRCHFILE
+    rm -rf $TMPFILE $SEARCH_TERMS
     printf "\n"
     exit 130
 }
@@ -94,22 +98,27 @@ if [ $# -eq 0 ]; then
 fi
 
 # Get latest Credits-Person file to search
-CAST="$(ls -1t Credits-Person*csv 2>/dev/null | head -1)"
+[ -z "$SEARCH_FILE" ] && SEARCH_FILE="$(ls -1t Credits-Person*csv 2>/dev/null | head -1)"
 #
-if [ ! $CAST ]; then
-    printf "==> [Error] Missing data file: Credits-Person*csv\n"
+if [ ! "$SEARCH_FILE" ]; then
+    printf "==> [Error] Missing search file: Credits-Person*csv\n"
     printf "    Run ./makeSpreadsheets.sh then re-run this search.\n\n"
     exit 1
 fi
+# Make sure SEARCH_FILE exists
+if [ ! -e "$SEARCH_FILE" ]; then
+    printf "==> [Error] Missing search file: $SEARCH_FILE\n"
+    exit 1
+fi
 #
-[ "$INFO" == "yes" ] && printf "==> Searching $CAST for cast data.\n\n"
+[ "$INFO" == "yes" ] && printf "==> Searching $SEARCH_FILE for cast data.\n\n"
 
-# Setup SRCHFILE with one search term per line, let us know what's in it.
+# Setup SEARCH_TERMS with one search term per line, let us know what's in it.
 printf "==> Searching for:\n"
 for a in "$@"; do
-    printf "$a\n" >>$SRCHFILE
+    printf "$a\n" >>$SEARCH_TERMS
 done
-cat $SRCHFILE
+cat $SEARCH_TERMS
 
 # Can't use /t in "sort --field-separator", so setup a TAB variable
 TAB=$(printf "\t")
@@ -120,8 +129,8 @@ PSPACE='%-20s  %-10s  %-40s  %-17s  %s\n'
 PTAB='%s\t%s\t%s\t%s\t%s\n'
 
 # If we find anything, rearrange it and put it in TMPFILE
-if [ $(rg -wS -c -f $SRCHFILE $CAST) ]; then
-    rg -wSIN --color always -f $SRCHFILE $CAST |
+if [ $(rg -wS -c -f $SEARCH_TERMS $SEARCH_FILE) ]; then
+    rg -wSIN --color always -f $SEARCH_TERMS $SEARCH_FILE |
         awk -F "\t" -v PF="$PTAB" '{printf (PF, $1,$5,$2,$3,$6)}' |
         sort -f --field-separator="$TAB" --key=1,1 --key=3,3 -fu >$TMPFILE
 fi
@@ -141,7 +150,7 @@ fi
 
 # If ALL_NAMES_ONLY, exit here
 if [ -n "$ALL_NAMES_ONLY" ]; then
-    rm -rf $TMPFILE $SRCHFILE
+    rm -rf $TMPFILE $SEARCH_TERMS
     exit
 fi
 
@@ -156,4 +165,4 @@ else
 fi
 
 # Clean up
-rm -rf $TMPFILE $SRCHFILE
+rm -rf $TMPFILE $SEARCH_TERMS
