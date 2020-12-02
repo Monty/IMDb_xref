@@ -28,7 +28,7 @@ $ ./makeSpreadsheets.sh Contrib/CoenBros.tconst
 
 ==> Stats from processing IMDb data:
 uniqTitles-201201.txt                          470B   Dec 1 09:42       26 lines
-Shows-201201.csv                               2.0K   Dec 1 09:43       26 lines
+Shows-Episodes-201201.csv                      2.0K   Dec 1 09:43       26 lines
 uniqPersons-201201.txt                         1.3K   Dec 1 09:43       90 lines
 Persons-Titles-201201.csv                      7.4K   Dec 1 09:43       90 lines
 Credits-Show-201201.csv                        8.6K   Dec 1 09:43      166 lines

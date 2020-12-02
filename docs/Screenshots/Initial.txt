@@ -30,7 +30,7 @@ Downloading https://datasets.imdbws.com/title.principals.tsv.gz
 
 ==> Stats from processing IMDb data:
 uniqTitles-201201.txt                           50B   Dec 1 15:09        3 lines
-Shows-201201.csv                               6.3K   Dec 1 15:10       95 lines
+Shows-Episodes-201201.csv                      6.3K   Dec 1 15:10       95 lines
 uniqPersons-201201.txt                         1.3K   Dec 1 15:10       90 lines
 Persons-Titles-201201.csv                      6.8K   Dec 1 15:10       90 lines
 Credits-Show-201201.csv                         45K   Dec 1 15:10      704 lines

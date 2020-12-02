@@ -184,7 +184,7 @@ ERRORS="anomalies$LONGDATE.txt"
 CREDITS_SHOW="Credits-Show$DATE_ID.csv"
 CREDITS_PERSON="Credits-Person$DATE_ID.csv"
 PERSONS="Persons-Titles$DATE_ID.csv"
-SHOWS="Shows$DATE_ID.csv"
+SHOWS="Shows-Episodes$DATE_ID.csv"
 ASSOCIATED_TITLES="associatedTitles$DATE_ID.csv"
 
 # Final output lists

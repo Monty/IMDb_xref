@@ -44,7 +44,7 @@ $ ./makeSpreadsheets.sh Contrib/Clooney.tconst
 
 ==> Stats from processing IMDb data:
 uniqTitles-201201.txt                          1.2K   Dec 1 15:17       66 lines
-Shows-201201.csv                                27K   Dec 1 15:17      441 lines
+Shows-Episodes-201201.csv                       27K   Dec 1 15:17      441 lines
 uniqPersons-201201.txt                         6.7K   Dec 1 15:17      475 lines
 Persons-Titles-201201.csv                       36K   Dec 1 15:17      475 lines
 Credits-Show-201201.csv                        175K   Dec 1 15:17     3309 lines
