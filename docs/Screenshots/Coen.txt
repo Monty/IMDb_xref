@@ -1,0 +1,36 @@
+$ ./makeSpreadsheets.sh Contrib/CoenBros.tconst
+==> Using existing IMDb .gz files.
+
+==> Using all .xlate files for IMDb title translation.
+
+==> Searching Contrib/CoenBros.tconst for IMDb title identifiers.
+
+==> Processing 26 shows found in Contrib/CoenBros.tconst:
+	A Serious Man; Barton Fink; Blood Simple; Burn After Reading; Fargo; Hail,
+	Caesar!; Inside Llewyn Davis; Intolerable Cruelty; Lumberjacks at Play; Macbeth;
+	Miller's Crossing; No Country for Old Men; O Brother, Where Art Thou?; Paris, je
+	t'aime; Parisienne People by Joel & Ethan Coen; Raising Arizona; Soundings; The
+	Ballad of Buster Scruggs; The Big Lebowski; The Hudsucker Proxy; The
+	Ladykillers; The Man Who Wasn't There; The Zebra Striped Hearse; True Grit;
+	World Cinema; Zeimers in Zambezi
+
+==> Show types in Shows-201201.csv:
+	  21 movie
+	   4 short
+	   1 video
+
+==> Stats from processing Credits-Person-201201.csv:
+      90 people credited -- some in more than one job function
+           49 as actor
+           16 as actress
+           15 as writer
+            7 as director
+
+==> Stats from processing IMDb data:
+uniqTitles-201201.txt                          470B   Dec 1 09:42       26 lines
+Shows-201201.csv                               2.0K   Dec 1 09:43       26 lines
+uniqPersons-201201.txt                         1.3K   Dec 1 09:43       90 lines
+Persons-Titles-201201.csv                      7.4K   Dec 1 09:43       90 lines
+Credits-Show-201201.csv                        8.6K   Dec 1 09:43      166 lines
+Credits-Person-201201.csv                      8.6K   Dec 1 09:43      166 lines
+associatedTitles-201201.csv                    7.3K   Dec 1 09:43      275 lines

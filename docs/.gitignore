@@ -1,0 +1,3 @@
+# Prevent spreadsheet and text files in this directory from being ignored.
+!*.csv
+!*.txt

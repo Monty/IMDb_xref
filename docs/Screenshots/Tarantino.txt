@@ -1,0 +1,33 @@
+$ ./makeSpreadsheets.sh Contrib/Tarantino.tconst
+==> Using existing IMDb .gz files.
+
+==> Using all .xlate files for IMDb title translation.
+
+==> Searching Contrib/Tarantino.tconst for IMDb title identifiers.
+
+==> Processing 17 shows found in Contrib/Tarantino.tconst:
+	Death Proof; Django Unchained; Four Rooms; Grave Danger; Grindhouse; Inglourious
+	Basterds; Jackie Brown; Kill Bill: The Whole Bloody Affair; Kill Bill: Vol. 1;
+	Kill Bill: Vol. 2; Motherhood; Once Upon a Time... In Hollywood; Pulp Fiction;
+	Reservoir Dogs; Reservoir Dogs: Deleted Scenes; Sin City; The Hateful Eight
+
+==> Show types in Shows-201201.csv:
+	  14 movie
+	   4 tvEpisode
+	   1 video
+
+==> Stats from processing Credits-Person-201201.csv:
+      66 people credited -- some in more than one job function
+           30 as actor
+           18 as actress
+            8 as writer
+            9 as director
+
+==> Stats from processing IMDb data:
+uniqTitles-201201.txt                          299B   Dec 1 09:51       17 lines
+Shows-201201.csv                               1.4K   Dec 1 09:51       19 lines
+uniqPersons-201201.txt                         945B   Dec 1 09:51       66 lines
+Persons-Titles-201201.csv                      5.1K   Dec 1 09:51       66 lines
+Credits-Show-201201.csv                        6.8K   Dec 1 09:51      125 lines
+Credits-Person-201201.csv                      6.8K   Dec 1 09:51      125 lines
+associatedTitles-201201.csv                    4.4K   Dec 1 09:51      179 lines

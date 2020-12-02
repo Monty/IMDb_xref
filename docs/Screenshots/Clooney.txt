@@ -1,0 +1,52 @@
+$ ./makeSpreadsheets.sh Contrib/Clooney.tconst
+==> Using existing IMDb .gz files.
+
+==> Using all .xlate files for IMDb title translation.
+
+==> Searching Contrib/Clooney.tconst for IMDb title identifiers.
+
+==> Processing 66 shows found in Contrib/Clooney.tconst:
+	8; A Very Murray Christmas; Batman & Robin; Bennett Brothers; Bodies of
+	Evidence; Burn After Reading; Combat High; Confessions of a Dangerous Mind; E/R;
+	ER; Fantastic Mr. Fox; From Dusk Till Dawn; Good Night, and Good Luck.; Gravity;
+	Hail, Caesar!; Hot Prospects; Intolerable Cruelty; Knights of the Kitchen Table;
+	Leatherheads; Michael Clayton; Money Monster; Nespresso... What Else?;
+	Nespresso: Cab Driver; Nespresso: Change Nothing; Nespresso: Comin' Home;
+	Nespresso: Epiphany; Nespresso: George Who?; Nespresso: How Far?; Nespresso: In
+	the Name of Pleasure; Nespresso: Like a Star; Nespresso: The Piano; Nespresso:
+	The Quest; Nespresso: The Swap; Never Stop Dreaming: The Life and Legacy of
+	Shimon Peres; O Brother, Where Art Thou?; Obama 2012 Convention Film; Ocean's
+	Eleven; Ocean's Thirteen; Ocean's Twelve; One Fine Day; Out of Sight; Red Surf;
+	Return of the Killer Tomatoes!; Rewrite for Murder; Sand and Sorrow; Solaris;
+	Sunset Beat; Syriana; That's the Way It Is: Celebrating Cronkite at 90; The
+	American; The Descendants; The Good German; The Ides of March; The Men Who Stare
+	at Goats; The Midnight Sky; The Monuments Men; The Peacemaker; The Perfect
+	Storm; The Studio; Three Kings; Tomorrowland; Touch of Evil; Untitled George
+	Clooney Project; Up in the Air; Welcome to Collinwood; Without Warning: Terror
+	in the Towers
+
+==> Show types in Shows-201201.csv:
+	 375 tvEpisode
+	  38 movie
+	  10 video
+	   8 tvMovie
+	   4 tvSeries
+	   4 short
+	   1 tvSpecial
+	   1 tvShort
+
+==> Stats from processing Credits-Person-201201.csv:
+     475 people credited -- some in more than one job function
+          134 as actor
+           92 as actress
+          134 as writer
+          116 as director
+
+==> Stats from processing IMDb data:
+uniqTitles-201201.txt                          1.2K   Dec 1 15:17       66 lines
+Shows-201201.csv                                27K   Dec 1 15:17      441 lines
+uniqPersons-201201.txt                         6.7K   Dec 1 15:17      475 lines
+Persons-Titles-201201.csv                       36K   Dec 1 15:17      475 lines
+Credits-Show-201201.csv                        175K   Dec 1 15:17     3309 lines
+Credits-Person-201201.csv                      175K   Dec 1 15:17     3309 lines
+associatedTitles-201201.csv                    126K   Dec 1 15:17     1350 lines
