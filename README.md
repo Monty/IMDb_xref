@@ -1,5 +1,12 @@
 ## IMDb_xref
 
+[![MIT License](https://img.shields.io/apm/l/atomic-design-ui.svg?)](https://github.com/tterb/atomic-design-ui/blob/master/LICENSEs)
+[![Code](https://tokei.rs/b1/github/Monty/IMDb_xref?category=code)](https://github.com/Monty/IMDb_xref)
+[![Lines](https://tokei.rs/b1/github/Monty/IMDb_xref?category=lines)](https://github.com/Monty/IMDb_xref)
+[![Files](https://tokei.rs/b1/github/Monty/IMDb_xref?category=files)](https://github.com/Monty/IMDb_xref)
+[![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main)](https://badgen.net/github/commits/Monty/IMDb_xref/main)
+[![made-with-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/)
+
 When watching a TV show or movie, I often spot a familiar face but can't
 remember the actor's name or what other shows I've seen them in.
 
@@ -20,7 +27,7 @@ favorites such as:
 * What other shows I've seen were they in?
 * Did anyone play in both "The Crown" and "The Durrells in Corfu"
 
-If it's difficult to picture what using this would be like, check out my [query
+To see what it's like before installing, check out my [query
 demo screencast](https://youtu.be/91h3mnvV7Ug). It only takes 45 seconds.
 
 The program also creates comprehensive lists and spreadsheets of shows, actors,
@@ -28,6 +35,6 @@ and the characters they portray. They're useful as an overview or for discoverin
 actors and shows you may want to know more about.
 
 The data is extracted from downloaded IMDb .gz files. See
-[https://www.imdb.com/interfaces/]() for details of the data they contain.
+[https://www.imdb.com/interfaces/]() for details of the data those files contain.
 
 ***[Learn more about this project...](USAGE.md)***
