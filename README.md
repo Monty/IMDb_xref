@@ -4,7 +4,7 @@
 [![Code](https://tokei.rs/b1/github/Monty/IMDb_xref?category=code)](https://github.com/Monty/IMDb_xref)
 [![Lines](https://tokei.rs/b1/github/Monty/IMDb_xref?category=lines)](https://github.com/Monty/IMDb_xref)
 [![Files](https://tokei.rs/b1/github/Monty/IMDb_xref?category=files)](https://github.com/Monty/IMDb_xref)
-[![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main)](https://github.com/Monty/IMDb_xref)
+[![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main/)](https://github.com/Monty/IMDb_xref)
 [![made-with-bash](https://img.shields.io/badge/Made%20with-Bash-1f425f.svg)](https://www.gnu.org/software/bash/manual/html_node/What-is-Bash_003f.html)
 
 When watching a TV show or movie, I often spot a familiar face but can't
