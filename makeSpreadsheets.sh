@@ -51,7 +51,7 @@ function cleanup() {
     exit 130
 }
 
-breakpoint() {
+function breakpoint() {
     if [ -n "$DEBUG" ]; then
         read -r -p "Quit now? [y/N] " YESNO
         if [ "$YESNO" == "y" ]; then

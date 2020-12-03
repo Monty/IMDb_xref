@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run a short demo
 
-query() {
+function query() {
     clear
     read -p "$1"
     shift
