@@ -14,23 +14,20 @@ function query() {
 clear
 cat <<EOF
 
-When watching a TV show or movie, I often spot a familiar face but can't
-remember the actor's name or what other shows I've seen them in.
+When watching a TV show or movie, have you ever spotted a familiar face but
+can't remember the actor's name or what other shows you've seen them in?
 
-So I go to the IMDb website; find the show; click on "See full cast & crew";
-find the character; click on the actor's name; then scroll through their
-"Filmography" to see if I recognize any other shows I've watched. It is both
-time-consuming and difficult. Even more so if I want to know if two shows
-have actors in common.
+To solve this I used to go to the IMDb website; find the show; click on "See
+full cast & crew"; find the character; click on the actor's name; then scroll
+through their "Filmography" to see if I recognized any other shows I'd watched.
+This was both time-consuming and difficult -- even more so if I wanted to know
+if two shows had actors in common.
 
-So I wrote a program to answer such questions simply and quickly. Now I have
-even more fun learning about actors and shows. You might enjoy that as well.
+I wrote IMDb_xref to answer such questions simply and quickly. Now I have
+even more fun learning about actors and shows.
 
-The following screens run example queries about the PBS show "The Crown" so
-you can see what it's like to use.
-
-It will display a question, then pause. Hitting "Enter" will find the answer
-then pause again.
+The following screens will first pose a question about the PBS show "The Crown"
+then pause. Hitting "Enter" will find the answer, then pause again.
 EOF
 
 printf '\nHit "Enter" to continue, "^C" to quit. '
@@ -42,3 +39,6 @@ query 'What other shows was Olivia Colman in? ' '-s' 'Olivia Colman'
 query 'Are there actors in common between "The Night Manager" "The Crown" "The Durrells in Corfu"?' \
     '-s' 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
 query 'Who was in The Crown? ' '-a' 'The Crown'
+
+clear
+printf "That's All!\n\n"
