@@ -36,6 +36,6 @@ and the characters they portray. They're useful as an overview or for discoverin
 actors and shows you may want to know more about.
 
 The data used is extracted from downloaded IMDb .gz files. See
-[https://www.imdb.com/interfaces/]() for details of the data in those files.
+[https://www.imdb.com/interfaces/](https://www.imdb.com/interfaces/) for details of the data in those files.
 
 ***[Learn more about this project...](USAGE.md)***

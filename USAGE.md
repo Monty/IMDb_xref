@@ -2,18 +2,18 @@
 
 Install **[ripgrep](https://crates.io/crates/xsv)** to get acceptable performance.
 Searching 700 MB of compressed data with **zgrep** is 15x slower. See
-[https://crates.io/crates/ripgrep](). (*If someone wants to rewrite this to use
+[https://crates.io/crates/ripgrep](https://crates.io/crates/ripgrep). (*If someone wants to rewrite this to use
 zgrep or another search engine, be my guest.*)
 
 While it's not required, **[xsv](https://crates.io/crates/xsv)** greatly improves
 table layout, especially for non-English names, by using "elastic tabs". See
-[https://crates.io/crates/xsv]()
+[https://crates.io/crates/xsv](https://crates.io/crates/xsv)
 
 #### Get started quickly
 
 Run **./makeSpreadsheets.sh** to download the IMDb data files and generate lists
 and spreadsheets containing cast members, characters portrayed, alternate titles,
-and other details from **[IMDb]([https://www.imdb.com/interfaces/]())**. This
+and other details from **IMDb**. This
 takes 40 seconds on my 2014 iMac (*Note: I have a fast internet connection.*)
 
 Re-running **./makeSpreadsheets.sh** doesn't download the IMDb data files again.
