@@ -38,7 +38,7 @@ function yesnodelete() {
 # i.e. the function is passed the number of parameters seen below, not
 # the expanded list which could be quite long.
 yesnodelete "all Shows spreadsheets" "Shows-*.csv"
-yesnodelete "all Credits spreadsheets" "Credits-*.csv" "Persons-Titles*.csv" "associatedTitles*.csv"
+yesnodelete "all Credits spreadsheets" "Credits-*.csv" "Persons-KnownFor*.csv" "associatedTitles*.csv"
 yesnodelete "all uniq files" "uniq*.txt"
 yesnodelete "all secondary spreadsheet files" "secondary"
 yesnodelete "all diff results" "diffs*.txt"

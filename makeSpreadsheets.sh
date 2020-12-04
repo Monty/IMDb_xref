@@ -188,7 +188,7 @@ ERRORS="anomalies$LONGDATE.txt"
 # Final output spreadsheets
 CREDITS_SHOW="Credits-Show$DATE_ID.csv"
 CREDITS_PERSON="Credits-Person$DATE_ID.csv"
-PERSONS="Persons-Titles$DATE_ID.csv"
+PERSONS="Persons-KnownFor$DATE_ID.csv"
 SHOWS="Shows-Episodes$DATE_ID.csv"
 ASSOCIATED_TITLES="associatedTitles$DATE_ID.csv"
 
@@ -225,7 +225,7 @@ SKIP_TCONST="$WORK/tconst-skip$DATE_ID.txt"
 PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
 PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
 PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
-PUBLISHED_PERSONS="$BASE/Persons-Titles.csv"
+PUBLISHED_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
 PUBLISHED_ASSOCIATED_TITLES="$BASE/associatedTitles.csv"
 #
