@@ -6,7 +6,7 @@
 #   Requires cast member files produced by generateXrefData.sh
 #   Note: Cast member data from IMDb sometimes has errors or omissions
 #
-#   To help refine searches, the output is rather wordy (unless the -n option is used).
+#   To help refine searches, the output is rather wordy (unless the -s option is used).
 #   The final section (Duplicated names) is the section of highest interest.
 #
 #   It may help to start with an actor or character, e.g.
@@ -15,7 +15,7 @@
 #
 #   Then move to more complex queries that expose other common cast members
 #       ./xrefCast.sh 'The Crown'
-#       ./xrefCast.sh -n 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
+#       ./xrefCast.sh -s 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
 #
 #   Experiment to find the most useful results.
 
