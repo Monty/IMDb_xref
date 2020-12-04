@@ -1,4 +1,4 @@
-$ ./makeSpreadsheets.sh
+$ ./generateXrefData.sh
 ==> Downloading new IMDb .gz files.
 Downloading https://datasets.imdbws.com/name.basics.tsv.gz
 Downloading https://datasets.imdbws.com/title.basics.tsv.gz

@@ -31,7 +31,7 @@ downloaded IMDb .gz files. See https://www.imdb.com/interfaces/ for details of t
 they contain.
 
 USAGE:
-    ./makeSpreadsheets.sh [-x translation file] [tconst file ...]
+    ./generateXrefData.sh [-x translation file] [tconst file ...]
 
 OPTIONS:
     -h      Print this message.

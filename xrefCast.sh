@@ -3,7 +3,7 @@
 # Find common cast members between multiple shows
 #
 # NOTES:
-#   Requires cast member files produced by makeSpreadsheets.sh
+#   Requires cast member files produced by generateXrefData.sh
 #   Note: Cast member data from IMDb sometimes has errors or omissions
 #
 #   To help refine searches, the output is rather wordy (unless the -n option is used).
@@ -102,7 +102,7 @@ fi
 #
 if [ ! "$SEARCH_FILE" ]; then
     printf "==> [Error] Missing search file: Credits-Person*csv\n"
-    printf "    Run ./makeSpreadsheets.sh then re-run this search.\n\n"
+    printf "    Run ./generateXrefData.sh then re-run this search.\n\n"
     exit 1
 fi
 # Make sure SEARCH_FILE exists

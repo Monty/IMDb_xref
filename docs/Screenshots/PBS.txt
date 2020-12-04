@@ -1,4 +1,4 @@
-$ ./makeSpreadsheets.sh
+$ ./generateXrefData.sh
 ==> Using existing IMDb .gz files.
 
 ==> Using all .xlate files for IMDb title translation.

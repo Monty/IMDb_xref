@@ -1,4 +1,4 @@
-$ ./makeSpreadsheets.sh Contrib/Clooney.tconst
+$ ./generateXrefData.sh Contrib/Clooney.tconst
 ==> Using existing IMDb .gz files.
 
 ==> Using all .xlate files for IMDb title translation.
