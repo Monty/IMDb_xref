@@ -37,7 +37,7 @@ EXAMPLES:
     ./xrefCast.sh 'Olivia Colman'
     ./xrefCast.sh 'Queen Elizabeth II' 'Princess Diana'
     ./xrefCast.sh 'The Crown'
-    ./xrefCast.sh -n 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
+    ./xrefCast.sh -s 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
 
 EOF
 }
