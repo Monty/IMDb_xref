@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Expand the IDs in a .tconst file to add Primary and Original Titles
+# Expand the IDs in a .tconst file to add IMDb Primary and Original Titles and sort by Primary Title
+#
+# Preserve all non-tconst lines into a header
 
 function help() {
     cat <<EOF
@@ -55,13 +57,13 @@ shift $((OPTIND - 1))
 
 # Need some tempfiles
 RESULT=$(mktemp)
-TMPFILE=$(mktemp)
+TCONSTS=$(mktemp)
 
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
 function cleanup() {
-    rm -rf $RESULT $TMPFILE
+    rm -rf $RESULT $TCONSTS
     printf "\n"
     exit 130
 }
@@ -78,14 +80,14 @@ TAB=$(printf "\t")
 for file in "$@"; do
     [ -z "$INPLACE" ] && printf "==> $file\n"
 
-    # Gather comments and blank lines
-    rg -Ne "^#" -e "^$" "$file" >$RESULT
+    # Gather and preserve all non-tconst lines
+    rg -Nv "^tt" "$file" >$RESULT
 
-    # Gather all the tconsts in column 1
-    rg -Ne "^tt" "$file" | cut -f 1 >$TMPFILE
+    # Gather all the lines with tconsts in column 1
+    rg -Ne "^tt" "$file" | cut -f 1 >$TCONSTS
 
     # Look them up, get fields 1-4, and sort by Primary Title
-    rg -wNz -f "$TMPFILE" title.basics.tsv.gz | cut -f 1-4 |
+    rg -wNz -f "$TCONSTS" title.basics.tsv.gz | cut -f 1-4 |
         sort -f --field-separator="$TAB" --key=3,3 >>$RESULT
 
     # Either overwrite or print on stdout
@@ -101,4 +103,4 @@ for file in "$@"; do
 done
 
 # Clean up
-rm -rf $RESULT $TMPFILE
+rm -rf $RESULT $TCONSTS
