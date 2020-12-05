@@ -36,7 +36,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -d      Diff -- Create a 'diff' file comparing current against previously saved results.
-    -o      Output -- Save file that can -later be used for queries with "xrefCast.sh -f"
+    -o      Output -- Save file that can later be used for queries with "xrefCast.sh -f"
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
     -v      Debug mode -- set -v, enable 'breakpoint' function when editing this script.
     -x      Xlate -- Use a specific translation file instead of *xlate.
