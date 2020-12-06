@@ -2,14 +2,12 @@
 
 Command line utilities to quickly cross-reference and query shows, actors, and the characters they portray using data downloaded from IMDb.
 
-<!--- Uncomment thes lined before committimg
 [![MIT License](https://img.shields.io/github/license/Monty/IMDb_xref)](LICENSE)
 [![Code](https://tokei.rs/b1/github/Monty/IMDb_xref?category=code)](https://github.com/Monty/IMDb_xref)
 [![Lines](https://tokei.rs/b1/github/Monty/IMDb_xref?category=lines)](https://github.com/Monty/IMDb_xref)
 [![Files](https://tokei.rs/b1/github/Monty/IMDb_xref?category=files)](https://github.com/Monty/IMDb_xref)
 [![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main/)](https://github.com/Monty/IMDb_xref)
 [![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/IMDb_xref)
---->
 
 - [Motivation](#motivation)
 - [Installation](#installation)
@@ -17,7 +15,7 @@ Command line utilities to quickly cross-reference and query shows, actors, and t
   - [Generate initial data](#generate-initial-data)
   - [Run sample queries](#run-sample-queries)
      - [Understanding query results](#understanding-query-results)
-     - [Make up your own queries](#make-up-your-own-queries)
+  - [Make your own queries](#make-your-own-queries)
   - [Generate additional data](#generate-additional-data)
   - [Generate your own data](#generate-your-own-data)
 - [Performance](#performance)
@@ -55,13 +53,15 @@ and the characters they portray. They're useful as an overview or for discoverin
 actors and shows you may want to know more about.
 
 The data used is extracted from downloaded IMDb .gz files. See
-[https://www.imdb.com/interfaces/](https://www.imdb.com/interfaces/) for details of the data in those files.
+[https://www.imdb.com/interfaces/](https://www.imdb.com/interfaces/) for details
+of the data in those files.
 
 ## Installation
 
 ### Compatibility
 
-Tested on macOS and Linux. May work in Windows 10 if [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) is installed.
+Tested on macOS and Linux. May work in Windows 10 if
+[Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) is installed.
 
 ### Install prerequisites
 
@@ -76,7 +76,8 @@ non-English names, by using "elastic tabs". See
 [https://crates.io/crates/xsv](https://crates.io/crates/xsv).
 
 ### Install IMDb_xref
-Either **[download an IMDb_xref release](https://github.com/Monty/IMDb_xref/releases)** or type these commands into a terminal window:
+Either **[download an IMDb_xref release](https://github.com/Monty/IMDb_xref/releases)** or
+type these commands into a terminal window:
 
 ```sh
 git clone https://github.com/Monty/IMDb_xref.git
@@ -129,7 +130,7 @@ titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac.
     LinksToTitles-201201.csv                       329B   Dec 1 15:10        3 lines
     Shows-Episodes-201201.csv                      6.3K   Dec 1 15:10       95 lines
     uniqPersons-201201.txt                         1.3K   Dec 1 15:10       90 lines
-    LinksToPersons-201205.csv                      8.0K   Dec 1 15:10       90 lines
+    LinksToPersons-201201.csv                      8.0K   Dec 1 15:10       90 lines
     Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:10       90 lines
     AssociatedTitles-201201.csv                     26K   Dec 1 15:10      282 lines
     Credits-Show-201201.csv                         45K   Dec 1 15:10      704 lines
@@ -169,7 +170,7 @@ produced earlier that day but not those from any previous day.
     LinksToTitles-201201.csv                       329B   Dec 1 15:12        3 lines
     Shows-Episodes-201201.csv                      6.3K   Dec 1 15:12       95 lines
     uniqPersons-201201.txt                         1.3K   Dec 1 15:12       90 lines
-    LinksToPersons-201205.csv                      8.0K   Dec 1 15:12       90 lines
+    LinksToPersons-201201.csv                      8.0K   Dec 1 15:12       90 lines
     Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:12       90 lines
     AssociatedTitles-201201.csv                     26K   Dec 1 15:12      282 lines
     Credits-Show-201201.csv                         45K   Dec 1 15:12      704 lines
@@ -217,14 +218,14 @@ The "Duplicated names" section contains only rows with names found in more than 
 show. It can be empty.
 
 The "-s" (summarize) switch hides the "All names" section. The "-a" (All) switch
-hides the "Duplicated names" section. Running the example queries and others with and
-without those two switches will give you an understanding of when they are useful
+hides the "Duplicated names" section. Running the example queries with and
+without those two switches will give you an understanding of when they are useful.
 
-#### Make up your own queries
+### Make your own queries
 
 Experiment. The results from one query may reveal information that leads to further
-queries. For example, `./xrefCast actor actress` will list all actors and actress,
-and "Duplicated names" will contain only people who apeared in more than one show.
+queries. For example, `./xrefCast.sh actor actress` will list all actors and actress,
+and "Duplicated names" will contain only people who appeared in more than one show.
 (*Use "-s" to skip the longer list.*)
 
 ***Protip***: Create a more flexible **xref** command that can be run from any
@@ -237,7 +238,12 @@ alias xref="${PWD}/xrefCast.sh \\"\\$@\\""
 while in this directory. Then you can type `xref 'Princess Diana'` instead of
 `./xrefCast.sh 'Princess Diana'`. We'll use **xref** in any further examples.
 
-(*Note: Make this command permanent by adding the results of `alias xref` to the file used to store other aliases.*)
+(*Note: Make this command permanent by adding the results of `alias xref` to the
+file used to store other aliases.*)
+
+If a query returns too much data, you can filter the results with **"rg"**. For
+example, rather than read through all 54 results from `xref "The Crown"` to find
+episode directors, use '`xref "The Crown" | rg director`.
 
 ### Generate additional data
 
@@ -302,7 +308,7 @@ queries should still take less than one second. (*Note: -t selects example.tcons
               428 as director
     
     ==> Stats from processing IMDb data:
-    uniqTitles-201201.txt                          1.5K   Dec 4 10:11       98 lines
+    uniqTitles-201201.txt                          1.5K   Dec 4 10:10       98 lines
     LinksToTitles-201201.csv                       9.2K   Dec 4 10:11       98 lines
     Shows-Episodes-201201.csv                      161K   Dec 4 10:11     2257 lines
     uniqPersons-201201.txt                          52K   Dec 4 10:11     3605 lines
@@ -345,17 +351,67 @@ as fast.
 #### How do I make a tconst list of shows I like?
 
 A straightforward but manual method is to copy the tconst from a URL you visit on IMDb.
-![tconst in IMDb URL](docs/Screenshots/IMDb_tconst.png)
+![tconst in IMDb URL](docs/Screenshots/IMDb_tconst.png) 
 
-(*Your contributions are welcome. Start your own lists: broad genres such as
-Comedies, Sci-Fi, Musicals, Historical Dramas -- or more specific lists like "All
-Alfred Hitchcock movies", "TV shows with Robots", or "shows with Salsa music.*)
+That's useful if you want only shows you've watched -- just add a new tconst
+whenever you watch a new show.  **./generateXrefData.sh** will automatically
+gather all episodes of a TV show, so make sure the tconst is for a show, not an
+episode.
 
-IMDb_xref data is generated from lists of tconsts. The default is to use all .tconst
-files in the top level directory. Put whatever tconst files you want there.
+***Protip***: You only need to put one tconst ID on each line. The script
+**augment_tconstFiles.sh** will add documentation for you. Just re-run it any
+time you add a tconst. Run `augment_tconstFiles.sh -h` to see examples.
+
+<details><summary><b>Show output</b></summary>
+
+```
+$ ./augment_tconstFiles.sh -h
+Expand the IDs in .tconst files to add Type, Primary Title, and Original Title
+
+      For example, expand:
+          tt1606375
+          tt1399664
+          tt3351208
+
+      To:
+          tt1606375	tvSeries	Downton Abbey	Downton Abbey
+          tt1399664	tvMiniSeries	The Night Manager	The Night Manager
+          tt3351208	tvMovie	Two Little Girls in Blue	Deux petites filles en bleu
+
+USAGE:
+    ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]
+
+OPTIONS:
+    -h      Print this message.
+    -i      In place -- overwrite original file
+
+EXAMPLES:
+    ./augment_tconstFiles.sh Contrib/OPB.tconst
+    ./augment_tconstFiles.sh -i Contrib/*.tconst
+```
+</details>
+
+Another strategy is to copy one or more of the tconst files in the Contrib
+directory, editing if necessary. The default is to process all .tconst files in
+the top level directory. Put whatever tconst files you want there.
+
+You could even get ideas from one of the spreadsheets we generate. They are in
+.csv format so you can open them with any spreadsheet program or text editor. If
+you open them as a spreadsheet, you can click on the hyperlink in column three
+to go directly to that entry on IMDb.
+
+The two beginning with "Link" are for persons and titles we already generated.
+The "AssociatedTitles" is generated from the "Known For" section of a persons
+IMDb page.  It only lists up to four shows for each person, and they may not be
+the ones you expected.
+
+(*Start your own lists: broad genres such as Comedies, Sci-Fi, Musicals,
+Historical Dramas -- or more specific ones like "All Alfred Hitchcock movies",
+"TV shows with Robots", or "shows with Salsa music", "Shows for Trivia
+questions".*)
 
 Until I find time to produce more documentation, you can learn a lot from the
-descriptive comments in the shell scripts and *.example files.
+descriptive comments in the shell scripts, .example, and Contrib files.
 
 ## Performance
 
@@ -407,7 +463,8 @@ Summary
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](hhttps://github.com/Monty/IMDb_xref/issues/new) or submit PRs.
+Feel free to dive in! Contribute an interesting tconst list, submit additional
+scripts, [Open an issue](https://github.com/Monty/IMDb_xref/issues/new), or submit PRs.
 
 ## License
 
