@@ -201,28 +201,37 @@ Run **./xrefCast.sh -h** (help) to see some example queries.
 Run **./demo.sh** to see the information returned from these queries and more.
 
 #### Understanding query results
-The results always incude a "Searching for:" section. If you get unexpected results
-in a complex query, check it to see if you mistyped a search term. Search terms 
-that have more than one word need to be quoted, *e.g.* either 'Princess Diana' or "'Princess Diana".
+The "Searching for" section lists the search terms used, one per line.  If you get
+unexpected results in a complex query, check it to see if you mistyped a search term.
+Search terms that have more than one word need to be quoted, *e.g.* either 'Princess
+Diana' or "'Princess Diana".
 
-If you didn't use the "-a" (summarize) switch, results will include an "All names" section. It contains all rows with a match for any term. It can be quite long for complex queries.
+The "All names" section contains all rows with a match for **any** term. It can be
+quite long for complex queries.
 
-If you didn't use the "-a" (all) switch, results will include a "Duplicated names" section. It contains only rows where one name appears in more than one show. It can be empty.
+The "Duplicated names" section contains only rows with names found in more than one
+show. It can be empty.
 
-Running the example queries and others with and without those two switches will give you ann understanding of when they are useful
+The "-s" (summarize) switch hides the "All names" section. The "-a" (All) switch
+hides the "Duplicated names" section. Running the example queries and others with and
+without those two switches will give you an understanding of when they are useful
 
 #### Make up your own queries
 
-Experiment. The results from one query may reveal information that leads to further queries. For example, `./xrefCast actor actress` will list all actors and actress, and "Duplicated names" will contain only people who apeared in more than one show. (*Use "-s" to skip the longer list.*)
+Experiment. The results from one query may reveal information that leads to further
+queries. For example, `./xrefCast actor actress` will list all actors and actress,
+and "Duplicated names" will contain only people who apeared in more than one show.
+(*Use "-s" to skip the longer list.*)
 
-***Protip***: Create a more flexible **xref** command that can be run from any directory by typing:
+***Protip***: Create a more flexible **xref** command that can be run from any
+directory by typing:
 
 ```
 alias xref="${PWD}/xrefCast.sh \\"\\$@\\""
 ```
 
 while in this directory. Then you can type `xref 'Princess Diana'` instead of
-`./xrefCast.sh 'Princess Diana'`. We'll use **xref** in the remaining examples.
+`./xrefCast.sh 'Princess Diana'`. We'll use **xref** in any further examples.
 
 (*Note: Make this command permanent by adding the results of `alias xref` to the file used to store other aliases.*)
 
@@ -233,9 +242,11 @@ noticed that it only produced data on 3 shows with 92 episodes -- crediting 90
 people with 704 lines of credits. It did so by selecting three PBS shows from
 example.tconst and creating the example files PBS.tconst and PBS.xlate.
 
-If you run **./generateXrefData.sh -td**, it will use all the shows in example.tconst. You'll now have data on 98 shows with 2159 episodes
--- crediting 3605 people with 17276 lines of credits. Running this takes about
-45 seconds. However, queries should still take less than one second. (*Note: -t selects example.tconst, -d saves the results in test_results.*)
+If you run **./generateXrefData.sh -td**, it will use all the shows in
+example.tconst. You'll now have data on 98 shows with 2159 episodes -- crediting 3605
+people with 17276 lines of credits. Running this takes about 45 seconds. However,
+queries should still take less than one second. (*Note: -t selects example.tconst,
+-d saves the results in test_results.*)
 
 <details><summary><b>Show output</b></summary>
 
@@ -299,14 +310,18 @@ If you run **./generateXrefData.sh -td**, it will use all the shows in example.t
 
 ### Generate your own data
 
-IMDb_xref data is generated from tconst lists. *What is a tconst?* A tconst is a unique ID that IMDb assigns to each movie, TV series or episode, etc. A simple tconst list would look like this: 
+IMDb_xref data is generated from tconst lists. *What is a tconst?* A tconst is a
+unique ID that IMDb assigns to each movie, TV series or episode, etc. A simple tconst
+list would look like this:
 
 ```
 tt4786824
 tt5014882
 tt1399664
 ```
-Searching for any of those tconsts on IMDb.com will find a specific show, *e.g.* tt4786824 is the page for "The Crown": [https://www.imdb.com/title/tt4786824/](https://www.imdb.com/title/tt4786824/). 
+Searching for any of those tconsts on IMDb.com will find a specific show, *e.g.*
+tt4786824 is the page for "The Crown":
+[https://www.imdb.com/title/tt4786824/](https://www.imdb.com/title/tt4786824/).
 
 You can generate your own data by using one or more of the .tconst files in the
 Contrib directory or creating your own .tconst file. You can even translate
@@ -315,28 +330,35 @@ The default for **./generateXrefData.sh** is to use all .tconst and all .xlate
 files in the top level directory. So put whatever files you want there.  
 
 Data can grow quite large. If you use all the files in /Contrib, you'll generate
-over 7.5 MB of data, including two 46,000 line Credits spreadsheets.
+over 7.5 MB of data, including two 46,000 line Credits spreadsheets. 
+
+Large data files don't affect query speeds, they just consume more disk space. 
+Just gzip the files if you need to minimize space -- queries will still run
+as fast.
 
 #### How do I make a tconst list of shows I like?
 
-(*Your contributions are welcome. Start your own lists: broad genres such as Comedies,
-Sci-Fi, Musicals, Historical Dramas - or more specific lists like "All Alfred Hitchcock movies", "TV shows with Robots", or "shows with Salsa music.*)
+(*Your contributions are welcome. Start your own lists: broad genres such as
+Comedies, Sci-Fi, Musicals, Historical Dramas -- or more specific lists like "All
+Alfred Hitchcock movies", "TV shows with Robots", or "shows with Salsa music.*)
 
-IMDb_xref data is generated from lists of tconsts. The default is to use all .tconst files in the top level directory. Put whatever tconst files you want there. 
+IMDb_xref data is generated from lists of tconsts. The default is to use all .tconst
+files in the top level directory. Put whatever tconst files you want there.
 
 Until I find time to produce more documentation, you can learn a lot from the
 descriptive comments in the shell scripts and *.example files.
 
 ## Performance
 
-Even complex queries on 14MB of data run in less than 100ms on my 2014 iMac, 25ms on my 2019 MacBook Pro with an internal SSD.
-There is almost no difference between using gzipped data and non-gzipped data. 
+Even complex queries on 14MB of data run in less than 100ms on my 2014 iMac, 25ms on
+my 2019 MacBook Pro with an internal SSD.  There is almost no difference between
+using gzipped data and non-gzipped data.
 
 <details><summary><b>Show comparative benchmarks</b></summary>
 
-Timing results for running 5 queries on gzipped and non-gzipped files.
-Both contain 219510 rows. The gzipped file is 3.0MB, the non-gzipped file is 14MB.
-The times are nearly identical, with a very slight edge to the gzipped version.
+Timing results for running 5 queries on gzipped and non-gzipped files.  Both contain
+219510 rows. The gzipped file is 3.0MB, the non-gzipped file is 14MB.  The times are
+nearly identical, with a very slight edge to the gzipped version.
 
 #### On a 2014 iMac with internal hard drive:
 
