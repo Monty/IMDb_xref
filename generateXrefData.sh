@@ -188,10 +188,10 @@ ERRORS="anomalies$LONGDATE.txt"
 # Final output spreadsheets
 CREDITS_SHOW="Credits-Show$DATE_ID.csv"
 CREDITS_PERSON="Credits-Person$DATE_ID.csv"
-PERSONS="Persons-KnownFor$DATE_ID.csv"
+KNOWN_PERSONS="Persons-KnownFor$DATE_ID.csv"
 SHOWS="Shows-Episodes$DATE_ID.csv"
-ASSOCIATED_NAMES="associatedNames$DATE_ID.csv"
-ASSOCIATED_TITLES="associatedTitles$DATE_ID.csv"
+LINKS_TO_PERSONS="LinksToPersons$DATE_ID.csv"
+ASSOCIATED_TITLES="AssociatedTitles$DATE_ID.csv"
 
 # Final output lists
 UNIQUE_PERSONS="uniqPersons$DATE_ID.txt"
@@ -226,10 +226,10 @@ SKIP_TCONST="$WORK/tconst-skip$DATE_ID.txt"
 PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
 PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
 PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
-PUBLISHED_PERSONS="$BASE/Persons-KnownFor.csv"
+PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
-PUBLISHED_ASSOCIATED_NAMES="$BASE/associatedNames.csv"
-PUBLISHED_ASSOCIATED_TITLES="$BASE/associatedTitles.csv"
+PUBLISHED_LINKS_TO_PERSONS="$BASE/LinksToPersons.csv"
+PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
 #
 PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
 PUBLISHED_UNIQUE_TITLES="$BASE/uniqTitles.txt"
@@ -247,7 +247,7 @@ ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
 ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
 ALL_TXT="$UNIQUE_TITLES $UNIQUE_PERSONS"
 ALL_CSV="$RAW_SHOWS $RAW_PERSONS $UNSORTED_CREDITS $UNSORTED_EPISODES"
-ALL_SPREADSHEETS="$SHOWS $PERSONS $CREDITS_SHOW $CREDITS_PERSON $ASSOCIATED_NAMES $ASSOCIATED_TITLES"
+ALL_SPREADSHEETS="$SHOWS $KNOWN_PERSONS $CREDITS_SHOW $CREDITS_PERSON $LINKS_TO_PERSONS $ASSOCIATED_TITLES"
 
 # Cleanup any possible leftover files
 rm -f $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
@@ -340,16 +340,16 @@ rg -wNz -f $NCONST_LIST name.basics.tsv.gz | perl -p -e 's+\\N++g;' | cut -f 1-2
 # Get rid of ugly \N fields, unneeded characters, and make sure commas are followed by spaces
 perl -pi -e 's+\\N++g; tr+"[]++d; s+,+, +g; s+,  +, +g;' $ALL_CSV
 
-# Create the PERSONS spreadsheet
+# Create the KNOWN_PERSONS spreadsheet
 printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tKnown For Titles: 4\n" \
-    >$PERSONS
-cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' >>$PERSONS
+    >$KNOWN_PERSONS
+cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' >>$KNOWN_PERSONS
 
-# Create the ASSOCIATED_NAMES spreadsheet
-printf "nconst\tName\tHyperlink to Name\n" >$ASSOCIATED_NAMES
+# Create the LINKS_TO_PERSONS spreadsheet
+printf "nconst\tName\tHyperlink to Name\n" >$LINKS_TO_PERSONS
 cut -f 1,2 $RAW_PERSONS | perl -F"\t" -lane \
     'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/name/@F[0]\";\"@F[1]\")";' |
-    sort -fu --field-separator="$TAB" --key=2,2 >>$ASSOCIATED_NAMES
+    sort -fu --field-separator="$TAB" --key=2,2 >>$LINKS_TO_PERSONS
 
 # Create a tconst list of the knownForTitles
 cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' | sort -u >$KNOWNFOR_LIST
@@ -373,8 +373,8 @@ perl -pi -f $TCONST_SHOWS_PL $UNSORTED_CREDITS
 perl -pi -f $TCONST_EPISODES_PL $UNSORTED_CREDITS
 perl -pi -f $TCONST_EPISODE_NAMES_PL $UNSORTED_CREDITS
 perl -pi -f $NCONST_PL $UNSORTED_CREDITS
-perl -pi -f $TCONST_KNOWN_PL $PERSONS
-perl -pi -f $NCONST_PL $PERSONS
+perl -pi -f $TCONST_KNOWN_PL $KNOWN_PERSONS
+perl -pi -f $NCONST_PL $KNOWN_PERSONS
 
 # Create UNIQUE_PERSONS
 cut -f 2 $RAW_PERSONS | sort -fu >$UNIQUE_PERSONS
@@ -428,9 +428,9 @@ printAdjustedFileInfo $UNIQUE_TITLES 0
 printAdjustedFileInfo $SHOWS 1
 # printAdjustedFileInfo $NCONST_LIST 0
 printAdjustedFileInfo $UNIQUE_PERSONS 0
-printAdjustedFileInfo $ASSOCIATED_NAMES 1
+printAdjustedFileInfo $LINKS_TO_PERSONS 1
 # printAdjustedFileInfo $RAW_PERSONS 0
-printAdjustedFileInfo $PERSONS 1
+printAdjustedFileInfo $KNOWN_PERSONS 1
 printAdjustedFileInfo $CREDITS_SHOW 1
 printAdjustedFileInfo $CREDITS_PERSON 1
 printAdjustedFileInfo $ASSOCIATED_TITLES 1
@@ -486,7 +486,7 @@ $(checkdiffs $PUBLISHED_UNIQUE_PERSONS $UNIQUE_PERSONS)
 $(checkdiffs $PUBLISHED_RAW_PERSONS $RAW_PERSONS)
 $(checkdiffs $PUBLISHED_RAW_SHOWS $RAW_SHOWS)
 $(checkdiffs $PUBLISHED_SHOWS $SHOWS)
-$(checkdiffs $PUBLISHED_PERSONS $PERSONS)
+$(checkdiffs $PUBLISHED_KNOWN_PERSONS $KNOWN_PERSONS)
 $(checkdiffs $PUBLISHED_CREDITS_SHOW $CREDITS_SHOW)
 $(checkdiffs $PUBLISHED_CREDITS_PERSON $CREDITS_PERSON)
 $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES $ASSOCIATED_TITLES)
