@@ -2,16 +2,23 @@
 
 Command line utilities to quickly cross-reference and query shows, actors, and the characters they portray using data downloaded from IMDb.
 
+<!--- Uncomment thes lined before committimg
 [![MIT License](https://img.shields.io/github/license/Monty/IMDb_xref)](LICENSE)
 [![Code](https://tokei.rs/b1/github/Monty/IMDb_xref?category=code)](https://github.com/Monty/IMDb_xref)
 [![Lines](https://tokei.rs/b1/github/Monty/IMDb_xref?category=lines)](https://github.com/Monty/IMDb_xref)
 [![Files](https://tokei.rs/b1/github/Monty/IMDb_xref?category=files)](https://github.com/Monty/IMDb_xref)
 [![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main/)](https://github.com/Monty/IMDb_xref)
 [![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/IMDb_xref)
+--->
 
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Generate initial data](#generate-initial-data)
+  - [Generate more data](#generate-more-data)
+  - [Run simple queries](#run-simple-queries)
+  - [Generate your own data](#generate-your-own-data)
+- [Performance](#performance)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -56,7 +63,7 @@ Tested on macOS and Linux. May work in Windows 10 if [Windows Subsystem for Linu
 
 ### Install prerequisites
 
-Install **ripgrep** to get acceptable performance because searching 700 MB of
+Install **ripgrep** to get acceptable performance. Searching 700 MB of
 compressed data with zgrep is 15x slower. See
 [https://crates.io/crates/ripgrep](https://crates.io/crates/ripgrep). (*If
 anyone wants to rewrite this to use zgrep or another search engine, be my
@@ -76,12 +83,12 @@ cd IMDb_xref
 
 ## Usage
 
-### Generate some data
+### Generate initial data
 
 Run **./generateXrefData.sh** to download the IMDb data files and generate lists
 and spreadsheets containing cast members, characters portrayed, alternate
-titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac
-(*Note: I have a fast internet connection.*)
+titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac.
+(*Note: Longer if you have a slow internet connection.*)
 
 <details><summary><b>Show output</b></summary>
 
@@ -154,22 +161,79 @@ produced earlier that day but not those from any previous day.
                13 as director
     
     ==> Stats from processing IMDb data:
-    uniqTitles-201201.txt                           50B   Dec 1 15:09        3 lines
-    Shows-Episodes-201201.csv                      6.3K   Dec 1 15:10       95 lines
-    uniqPersons-201201.txt                         1.3K   Dec 1 15:10       90 lines
-    Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:10       90 lines
-    Credits-Show-201201.csv                         45K   Dec 1 15:10      704 lines
-    Credits-Person-201201.csv                       45K   Dec 1 15:10      704 lines
-    associatedTitles-201201.csv                     26K   Dec 1 15:10      282 lines
+    uniqTitles-201201.txt                           50B   Dec 1 15:11        3 lines
+    Shows-Episodes-201201.csv                      6.3K   Dec 1 15:12       95 lines
+    uniqPersons-201201.txt                         1.3K   Dec 1 15:12       90 lines
+    Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:12       90 lines
+    Credits-Show-201201.csv                         45K   Dec 1 15:12      704 lines
+    Credits-Person-201201.csv                       45K   Dec 1 15:12      704 lines
+    associatedTitles-201201.csv                     26K   Dec 1 15:12      282 lines
 </details>
+
+### Run simple queries
+
+Run **./xrefCast.sh -h** (help) to see some example queries.
+
+<details><summary><b>Show output</b></summary>
+
+    $ ./xrefCast.sh -h
+    Cross-reference shows, actors, and the characters they portray using data from IMDB.
+    
+    USAGE:
+        ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] SEARCH_TERM [SEARCH_TERM ...]
+    
+    OPTIONS:
+        -h      Print this message.
+        -a      All -- Only print 'All names' section.
+        -f      File -- Query a specific file rather than "Credits-Person*csv".
+        -s      Summarize -- Only print 'Duplicated names' section.
+        -i      Print info about any files that are searched.
+    
+    EXAMPLES:
+        ./xrefCast.sh Searching for
+        ./xrefCast.sh 'Queen Elizabeth II' 'Princess Diana'
+        ./xrefCast.sh 'The Crown'
+        ./xrefCast.sh -s 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
+</details>
+
+Run **./demo.sh** to see the information returned from these queries and more.
+
+#### Understanding query results
+The results always incude a "Searching for:" section. If you get unexpected results
+in a complex query, check it to see if you mistyped a search term. Search terms 
+that have more than one word need to be quoted, *e.g.* either 'Princess Diana' or "'Princess Diana".
+
+If you didn't use the "-a" (summarize) switch, results will include an "All names" section. It contains all rows with a match for any term. It can be quite long for complex queries.
+
+If you didn't use the "-a" (all) switch, results will include a "Duplicated names" section. It contains only rows where one name appears in more than one show. It can be empty.
+
+Running the example queries and others with and without those two switches will give you ann understanding of when they are useful
+
+#### Make up your own queries
+
+Experiment. The results from one query may reveal information that leads to further queries. For example, `./xrefCast actor actress` will list all actors and actress, and "Duplicated names" will contain only people who apeared in more than one show. (*Use "-s" to skip the longer list.*)
+
+***Protip***: Create a more flexible **xref** command that can be run from any directory by typing:
+
+```
+alias xref="${PWD}/xrefCast.sh \\"\\$@\\""
+```
+
+while in this directory. Then you can type `xref 'Princess Diana'` instead of
+`./xrefCast.sh 'Princess Diana'`. We'll use **xref** in the remaining examples.
+
+(*Note: Make this command permanent by adding the results of `alias xref` to the file used to store other aliases.*)
+
+### Generate more data
 
 Since **./generateXrefData.sh** displays statistics as it runs, you probably
 noticed that it only produced data on 3 shows with 92 episodes -- crediting 90
-people with 704 lines of credits.
+people with 704 lines of credits. It did so by selecting three PBS shows from
+example.tconst and creating the example files PBS.tconst and PBS.xlate.
 
-If you run **./generateXrefData.sh -td**, you'll get 98 shows with 2159 episodes
+If you run **./generateXrefData.sh -td**, it will use all the shows in example.tconst. You'll now have data on 98 shows with 2159 episodes
 -- crediting 3605 people with 17276 lines of credits. Running this takes about
-45 seconds. However, queries should still take less than one second.
+45 seconds. However, queries should still take less than one second. (*Note: -t selects example.tconst, -d saves the results in test_results.*)
 
 <details><summary><b>Show output</b></summary>
 
@@ -230,57 +294,83 @@ If you run **./generateXrefData.sh -td**, you'll get 98 shows with 2159 episodes
     associatedTitles-201201.csv                    694K   Dec 4 15:03     7378 lines
 </details>
 
+
+### Generate your own data
+
+IMDb_xref data is generated from tconst lists. *What is a tconst?* A tconst is a unique ID that IMDb assigns to each movie, TV series or episode, etc. A simple tconst list would look like this: 
+
+```
+tt4786824
+tt5014882
+tt1399664
+```
+Searching for any of those tconsts on IMDb.com will find a specific show, *e.g.* tt4786824 is the page for "The Crown": [https://www.imdb.com/title/tt4786824/](https://www.imdb.com/title/tt4786824/). 
+
+You can generate your own data by using one or more of the .tconst files in the
+Contrib directory or creating your own .tconst file. You can even translate
+non-English titles to their English equivalents by using a .xlate file.
+The default for **./generateXrefData.sh** is to use all .tconst and all .xlate
+files in the top level directory. So put whatever files you want there.  
+
 Data can grow quite large. If you use all the files in /Contrib, you'll generate
 over 7.5 MB of data, including two 46,000 line Credits spreadsheets.
 
-### Run some queries
+#### How do I make a tconst list of shows I like?
 
-Run **./xrefCast.sh -h** to see some example queries. Experiment making up other
-queries. One may lead to another...
+(*Your contributions are welcome. Start your own lists: broad genres such as Comedies,
+Sci-Fi, Musicals, Historical Dramas - or more specific lists like "All Alfred Hitchcock movies", "TV shows with Robots", or "shows with Salsa music.*)
 
-<details><summary><b>Show output</b></summary>
-
-    $ ./xrefCast.sh -h
-    Cross-reference shows, actors, and the characters they portray using data from IMDB.
-    
-    USAGE:
-        ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] SEARCH_TERM [SEARCH_TERM ...]
-    
-    OPTIONS:
-        -h      Print this message.
-        -a      All -- Only print 'All names' section.
-        -f      File -- Query a specific file rather than "Credits-Person*csv".
-        -s      Summarize -- Only print 'Duplicated names' section.
-        -i      Print info about any files that are searched.
-    
-    EXAMPLES:
-        ./xrefCast.sh 'Olivia Colman'
-        ./xrefCast.sh 'Queen Elizabeth II' 'Princess Diana'
-        ./xrefCast.sh 'The Crown'
-        ./xrefCast.sh -s 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
-</details>
-
-Run **./demo.sh** to see the information returned from these queries and more.
-Each query should take less than one second.
-
-***Protip***: typing **alias xr="${PWD}/xrefCast.sh \\"\\$@\\""** while in this
-directory will allow you to type **xr 'Princess Diana'** instead of
-**./xrefCast.sh 'Princess Diana'** -- and, **xr** can be run from anywhere.
-
-### Go further
-
-You can select different shows by using one or more of the .tconst files in the
-Contrib directory or creating your own .tconst file. You can even translate
-non-English titles to their English equivalents by using a .xlate file.
-
-The default for **./generateXrefData.sh** is to use all .tconst and all .xlate
-files in the top level directory. So put whatever files you want there.  (*Your
-contributions are welcome. Start your own lists: broad genres such as Comedies,
-Sci-Fi, Musicals, Historical Dramas - or more specific lists like "TV shows with
-Robots")
+IMDb_xref data is generated from lists of tconsts. The default is to use all .tconst files in the top level directory. Put whatever tconst files you want there. 
 
 Until I find time to produce more documentation, you can learn a lot from the
 descriptive comments in the shell scripts and *.example files.
+
+## Performance
+
+Even complex queries on 14MB of data run in less than 100ms on my 2014 iMac, 25ms on my 2019 MacBook Pro with an internal SSD.
+There is almost no difference between using gzipped data and non-gzipped data. 
+
+<details><summary><b>Show comparative benchmarks</b></summary>
+
+Timing results for running 5 queries on gzipped and non-gzipped files.
+Both contain 219510 rows. The gzipped file is 3.0MB, the non-gzipped file is 14MB.
+The times are nearly identical, with a very slight edge to the gzipped version.
+
+#### On a 2014 iMac with internal hard drive:
+
+```
+$ hyperfine -w 5 './xrefTest.sh -f ZipTest.csv' './xrefTest.sh -f ZipTest.csv.gz'
+Benchmark #1: ./xrefTest.sh -f ZipTest.csv
+  Time (mean ± σ):      95.2 ms ±   0.9 ms    [User: 28.3 ms, System: 46.2 ms]
+  Range (min … max):    92.9 ms …  97.2 ms    30 runs
+
+Benchmark #2: ./xrefTest.sh -f ZipTest.csv.gz
+  Time (mean ± σ):      94.9 ms ±   1.0 ms    [User: 28.4 ms, System: 45.7 ms]
+  Range (min … max):    92.9 ms …  97.9 ms    30 runs
+
+Summary
+  './xrefTest.sh -f ZipTest.csv.gz' ran
+    1.00 ± 0.01 times faster than './xrefTest.sh -f ZipTest.csv'
+```
+
+
+#### On a 2019 MacBook Pro with an internal SSD.
+
+```
+$ hyperfine -w 5 './xrefTest.sh -f ZipTest.csv' './xrefTest.sh -f ZipTest.csv.gz'
+Benchmark #1: ./xrefTest.sh -f ZipTest.csv
+  Time (mean ± σ):      17.0 ms ±   1.0 ms    [User: 6.0 ms, System: 8.8 ms]
+  Range (min … max):    16.1 ms …  23.0 ms    155 runs
+
+Benchmark #2: ./xrefTest.sh -f ZipTest.csv.gz
+  Time (mean ± σ):      16.8 ms ±   0.7 ms    [User: 5.9 ms, System: 8.7 ms]
+  Range (min … max):    16.1 ms …  20.7 ms    155 runs
+
+Summary
+  './xrefTest.sh -f ZipTest.csv.gz' ran
+    1.01 ± 0.07 times faster than './xrefTest.sh -f ZipTest.csv'
+```
+</details>
 
 ## Contributing
 
