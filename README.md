@@ -338,6 +338,9 @@ as fast.
 
 #### How do I make a tconst list of shows I like?
 
+A straightforward but manual method is to copy the tconst from a URL you visit on IMDb.
+![tconst in IMDb URL](docs/Screenshots/IMDb_tconst.png)
+
 (*Your contributions are welcome. Start your own lists: broad genres such as
 Comedies, Sci-Fi, Musicals, Historical Dramas -- or more specific lists like "All
 Alfred Hitchcock movies", "TV shows with Robots", or "shows with Salsa music.*)
