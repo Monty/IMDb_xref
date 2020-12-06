@@ -126,13 +126,14 @@ titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac.
     
     ==> Stats from processing IMDb data:
     uniqTitles-201201.txt                           50B   Dec 1 15:09        3 lines
+    LinksToTitles-201201.csv                       329B   Dec 1 15:10        3 lines
     Shows-Episodes-201201.csv                      6.3K   Dec 1 15:10       95 lines
     uniqPersons-201201.txt                         1.3K   Dec 1 15:10       90 lines
     LinksToPersons-201205.csv                      8.0K   Dec 1 15:10       90 lines
     Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:10       90 lines
+    AssociatedTitles-201201.csv                     26K   Dec 1 15:10      282 lines
     Credits-Show-201201.csv                         45K   Dec 1 15:10      704 lines
     Credits-Person-201201.csv                       45K   Dec 1 15:10      704 lines
-    AssociatedTitles-201201.csv                     26K   Dec 1 15:10      282 lines
 </details>
 
 Re-running **./generateXrefData.sh** doesn't download the IMDb data files again.
@@ -165,13 +166,14 @@ produced earlier that day but not those from any previous day.
     
     ==> Stats from processing IMDb data:
     uniqTitles-201201.txt                           50B   Dec 1 15:11        3 lines
+    LinksToTitles-201201.csv                       329B   Dec 1 15:12        3 lines
     Shows-Episodes-201201.csv                      6.3K   Dec 1 15:12       95 lines
     uniqPersons-201201.txt                         1.3K   Dec 1 15:12       90 lines
     LinksToPersons-201205.csv                      8.0K   Dec 1 15:12       90 lines
     Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:12       90 lines
+    AssociatedTitles-201201.csv                     26K   Dec 1 15:12      282 lines
     Credits-Show-201201.csv                         45K   Dec 1 15:12      704 lines
     Credits-Person-201201.csv                       45K   Dec 1 15:12      704 lines
-    AssociatedTitles-201201.csv                     26K   Dec 1 15:12      282 lines
 </details>
 
 ### Run sample queries
@@ -300,14 +302,15 @@ queries should still take less than one second. (*Note: -t selects example.tcons
               428 as director
     
     ==> Stats from processing IMDb data:
-    uniqTitles-201201.txt                          1.5K   Dec 4 15:03       98 lines
-    Shows-Episodes-201201.csv                      161K   Dec 4 15:04     2257 lines
-    uniqPersons-201201.txt                          52K   Dec 4 15:04     3605 lines
-    LinksToPersons-201205.csv                      322K   Dec 4 15:04     3605 lines
-    Persons-KnownFor-201201.csv                    277K   Dec 4 15:04     3612 lines
-    Credits-Show-201201.csv                        1.1M   Dec 4 15:04    17226 lines
-    Credits-Person-201201.csv                      1.1M   Dec 4 15:04    17226 lines
-    AssociatedTitles-201201.csv                    694K   Dec 4 15:04     7378 lines
+    uniqTitles-201201.txt                          1.5K   Dec 4 10:11       98 lines
+    LinksToTitles-201201.csv                       9.2K   Dec 4 10:11       98 lines
+    Shows-Episodes-201201.csv                      161K   Dec 4 10:11     2257 lines
+    uniqPersons-201201.txt                          52K   Dec 4 10:11     3605 lines
+    LinksToPersons-201201.csv                      322K   Dec 4 10:11     3605 lines
+    Persons-KnownFor-201201.csv                    277K   Dec 4 10:11     3612 lines
+    AssociatedTitles-201201.csv                    694K   Dec 4 10:11     7378 lines
+    Credits-Show-201201.csv                        1.1M   Dec 4 10:11    17226 lines
+    Credits-Person-201201.csv                      1.1M   Dec 4 10:11    17226 lines
 </details>
 
 

@@ -191,6 +191,7 @@ CREDITS_PERSON="Credits-Person$DATE_ID.csv"
 KNOWN_PERSONS="Persons-KnownFor$DATE_ID.csv"
 SHOWS="Shows-Episodes$DATE_ID.csv"
 LINKS_TO_PERSONS="LinksToPersons$DATE_ID.csv"
+LINKS_TO_TITLES="LinksToTitles$DATE_ID.csv"
 ASSOCIATED_TITLES="AssociatedTitles$DATE_ID.csv"
 
 # Final output lists
@@ -229,6 +230,7 @@ PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
 PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
 PUBLISHED_LINKS_TO_PERSONS="$BASE/LinksToPersons.csv"
+PUBLISHED_LINKS_TO_TITLES="$BASE/LinksToTitles.csv"
 PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
 #
 PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
@@ -246,8 +248,9 @@ ALL_WORKING="$CONFLICTS $DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST "
 ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
 ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
 ALL_TXT="$UNIQUE_TITLES $UNIQUE_PERSONS"
-ALL_CSV="$RAW_SHOWS $RAW_PERSONS $UNSORTED_CREDITS $UNSORTED_EPISODES"
-ALL_SPREADSHEETS="$SHOWS $KNOWN_PERSONS $CREDITS_SHOW $CREDITS_PERSON $LINKS_TO_PERSONS $ASSOCIATED_TITLES"
+ALL_CSV="$RAW_SHOWS $RAW_PERSONS $UNSORTED_EPISODES $UNSORTED_CREDITS"
+ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS $ASSOCIATED_TITLES "
+ALL_SPREADSHEETS+="$CREDITS_SHOW $CREDITS_PERSON "
 
 # Cleanup any possible leftover files
 rm -f $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
@@ -358,6 +361,12 @@ cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' | sort -u >$KNOWNFOR_L
 rg -wNz -f $KNOWNFOR_LIST title.basics.tsv.gz | perl -p -f $XLATE_PL | cut -f 1,3 |
     perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >$TCONST_KNOWN_PL
 
+# Create the LINKS_TO_TITLES spreadsheet
+printf "tconst\tShow Title\tHyperlink to Title\n" >$LINKS_TO_TITLES
+perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_SHOWS_PL | perl -F"\t" -lane \
+    'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
+    sort -fu --field-separator="$TAB" --key=2,2 >>$LINKS_TO_TITLES
+
 # Create a spreadsheet of associated titles gained from IMDb knownFor data
 printf "tconst\tShow Title\tHyperlink to Title\n" >$ASSOCIATED_TITLES
 perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL | perl -F"\t" -lane \
@@ -423,6 +432,7 @@ done
 # Output some stats, adjust by 1 if header line is included.
 printf "\n==> Stats from processing IMDb data:\n"
 printAdjustedFileInfo $UNIQUE_TITLES 0
+printAdjustedFileInfo $LINKS_TO_TITLES 1
 # printAdjustedFileInfo $TCONST_LIST 0
 # printAdjustedFileInfo $RAW_SHOWS 0
 printAdjustedFileInfo $SHOWS 1
@@ -431,9 +441,9 @@ printAdjustedFileInfo $UNIQUE_PERSONS 0
 printAdjustedFileInfo $LINKS_TO_PERSONS 1
 # printAdjustedFileInfo $RAW_PERSONS 0
 printAdjustedFileInfo $KNOWN_PERSONS 1
+printAdjustedFileInfo $ASSOCIATED_TITLES 1
 printAdjustedFileInfo $CREDITS_SHOW 1
 printAdjustedFileInfo $CREDITS_PERSON 1
-printAdjustedFileInfo $ASSOCIATED_TITLES 1
 # printAdjustedFileInfo $KNOWNFOR_LIST 0
 
 # Skip diff output if requested

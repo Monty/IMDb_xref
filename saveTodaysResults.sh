@@ -52,4 +52,5 @@ cp -p $VERBOSE Credits-Show-$DATE.csv $BASE/Credits-Show.csv
 cp -p $VERBOSE Credits-Person-$DATE.csv $BASE/Credits-Person.csv
 cp -p $VERBOSE Persons-KnownFor-$DATE.csv $BASE/Persons-KnownFor.csv
 cp -p $VERBOSE LinksToPersons-$DATE.csv $BASE/LinksToPersons.csv
+cp -p $VERBOSE LinksToTitles-$DATE.csv $BASE/LinksToTitles.csv
 cp -p $VERBOSE AssociatedTitles-$DATE.csv $BASE/AssociatedTitles.csv
