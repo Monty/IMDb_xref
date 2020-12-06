@@ -15,8 +15,10 @@ Command line utilities to quickly cross-reference and query shows, actors, and t
 - [Installation](#installation)
 - [Usage](#usage)
   - [Generate initial data](#generate-initial-data)
-  - [Generate more data](#generate-more-data)
-  - [Run simple queries](#run-simple-queries)
+  - [Run sample queries](#run-sample-queries)
+     - [Understanding query results](#understanding-query-results)
+     - [Make up your own queries](#make-up-your-own-queries)
+  - [Generate additional data](#generate-additional-data)
   - [Generate your own data](#generate-your-own-data)
 - [Performance](#performance)
 - [Contributing](#contributing)
@@ -170,7 +172,7 @@ produced earlier that day but not those from any previous day.
     associatedTitles-201201.csv                     26K   Dec 1 15:12      282 lines
 </details>
 
-### Run simple queries
+### Run sample queries
 
 Run **./xrefCast.sh -h** (help) to see some example queries.
 
@@ -224,7 +226,7 @@ while in this directory. Then you can type `xref 'Princess Diana'` instead of
 
 (*Note: Make this command permanent by adding the results of `alias xref` to the file used to store other aliases.*)
 
-### Generate more data
+### Generate additional data
 
 Since **./generateXrefData.sh** displays statistics as it runs, you probably
 noticed that it only produced data on 3 shows with 92 episodes -- crediting 90
