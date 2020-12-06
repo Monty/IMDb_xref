@@ -190,6 +190,7 @@ CREDITS_SHOW="Credits-Show$DATE_ID.csv"
 CREDITS_PERSON="Credits-Person$DATE_ID.csv"
 PERSONS="Persons-KnownFor$DATE_ID.csv"
 SHOWS="Shows-Episodes$DATE_ID.csv"
+ASSOCIATED_NAMES="associatedNames$DATE_ID.csv"
 ASSOCIATED_TITLES="associatedTitles$DATE_ID.csv"
 
 # Final output lists
@@ -227,6 +228,7 @@ PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
 PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
 PUBLISHED_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
+PUBLISHED_ASSOCIATED_NAMES="$BASE/associatedNames.csv"
 PUBLISHED_ASSOCIATED_TITLES="$BASE/associatedTitles.csv"
 #
 PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
@@ -245,7 +247,7 @@ ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
 ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
 ALL_TXT="$UNIQUE_TITLES $UNIQUE_PERSONS"
 ALL_CSV="$RAW_SHOWS $RAW_PERSONS $UNSORTED_CREDITS $UNSORTED_EPISODES"
-ALL_SPREADSHEETS="$SHOWS $PERSONS $CREDITS_SHOW $CREDITS_PERSON $ASSOCIATED_TITLES"
+ALL_SPREADSHEETS="$SHOWS $PERSONS $CREDITS_SHOW $CREDITS_PERSON $ASSOCIATED_NAMES $ASSOCIATED_TITLES"
 
 # Cleanup any possible leftover files
 rm -f $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
@@ -343,6 +345,12 @@ printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tK
     >$PERSONS
 cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' >>$PERSONS
 
+# Create the ASSOCIATED_NAMES spreadsheet
+printf "nconst\tName\tHyperlink to Name\n" >$ASSOCIATED_NAMES
+cut -f 1,2 $RAW_PERSONS | perl -F"\t" -lane \
+    'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/name/@F[0]\";\"@F[1]\")";' |
+    sort -fu --field-separator="$TAB" --key=2,2 >>$ASSOCIATED_NAMES
+
 # Create a tconst list of the knownForTitles
 cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' | sort -u >$KNOWNFOR_LIST
 
@@ -420,6 +428,7 @@ printAdjustedFileInfo $UNIQUE_TITLES 0
 printAdjustedFileInfo $SHOWS 1
 # printAdjustedFileInfo $NCONST_LIST 0
 printAdjustedFileInfo $UNIQUE_PERSONS 0
+printAdjustedFileInfo $ASSOCIATED_NAMES 1
 # printAdjustedFileInfo $RAW_PERSONS 0
 printAdjustedFileInfo $PERSONS 1
 printAdjustedFileInfo $CREDITS_SHOW 1
