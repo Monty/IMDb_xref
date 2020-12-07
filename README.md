@@ -231,7 +231,7 @@ and "Duplicated names" will contain only people who appeared in more than one sh
 ***Protip***: Create a more flexible **xref** command that can be run from any
 directory by typing:
 
-```
+```sh
 alias xref="${PWD}/xrefCast.sh \\"\\$@\\""
 ```
 
