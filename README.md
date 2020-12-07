@@ -382,10 +382,12 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -i      In place -- overwrite original file
+    -y      Yes -- skip asking "OK to overwrite...
 
 EXAMPLES:
     ./augment_tconstFiles.sh Contrib/OPB.tconst
     ./augment_tconstFiles.sh -i Contrib/*.tconst
+    ./augment_tconstFiles.sh -iy Contrib/*.tconst
 ```
 </details>
 

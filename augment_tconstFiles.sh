@@ -24,10 +24,12 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -i      In place -- overwrite original file
+    -y      Yes -- skip asking "OK to overwrite...
 
 EXAMPLES:
     ./augment_tconstFiles.sh Contrib/OPB.tconst
     ./augment_tconstFiles.sh -i Contrib/*.tconst
+    ./augment_tconstFiles.sh -iy Contrib/*.tconst
 
 EOF
 }
@@ -39,7 +41,7 @@ cd $DIRNAME
 # Make sort consistent between Mac and Linux
 export LC_COLLATE="C"
 
-while getopts ":hi" opt; do
+while getopts ":hiy" opt; do
     case $opt in
     h)
         help
@@ -47,6 +49,9 @@ while getopts ":hi" opt; do
         ;;
     i)
         INPLACE="yes"
+        ;;
+    y)
+        SKIP="yes"
         ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
@@ -92,9 +97,13 @@ for file in "$@"; do
 
     # Either overwrite or print on stdout
     if [ -n "$INPLACE" ]; then
-        read -r -p "OK to overwrite $file? [y/N] " YESNO
-        if [ "$YESNO" == "y" ]; then
+        if [ -n "$SKIP" ]; then
             cp $RESULT $file
+        else
+            read -r -p "OK to overwrite $file? [y/N] " YESNO
+            if [ "$YESNO" == "y" ]; then
+                cp $RESULT $file
+            fi
         fi
     else
         cat $RESULT
