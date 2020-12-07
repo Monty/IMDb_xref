@@ -338,20 +338,18 @@ tt4786824 is the page for "The Crown":
 You can generate your own data by using one or more of the .tconst files in the
 Contrib directory or creating your own .tconst file. You can even translate
 non-English titles to their English equivalents by using a .xlate file.
-The default for **./generateXrefData.sh** is to use all .tconst and all .xlate
-files in the top level directory. So put whatever files you want there.  
 
 Data can grow quite large. If you use all the files in /Contrib, you'll generate
-over 7.5 MB of data, including two 46,000 line Credits spreadsheets. 
+over 7.5 MB of data, including two 46,000 line Credits spreadsheets.
 
-Large data files don't affect query speeds, they just consume more disk space. 
+Large data files don't affect query speeds, they only consume more disk space.
 Just gzip the files if you need to minimize space -- queries will still run
 as fast.
 
 #### How do I make a tconst list of shows I like?
 
 A straightforward but manual method is to copy the tconst from a URL you visit on IMDb.
-![tconst in IMDb URL](docs/Screenshots/IMDb_tconst.png) 
+![tconst in IMDb URL](docs/Screenshots/IMDb_tconst.png).
 
 That's useful if you want only shows you've watched -- just add a new tconst
 whenever you watch a new show.  **./generateXrefData.sh** will automatically
@@ -392,8 +390,9 @@ EXAMPLES:
 </details>
 
 Another strategy is to copy one or more of the tconst files in the Contrib
-directory, editing if necessary. The default is to process all .tconst files in
-the top level directory. Put whatever tconst files you want there.
+directory, editing if necessary.  The default for **./generateXrefData.sh** is
+to use all .tconst and all .xlate files in the top level directory. So put
+whatever files you want there.
 
 You could even get ideas from one of the spreadsheets we generate. They are in
 .csv format so you can open them with any spreadsheet program or text editor. If
