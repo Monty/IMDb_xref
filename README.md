@@ -17,7 +17,7 @@ Command line utilities to quickly cross-reference and query shows, actors, and t
      - [Understanding query results](#understanding-query-results)
   - [Make your own queries](#make-your-own-queries)
   - [Generate additional data](#generate-additional-data)
-  - [Generate your own data](#generate-your-own-data)
+  - [Create your own data](#create-your-own-data)
 - [Performance](#performance)
 - [Contributing](#contributing)
 - [License](#license)
@@ -320,7 +320,7 @@ queries should still take less than one second. (*Note: -t selects example.tcons
 </details>
 
 
-### Generate your own data
+### Create your own data
 
 IMDb_xref data is generated from tconst lists. *What is a tconst?* A tconst is a
 unique ID that IMDb assigns to each movie, TV series or episode, etc. A simple tconst
