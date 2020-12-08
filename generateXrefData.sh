@@ -24,6 +24,31 @@
 #
 #       Defaults to all .xlate files, or specify one with -x [file] on the command line
 
+# Keep track of elapsed time
+SECONDS=0
+scriptName="$(basename $0)"
+savedFile=".durations"
+
+# Save or update the elapsed time and exit
+function saveDuration() {
+    tm=$1
+    mins="minute"
+    touch $savedFile
+    #
+    [[ $tm -ge 120 ]] && mins="minutes"
+    if [[ $tm -gt 90 ]]; then
+        duration="$scriptName\t$(date +%c) \t$((tm / 60)) $mins and $((TM % 60)) seconds"
+    else
+        duration="$scriptName\t$(date +%c) \t$((tm)) seconds"
+    fi
+    if [ $(rg -c "^$scriptName\t" $savedFile) ]; then
+        perl -i -p -e "s/$scriptName.*/$duration/" $savedFile
+    else
+        printf "$duration\n" >>$savedFile
+    fi
+    exit
+}
+
 function help() {
     cat <<EOF
 Create lists and spreadsheets of shows, actors, and the characters they portray from
@@ -298,6 +323,12 @@ num_titles=$(sed -n '$=' $UNIQUE_TITLES)
 printf "\n==> Processing $num_titles shows found in $TCONST_FILES:\n"
 perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
 
+# Let us know how long it took last time
+if [ $(rg -c "^$scriptName\t" $savedFile) ]; then
+    printf "\n==> Previously, this took "
+    rg "^$scriptName\t" $savedFile | cut -f 3
+fi
+
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
 rg -wNz -f $TCONST_LIST title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
     sort -f --field-separator="$TAB" --key=2,2 --key=3,3n --key=4,4n | rg -wv -f $SKIP_TCONST |
@@ -447,7 +478,7 @@ printAdjustedFileInfo $CREDITS_PERSON 1
 # printAdjustedFileInfo $KNOWNFOR_LIST 0
 
 # Skip diff output if requested
-[ -z "$CREATE_DIFF" ] && exit
+[ -z "$CREATE_DIFF" ] && saveDuration $SECONDS
 
 # Shortcut for checking differences between two files.
 # checkdiffs basefile newfile
@@ -507,4 +538,4 @@ $(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
 
 EOF
 
-exit
+saveDuration $SECONDS
