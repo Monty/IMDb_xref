@@ -379,10 +379,12 @@ rg -wNz -f $NCONST_LIST name.basics.tsv.gz | perl -p -e 's+\\N++g;' | cut -f 1-2
 # Get rid of ugly \N fields, unneeded characters, and make sure commas are followed by spaces
 perl -pi -e 's+\\N++g; tr+"[]++d; s+,+, +g; s+,  +, +g;' $ALL_CSV
 
-# Create the KNOWN_PERSONS spreadsheet
+# Create the KNOWN_PERSONS spreadsheet, ensure always 5 fields
 printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tKnown For Titles: 4\n" \
     >$KNOWN_PERSONS
-cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' >>$KNOWN_PERSONS
+cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' |
+    perl -F"\t" -lane 'printf "%s\t%s\t%s\t%s\t%s\n", @F[0,1,2,3,4]' >>$KNOWN_PERSONS
+breakpoint
 
 # Create the LINKS_TO_PERSONS spreadsheet
 printf "nconst\tName\tHyperlink to Name\n" >$LINKS_TO_PERSONS
@@ -392,10 +394,12 @@ cut -f 1,2 $RAW_PERSONS | perl -F"\t" -lane \
 
 # Create a tconst list of the knownForTitles
 cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' | sort -u >$KNOWNFOR_LIST
+breakpoint
 
 # Create a perl script to globally convert a known show tconst to a show title
 rg -wNz -f $KNOWNFOR_LIST title.basics.tsv.gz | perl -p -f $XLATE_PL | cut -f 1,3 |
     perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >$TCONST_KNOWN_PL
+breakpoint
 
 # Create the LINKS_TO_TITLES spreadsheet
 printf "tconst\tShow Title\tHyperlink to Title\n" >$LINKS_TO_TITLES
@@ -408,6 +412,7 @@ printf "tconst\tShow Title\tHyperlink to Title\n" >$ASSOCIATED_TITLES
 perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL | perl -F"\t" -lane \
     'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
     sort -fu --field-separator="$TAB" --key=2,2 | rg -wv -f $TCONST_LIST >>$ASSOCIATED_TITLES
+breakpoint
 
 # Add episodes into raw shows
 perl -p -f $TCONST_EPISODES_PL $RAW_EPISODES >>$RAW_SHOWS
