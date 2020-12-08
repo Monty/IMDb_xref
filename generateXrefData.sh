@@ -28,12 +28,12 @@
 SECONDS=0
 scriptName="$(basename $0)"
 savedFile=".durations"
+touch $savedFile
 
 # Save or update the elapsed time and exit
 function saveDuration() {
     tm=$1
     mins="minute"
-    touch $savedFile
     #
     [[ $tm -ge 120 ]] && mins="minutes"
     if [[ $tm -gt 90 ]]; then
@@ -42,7 +42,7 @@ function saveDuration() {
         duration="$scriptName\t$(date +%c) \t$((tm)) seconds"
     fi
     if [ $(rg -c "^$scriptName\t" $savedFile) ]; then
-        perl -i -p -e "s/$scriptName.*/$duration/" $savedFile
+        perl -pi -e "s/$scriptName.*/$duration/" $savedFile
     else
         printf "$duration\n" >>$savedFile
     fi
@@ -62,6 +62,7 @@ OPTIONS:
     -h      Print this message.
     -d      Diff -- Create a 'diff' file comparing current against previously saved results.
     -o      Output -- Save file that can later be used for queries with "xrefCast.sh -f"
+    -q      Quiet -- Minimize output, print only the list of shows being processed.
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
     -v      Debug mode -- set -v, enable 'breakpoint' function when editing this script.
     -x      Xlate -- Use a specific translation file instead of *xlate.
@@ -93,23 +94,26 @@ cd $DIRNAME
 # Make sort consistent between Mac and Linux
 export LC_COLLATE="C"
 
-while getopts ":o:x:hdtv" opt; do
+while getopts ":o:x:hdqtv" opt; do
     case $opt in
+    d)
+        CREATE_DIFF="yes"
+        ;;
     h)
         help
         exit
         ;;
-    d)
-        CREATE_DIFF="yes"
+    o)
+        OUTPUT_FILE="$OPTARG"
+        ;;
+    q)
+        QUIET="yes"
         ;;
     t)
         TEST_MODE="yes"
         ;;
     v)
         DEBUG="yes"
-        ;;
-    o)
-        OUTPUT_FILE="$OPTARG"
         ;;
     x)
         XLATE_FILES="$OPTARG"
@@ -136,9 +140,9 @@ fi
 # Make sure we have downloaded the IMDb files
 if [ -e "name.basics.tsv.gz" ] && [ -e "title.basics.tsv.gz" ] && [ -e "title.principals.tsv.gz" ] &&
     [ -e "title.episode.tsv.gz" ]; then
-    printf "==> Using existing IMDb .gz files.\n"
+    [ -s $QUIET ] && printf "==> Using existing IMDb .gz files.\n"
 else
-    printf "==> Downloading new IMDb .gz files.\n"
+    [ -s $QUIET ] && printf "==> Downloading new IMDb .gz files.\n"
     # Make sure we can execute curl.
     if [ ! -x "$(which curl 2>/dev/null)" ]; then
         printf "[Error] Can't run curl. Install curl and rerun this script.\n"
@@ -148,21 +152,21 @@ else
     for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
         if [ ! -e "$file" ]; then
             source="https://datasets.imdbws.com/$file"
-            printf "Downloading $source\n"
+            [ -s $QUIET ] && printf "Downloading $source\n"
             curl -s -O $source
         fi
     done
 fi
-printf "\n"
+[ -s $QUIET ] && printf "\n"
 
 # If the user hasn't created a .tconst or .xlate file, create a small example from a PBS show.
 # This is relatively harmless, and keeps this script simpler.
 if [ ! "$(ls *.xlate 2>/dev/null)" ]; then
-    printf "==> Creating an example translation file: PBS.xlate\n\n"
+    [ -s $QUIET ] && printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -Ne "^#" -e "^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
 if [ ! "$(ls *.tconst 2>/dev/null)" ]; then
-    printf "==> Creating an example tconst file: PBS.tconst\n\n"
+    [ -s $QUIET ] && printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -Ne "^#" -e "^$" -e "The Durrells" -e "The Night Manager" -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
@@ -171,9 +175,9 @@ fi
 [ -n "$TEST_MODE" ] && XLATE_FILES="xlate.example"
 #
 if [ "$XLATE_FILES" == "*.xlate" ]; then
-    printf "==> Using all .xlate files for IMDb title translation.\n\n"
+    [ -s $QUIET ] && printf "==> Using all .xlate files for IMDb title translation.\n\n"
 else
-    printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
+    [ -s $QUIET ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
 fi
 if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
     printf "==> [Error] No such file(s): $XLATE_FILES\n"
@@ -185,9 +189,9 @@ fi
 [ -n "$TEST_MODE" ] && TCONST_FILES="tconst.example"
 #
 if [ "$TCONST_FILES" == "*.tconst" ]; then
-    printf "==> Searching all .tconst files for IMDb title identifiers.\n"
+    [ -s $QUIET ] && printf "==> Searching all .tconst files for IMDb title identifiers.\n\n"
 else
-    printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n"
+    [ -s $QUIET ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n\n"
 fi
 if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
     printf "==> [Error] No such file(s): $TCONST_FILES\n"
@@ -320,13 +324,14 @@ rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >$SKIP_TCONST
 
 # Let us know what shows we're processing - format for readability, separate with ";"
 num_titles=$(sed -n '$=' $UNIQUE_TITLES)
-printf "\n==> Processing $num_titles shows found in $TCONST_FILES:\n"
+printf "==> Processing $num_titles shows found in $TCONST_FILES:\n"
 perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
 
 # Let us know how long it took last time
 if [ $(rg -c "^$scriptName\t" $savedFile) ]; then
     printf "\n==> Previously, this took "
     rg "^$scriptName\t" $savedFile | cut -f 3
+    printf "\n"
 fi
 
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
@@ -448,34 +453,36 @@ function printAdjustedFileInfo() {
 }
 
 # Output some stats from $SHOWS
-printf "\n==> Show types in $SHOWS:\n"
-cut -f 4 $RAW_SHOWS | sort | uniq -c | sort -nr | perl -p -e 's+^+\t+'
+if [ -s $QUIET ]; then
+    printf "==> Show types in $SHOWS:\n"
+    cut -f 4 $RAW_SHOWS | sort | uniq -c | sort -nr | perl -p -e 's+^+\t+'
 
-# Output some stats from credits
-printf "\n==> Stats from processing $CREDITS_PERSON:\n"
-numPersons=$(sed -n '$=' $UNIQUE_PERSONS)
-printf "%8d people credited -- some in more than one job function\n" "$numPersons"
-for i in actor actress writer director; do
-    count=$(cut -f 1,5 $UNSORTED_CREDITS | sort -fu | rg -cw "$i$")
-    printf "%13d as %s\n" "$count" "$i"
-done
+    # Output some stats from credits
+    printf "\n==> Stats from processing $CREDITS_PERSON:\n"
+    numPersons=$(sed -n '$=' $UNIQUE_PERSONS)
+    printf "%8d people credited -- some in more than one job function\n" "$numPersons"
+    for i in actor actress writer director; do
+        count=$(cut -f 1,5 $UNSORTED_CREDITS | sort -fu | rg -cw "$i$")
+        printf "%13d as %s\n" "$count" "$i"
+    done
 
-# Output some stats, adjust by 1 if header line is included.
-printf "\n==> Stats from processing IMDb data:\n"
-printAdjustedFileInfo $UNIQUE_TITLES 0
-printAdjustedFileInfo $LINKS_TO_TITLES 1
-# printAdjustedFileInfo $TCONST_LIST 0
-# printAdjustedFileInfo $RAW_SHOWS 0
-printAdjustedFileInfo $SHOWS 1
-# printAdjustedFileInfo $NCONST_LIST 0
-printAdjustedFileInfo $UNIQUE_PERSONS 0
-printAdjustedFileInfo $LINKS_TO_PERSONS 1
-# printAdjustedFileInfo $RAW_PERSONS 0
-printAdjustedFileInfo $KNOWN_PERSONS 1
-printAdjustedFileInfo $ASSOCIATED_TITLES 1
-printAdjustedFileInfo $CREDITS_SHOW 1
-printAdjustedFileInfo $CREDITS_PERSON 1
+    # Output some stats, adjust by 1 if header line is included.
+    printf "\n==> Stats from processing IMDb data:\n"
+    printAdjustedFileInfo $UNIQUE_TITLES 0
+    printAdjustedFileInfo $LINKS_TO_TITLES 1
+    # printAdjustedFileInfo $TCONST_LIST 0
+    # printAdjustedFileInfo $RAW_SHOWS 0
+    printAdjustedFileInfo $SHOWS 1
+    # printAdjustedFileInfo $NCONST_LIST 0
+    printAdjustedFileInfo $UNIQUE_PERSONS 0
+    printAdjustedFileInfo $LINKS_TO_PERSONS 1
+    # printAdjustedFileInfo $RAW_PERSONS 0
+    printAdjustedFileInfo $KNOWN_PERSONS 1
+    printAdjustedFileInfo $ASSOCIATED_TITLES 1
+    printAdjustedFileInfo $CREDITS_SHOW 1
+    printAdjustedFileInfo $CREDITS_PERSON 1
 # printAdjustedFileInfo $KNOWNFOR_LIST 0
+fi
 
 # Skip diff output if requested
 [ -z "$CREATE_DIFF" ] && saveDuration $SECONDS
