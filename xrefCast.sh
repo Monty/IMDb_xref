@@ -71,7 +71,7 @@ while getopts ":f:hasi" opt; do
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
     :)
-        printf "Option -$OPTARG requires a 'translation file' argument'.\n" >&2
+        printf "Option -$OPTARG requires a 'translation file' argument'.\n\n" >&2
         exit 1
         ;;
     esac
@@ -93,7 +93,7 @@ function cleanup() {
 
 # Make sure a search term was supplied
 if [ $# -eq 0 ]; then
-    printf "==> [Error] Please supply one or more search terms.\n\n"
+    printf "==> [Error] Please supply one or more search terms.\n\n" >&2
     exit 1
 fi
 
@@ -101,13 +101,13 @@ fi
 [ -z "$SEARCH_FILE" ] && SEARCH_FILE="$(ls -1t Credits-Person*csv 2>/dev/null | head -1)"
 #
 if [ ! "$SEARCH_FILE" ]; then
-    printf "==> [Error] Missing search file: Credits-Person*csv\n"
-    printf "    Run ./generateXrefData.sh then re-run this search.\n\n"
+    printf "==> [Error] Missing search file: Credits-Person*csv\n" >&2
+    printf "    Run ./generateXrefData.sh then re-run this search.\n\n" >&2
     exit 1
 fi
 # Make sure SEARCH_FILE exists
 if [ ! -e "$SEARCH_FILE" ]; then
-    printf "==> [Error] Missing search file: $SEARCH_FILE\n"
+    printf "==> [Error] Missing search file: $SEARCH_FILE\n\n" >&2
     exit 1
 fi
 #

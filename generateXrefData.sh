@@ -122,7 +122,7 @@ while getopts ":o:x:hdqtv" opt; do
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
     :)
-        printf "Option -$OPTARG requires a 'translation file' argument'.\n" >&2
+        printf "Option -$OPTARG requires a 'translation file' argument'.\n\n" >&2
         exit 1
         ;;
     esac
@@ -131,9 +131,9 @@ shift $((OPTIND - 1))
 
 # Make sure we can execute rg.
 if [ ! -x "$(which rg 2>/dev/null)" ]; then
-    printf "[Error] Can't run rg. Install rg and rerun this script.\n"
-    printf "        zgrep could be used, but is 15x slower in my tests.\n"
-    printf "        See https://crates.io/crates/ripgrep for details.\n"
+    printf "[Error] Can't run rg. Install rg and rerun this script.\n" >&2
+    printf "        zgrep could be used, but is 15x slower in my tests.\n" >&2
+    printf "        See https://crates.io/crates/ripgrep for details.\n\n" >&2
     exit 1
 fi
 
@@ -145,8 +145,8 @@ else
     [ -s $QUIET ] && printf "==> Downloading new IMDb .gz files.\n"
     # Make sure we can execute curl.
     if [ ! -x "$(which curl 2>/dev/null)" ]; then
-        printf "[Error] Can't run curl. Install curl and rerun this script.\n"
-        printf "        To test, type:  curl -Is https://github.com/ | head -5\n"
+        printf "[Error] Can't run curl. Install curl and rerun this script.\n" >&2
+        printf "        To test, type:  curl -Is https://github.com/ | head -5\n\n" >&2
         exit 1
     fi
     for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
@@ -180,7 +180,7 @@ else
     [ -s $QUIET ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
 fi
 if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
-    printf "==> [Error] No such file(s): $XLATE_FILES\n"
+    printf "==> [Error] No such file(s): $XLATE_FILES\n\n" >&2
     exit 1
 fi
 
@@ -194,7 +194,7 @@ else
     [ -s $QUIET ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n\n"
 fi
 if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
-    printf "==> [Error] No such file(s): $TCONST_FILES\n"
+    printf "==> [Error] No such file(s): $TCONST_FILES\n\n" >&2
     exit 1
 fi
 
@@ -305,15 +305,17 @@ rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1 | sort -f | uniq -d >$DUPES
 rg -IN -f $DUPES $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$CONFLICTS
 cut -f 6 $RAW_SHOWS | sort -f | uniq -d >>$CONFLICTS
 if [ -s $CONFLICTS ]; then
-    printf "\n==> [Error] Conflicts are listed below. Fix them then rerun this script.\n"
-    printf "\n==> These shows have more than one tconst for the same title.\n"
-    rg -H -f $CONFLICTS $RAW_SHOWS
-    printf "\n"
-    printf "==> You need to delete all but one tconst per title in any files listed below.\n"
-    printf "    It may help to look up each tconst on IMDb to pick the best one to keep.\n"
-    printf "    Make sure to delete corresponding .tconst lines if more than one file is listed.\n"
-    rg -f $CONFLICTS $XLATE_FILES $TCONST_FILES
-    printf "\n"
+    cat <<EOF >&2
+==> [Error] Conflicts are listed below. Fix them then rerun this script.
+==> These shows have more than one tconst for the same title.
+$(rg -p -H -f $CONFLICTS $RAW_SHOWS | cut -f 1-7)
+
+==> You need to delete all but one tconst per title in any files listed below.
+    It may help to look up each tconst on IMDb to pick the best one to keep.
+    Make sure to delete corresponding .tconst lines if more than one file is listed.
+$(rg -p -f $CONFLICTS $XLATE_FILES $TCONST_FILES)
+
+EOF
     exit 1
 fi
 
@@ -384,7 +386,6 @@ printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tK
     >$KNOWN_PERSONS
 cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' |
     perl -F"\t" -lane 'printf "%s\t%s\t%s\t%s\t%s\n", @F[0,1,2,3,4]' >>$KNOWN_PERSONS
-breakpoint
 
 # Create the LINKS_TO_PERSONS spreadsheet
 printf "nconst\tName\tHyperlink to Name\n" >$LINKS_TO_PERSONS
@@ -394,12 +395,10 @@ cut -f 1,2 $RAW_PERSONS | perl -F"\t" -lane \
 
 # Create a tconst list of the knownForTitles
 cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' | sort -u >$KNOWNFOR_LIST
-breakpoint
 
 # Create a perl script to globally convert a known show tconst to a show title
 rg -wNz -f $KNOWNFOR_LIST title.basics.tsv.gz | perl -p -f $XLATE_PL | cut -f 1,3 |
     perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >$TCONST_KNOWN_PL
-breakpoint
 
 # Create the LINKS_TO_TITLES spreadsheet
 printf "tconst\tShow Title\tHyperlink to Title\n" >$LINKS_TO_TITLES
@@ -412,7 +411,6 @@ printf "tconst\tShow Title\tHyperlink to Title\n" >$ASSOCIATED_TITLES
 perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL | perl -F"\t" -lane \
     'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
     sort -fu --field-separator="$TAB" --key=2,2 | rg -wv -f $TCONST_LIST >>$ASSOCIATED_TITLES
-breakpoint
 
 # Add episodes into raw shows
 perl -p -f $TCONST_EPISODES_PL $RAW_EPISODES >>$RAW_SHOWS
@@ -459,7 +457,7 @@ function printAdjustedFileInfo() {
 
 # Output some stats from $SHOWS
 if [ -s $QUIET ]; then
-    printf "==> Show types in $SHOWS:\n"
+    printf "\n==> Show types in $SHOWS:\n"
     cut -f 4 $RAW_SHOWS | sort | uniq -c | sort -nr | perl -p -e 's+^+\t+'
 
     # Output some stats from credits

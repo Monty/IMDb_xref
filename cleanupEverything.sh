@@ -14,7 +14,7 @@ while getopts ":iv" opt; do
         TELL="-v"
         ;;
     \?)
-        printf "Ignoring invalid option: -$OPTARG\n" >&2
+        printf "Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
     esac
 done
