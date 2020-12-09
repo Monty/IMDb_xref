@@ -28,7 +28,8 @@
 SECONDS=0
 scriptName="$(basename $0)"
 savedFile=".durations"
-touch $savedFile
+configFile=".config"
+touch $savedFile $configFile
 
 # Save or update the elapsed time and exit
 function saveDuration() {
@@ -136,6 +137,9 @@ if [ ! -x "$(which rg 2>/dev/null)" ]; then
     printf "        See https://crates.io/crates/ripgrep for details.\n\n" >&2
     exit 1
 fi
+
+# If we ALWAYS want QUIET
+[ $(rg -c "QUIET=yes" $configFile) ] && QUIET="yes"
 
 # Make sure we have downloaded the IMDb files
 if [ -e "name.basics.tsv.gz" ] && [ -e "title.basics.tsv.gz" ] && [ -e "title.principals.tsv.gz" ] &&

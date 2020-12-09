@@ -9,6 +9,7 @@
 *.gz
 *.csv
 *.txt
+.config
 .durations
 
 # In case you save a spreadsheet
