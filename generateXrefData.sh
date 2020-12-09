@@ -26,6 +26,8 @@
 
 # Keep track of elapsed time
 SECONDS=0
+
+# Need some configuration variables
 scriptName="$(basename $0)"
 savedFile=".durations"
 configFile=".config"
