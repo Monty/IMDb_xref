@@ -113,12 +113,12 @@ titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac.
     ==> Processing 3 shows found in *.tconst:
     	The Crown; The Durrells in Corfu; The Night Manager
 
-    ==> Show types in Shows-201201.csv:
+    ==> Show types in Shows-Episodes.csv:
     	  92 tvEpisode
     	   2 tvSeries
     	   1 tvMiniSeries
     
-    ==> Stats from processing Credits-Person-201201.csv:
+    ==> Stats from processing Credits-Person.csv:
           90 people credited -- some in more than one job function
                34 as actor
                26 as actress
@@ -126,20 +126,20 @@ titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac.
                13 as director
     
     ==> Stats from processing IMDb data:
-    uniqTitles-201201.txt                           50B   Dec 1 15:09        3 lines
-    LinksToTitles-201201.csv                       329B   Dec 1 15:10        3 lines
-    Shows-Episodes-201201.csv                      6.3K   Dec 1 15:10       95 lines
-    uniqPersons-201201.txt                         1.3K   Dec 1 15:10       90 lines
-    LinksToPersons-201201.csv                      8.0K   Dec 1 15:10       90 lines
-    Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:10       90 lines
-    AssociatedTitles-201201.csv                     26K   Dec 1 15:10      282 lines
-    Credits-Show-201201.csv                         45K   Dec 1 15:10      704 lines
-    Credits-Person-201201.csv                       45K   Dec 1 15:10      704 lines
+    uniqTitles.txt                                  50B   Dec 9 18:33        3 lines
+    LinksToTitles.csv                              329B   Dec 9 18:34        3 lines
+    Shows-Episodes.csv                             6.3K   Dec 9 18:34       95 lines
+    uniqPersons.txt                                1.3K   Dec 9 18:34       90 lines
+    LinksToPersons.csv                             8.0K   Dec 9 18:34       90 lines
+    Persons-KnownFor.csv                           6.9K   Dec 9 18:34       90 lines
+    AssociatedTitles.csv                            26K   Dec 9 18:34      282 lines
+    Credits-Show.csv                                45K   Dec 9 18:34      704 lines
+    Credits-Person.csv                              45K   Dec 9 18:34      704 lines
 </details>
 
 Re-running **./generateXrefData.sh** doesn't download the IMDb data files again.
-This reduces the run time to 20 seconds. It will overwrite any files
-produced earlier that day but not those from any previous day.
+This reduces the run time to 20 seconds. It will overwrite any previous files,
+unless run in debug mode.
 
 <details><summary><b>Show output</b></summary>
 
@@ -153,12 +153,15 @@ produced earlier that day but not those from any previous day.
     ==> Processing 3 shows found in *.tconst:
     	The Crown; The Durrells in Corfu; The Night Manager
     
-    ==> Show types in Shows-201201.csv:
+    ==> Previously, this took 18 seconds
+    
+    
+    ==> Show types in Shows-Episodes.csv:
     	  92 tvEpisode
     	   2 tvSeries
     	   1 tvMiniSeries
     
-    ==> Stats from processing Credits-Person-201201.csv:
+    ==> Stats from processing Credits-Person.csv:
           90 people credited -- some in more than one job function
                34 as actor
                26 as actress
@@ -166,15 +169,15 @@ produced earlier that day but not those from any previous day.
                13 as director
     
     ==> Stats from processing IMDb data:
-    uniqTitles-201201.txt                           50B   Dec 1 15:11        3 lines
-    LinksToTitles-201201.csv                       329B   Dec 1 15:12        3 lines
-    Shows-Episodes-201201.csv                      6.3K   Dec 1 15:12       95 lines
-    uniqPersons-201201.txt                         1.3K   Dec 1 15:12       90 lines
-    LinksToPersons-201201.csv                      8.0K   Dec 1 15:12       90 lines
-    Persons-KnownFor-201201.csv                    6.8K   Dec 1 15:12       90 lines
-    AssociatedTitles-201201.csv                     26K   Dec 1 15:12      282 lines
-    Credits-Show-201201.csv                         45K   Dec 1 15:12      704 lines
-    Credits-Person-201201.csv                       45K   Dec 1 15:12      704 lines
+    uniqTitles.txt                                  50B   Dec 9 18:36        3 lines
+    LinksToTitles.csv                              329B   Dec 9 18:36        3 lines
+    Shows-Episodes.csv                             6.3K   Dec 9 18:36       95 lines
+    uniqPersons.txt                                1.3K   Dec 9 18:36       90 lines
+    LinksToPersons.csv                             8.0K   Dec 9 18:36       90 lines
+    Persons-KnownFor.csv                           6.9K   Dec 9 18:36       90 lines
+    AssociatedTitles.csv                            26K   Dec 9 18:36      282 lines
+    Credits-Show.csv                                45K   Dec 9 18:36      704 lines
+    Credits-Person.csv                              45K   Dec 9 18:36      704 lines
 </details>
 
 ### Run sample queries
@@ -267,8 +270,8 @@ queries should still take less than one second. (*Note: -t selects example.tcons
     
     ==> Searching tconst.example for IMDb title identifiers.
     
-    ==> diffs-201201.151325.txt contains diffs between generated files and files saved in test_results
     
+    ==> diffs-201209.183642.txt contains diffs between generated files and files saved in test_results
     ==> Processing 98 shows found in tconst.example:
     	800 Words; A Man Called Ove; A Touch of Frost; Acquitted; American Experience;
     	An Inspector Calls; Arde Madrid; Art of Crime; Ashes to Ashes; Beck; Black
@@ -293,14 +296,17 @@ queries should still take less than one second. (*Note: -t selects example.tcons
     	Van der Valk; Vera; Waking the Dead; Wallander: The Original Episodes; Winter;
     	Wire in the Blood; Young Wallander
     
-    ==> Show types in Shows-Episodes-201201.csv:
+    ==> Previously, this took 18 seconds
+    
+    
+    ==> Show types in Shows-Episodes-201209.csv:
     	2159 tvEpisode
     	  76 tvSeries
     	  12 tvMiniSeries
     	   8 movie
     	   2 tvMovie
     
-    ==> Stats from processing Credits-Person-201201.csv:
+    ==> Stats from processing Credits-Person-201209.csv:
         3605 people credited -- some in more than one job function
              1434 as actor
              1030 as actress
@@ -308,15 +314,15 @@ queries should still take less than one second. (*Note: -t selects example.tcons
               428 as director
     
     ==> Stats from processing IMDb data:
-    uniqTitles-201201.txt                          1.5K   Dec 4 10:10       98 lines
-    LinksToTitles-201201.csv                       9.2K   Dec 4 10:11       98 lines
-    Shows-Episodes-201201.csv                      161K   Dec 4 10:11     2257 lines
-    uniqPersons-201201.txt                          52K   Dec 4 10:11     3605 lines
-    LinksToPersons-201201.csv                      322K   Dec 4 10:11     3605 lines
-    Persons-KnownFor-201201.csv                    277K   Dec 4 10:11     3612 lines
-    AssociatedTitles-201201.csv                    694K   Dec 4 10:11     7378 lines
-    Credits-Show-201201.csv                        1.1M   Dec 4 10:11    17226 lines
-    Credits-Person-201201.csv                      1.1M   Dec 4 10:11    17226 lines
+    uniqTitles-201209.txt                          1.5K   Dec 9 18:36       98 lines
+    LinksToTitles-201209.csv                       9.2K   Dec 9 18:37       98 lines
+    Shows-Episodes-201209.csv                      161K   Dec 9 18:37     2257 lines
+    uniqPersons-201209.txt                          52K   Dec 9 18:37     3605 lines
+    LinksToPersons-201209.csv                      322K   Dec 9 18:37     3605 lines
+    Persons-KnownFor-201209.csv                    277K   Dec 9 18:37     3612 lines
+    AssociatedTitles-201209.csv                    694K   Dec 9 18:37     7378 lines
+    Credits-Show-201209.csv                        1.1M   Dec 9 18:37    17226 lines
+    Credits-Person-201209.csv                      1.1M   Dec 9 18:37    17226 lines
 </details>
 
 
