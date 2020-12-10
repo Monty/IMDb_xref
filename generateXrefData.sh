@@ -33,7 +33,7 @@ savedFile=".durations"
 configFile=".config"
 touch $savedFile $configFile
 
-# Save or update the elapsed time and exit
+# Save or update the elapsed time, get rid of unnecessary files and exit
 function saveDuration() {
     tm=$1
     mins="minute"
@@ -49,6 +49,7 @@ function saveDuration() {
     else
         printf "$duration\n" >>$savedFile
     fi
+    [ -s $DEBUG ] && rm -f $ALL_WORKING $ALL_CSV
     exit
 }
 
@@ -67,7 +68,7 @@ OPTIONS:
     -o      Output -- Save file that can later be used for queries with "xrefCast.sh -f"
     -q      Quiet -- Minimize output, print only the list of shows being processed.
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
-    -v      Debug mode -- set -v, enable 'breakpoint' function when editing this script.
+    -v      Debug mode -- enable 'breakpoint' function, save secondary files
     -x      Xlate -- Use a specific translation file instead of *xlate.
 EOF
 }
@@ -204,8 +205,8 @@ if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
     exit 1
 fi
 
-# Create some timestamps
-DATE_ID="-$(date +%y%m%d)"
+# Create some timestamps - only use DATE_ID if we're debugging
+[ -n "$DEBUG" ] && DATE_ID="-$(date +%y%m%d)"
 LONGDATE="-$(date +%y%m%d.%H%M%S)"
 
 # Required subdirectories
@@ -290,7 +291,6 @@ ALL_SPREADSHEETS+="$CREDITS_SHOW $CREDITS_PERSON "
 # Cleanup any possible leftover files
 rm -f $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
 
-[ -n "$DEBUG" ] && set -v
 # Coalesce a single tconst input list
 rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >$TCONST_LIST
 
@@ -448,8 +448,6 @@ sort -f --field-separator="$TAB" --key=2,4 $UNSORTED_CREDITS >>$CREDITS_SHOW
 
 # Save file for later searching
 [ -n "$OUTPUT_FILE" ] && cp -p $CREDITS_PERSON "$OUTPUT_FILE"
-
-[ -n "$DEBUG" ] && set -
 
 # Shortcut for printing file info (before adding totals)
 function printAdjustedFileInfo() {

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Save the current days results as a baseline so we can check for changes in the future
+# Save the current days "generateXrefData.sh -v" debug results as a baseline
+# so we can check for changes in the future
+#
 # -d DATE picks a different date
 # -v does verbose copying
 
@@ -32,6 +34,11 @@ done
 WORK="secondary"
 BASE="baseline"
 mkdir -p $WORK $BASE
+
+if [ ! -e "$WORK/tconst-$DATE.txt" ]; then
+    printf '==> Missing debug files. Run "./generateXrefData.sh -v" then re-run this script.\n'
+    exit 1
+fi
 
 # Manually maintained skip episodes file
 cp -p $VERBOSE skipEpisodes.example $BASE/skipEpisodes.example
