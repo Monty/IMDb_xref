@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+# This is a general-purpose function to ask Yes/No questions in Bash, either
+# with or without a default answer. It keeps repeating the question until it
+# gets a valid answer. Only reads 1 character, no need to hit <CR>
+#
+# 1st param is the question, defaults to: Does that look correct?
+# 2nd param can be Y, N, or blank, which prompt [Y/n], [y/N], or [y/n] respectively.
+#
+# Highly modified version of https://djm.me/ask - usage examples are there.
+#
+# USAGE
+# . functions/read_YN.function
+#.
+#   Default to Yes [Y/n] if the user presses enter without giving an answer:
+#   if read_YN "Do you want to do Y default?" Y; then
+#       printf "Yes\n"
+#   else
+#       printf "No\n"
+#   fi
+
+function read_YN() {
+    local question prompt default reply blankreply
+    #
+    question="${1:-Does that look correct?}"
+    #
+    if [ "${2:-}" = "Y" ]; then
+        prompt="Y/n"
+        default="Y"
+    elif [ "${2:-}" = "N" ]; then
+        prompt="y/N"
+        default="N"
+    else
+        prompt="y/n"
+        default=
+    fi
+
+    while true; do
+        read -n 1 -p "$question [$prompt] " reply
+        #
+        # Empty reply? Remember where we had a blank reply
+        if [ -z "$reply" ]; then
+            reply="$default"
+            blankreply="yes"
+        else
+            blankreply=
+        fi
+        #
+        # Check if the reply is valid
+        case "$reply" in
+        [Yy])
+            [ -z "$blankreply" ] && printf "\n"
+            return 0
+            ;;
+        [Nn])
+            [ -z "$blankreply" ] && printf "\n"
+            return 1
+            ;;
+        # *) printf "\n" ;;
+        *) [ -z "$blankreply" ] && [ -n "default" ] && printf "\n" ;;
+        esac
+    done
+}
