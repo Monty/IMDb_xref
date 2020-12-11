@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-#
 # This is a general-purpose function to ask Yes/No questions in Bash, either
 # with or without a default answer. It keeps repeating the question until it
 # gets a valid answer. User Must hit <CR> to register answer.
@@ -9,7 +7,7 @@
 #
 # Modified version of https://djm.me/ask - usage examples are there.
 
-ask_YN() {
+function ask_YN() {
     local question prompt default reply
     #
     question="${1:-Does that look correct?}"

@@ -31,30 +31,22 @@ TAB=$(printf "\t")
 
 # Need some configuration variables
 scriptName="$(basename $0)"
-savedFile=".xref_durations"
+durationFile=".xref_durations"
 configFile=".xref_config"
-touch $savedFile $configFile
+touch $durationFile $configFile
 
-# Save the executable name, stopped_at time, elapsed time. Get rid of unnecessary files and exit
-function saveDuration() {
-    local date_fmt stopped_at date_str tm mins duration
+# Function to save execution time and duration
+. functions/saveDurations.function
+# Function to limit the number of durations kept
+. functions/trimDurations.function
 
-    # The date & time this program stopped
-    date_fmt="%y%m%d.%H%M%S"
-    stopped_at=$(date +$date_fmt)
-    date_str=$(date -j -f $date_fmt $stopped_at)
-    # How long it took to run
-    tm=$SECONDS
-    mins="minute"
-    [[ $tm -ge 120 ]] && mins="minutes"
-    if [[ $tm -gt 90 ]]; then
-        duration="$((tm / 60)) $mins and $((tm % 60)) seconds."
-    else
-        duration="$tm seconds."
-    fi
-    # Save this info for later
-    printf "$scriptName\t$stopped_at\t$date_str\t$duration\n" >>$savedFile
-
+# Save the duration of this script in a tab separated file. Get rid of unnecessary files and exit
+#    Script Name          Timestamp            Date String               Duration
+# generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
+function terminate() {
+    saveDurations $scriptName $durationFile $SECONDS
+    # Only keep 10 duration lines for this script
+    trimDurations $scriptName $durationFile 10
     [ -s $DEBUG ] && rm -f $ALL_WORKING $ALL_CSV
     exit
 }
@@ -341,9 +333,9 @@ printf "==> Processing $num_titles shows found in $TCONST_FILES:\n"
 perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
 
 # Let us know how long it took last time
-if [ $(rg -c "^$scriptName\t" $savedFile) ]; then
+if [ $(rg -c "^$scriptName\t" $durationFile) ]; then
     printf "\n==> Previously, this took "
-    rg "^$scriptName\t" $savedFile | tail -1 | cut -f 4
+    rg "^$scriptName\t" $durationFile | tail -1 | cut -f 4
     printf "\n"
 fi
 
@@ -496,8 +488,8 @@ if [ -s $QUIET ]; then
 # printAdjustedFileInfo $KNOWNFOR_LIST 0
 fi
 
-# Skip diff output if requested
-[ -z "$CREATE_DIFF" ] && saveDuration
+# Skip diff output if requested. Save durations and exit
+[ -z "$CREATE_DIFF" ] && terminate
 
 # Shortcut for checking differences between two files.
 # checkdiffs basefile newfile
@@ -557,4 +549,5 @@ $(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
 
 EOF
 
-saveDuration
+# Save durations and exit
+terminate

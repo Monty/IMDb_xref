@@ -1,0 +1,33 @@
+# Save the duration of this script in a file.
+#
+# Duration files are tab separated -- used to record script durations for predictions and stats
+#
+#    Script Name          Timestamp            Date String               Duration
+# generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
+#
+# USAGE
+#   saveDurations scriptName durationFile $SECONDS
+
+function saveDurations() {
+    local scriptName durationFile secs date_fmt timestamp date_str mins duration
+
+    scriptName="$1"
+    durationFile="$2"
+    secs="$3"
+
+    # The date & time this function ran
+    date_fmt="%y%m%d.%H%M%S"
+    timestamp=$(date +$date_fmt)
+    date_str=$(date -j -f $date_fmt $timestamp)
+    #
+    mins="minute"
+    [[ $secs -ge 120 ]] && mins="minutes"
+    if [[ $secs -gt 90 ]]; then
+        duration="$((secs / 60)) $mins and $((secs % 60)) seconds."
+    else
+        duration="$secs seconds."
+    fi
+    #
+    # Save this info for later
+    printf "$scriptName\t$timestamp\t$date_str\t$duration\n" >>$durationFile
+}
