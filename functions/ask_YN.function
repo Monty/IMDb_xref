@@ -1,13 +1,27 @@
+#!/usr/bin/env bash
+#
 # This is a general-purpose function to ask Yes/No questions in Bash, either
 # with or without a default answer. It keeps repeating the question until it
-# gets a valid answer. User Must hit <CR> to register answer.
+# gets a valid answer. User Must hit <CR> to register answer. Longer strings
+# like "yes", "no" (and surprisingly "yellow") will work as only the first
+# character is checked.
 #
 # 1st param is the question, defaults to: Does that look correct?
 # 2nd param can be Y, N, or blank, which prompt [Y/n], [y/N], or [y/n] respectively.
 #
 # Modified version of https://djm.me/ask - usage examples are there.
+#
+# USAGE
+# . functions/ask_YN.function
+#
+#   Default to Yes [Y/n] if the user presses enter without giving an answer:
+#   if ask_YN "Do you want to do Y default?" Y; then
+#       printf "Yes\n"
+#   else
+#       printf "No\n"
+#   fi
 
-function ask_YN() {
+ask_YN() {
     local question prompt default reply
     #
     question="${1:-Does that look correct?}"

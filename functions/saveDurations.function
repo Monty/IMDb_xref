@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # Save the duration of this script in a file.
 #
 # Duration files are tab separated -- used to record script durations for predictions and stats
@@ -6,6 +8,8 @@
 # generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 #
 # USAGE
+#   . functions/saveDurations.function
+#
 #   saveDurations scriptName durationFile $SECONDS
 
 function saveDurations() {

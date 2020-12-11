@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+#
 # Trim duration files by only keeping the last maxlines beginning with scriptName
 #
 # Duration files are tab separated -- used to record script durations for predictions and stats
@@ -6,6 +8,8 @@
 # generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 #
 # USAGE
+# . functions/trimDurations.function
+#
 #   trimDurations scriptName durationFile maxlines
 
 function trimDurations() {

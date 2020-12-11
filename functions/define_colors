@@ -1,7 +1,9 @@
-# Define escape sequences that produce 8 standard terminal colors
+#!/usr/bin/env bash
+#
+# Define escape sequences that produce the eight standard terminal colors
 #
 # USAGE:
-#   . define_colors
+#   . functions/define_colors
 #
 #   printf "Do you prefer ${RED}Red${NO_COLOR} or ${BLUE}Blue${NO_COLOR}?\n"
 #
