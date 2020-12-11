@@ -9,8 +9,7 @@
 *.gz
 *.csv
 *.txt
-.config
-.durations
+.xref*
 
 # In case you save a spreadsheet
 *.xls

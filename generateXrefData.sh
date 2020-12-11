@@ -26,29 +26,35 @@
 
 # Keep track of elapsed time
 SECONDS=0
+# For places that a bare "\t" doesn't work.
+TAB=$(printf "\t")
 
 # Need some configuration variables
 scriptName="$(basename $0)"
-savedFile=".durations"
-configFile=".config"
+savedFile=".xref_durations"
+configFile=".xref_config"
 touch $savedFile $configFile
 
-# Save or update the elapsed time, get rid of unnecessary files and exit
+# Save the executable name, stopped_at time, elapsed time. Get rid of unnecessary files and exit
 function saveDuration() {
-    tm=$1
+    local date_fmt stopped_at date_str tm mins duration
+
+    # The date & time this program stopped
+    date_fmt="%y%m%d.%H%M%S"
+    stopped_at=$(date +$date_fmt)
+    date_str=$(date -j -f $date_fmt $stopped_at)
+    # How long it took to run
+    tm=$SECONDS
     mins="minute"
-    #
     [[ $tm -ge 120 ]] && mins="minutes"
     if [[ $tm -gt 90 ]]; then
-        duration="$scriptName\t$(date +%c) \t$((tm / 60)) $mins and $((TM % 60)) seconds"
+        duration="$((tm / 60)) $mins and $((tm % 60)) seconds."
     else
-        duration="$scriptName\t$(date +%c) \t$((tm)) seconds"
+        duration="$tm seconds."
     fi
-    if [ $(rg -c "^$scriptName\t" $savedFile) ]; then
-        perl -pi -e "s/$scriptName.*/$duration/" $savedFile
-    else
-        printf "$duration\n" >>$savedFile
-    fi
+    # Save this info for later
+    printf "$scriptName\t$stopped_at\t$date_str\t$duration\n" >>$savedFile
+
     [ -s $DEBUG ] && rm -f $ALL_WORKING $ALL_CSV
     exit
 }
@@ -301,7 +307,6 @@ rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1,2 | sort -fu |
 
 # Generate a csv of titles from the tconst list, remove the "adult" field,
 # translate any known non-English titles to their English equivalent,
-TAB=$(printf "\t")
 rg -wNz -f $TCONST_LIST title.basics.tsv.gz | cut -f 1-4,6-9 | perl -p -f $XLATE_PL |
     perl -p -e 's+\t+\t\t\t+;' | tee $RAW_SHOWS | cut -f 5 | sort -fu >$UNIQUE_TITLES
 
@@ -338,7 +343,7 @@ perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s
 # Let us know how long it took last time
 if [ $(rg -c "^$scriptName\t" $savedFile) ]; then
     printf "\n==> Previously, this took "
-    rg "^$scriptName\t" $savedFile | cut -f 3
+    rg "^$scriptName\t" $savedFile | tail -1 | cut -f 4
     printf "\n"
 fi
 
@@ -492,7 +497,7 @@ if [ -s $QUIET ]; then
 fi
 
 # Skip diff output if requested
-[ -z "$CREATE_DIFF" ] && saveDuration $SECONDS
+[ -z "$CREATE_DIFF" ] && saveDuration
 
 # Shortcut for checking differences between two files.
 # checkdiffs basefile newfile
@@ -552,4 +557,4 @@ $(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
 
 EOF
 
-saveDuration $SECONDS
+saveDuration
