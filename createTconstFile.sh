@@ -53,25 +53,25 @@ done
 shift $((OPTIND - 1))
 
 # Need some tempfiles
-RESULTS=$(mktemp)
 SEARCH_TERMS=$(mktemp)
+SEARCH_RESULTS=$(mktemp)
+FINAL_RESULTS=$(mktemp)
 BESTMATCH=$(mktemp)
 
 # Don't leave tempfiles around
-trap "rm -rf $RESULTS $SEARCH_TERMS $BESTMATCH" EXIT
+trap "rm -rf $SEARCH_TERMS $SEARCH_RESULTS $FINAL_RESULTS $BESTMATCH" EXIT
 
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
 function cleanup() {
-    rm -rf $RESULTS $SEARCH_TERMS $BESTMATCH
     printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
 }
 
 # Make sure a tconst was supplied
 if [ $# -eq 0 ]; then
-    printf "==> [Error] Please supply one or more tconst IDs -- such as tt1606375.\n"
+    printf "==> [Error] Please supply one or more tconst IDs -- such as tt1606375,\n"
     printf "    which is the tconst for 'Downton Abbey'.\n"
     if ask_YN "Would you like me to add this tconst for you?" N; then
         printf "tt1606375\n" >>$SEARCH_TERMS
@@ -92,6 +92,16 @@ if [ ! -e "title.basics.tsv.gz" ]; then
     fi
 fi
 
+function addToFileP() {
+    if ask_YN "    Shall I add them to $TCONST_FILE?" Y; then
+        printf "Ok. Adding:\n"
+        cat $FINAL_RESULTS >>$TCONST_FILE
+        ask_YN "    Shall I sort $TCONST_FILE by title?" Y && ./augment_tconstFiles.sh -iy $TCONST_FILE
+    else
+        printf "Skipping....\n"
+    fi
+}
+
 # Get a TCONST_FILE
 [ -z "$TCONST_FILE" ] && TCONST_FILE="$USER.tconst"
 #
@@ -110,11 +120,11 @@ TAB=$(printf "\t")
 
 # Find the tconst IDs
 rg -wNz -f $SEARCH_TERMS "title.basics.tsv.gz" | rg -v "tvEpisode" | cut -f 1-4 |
-    sort -fu --field-separator="$TAB" --key=2 >$RESULTS
+    sort -fu --field-separator="$TAB" --key=2 | tee $FINAL_RESULTS >$SEARCH_RESULTS
 
 # Let us know what types of shows we found
 printf "==> This will add the following:\n"
-cut -f 2 $RESULTS | sort | uniq -c
+cut -f 2 $SEARCH_RESULTS | sort | uniq -c
 
 # Vary number of tabs before "Title"
 function printHeader() {
@@ -123,48 +133,44 @@ function printHeader() {
     printf "Title\n"
 }
 #
-printHeader $(head -1 $RESULTS)
+printHeader $(head -1 $SEARCH_RESULTS)
 
 # Let us know what show this would add
-cut -f 1-3 $RESULTS
+cut -f 1-3 $SEARCH_RESULTS
 
 # See if we found the right number of results
 numSearched=$(sed -n '$=' $SEARCH_TERMS)
-numFound=$(sed -n '$=' $RESULTS)
+numFound=$(sed -n '$=' $SEARCH_RESULTS)
+
+# Didn't find any
+if [[ $numFound -eq "0" ]]; then
+    printf "\n==> Didn't find any shows. Check the \"Searching for:\" section above.\n\n"
+    exit
+fi
 
 # Found the same number we were searching for
 if [[ $numSearched -eq $numFound ]]; then
     printf "\n==> Found all the shows searched for.\n"
-    if ask_YN "    Shall I add these to $TCONST_FILE?" Y; then
-        printf "Ok. Adding:\n"
-        cat $RESULTS >>$TCONST_FILE
-        ask_YN "Shall I sort $TCONST_FILE by title?" Y && ./augment_tconstFiles.sh -i $TCONST_FILE
-    else
-        printf "Skipping....\n"
-    fi
+    addToFileP
 fi
 
 # Found fewer than we were searching for
 if [[ $numSearched -gt $numFound ]]; then
     printf "\n==> Found fewer shows than expected. Check the \"Searching for:\" section above.\n"
-    if ask_YN "    Shall I add the ones I found to $TCONST_FILE?" Y; then
-        printf "Ok. Adding:\n"
-        cat $RESULTS >>$TCONST_FILE
-        ask_YN "Shall I sort $TCONST_FILE by title?" Y && ./augment_tconstFiles.sh -i $TCONST_FILE
-    else
-        printf "Skipping....\n"
-    fi
+    addToFileP
 fi
 
 # Found more than we were searching for
 if [[ $numFound -gt $numSearched ]]; then
     printf "\n==> Found more shows than expected. These are the most likely matches.\n"
     rg -wN "^tt[0-9]{7,8}" $SEARCH_TERMS >$BESTMATCH
-    rg -wN -f $BESTMATCH $RESULTS
-    printf "\n==> These are the questionable matches.\n"
-    rg -wNv -f $BESTMATCH $RESULTS
-    printf "\n==> Sorry I can't help resolve this yet.\n"
+    rg -wN -f $BESTMATCH $SEARCH_RESULTS | tee $FINAL_RESULTS
+    addToFileP
+    printf "\n==> These are the ${RED}questionable${NO_COLOR} matches.\n"
+    rg -wNv -f $BESTMATCH $SEARCH_RESULTS | sort -f --field-separator="$TAB" --key=2,2 --key=3,3
+    printf "\n==> Sorry, but I can't  resolve this automatically quite yet. If you spot the tconst\n"
+    printf "    of the show you want, re-run ./createTconstFile.sh with that tconst.\n"
+    printf "\n==> ${RED}Some candidates${NO_COLOR} are:\n"
+    rg -wNv -f $BESTMATCH $SEARCH_RESULTS | rg -e "\ttvSeries\t" -e "\ttvMiniSeries\t" |
+        sort -f --field-separator="$TAB" --key=2,2 --key=3,3
 fi
-
-# Clean up
-rm -rf $RESULTS $SEARCH_TERMS $BESTMATCH
