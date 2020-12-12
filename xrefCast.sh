@@ -82,12 +82,15 @@ shift $((OPTIND - 1))
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
 
+# Don't leave tempfiles around
+trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
+
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
 function cleanup() {
     rm -rf $TMPFILE $SEARCH_TERMS
-    printf "\n"
+    printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
 }
 
@@ -149,10 +152,7 @@ if [ -z "$SUMMARIZE" ]; then
 fi
 
 # If ALL_NAMES_ONLY, exit here
-if [ -n "$ALL_NAMES_ONLY" ]; then
-    rm -rf $TMPFILE $SEARCH_TERMS
-    exit
-fi
+[ -n "$ALL_NAMES_ONLY" ] && exit
 
 # Print duplicated names, i.e. where field 1 is repeated in successive lines, but field 3 is different
 printf "\n==> Duplicated names (Name|Job|Show|Episode|Role):\n"
@@ -165,4 +165,4 @@ else
 fi
 
 # Clean up
-rm -rf $TMPFILE $SEARCH_TERMS
+exit

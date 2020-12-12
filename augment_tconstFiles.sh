@@ -64,12 +64,15 @@ shift $((OPTIND - 1))
 RESULT=$(mktemp)
 TCONSTS=$(mktemp)
 
+# Don't leave tempfiles around
+trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
+
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
 function cleanup() {
     rm -rf $RESULT $TCONSTS
-    printf "\n"
+    printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
 }
 
@@ -112,4 +115,4 @@ for file in "$@"; do
 done
 
 # Clean up
-rm -rf $RESULT $TCONSTS
+exit

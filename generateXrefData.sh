@@ -75,7 +75,7 @@ EOF
 trap cleanup INT
 #
 function cleanup() {
-    printf "\n"
+    printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
 }
 
