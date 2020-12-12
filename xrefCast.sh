@@ -89,7 +89,6 @@ trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
 trap cleanup INT
 #
 function cleanup() {
-    rm -rf $TMPFILE $SEARCH_TERMS
     printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
 }
