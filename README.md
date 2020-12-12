@@ -9,6 +9,11 @@ Command line utilities to quickly cross-reference and query shows, actors, and t
 [![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main/)](https://github.com/Monty/IMDb_xref)
 [![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/IMDb_xref)
 
+If you don't care for long README files, jump directly to 
+[Automate the entire process](#automate-the-entire-process)
+
+**Table of Contents**
+
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -17,7 +22,8 @@ Command line utilities to quickly cross-reference and query shows, actors, and t
      - [Understanding query results](#understanding-query-results)
   - [Make your own queries](#make-your-own-queries)
   - [Generate additional data](#generate-additional-data)
-  - [Create your own data](#create-your-own-data)
+  - [Add your own data](#add-your-own-data)
+  - [Automate the entire process](#automate-the-entire-process)
 - [Performance](#performance)
 - [Contributing](#contributing)
 - [License](#license)
@@ -93,7 +99,7 @@ and spreadsheets containing cast members, characters portrayed, alternate
 titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac.
 (*Note: Longer if you have a slow internet connection.*)
 
-<details><summary><b>Show output</b></summary>
+<details><summary><b>Show output from this command</b></summary>
 
     $ ./generateXrefData.sh
     ==> Downloading new IMDb .gz files.
@@ -141,7 +147,7 @@ Re-running **./generateXrefData.sh** doesn't download the IMDb data files again.
 This reduces the run time to 20 seconds. It will overwrite any previous files,
 unless run in debug mode.
 
-<details><summary><b>Show output</b></summary>
+<details><summary><b>Show output from this command</b></summary>
 
     $ ./generateXrefData.sh
     ==> Using existing IMDb .gz files.
@@ -184,7 +190,7 @@ unless run in debug mode.
 
 Run **./xrefCast.sh -h** (help) to see some example queries.
 
-<details><summary><b>Show output</b></summary>
+<details><summary><b>Show this help file</b></summary>
 
     $ ./xrefCast.sh -h
     Cross-reference shows, actors, and the characters they portray using data from IMDB.
@@ -253,15 +259,15 @@ episode directors, use '`xref "The Crown" | rg director`.
 Since **./generateXrefData.sh** displays statistics as it runs, you probably
 noticed that it only produced data on 3 shows with 92 episodes -- crediting 90
 people with 704 lines of credits. It did so by selecting three PBS shows from
-example.tconst and creating the example files PBS.tconst and PBS.xlate.
+**example.tconst** and creating the example files **PBS.tconst** and **PBS.xlate**.
 
 If you run **./generateXrefData.sh -td**, it will use all the shows in
-example.tconst. You'll now have data on 98 shows with 2159 episodes -- crediting 3605
-people with 17276 lines of credits. Running this takes about 45 seconds. However,
-queries should still take less than one second. (*Note: -t selects example.tconst,
--d saves the results in test_results.*)
+**example.tconst**. You'll now have data on 98 shows with 2159 episodes --
+crediting 3605 people with 17276 lines of credits. Running this takes about 45
+seconds. However, queries should still take less than one second. (*Note: -t
+selects example.tconst, -d saves the results in test_results.*)
 
-<details><summary><b>Show output</b></summary>
+<details><summary><b>Show output from this command</b></summary>
 
 	$ ./generateXrefData.sh -td
     ==> Using existing IMDb .gz files.
@@ -326,11 +332,21 @@ queries should still take less than one second. (*Note: -t selects example.tcons
 </details>
 
 
-### Create your own data
+### Add your own data
 
-IMDb_xref data is generated from tconst lists. *What is a tconst?* A tconst is a
-unique ID that IMDb assigns to each movie, TV series or episode, etc. A simple tconst
-list would look like this:
+IMDb_xref data is generated from tconst lists. You can create your own or use 
+ones from the [Contrib](Contrib) directory. Or you can do it automatically using 
+**createTconstFile.sh**.
+
+#### What is a tconst and how do I find one?
+A tconst is a unique ID that IMDb assigns to each movie, TV series or episode, etc.
+
+A straightforward but manual method of finding one is from a show's URL on IMDb.com.
+![tconst in IMDb URL](docs/Screenshots/IMDb_tconst.png).
+
+#### How do I create a tconst list of shows I like?
+
+A simple tconst list would look like this:
 
 ```
 tt4786824
@@ -341,9 +357,10 @@ Searching for any of those tconsts on IMDb.com will find a specific show, *e.g.*
 tt4786824 is the page for "The Crown":
 [https://www.imdb.com/title/tt4786824/](https://www.imdb.com/title/tt4786824/).
 
-You can generate your own data by using one or more of the .tconst files in the
-Contrib directory or creating your own .tconst file. You can even translate
-non-English titles to their English equivalents by using a .xlate file.
+You can generate additional data by using one or more of the .tconst files in
+the [Contrib](Contrib) directory or creating your own .tconst file. You can even
+translate non-English titles to their English equivalents by using a .xlate
+file.
 
 Data can grow quite large. If you use all the files in /Contrib, you'll generate
 over 7.5 MB of data, including two 46,000 line Credits spreadsheets.
@@ -351,11 +368,6 @@ over 7.5 MB of data, including two 46,000 line Credits spreadsheets.
 Large data files don't affect query speeds, they only consume more disk space.
 Just gzip the files if you need to minimize space -- queries will still run
 as fast.
-
-#### How do I make a tconst list of shows I like?
-
-A straightforward but manual method is to copy the tconst from a URL you visit on IMDb.
-![tconst in IMDb URL](docs/Screenshots/IMDb_tconst.png).
 
 That's useful if you want only shows you've watched -- just add a new tconst
 whenever you watch a new show.  **./generateXrefData.sh** will automatically
@@ -366,41 +378,39 @@ episode.
 **augment_tconstFiles.sh** will add documentation for you. Just re-run it any
 time you add a tconst. Run `augment_tconstFiles.sh -h` to see examples.
 
-<details><summary><b>Show output</b></summary>
+<details><summary><b>Show this help file</b></summary>
 
-```
-$ ./augment_tconstFiles.sh -h
-Expand the IDs in .tconst files to add Type, Primary Title, and Original Title
+    $ ./augment_tconstFiles.sh -h
+    Expand the IDs in .tconst files to add Type, Primary Title, and Original Title
 
-      For example, expand:
-          tt1606375
-          tt1399664
-          tt3351208
+          For example, expand:
+              tt1606375
+              tt1399664
+              tt3351208
 
-      To:
-          tt1606375	tvSeries	Downton Abbey	Downton Abbey
-          tt1399664	tvMiniSeries	The Night Manager	The Night Manager
-          tt3351208	tvMovie	Two Little Girls in Blue	Deux petites filles en bleu
+          To:
+              tt1606375	tvSeries	Downton Abbey	Downton Abbey
+              tt1399664	tvMiniSeries	The Night Manager	The Night Manager
+              tt3351208	tvMovie	Two Little Girls in Blue	Deux petites filles en bleu
 
-USAGE:
-    ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]
+    USAGE:
+        ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]
 
-OPTIONS:
-    -h      Print this message.
-    -i      In place -- overwrite original file
-    -y      Yes -- skip asking "OK to overwrite...
+    OPTIONS:
+        -h      Print this message.
+        -i      In place -- overwrite original file
+        -y      Yes -- skip asking "OK to overwrite...
 
-EXAMPLES:
-    ./augment_tconstFiles.sh Contrib/OPB.tconst
-    ./augment_tconstFiles.sh -i Contrib/*.tconst
-    ./augment_tconstFiles.sh -iy Contrib/*.tconst
-```
+    EXAMPLES:
+        ./augment_tconstFiles.sh Contrib/OPB.tconst
+        ./augment_tconstFiles.sh -i Contrib/*.tconst
+        ./augment_tconstFiles.sh -iy Contrib/*.tconst
 </details>
 
-Another strategy is to copy one or more of the tconst files in the Contrib
-directory, editing if necessary.  The default for **./generateXrefData.sh** is
-to use all .tconst and all .xlate files in the top level directory. So put
-whatever files you want there.
+Another strategy is to copy one or more of the tconst files in the
+[Contrib](Contrib) directory, editing if necessary.  The default for
+**./generateXrefData.sh** is to use all .tconst and all .xlate files in the top
+level directory. So put whatever files you want there.
 
 You could even get ideas from one of the spreadsheets we generate. They are in
 .csv format so you can open them with any spreadsheet program or text editor. If
@@ -412,13 +422,75 @@ The "AssociatedTitles" is generated from the "Known For" section of a persons
 IMDb page.  It only lists up to four shows for each person, and they may not be
 the ones you expected.
 
-(*Start your own lists: broad genres such as Comedies, Sci-Fi, Musicals,
+### Automate the entire process
+
+Once you've [installed the software](#installation), simply run
+**createTconstFile.sh**. It will guide you through the entire process, including
+automatically downloading the data from IMDb, creating your own tconst file, and
+generating data using the tconst file it creates.
+
+If you run it with no parameters, it will suggest adding "Downton Abbey". Or
+you can provide a tconst ID or even a show name (in quotes if it's more than
+one word). Run **createTconstFile.sh -h** for ideas.
+
+<details><summary><b>Show this help file</b></summary>
+
+    $ ./createTconstFile.sh -h
+    Add a tconst to a file
+
+    USAGE:
+        ./createTconstFile.sh [-f TCONST_FILE] TCONST [TCONST...] [SHOW TITLE...]
+
+    OPTIONS:
+        -h      Print this message.
+        -f      File -- Add to specific file rather than the default monty.tconst
+
+    EXAMPLES:
+        ./createTconstFile.sh tt1606375
+        ./createTconstFile.sh tt1606375 tt1399664 'Broadchurch'
+        ./createTconstFile.sh -f Dramas.tconst tt1606375
+</details>
+
+<details><summary><b>Show output from this command</b></summary>
+
+    $ ./createTconstFile.sh tt1606375 tt1399664 Broadchurch
+    ==> Adding tconst IDs to monty.tconst
+
+    ==> Searching for:
+    tt1606375
+    tt1399664
+    Broadchurch
+
+    ==> This will add the following:
+       1 tvMiniSeries
+       2 tvSeries
+
+    # tconst    Type           Title
+    tt1399664   tvMiniSeries   The Night Manager
+    tt2249364   tvSeries       Broadchurch
+    tt1606375   tvSeries       Downton Abbey
+
+    ==> Found all the shows searched for.
+        Shall I add them to monty.tconst? [Y/n]
+    Ok. Adding:
+        Shall I sort monty.tconst by title? [Y/n]
+        Shall I update your data files? [Y/n]
+    ==> Processing 5 shows found in *.tconst:
+        Broadchurch; Downton Abbey; The Crown; The Durrells in Corfu; The Night Manager
+
+    ==> Previously, this took 16 seconds.
+</details>
+
+## Suggestions
+
+Start your own lists: broad genres such as Comedies, Sci-Fi, Musicals,
 Historical Dramas -- or more specific ones like "All Alfred Hitchcock movies",
 "TV shows with Robots", or "shows with Salsa music", "Shows for Trivia
-questions".*)
+questions".
 
 Until I find time to produce more documentation, you can learn a lot from the
-descriptive comments in the shell scripts, .example, and Contrib files.
+descriptive comments in the shell scripts, .example, and [Contrib](Contrib)
+files.
 
 ## Performance
 
@@ -434,7 +506,7 @@ nearly identical, with a very slight edge to the gzipped version.
 
 #### On a 2014 iMac with internal hard drive:
 
-```
+```sh
 $ hyperfine -w 5 './xrefTest.sh -f ZipTest.csv' './xrefTest.sh -f ZipTest.csv.gz'
 Benchmark #1: ./xrefTest.sh -f ZipTest.csv
   Time (mean ± σ):      95.2 ms ±   0.9 ms    [User: 28.3 ms, System: 46.2 ms]
@@ -476,4 +548,3 @@ scripts, [Open an issue](https://github.com/Monty/IMDb_xref/issues/new), or subm
 ## License
 
 [MIT](LICENSE) © Monty Williams
-
