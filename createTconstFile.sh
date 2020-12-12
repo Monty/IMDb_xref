@@ -97,6 +97,7 @@ function addToFileP() {
         printf "Ok. Adding:\n"
         cat $FINAL_RESULTS >>$TCONST_FILE
         ask_YN "    Shall I sort $TCONST_FILE by title?" Y && ./augment_tconstFiles.sh -iy $TCONST_FILE
+        ask_YN "    Shall I update your data files?"  Y && ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
     fi
