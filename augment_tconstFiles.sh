@@ -113,6 +113,3 @@ for file in "$@"; do
         printf "\n"
     fi
 done
-
-# Clean up
-exit
