@@ -21,6 +21,10 @@ EXAMPLES:
 EOF
 }
 
+# Limit the number of results to display in case someone uses an unquoted string
+# We may be able to suggest new search results after we enhance the search logic
+maxResults=100
+
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
 cd $DIRNAME
@@ -123,9 +127,28 @@ TAB=$(printf "\t")
 rg -wNz -f $SEARCH_TERMS "title.basics.tsv.gz" | rg -v "tvEpisode" | cut -f 1-4 |
     sort -fu --field-separator="$TAB" --key=2 | tee $FINAL_RESULTS >$SEARCH_RESULTS
 
+# See if we found the right number of results
+numSearched=$(sed -n '$=' $SEARCH_TERMS)
+numFound=$(sed -n '$=' $SEARCH_RESULTS)
+
+# Didn't find any
+if [[ $numFound -eq "0" ]]; then
+    printf "==> Didn't find ${RED}any${NO_COLOR} matching shows. "
+    printf "Check the \"Searching for:\" section above.\n\n"
+    exit
+fi
+
 # Let us know what types of shows we found
 printf "==> This will add the following:\n"
 cut -f 2 $SEARCH_RESULTS | sort | uniq -c
+
+# Found too many.
+if [[ $numFound -ge "$maxResults" ]]; then
+    printf "\n==> $numFound results is too many to reasonably display. "
+    printf "Check the \"Searching for:\" section above.\n"
+    printf "    You need to quote a 'show name' if it includes spaces.\n\n"
+    exit
+fi
 
 # Vary number of tabs before "Title"
 function printHeader() {
@@ -138,16 +161,6 @@ printHeader $(head -1 $SEARCH_RESULTS)
 
 # Let us know what show this would add
 cut -f 1-3 $SEARCH_RESULTS
-
-# See if we found the right number of results
-numSearched=$(sed -n '$=' $SEARCH_TERMS)
-numFound=$(sed -n '$=' $SEARCH_RESULTS)
-
-# Didn't find any
-if [[ $numFound -eq "0" ]]; then
-    printf "\n==> Didn't find any shows. Check the \"Searching for:\" section above.\n\n"
-    exit
-fi
 
 # Found the same number we were searching for
 if [[ $numSearched -eq $numFound ]]; then
