@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# Equivalent to sort | uniq -c | sort -nr
+#
+# This works without having to sort its input, and it formats the output better than uniq -c
+#
+# USAGE
+#
+# . functions/summarizeTypes.function
+#
+#   cut -f 1 file | summarizeTypes
+#
+#   Given:
+#       actor
+#       director
+#       director
+#       actor
+#       director
+#
+#   Return:
+#       3 director
+#       2 actor
+
+function summarizeTypes() {
+    local fieldwidth fmt_str
+
+    fieldwidth=8
+    fmt_str="%${fieldwidth}s %s\n"
+    awk -v FW="$fmt_str" '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' | sort -nr
+}

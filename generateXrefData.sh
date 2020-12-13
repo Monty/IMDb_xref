@@ -39,6 +39,8 @@ touch $durationFile $configFile
 . functions/saveDurations.function
 # Function to limit the number of durations kept
 . functions/trimDurations.function
+# Function used to summarize the types of shows
+. functions/summarizeTypes.function
 
 # Save the duration of this script in a tab separated file. Get rid of unnecessary files and exit
 #    Script Name          Timestamp            Date String               Duration
@@ -459,18 +461,13 @@ function printAdjustedFileInfo() {
 # Output some stats from $SHOWS
 if [ -s $QUIET ]; then
     printf "\n==> Show types in $SHOWS:\n"
-    cut -f 4 $RAW_SHOWS | 
-        awk '{cnts[$0]+=1} END {for (c in cnts) printf ("%8s %s\n",cnts[c],c)}' |
-        sort -nr
+    cut -f 4 $RAW_SHOWS | summarizeTypes
 
     # Output some stats from credits
     printf "\n==> Stats from processing $CREDITS_PERSON:\n"
     numPersons=$(sed -n '$=' $UNIQUE_PERSONS)
     printf "%8d people credited -- some in more than one job function\n" "$numPersons"
-    for i in actor actress writer director; do
-        count=$(cut -f 1,5 $UNSORTED_CREDITS | sort -fu | rg -cw "$i$")
-        printf "%13d as %s\n" "$count" "$i"
-    done
+    cut -f 1,5 $UNSORTED_CREDITS | sort -fu | cut -f 2 | summarizeTypes
 
     # Output some stats, adjust by 1 if header line is included.
     printf "\n==> Stats from processing IMDb data:\n"

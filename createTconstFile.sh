@@ -32,6 +32,8 @@ cd $DIRNAME
 . functions/define_colors
 . functions/ask_YN.function
 . functions/read_YN.function
+# Function used to summarize the types of shows
+. functions/summarizeTypes.function
 
 # Make sort consistent between Mac and Linux
 export LC_COLLATE="C"
@@ -140,8 +142,7 @@ fi
 
 # Found some shows. Let us know what types.
 printf "==> This will add the following:\n"
-cut -f 2 $SEARCH_RESULTS | tee "SEARCH_RESULTS" |
-    awk '{cnts[$0]+=1} END {for (c in cnts) printf ("%8s %s\n",cnts[c],c)}' | sort -nr
+cut -f 2 $SEARCH_RESULTS | summarizeTypes
 
 # Found too many results.
 if [[ $numFound -ge "$maxResults" ]]; then
