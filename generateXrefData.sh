@@ -459,7 +459,9 @@ function printAdjustedFileInfo() {
 # Output some stats from $SHOWS
 if [ -s $QUIET ]; then
     printf "\n==> Show types in $SHOWS:\n"
-    cut -f 4 $RAW_SHOWS | sort | uniq -c | sort -nr | perl -p -e 's+^+\t+'
+    cut -f 4 $RAW_SHOWS | 
+        awk '{cnts[$0]+=1} END {for (c in cnts) printf ("%8s %s\n",cnts[c],c)}' |
+        sort -nr
 
     # Output some stats from credits
     printf "\n==> Stats from processing $CREDITS_PERSON:\n"

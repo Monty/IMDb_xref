@@ -140,7 +140,8 @@ fi
 
 # Let us know what types of shows we found
 printf "==> This will add the following:\n"
-cut -f 2 $SEARCH_RESULTS | sort | uniq -c
+cut -f 2 $SEARCH_RESULTS | tee "SEARCH_RESULTS" |
+    awk '{cnts[$0]+=1} END {for (c in cnts) printf ("%8s %s\n",cnts[c],c)}' | sort -nr
 
 # Found too many.
 if [[ $numFound -ge "$maxResults" ]]; then
