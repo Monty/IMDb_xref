@@ -127,27 +127,27 @@ TAB=$(printf "\t")
 rg -wNz -f $SEARCH_TERMS "title.basics.tsv.gz" | rg -v "tvEpisode" | cut -f 1-4 |
     sort -fu --field-separator="$TAB" --key=2 | tee $FINAL_RESULTS >$SEARCH_RESULTS
 
-# See if we found the right number of results
+# How many SEARCH_TERMS and SEARCH_RESULTS are there?
 numSearched=$(sed -n '$=' $SEARCH_TERMS)
 numFound=$(sed -n '$=' $SEARCH_RESULTS)
 
-# Didn't find any
+# Didn't find any results
 if [[ $numFound -eq "0" ]]; then
     printf "==> Didn't find ${RED}any${NO_COLOR} matching shows. "
     printf "Check the \"Searching for:\" section above.\n\n"
     exit
 fi
 
-# Let us know what types of shows we found
+# Found some shows. Let us know what types.
 printf "==> This will add the following:\n"
 cut -f 2 $SEARCH_RESULTS | tee "SEARCH_RESULTS" |
     awk '{cnts[$0]+=1} END {for (c in cnts) printf ("%8s %s\n",cnts[c],c)}' | sort -nr
 
-# Found too many.
+# Found too many results.
 if [[ $numFound -ge "$maxResults" ]]; then
     printf "\n==> $numFound results is too many to reasonably display. "
     printf "Check the \"Searching for:\" section above.\n"
-    printf "    You need to quote a 'show name' if it includes spaces.\n\n"
+    printf "    ** You need to quote a 'show name' if it includes spaces. **\n\n"
     exit
 fi
 
@@ -160,10 +160,11 @@ function printHeader() {
 #
 printHeader $(head -1 $SEARCH_RESULTS)
 
-# Let us know what show this would add
+# Let us know what shows this would add
+# Displaying more than three columns is confusing if cols 3 & 4 are the same
 cut -f 1-3 $SEARCH_RESULTS
 
-# Found the same number we were searching for
+# Found the same number of results we were searching for
 if [[ $numSearched -eq $numFound ]]; then
     printf "\n==> Found all the shows searched for.\n"
     addToFileP
@@ -177,14 +178,17 @@ fi
 
 # Found more than we were searching for
 if [[ $numFound -gt $numSearched ]]; then
-    printf "\n==> Found more shows than expected. These are the most likely matches.\n"
+    printf "\n==> Found more shows than expected.\n"
     rg -wN "^tt[0-9]{7,8}" $SEARCH_TERMS >$BESTMATCH
     rg -wN -f $BESTMATCH $SEARCH_RESULTS | tee $FINAL_RESULTS
-    addToFileP
+    if [ -s $FINAL_RESULTS ]; then
+        printf "\n==> These are the most likely matches.\n"
+        addToFileP
+    fi
     printf "\n==> These are the ${RED}questionable${NO_COLOR} matches.\n"
     rg -wNv -f $BESTMATCH $SEARCH_RESULTS | sort -f --field-separator="$TAB" --key=2,2 --key=3,3
-    printf "\n==> Sorry, but I can't  resolve this automatically quite yet. If you spot the tconst\n"
-    printf "    of the show you want, re-run ./createTconstFile.sh with that tconst.\n"
+    printf "\n==> Sorry, but I can't resolve this automatically quite yet. If you spot the\n"
+    printf "    tconst of the show you want, re-run ./createTconstFile.sh with that tconst.\n"
     printf "\n==> ${RED}Some candidates${NO_COLOR} are:\n"
     rg -wNv -f $BESTMATCH $SEARCH_RESULTS | rg -e "\ttvSeries\t" -e "\ttvMiniSeries\t" |
         sort -f --field-separator="$TAB" --key=2,2 --key=3,3
