@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# Print the last recorded duration of scriptName if one is found
+#
+# Duration files are tab separated -- used to record script durations for predictions and stats
+#
+#    Script Name          Timestamp            Date String               Duration
+# generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
+#
+# USAGE
+# . functions/printDuration.function
+#
+#   printDuration scriptName durationFile
+
+function printDuration() {
+    local scriptName durationFile
+
+    scriptName="$1"
+    durationFile="$2"
+
+    if [ $(rg -c "^$scriptName\t" $durationFile) ]; then
+    printf "\n==> Previously, this took "
+    rg "^$scriptName\t" $durationFile | tail -1 | cut -f 4
+    printf "\n"
+fi
+}

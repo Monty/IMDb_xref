@@ -39,12 +39,11 @@ touch $durationFile $configFile
 . functions/saveDurations.function
 # Function to limit the number of durations kept
 . functions/trimDurations.function
+# Function to print the last recorded duration
+. functions/printDuration.function
 # Function used to summarize the types of shows
 . functions/summarizeTypes.function
 
-# Save the duration of this script in a tab separated file. Get rid of unnecessary files and exit
-#    Script Name          Timestamp            Date String               Duration
-# generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 function terminate() {
     saveDurations $scriptName $durationFile $SECONDS
     # Only keep 10 duration lines for this script
@@ -335,11 +334,7 @@ printf "==> Processing $num_titles shows found in $TCONST_FILES:\n"
 perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
 
 # Let us know how long it took last time
-if [ $(rg -c "^$scriptName\t" $durationFile) ]; then
-    printf "\n==> Previously, this took "
-    rg "^$scriptName\t" $durationFile | tail -1 | cut -f 4
-    printf "\n"
-fi
+printDuration $scriptName $durationFile
 
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
 rg -wNz -f $TCONST_LIST title.episode.tsv.gz | perl -p -e 's+\\N++g;' |

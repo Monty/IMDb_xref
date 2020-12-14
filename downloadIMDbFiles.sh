@@ -16,10 +16,9 @@ touch $durationFile $configFile
 . functions/saveDurations.function
 # Function to limit the number of durations kept
 . functions/trimDurations.function
+# Function to print the last recorded duration
+. functions/printDuration.function
 
-# Save the duration of this script in a tab separated file and exit.
-#    Script Name          Timestamp            Date String               Duration
-# generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 function terminate() {
     saveDurations $scriptName $durationFile $SECONDS
     # Only keep 3 duration lines for this script
@@ -36,11 +35,8 @@ fi
 
 printf "==> Downloading new IMDb .gz files.\n"
 
-if [ $(rg -c "^$scriptName\t" $durationFile) ]; then
-    printf "\n==> Previously, this took "
-    rg "^$scriptName\t" $durationFile | tail -1 | cut -f 4
-    printf "\n"
-fi
+# Let us know how long it took last time
+printDuration $scriptName $durationFile
 
 for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
     source="https://datasets.imdbws.com/$file"
