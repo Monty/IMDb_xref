@@ -24,6 +24,7 @@ DIRNAME=$(dirname "$0")
 cd $DIRNAME
 . functions/define_colors
 . functions/define_files
+. functions/load_functions
 
 function help() {
     cat <<EOF
@@ -48,8 +49,16 @@ EXAMPLES:
 EOF
 }
 
-# Make sort consistent between Mac and Linux
-export LC_COLLATE="C"
+# Don't leave tempfiles around
+trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
+
+# trap ctrl-c and call cleanup
+trap cleanup INT
+#
+function cleanup() {
+    printf "\nCtrl-C detected. Exiting.\n" >&2
+    exit 130
+}
 
 while getopts ":f:hasi" opt; do
     case $opt in
@@ -83,17 +92,6 @@ shift $((OPTIND - 1))
 # Need some tempfiles
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
-
-# Don't leave tempfiles around
-trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
-
-# trap ctrl-c and call cleanup
-trap cleanup INT
-#
-function cleanup() {
-    printf "\nCtrl-C detected. Exiting.\n" >&2
-    exit 130
-}
 
 # Make sure a search term was supplied
 if [ $# -eq 0 ]; then

@@ -3,21 +3,15 @@
 #
 # See https://www.imdb.com/interfaces/ for a description of IMDb Datasets
 
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+. functions/define_colors
+. functions/define_files
+. functions/load_functions
+
 # Keep track of elapsed time
 SECONDS=0
-
-# Need some configuration variables
-scriptName="$(basename $0)"
-durationFile=".xref_durations"
-configFile=".xref_config"
-touch $durationFile $configFile
-
-# Function to save execution time and duration
-. functions/saveDurations.function
-# Function to limit the number of durations kept
-. functions/trimDurations.function
-# Function to print the last recorded duration
-. functions/printDuration.function
 
 function terminate() {
     saveDurations $SECONDS

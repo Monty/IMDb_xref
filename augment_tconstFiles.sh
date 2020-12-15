@@ -4,6 +4,14 @@
 #
 # Preserve all non-tconst lines into a header
 
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+export LC_COLLATE="C"
+. functions/define_colors
+. functions/define_files
+. functions/load_functions
+
 function help() {
     cat <<EOF
 Expand the IDs in .tconst files to add Type, Primary Title, and Original Title
@@ -34,12 +42,16 @@ EXAMPLES:
 EOF
 }
 
-# Make sure we are in the correct directory
-DIRNAME=$(dirname "$0")
-cd $DIRNAME
+# Don't leave tempfiles around
+trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
 
-# Make sort consistent between Mac and Linux
-export LC_COLLATE="C"
+# trap ctrl-c and call cleanup
+trap cleanup INT
+#
+function cleanup() {
+    printf "\nCtrl-C detected. Exiting.\n" >&2
+    exit 130
+}
 
 while getopts ":hiy" opt; do
     case $opt in
@@ -63,17 +75,6 @@ shift $((OPTIND - 1))
 # Need some tempfiles
 RESULT=$(mktemp)
 TCONSTS=$(mktemp)
-
-# Don't leave tempfiles around
-trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
-
-# trap ctrl-c and call cleanup
-trap cleanup INT
-#
-function cleanup() {
-    printf "\nCtrl-C detected. Exiting.\n" >&2
-    exit 130
-}
 
 # Make sure a file was supplied
 if [ $# -eq 0 ]; then

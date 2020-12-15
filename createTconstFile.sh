@@ -2,6 +2,18 @@
 #
 # Add a tconst to a file
 
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+export LC_COLLATE="C"
+. functions/define_colors
+. functions/define_files
+. functions/load_functions
+
+# Limit the number of results to display in case someone uses an unquoted string
+# We may be able to suggest new search results after we enhance the search logic
+maxResults=100
+
 function help() {
     cat <<EOF
 Add a tconst to a file
@@ -21,22 +33,16 @@ EXAMPLES:
 EOF
 }
 
-# Limit the number of results to display in case someone uses an unquoted string
-# We may be able to suggest new search results after we enhance the search logic
-maxResults=100
+# Don't leave tempfiles around
+trap "rm -rf $SEARCH_TERMS $SEARCH_RESULTS $FINAL_RESULTS $BESTMATCH" EXIT
 
-# Make sure we are in the correct directory
-DIRNAME=$(dirname "$0")
-cd $DIRNAME
-
-. functions/define_colors
-. functions/ask_YN.function
-. functions/read_YN.function
-# Function used to summarize the types of shows
-. functions/summarizeTypes.function
-
-# Make sort consistent between Mac and Linux
-export LC_COLLATE="C"
+# trap ctrl-c and call cleanup
+trap cleanup INT
+#
+function cleanup() {
+    printf "\nCtrl-C detected. Exiting.\n" >&2
+    exit 130
+}
 
 while getopts ":f:h" opt; do
     case $opt in
@@ -63,17 +69,6 @@ SEARCH_TERMS=$(mktemp)
 SEARCH_RESULTS=$(mktemp)
 FINAL_RESULTS=$(mktemp)
 BESTMATCH=$(mktemp)
-
-# Don't leave tempfiles around
-trap "rm -rf $SEARCH_TERMS $SEARCH_RESULTS $FINAL_RESULTS $BESTMATCH" EXIT
-
-# trap ctrl-c and call cleanup
-trap cleanup INT
-#
-function cleanup() {
-    printf "\nCtrl-C detected. Exiting.\n" >&2
-    exit 130
-}
 
 # Make sure a tconst was supplied
 if [ $# -eq 0 ]; then

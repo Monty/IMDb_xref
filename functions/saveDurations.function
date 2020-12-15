@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Save the duration of this script in a file.
+# Save the duration of scriptName in a file.
 #
 # Duration files are tab separated -- used to record script durations for predictions and stats
 #

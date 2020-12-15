@@ -15,6 +15,7 @@
 #       cd $DIRNAME
 #       . functions/define_colors  # Only if you want colors to be used in output
 #       . functions/define_files
+#       . functions/load_functions
 
 # Standard files
 configFile=".xref_config"

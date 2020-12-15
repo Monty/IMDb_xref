@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# Load any files in the function directory named *.function
+#
+# USAGE:
+#   . functions/load_functions
+#
+# NOTES:
+#   Should appear in the initial stanza of all scripts, even if they are not yet used
+#   Put the string "load" in the environment variable DEBUG_XREF to turn on debugging
+#
+# EXAMPLE:
+#       # Make sure we are in the correct directory
+#       DIRNAME=$(dirname "$0")
+#       cd $DIRNAME
+#       . functions/define_colors  # Only if you want colors to be used in output
+#       . functions/define_files
+#       . functions/load_functions
+
+for file in $(ls functions/*.function); do
+    . $file
+    [[ $DEBUG_XREF == *"load"* ]] &&
+        printf "[${YELLOW}Debug-load${NO_COLOR}] Loading: $(basename $file)\n"
+done

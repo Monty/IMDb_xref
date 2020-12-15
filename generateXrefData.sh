@@ -27,28 +27,13 @@
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
 cd $DIRNAME
+export LC_COLLATE="C"
 . functions/define_colors
 . functions/define_files
+. functions/load_functions
 
 # Keep track of elapsed time
 SECONDS=0
-
-# Function to save execution time and duration
-. functions/saveDurations.function
-# Function to limit the number of durations kept
-. functions/trimDurations.function
-# Function to print the last recorded duration
-. functions/printDuration.function
-# Function used to summarize the types of shows
-. functions/summarizeTypes.function
-
-function terminate() {
-    saveDurations $SECONDS
-    # Only keep 10 duration lines for this script
-    trimDurations 10
-    [ -s $DEBUG ] && rm -f $ALL_WORKING $ALL_CSV
-    exit
-}
 
 function help() {
     cat <<EOF
@@ -78,6 +63,14 @@ function cleanup() {
     exit 130
 }
 
+function terminate() {
+    saveDurations $SECONDS
+    # Only keep 10 duration lines for this script
+    trimDurations 10
+    [ -s $DEBUG ] && rm -f $ALL_WORKING $ALL_CSV
+    exit
+}
+
 function breakpoint() {
     if [ -n "$DEBUG" ]; then
         read -r -p "Quit now? [y/N] " YESNO
@@ -87,9 +80,6 @@ function breakpoint() {
         fi
     fi
 }
-
-# Make sort consistent between Mac and Linux
-export LC_COLLATE="C"
 
 while getopts ":o:x:hdqtv" opt; do
     case $opt in
