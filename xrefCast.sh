@@ -19,6 +19,12 @@
 #
 #   Experiment to find the most useful results.
 
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+. functions/define_colors
+. functions/define_files
+
 function help() {
     cat <<EOF
 Cross-reference shows, actors, and the characters they portray using data from IMDB.
@@ -41,10 +47,6 @@ EXAMPLES:
 
 EOF
 }
-
-# Make sure we are in the correct directory
-DIRNAME=$(dirname "$0")
-cd $DIRNAME
 
 # Make sort consistent between Mac and Linux
 export LC_COLLATE="C"

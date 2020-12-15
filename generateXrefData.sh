@@ -24,16 +24,20 @@
 #
 #       Defaults to all .xlate files, or specify one with -x [file] on the command line
 
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+. functions/define_colors
+. functions/define_files
+
 # Keep track of elapsed time
 SECONDS=0
+
 # For places that a bare "\t" doesn't work.
 TAB=$(printf "\t")
 
 # Need some configuration variables
 scriptName="$(basename $0)"
-durationFile=".xref_durations"
-configFile=".xref_config"
-touch $durationFile $configFile
 
 # Function to save execution time and duration
 . functions/saveDurations.function
@@ -89,10 +93,6 @@ function breakpoint() {
         fi
     fi
 }
-
-# Make sure we are in the correct directory
-DIRNAME=$(dirname "$0")
-cd $DIRNAME
 
 # Make sort consistent between Mac and Linux
 export LC_COLLATE="C"

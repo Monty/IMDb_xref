@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# Define standard files required by other scripts, create them if they don't exist
+#
+# USAGE:
+#   . functions/define_files
+#
+# NOTES:
+#   Should appear in the initial stanza of all scripts, even if they are not yet used
+#   Put the string "files" in the environment variable DEBUG_XREF to turn on debugging
+#
+# EXAMPLE:
+#       # Make sure we are in the correct directory
+#       DIRNAME=$(dirname "$0")
+#       cd $DIRNAME
+#       . functions/define_colors  # Only if you want colors to be used in output
+#       . functions/define_files
+
+# Standard files
+configFile=".xref_config"
+[ ! -e "$configFile" ] && touch "$configFile"
+
+durationFile=".xref_durations"
+[ ! -e "$durationFile" ] && touch "$durationFile"
+
+# Look for the string "files" in $DEBUG_XREF to enable debugging
+if [[ $DEBUG_XREF == *"files"* ]]; then
+    printf "[${YELLOW}Debug${NO_COLOR}] Running:\t\t $PWD/$(basename $0)\n" >&2
+    printf "[${YELLOW}Debug${NO_COLOR}] Using configFile:\t $PWD/$configFile\n" >&2
+    printf "[${YELLOW}Debug${NO_COLOR}] Using durationFile:\t $PWD/$durationFile\n" >&2
+fi
