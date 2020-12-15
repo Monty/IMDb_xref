@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
+#
 # Remove all files and directories created by running scripts
 
-printf "Answer y to delete, anything else to skip. Deletion cannot be undone!\n"
-printf "\n"
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+export LC_COLLATE="C"
+. functions/define_colors
+. functions/define_files
+. functions/load_functions
+
+function deleteFiles() {
+    printf "Deleting ...\n"
+    # Don't quote $@. Globbing needs to take place here.
+    rm -rf $ASK $TELL $@
+    printf "\n"
+}
 
 # Allow switches -v or -i to be passed to the rm command
 while getopts ":iv" opt; do
@@ -20,34 +33,37 @@ while getopts ":iv" opt; do
 done
 shift $((OPTIND - 1))
 
-# Ask $1 first, shift, then rm $@
-function yesnodelete() {
-    read -r -p "Delete $1? [y/N] " YESNO
-    shift
-    if [ "$YESNO" != "y" ]; then
-        printf "Skipping...\n"
-    else
-        printf "Deleting ...\n"
-        # Don't quote $@. Globbing needs to take place here.
-        rm -rf $ASK $TELL $@
-    fi
-    printf "\n"
-}
-
-# Quote filenames so globbing takes place in the "rm" command itself,
+# Quote filenames so globbing takes place in the "deleteFiles" function,
 # i.e. the function is passed the number of parameters seen below, not
 # the expanded list which could be quite long.
-yesnodelete "all Shows spreadsheets" "Shows-*.csv"
-yesnodelete "all Credits spreadsheets" "Credits-*.csv" "Persons-KnownFor*.csv" "LinksToPersons*.csv" \
-    "LinksToTitles*.csv" "AssociatedTitles*.csv"
-yesnodelete "all uniq files" "uniq*.txt"
-yesnodelete "all secondary spreadsheet files" "secondary"
-yesnodelete "all diff results" "diffs*.txt"
-yesnodelete "all diff baselines" "baseline" "test_results"
-yesnodelete "all downloaded IMDB .gz files" "title.basics.tsv.gz" "title.episode.tsv.gz" \
-    "title.principals.tsv.gz" "name.basics.tsv.gz"
+if ask_YN "Delete primary spreadsheets that contain information on credits, shows, and episodes?" N; then
+    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" "AssociatedTitles*.csv"
+else
+    printf "Skipping...\n"
+fi
 
-printf "[Warning] The following files are usually manually created. They are ignored by git.\n\n"
+if ask_YN "Delete smaller files that only contain lists of persons and shows?" N; then
+    deleteFiles "LinksToPersons*.csv" "LinksToTitles*.csv" "uniq*.txt"
+else
+    printf "Skipping...\n"
+fi
 
-yesnodelete "all user-created .tconst files" "*.tconst"
-yesnodelete "all user-created .xlate files" "*.xlate"
+if ask_YN "Delete all files generated during debugging?" N; then
+    deleteFiles "secondary" "diffs*.txt" "baseline" "test_results"
+else
+    printf "Skipping...\n"
+fi
+
+if ask_YN "Delete all the .gz files downloaded from IMDb?" N; then
+    deleteFiles "*.tsv.gz"
+else
+    printf "Skipping...\n"
+fi
+
+printf "\n[${RED}Warning${NO_COLOR}] The following files are usually manually created. They are ignored by git.\n\n"
+
+if ask_YN "Delete all manually maintained .tconst and .xlate files?" N; then
+    deleteFiles "*.tconst" "*.xlate"
+else
+    printf "Skipping...\n"
+fi
