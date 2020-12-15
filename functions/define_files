@@ -6,7 +6,7 @@
 #   . functions/define_files
 #
 # NOTES:
-#   Should appear in the initial stanza of all scripts, even if they are not yet used
+#   Should appear in the initial stanza of all non-trivial scripts, even if they are not yet used
 #   Put the string "files" in the environment variable DEBUG_XREF to turn on debugging
 #
 # EXAMPLE:

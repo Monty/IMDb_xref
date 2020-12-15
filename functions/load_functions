@@ -6,7 +6,7 @@
 #   . functions/load_functions
 #
 # NOTES:
-#   Should appear in the initial stanza of all scripts, even if they are not yet used
+#   Should appear in the initial stanza of all non-trivial scripts, even if they are not yet used
 #   Put the string "load" in the environment variable DEBUG_XREF to turn on debugging
 #
 # EXAMPLE:
