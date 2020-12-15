@@ -8,19 +8,19 @@
 # generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 #
 # USAGE
-# . functions/printDuration.function
+#   . functions/define_files
+#   . functions/printDuration.function
 #
-#   printDuration scriptName durationFile
+#   printDuration
 
 function printDuration() {
-    local scriptName durationFile
+    local scriptName
 
-    scriptName="$1"
-    durationFile="$2"
+    scriptName="$(basename $0)"
 
     if [ $(rg -c "^$scriptName\t" $durationFile) ]; then
-    printf "\n==> Previously, this took "
-    rg "^$scriptName\t" $durationFile | tail -1 | cut -f 4
-    printf "\n"
-fi
+        printf "\n==> Previously, this took "
+        rg "^$scriptName\t" $durationFile | tail -1 | cut -f 4
+        printf "\n"
+    fi
 }

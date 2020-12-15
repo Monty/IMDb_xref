@@ -6,20 +6,20 @@
 #
 #    Script Name          Timestamp            Date String               Duration
 # generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
-# 
+#
 # Timestamp and Date String are the same time, Timestamp for sorting. Date String for humans.
 #
 # USAGE
+#   . functions/define_files
 #   . functions/saveDurations.function
 #
-#   saveDurations scriptName durationFile $SECONDS
+#   saveDurations $SECONDS
 
 function saveDurations() {
-    local scriptName durationFile secs date_fmt date_str timestamp mins duration
+    local scriptName secs date_fmt date_str timestamp mins duration
 
-    scriptName="$1"
-    durationFile="$2"
-    secs="$3"
+    scriptName="$(basename $0)"
+    secs="$1"
 
     # The date & time this function ran
     date_fmt="%y%m%d.%H%M%S"

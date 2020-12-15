@@ -20,9 +20,9 @@ touch $durationFile $configFile
 . functions/printDuration.function
 
 function terminate() {
-    saveDurations $scriptName $durationFile $SECONDS
+    saveDurations $SECONDS
     # Only keep 3 duration lines for this script
-    trimDurations $scriptName $durationFile 3
+    trimDurations 3
     exit
 }
 
@@ -36,7 +36,7 @@ fi
 printf "==> Downloading new IMDb .gz files.\n"
 
 # Let us know how long it took last time
-printDuration $scriptName $durationFile
+printDuration
 
 for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
     source="https://datasets.imdbws.com/$file"

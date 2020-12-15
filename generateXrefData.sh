@@ -36,9 +36,6 @@ SECONDS=0
 # For places that a bare "\t" doesn't work.
 TAB=$(printf "\t")
 
-# Need some configuration variables
-scriptName="$(basename $0)"
-
 # Function to save execution time and duration
 . functions/saveDurations.function
 # Function to limit the number of durations kept
@@ -49,9 +46,9 @@ scriptName="$(basename $0)"
 . functions/summarizeTypes.function
 
 function terminate() {
-    saveDurations $scriptName $durationFile $SECONDS
+    saveDurations $SECONDS
     # Only keep 10 duration lines for this script
-    trimDurations $scriptName $durationFile 10
+    trimDurations 10
     [ -s $DEBUG ] && rm -f $ALL_WORKING $ALL_CSV
     exit
 }
@@ -334,7 +331,7 @@ printf "==> Processing $num_titles shows found in $TCONST_FILES:\n"
 perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
 
 # Let us know how long it took last time
-printDuration $scriptName $durationFile
+printDuration
 
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
 rg -wNz -f $TCONST_LIST title.episode.tsv.gz | perl -p -e 's+\\N++g;' |

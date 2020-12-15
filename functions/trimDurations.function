@@ -8,17 +8,17 @@
 # generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 #
 # USAGE
-# . functions/trimDurations.function
+#   . functions/define_files
+#   . functions/trimDurations.function
 #
-#   trimDurations scriptName durationFile maxlines
+#   trimDurations maxlines
 
 function trimDurations() {
-    local TAB scriptName durationFile maxlines linesfound
+    local TAB scriptName maxlines linesfound
 
     TAB=$(printf "\t")
-    scriptName="$1"
-    durationFile="$2"
-    maxlines="$3"
+    scriptName="$(basename $0)"
+    maxlines="$1"
 
     linesfound=$(rg -c "^$scriptName\t" $durationFile)
     if [[ $linesfound -gt $maxlines ]]; then
