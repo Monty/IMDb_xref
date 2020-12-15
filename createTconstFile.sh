@@ -98,7 +98,7 @@ function addToFileP() {
         printf "Ok. Adding:\n"
         cat $FINAL_RESULTS >>$TCONST_FILE
         ask_YN "    Shall I sort $TCONST_FILE by title?" Y && ./augment_tconstFiles.sh -iy $TCONST_FILE
-        ask_YN "    Shall I update your data files?"  Y && ./generateXrefData.sh -q
+        ask_YN "    Shall I update your data files?" Y && ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
     fi
@@ -137,7 +137,7 @@ printf "==> This will add the following:\n"
 cut -f 2 $SEARCH_RESULTS | summarizeTypes
 
 # Found too many results.
-if [[ $numFound -ge "$maxResults" ]]; then
+if [[ $numFound -ge $maxResults ]]; then
     printf "\n==> $numFound results is too many to reasonably display. "
     printf "Check the \"Searching for:\" section above.\n"
     printf "    ** You need to quote a 'show name' if it includes spaces. **\n\n"

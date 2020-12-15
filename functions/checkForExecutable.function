@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+#
+# Check that there is an executable version of $1. Exit unless "quietly" is requested.
+#
+# USAGE
+#   . functions/checkForExecutable.function
+#
+#   checkForExecutable exeName
+#   checkForExecutable quietly
+#
+# EXAMPLE
+#
+#   # If you want to handle failures yourself...
+#   if checkForExecutable curl quietly; then
+#       # code if passed
+#   else
+#       # code if failed
+#   fi
+
+function checkForExecutable() {
+    local exeName mode
+
+    exeName="$1"
+    mode="$2"
+
+    # Make sure we can execute exeName.
+    if [ ! -x "$(which $exeName 2>/dev/null)" ]; then
+        if [ "$mode" != "quietly" ]; then
+            printf "==> [${RED}Error${NO_COLOR}] Can't run ${RED}$exeName${NO_COLOR}. " >&2
+            printf "Install ${RED}$exeName${NO_COLOR} and rerun this script.\n\n" >&2
+            exit 1
+        fi
+        return 1
+    fi
+}

@@ -117,12 +117,7 @@ done
 shift $((OPTIND - 1))
 
 # Make sure we can execute rg.
-if [ ! -x "$(which rg 2>/dev/null)" ]; then
-    printf "[Error] Can't run rg. Install rg and rerun this script.\n" >&2
-    printf "        zgrep could be used, but is 15x slower in my tests.\n" >&2
-    printf "        See https://crates.io/crates/ripgrep for details.\n\n" >&2
-    exit 1
-fi
+checkForExecutable rg
 
 # If we ALWAYS want QUIET
 [ $(rg -c "QUIET=yes" $configFile) ] && QUIET="yes"
@@ -134,11 +129,8 @@ if [ -e "name.basics.tsv.gz" ] && [ -e "title.basics.tsv.gz" ] && [ -e "title.pr
 else
     [ -s $QUIET ] && printf "==> Downloading new IMDb .gz files.\n"
     # Make sure we can execute curl.
-    if [ ! -x "$(which curl 2>/dev/null)" ]; then
-        printf "[Error] Can't run curl. Install curl and rerun this script.\n" >&2
-        printf "        To test, type:  curl -Is https://github.com/ | head -5\n\n" >&2
-        exit 1
-    fi
+    checkForExecutable curl
+    #
     for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
         if [ ! -e "$file" ]; then
             source="https://datasets.imdbws.com/$file"
