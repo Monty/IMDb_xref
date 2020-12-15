@@ -6,7 +6,7 @@
 #    ./countIMDbInstances.sh Catarella
 
 for srchString in "$@"; do
-    for file in $(ls *.gz); do
+    for file in $(ls *.tsv.gz); do
         count=$(rg -wcz "$srchString" $file)
         if [ "$count" == "" ]; then
             count=0

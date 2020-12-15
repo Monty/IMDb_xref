@@ -8,7 +8,7 @@
 #    ./listIMDbInstances.sh Catarella
 
 for srchString in "$@"; do
-    for file in $(ls *.gz); do
+    for file in $(ls *.tsv.gz); do
         printf "==> $file\n"
         rg -wNz "$srchString" $file
         printf "\n"
