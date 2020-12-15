@@ -122,12 +122,9 @@ done
 cat $SEARCH_TERMS
 printf "\n"
 
-# Can't use /t in "sort --field-separator", so setup a TAB variable
-TAB=$(printf "\t")
-
 # Find the tconst IDs
 rg -wNz -f $SEARCH_TERMS "title.basics.tsv.gz" | rg -v "tvEpisode" | cut -f 1-4 |
-    sort -fu --field-separator="$TAB" --key=2 | tee $FINAL_RESULTS >$SEARCH_RESULTS
+    sort -fu --field-separator=$'\t' --key=2 | tee $FINAL_RESULTS >$SEARCH_RESULTS
 
 # How many SEARCH_TERMS and SEARCH_RESULTS are there?
 numSearched=$(sed -n '$=' $SEARCH_TERMS)
@@ -187,10 +184,10 @@ if [[ $numFound -gt $numSearched ]]; then
         addToFileP
     fi
     printf "\n==> These are the ${RED}questionable${NO_COLOR} matches.\n"
-    rg -wNv -f $BESTMATCH $SEARCH_RESULTS | sort -f --field-separator="$TAB" --key=2,2 --key=3,3
+    rg -wNv -f $BESTMATCH $SEARCH_RESULTS | sort -f --field-separator=$'\t' --key=2,2 --key=3,3
     printf "\n==> Sorry, but I can't resolve this automatically quite yet. If you spot the\n"
     printf "    tconst of the show you want, re-run ./createTconstFile.sh with that tconst.\n"
     printf "\n==> ${RED}Some candidates${NO_COLOR} are:\n"
     rg -wNv -f $BESTMATCH $SEARCH_RESULTS | rg -e "\ttvSeries\t" -e "\ttvMiniSeries\t" |
-        sort -f --field-separator="$TAB" --key=2,2 --key=3,3
+        sort -f --field-separator=$'\t' --key=2,2 --key=3,3
 fi

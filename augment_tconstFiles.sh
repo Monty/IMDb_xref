@@ -81,9 +81,6 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-# Can't use /t in "sort --field-separator", so setup a TAB variable
-TAB=$(printf "\t")
-
 for file in "$@"; do
     [ -z "$INPLACE" ] && printf "==> $file\n"
 
@@ -95,7 +92,7 @@ for file in "$@"; do
 
     # Look them up, get fields 1-4, and sort by Primary Title
     rg -wNz -f "$TCONSTS" title.basics.tsv.gz | cut -f 1-4 |
-        sort -f --field-separator="$TAB" --key=3,3 >>$RESULT
+        sort -f --field-separator=$'\t' --key=3,3 >>$RESULT
 
     # Either overwrite or print on stdout
     if [ -n "$INPLACE" ]; then

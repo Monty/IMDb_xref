@@ -14,9 +14,8 @@
 #   trimDurations maxlines
 
 function trimDurations() {
-    local TAB scriptName maxlines linesfound
+    local scriptName maxlines linesfound
 
-    TAB=$(printf "\t")
     scriptName="$(basename $0)"
     maxlines="$1"
 
@@ -25,7 +24,7 @@ function trimDurations() {
         TMPFILE=$(mktemp)
         rg "^$scriptName\t" $durationFile | tail -$maxlines >$TMPFILE
         rg -v "^$scriptName\t" $durationFile >>$TMPFILE
-        sort -f --field-separator="$TAB" --key=2,2 $TMPFILE >$durationFile
+        sort -f --field-separator=$'\t' --key=2,2 $TMPFILE >$durationFile
         rm -rf $TMPFILE
     fi
 }

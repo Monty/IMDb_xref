@@ -25,7 +25,7 @@ durationFile=".xref_durations"
 
 # Look for the string "files" in $DEBUG_XREF to enable debugging
 if [[ $DEBUG_XREF == *"files"* ]]; then
-    printf "[${YELLOW}Debug${NO_COLOR}] Running:\t\t $PWD/$(basename $0)\n" >&2
-    printf "[${YELLOW}Debug${NO_COLOR}] Using configFile:\t $PWD/$configFile\n" >&2
-    printf "[${YELLOW}Debug${NO_COLOR}] Using durationFile:\t $PWD/$durationFile\n" >&2
+    printf "[${YELLOW}Debug-files${NO_COLOR}] Running:              $PWD/$(basename $0)\n" >&2
+    printf "[${YELLOW}Debug-files${NO_COLOR}] Using configFile:     $PWD/$configFile\n" >&2
+    printf "[${YELLOW}Debug-files${NO_COLOR}] Using durationFile:   $PWD/$durationFile\n" >&2
 fi

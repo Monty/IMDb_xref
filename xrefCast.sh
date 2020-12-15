@@ -124,9 +124,6 @@ for a in "$@"; do
 done
 cat $SEARCH_TERMS
 
-# Can't use /t in "sort --field-separator", so setup a TAB variable
-TAB=$(printf "\t")
-
 # Setup awk printf formats with spaces or tabs
 # Name|Job|Show|Episode|Role
 PSPACE='%-20s  %-10s  %-40s  %-17s  %s\n'
@@ -136,7 +133,7 @@ PTAB='%s\t%s\t%s\t%s\t%s\n'
 if [ $(rg -wNzSI -c -f $SEARCH_TERMS $SEARCH_FILE) ]; then
     rg -wNzSI --color always -f $SEARCH_TERMS $SEARCH_FILE |
         awk -F "\t" -v PF="$PTAB" '{printf (PF, $1,$5,$2,$3,$6)}' |
-        sort -f --field-separator="$TAB" --key=1,1 --key=3,3 -fu >$TMPFILE
+        sort -f --field-separator=$'\t' --key=1,1 --key=3,3 -fu >$TMPFILE
 fi
 
 # Get rid of initial single quote that was used to force show/episode names in spreadsheet to be strings.

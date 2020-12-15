@@ -33,9 +33,6 @@ cd $DIRNAME
 # Keep track of elapsed time
 SECONDS=0
 
-# For places that a bare "\t" doesn't work.
-TAB=$(printf "\t")
-
 # Function to save execution time and duration
 . functions/saveDurations.function
 # Function to limit the number of durations kept
@@ -335,12 +332,12 @@ printDuration
 
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
 rg -wNz -f $TCONST_LIST title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
-    sort -f --field-separator="$TAB" --key=2,2 --key=3,3n --key=4,4n | rg -wv -f $SKIP_TCONST |
+    sort -f --field-separator=$'\t' --key=2,2 --key=3,3n --key=4,4n | rg -wv -f $SKIP_TCONST |
     tee $UNSORTED_EPISODES | cut -f 1 >$EPISODES_LIST
 
 # Use the episodes list to generate raw episodes
 rg -wNz -f $EPISODES_LIST title.basics.tsv.gz | cut -f 1-4,6-9 | perl -p -f $XLATE_PL |
-    perl -p -e 's+\\N++g;' | sort -f --field-separator="$TAB" --key=3,3 --key=5,5 --key=4,4 >$RAW_EPISODES
+    perl -p -e 's+\\N++g;' | sort -f --field-separator=$'\t' --key=3,3 --key=5,5 --key=4,4 >$RAW_EPISODES
 
 # Use the tconst list to lookup principal titles and generate a tconst/nconst credits csv
 # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
@@ -388,7 +385,7 @@ cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' |
 printf "nconst\tName\tHyperlink to Name\n" >$LINKS_TO_PERSONS
 cut -f 1,2 $RAW_PERSONS | perl -F"\t" -lane \
     'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/name/@F[0]\";\"@F[1]\")";' |
-    sort -fu --field-separator="$TAB" --key=2,2 >>$LINKS_TO_PERSONS
+    sort -fu --field-separator=$'\t' --key=2,2 >>$LINKS_TO_PERSONS
 
 # Create a tconst list of the knownForTitles
 cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' | sort -u >$KNOWNFOR_LIST
@@ -401,13 +398,13 @@ rg -wNz -f $KNOWNFOR_LIST title.basics.tsv.gz | perl -p -f $XLATE_PL | cut -f 1,
 printf "tconst\tShow Title\tHyperlink to Title\n" >$LINKS_TO_TITLES
 perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_SHOWS_PL | perl -F"\t" -lane \
     'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
-    sort -fu --field-separator="$TAB" --key=2,2 >>$LINKS_TO_TITLES
+    sort -fu --field-separator=$'\t' --key=2,2 >>$LINKS_TO_TITLES
 
 # Create a spreadsheet of associated titles gained from IMDb knownFor data
 printf "tconst\tShow Title\tHyperlink to Title\n" >$ASSOCIATED_TITLES
 perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL | perl -F"\t" -lane \
     'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
-    sort -fu --field-separator="$TAB" --key=2,2 | rg -wv -f $TCONST_LIST >>$ASSOCIATED_TITLES
+    sort -fu --field-separator=$'\t' --key=2,2 | rg -wv -f $TCONST_LIST >>$ASSOCIATED_TITLES
 
 # Add episodes into raw shows
 perl -p -f $TCONST_EPISODES_PL $RAW_EPISODES >>$RAW_SHOWS
@@ -428,14 +425,14 @@ cut -f 2 $RAW_PERSONS | sort -fu >$UNIQUE_PERSONS
 printf "Show Title\tShow Type\tShow or Episode Title\tSn_#\tEp_#\tStart\tEnd\tMinutes\tGenres\n" >$SHOWS
 # Sort by Show Title (1), Show Type (2r), Sn_# (4n), Ep_# (5n), Start (6)
 perl -F"\t" -lane 'printf "%s\t%s\t'\''%s\t%s\t%s\t%s\t%s\t%s\t%s\n", @F[0,3,5,1,2,6,7,8,9]' $RAW_SHOWS |
-    sort -f --field-separator="$TAB" --key=1,1 --key=2,2r --key=4,4n --key=5,5n --key=6,6 >>$SHOWS
+    sort -f --field-separator=$'\t' --key=1,1 --key=2,2r --key=4,4n --key=5,5n --key=6,6 >>$SHOWS
 
 # Create the sorted CREDITS spreadsheets
 printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" | tee $CREDITS_SHOW >$CREDITS_PERSON
 # Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
-sort -f --field-separator="$TAB" --key=1,2 --key=4,4 --key=3,3 $UNSORTED_CREDITS >>$CREDITS_PERSON
+sort -f --field-separator=$'\t' --key=1,2 --key=4,4 --key=3,3 $UNSORTED_CREDITS >>$CREDITS_PERSON
 # Sort by Show Title (2), Episode Title (3), Rank (4)
-sort -f --field-separator="$TAB" --key=2,4 $UNSORTED_CREDITS >>$CREDITS_SHOW
+sort -f --field-separator=$'\t' --key=2,4 $UNSORTED_CREDITS >>$CREDITS_SHOW
 
 # Save file for later searching
 [ -n "$OUTPUT_FILE" ] && cp -p $CREDITS_PERSON "$OUTPUT_FILE"
