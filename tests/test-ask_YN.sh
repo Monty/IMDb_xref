@@ -5,68 +5,90 @@
 . ../functions/define_colors
 . ../functions/ask_YN.function
 
-printf "==> Testing ask_YN.function.\n"
-printf "==> Hit ${RED}<cr>${NO_COLOR} to submit an answer.\n\n"
-printf "==> First, lets test [y/n] prompts. Type a Y, y, N, or n.\n"
-printf "==> They should not proceed if you enter any other character, inclucing <cr>.\n\n"
+printf "==> Testing ask_YN.function.\n\n"
 
-if ask_YN "Testing no default. Enter any string starting with y."; then
-    printf "Yes\n"
-else
-    printf "No\n"
-fi
-if ask_YN "Testing no default. Enter any string starting with n."; then
-    printf "Yes\n"
-else
-    printf "No\n"
-fi
+printf "==> First, let's test ${RED}[y/n]${NO_COLOR} prompts. Valid responses are Y, y, N, or n.\n"
+printf "==> Only the first character is tested, so 'yes' works as well as 'y'.\n"
+printf "==> It should not proceed if you hit any other character, inclucing <cr>.\n\n"
 
-if ask_YN "Testing no default. Enter <cr>. Should loop waiting for y or n."; then
+printf "==> One test to show what is displayed if no question is supplied.\n"
+if ask_YN; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
 
-if ask_YN "Testing no default. Enter a different character. Should loop waiting for y or n."; then
+printf "\n==> Four tests to check possible responses to ${RED}[y/n]${NO_COLOR} prompts.\n"
+if ask_YN "1. Enter any string starting with y."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
 
-printf "\n\n==> Now lets test [Y/n] and [y/N] prompts Answer Y, y, N, n, or <cr>.\n"
-printf "==> A <cr> should be the same as hitting the capitalized letter.\n"
-printf "==> They should not proceed if you hit any other character than Y, y, N, n, or <cr>.\n"
+if ask_YN "2. Enter any string starting with n."; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+
+if ask_YN "3. Enter <cr>. Should loop waiting for y or n."; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+
+if ask_YN "4. Enter a different character. Should loop waiting for y or n."; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+
+printf "\n==> Now let's test ${RED}[Y/n]${NO_COLOR} and ${RED}[y/N]${NO_COLOR} prompts. "
+printf "Valid responses are Y, y, N, n, or <cr>.\n"
+printf "==> A <cr> should be the same as entering the capitalized letter.\n"
+printf "==> It should not proceed if you enter any other character than Y, y, N, n, or <cr>.\n"
 
 # Default to Yes [Y/n] if the user presses enter without giving an answer:
-if ask_YN "Testing Y default. Enter y." Y; then
+printf "\n==> Four tests to check possible responses to ${RED}[Y/n]${NO_COLOR} prompts.\n"
+if ask_YN "1. Enter any string starting with y." Y; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN "Testing Y default. Enter n." Y; then
+if ask_YN "2. Enter any string starting with n." Y; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-
-if ask_YN "Testing Y default. Enter <cr>." Y; then
+if ask_YN "3. Enter <cr>." Y; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN "Testing N default. Enter <cr>." N; then
-    printf "Yes\n"
-else
-    printf "No\n"
-fi
-
-if ask_YN "Enter a different character. Should loop until Y, y, N, n, or <cr>." Y; then
+if ask_YN "4. Enter a different character. Should loop until Y, y, N, n, or <cr>." Y; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
 
-if ask_YN "Enter a different character. Should loop until Y, y, N, n, or <cr>." N; then
+# Default to No [y/N] if the user presses enter without giving an answer:
+printf "\n==> Four tests to check possible responses to ${RED}[y/N]${NO_COLOR} prompts.\n"
+if ask_YN "1. Enter any string starting with y." N; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+if ask_YN "2. Enter any string starting with n." N; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+if ask_YN "3. Enter <cr>." N; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+if ask_YN "4. Enter a different character. Should loop until Y, y, N, n, or <cr>." N; then
     printf "Yes\n"
 else
     printf "No\n"
