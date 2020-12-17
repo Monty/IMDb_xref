@@ -2,57 +2,99 @@
 #
 # This is a general-purpose function to ask Yes/No questions in Bash, either
 # with or without a default answer. It keeps repeating the question until it
-# gets a valid answer. User Must hit <CR> to register answer. Longer strings
+# gets a valid answer. User Must hit <cr> to register answer. Longer strings
 # like "yes", "no" (and surprisingly "yellow") will work as only the first
 # character is checked.
-#
-# 1st param is the question, defaults to: Does that look correct?
-# 2nd param can be Y, N, or blank, which prompt [Y/n], [y/N], or [y/n] respectively.
-#
-# Modified version of https://djm.me/ask - usage examples are there.
-#
-# USAGE
-# . functions/ask_YN.function
-#
-#   Default to Yes [Y/n] if the user presses enter without giving an answer:
-#   if ask_YN "Do you want to do Y default?" Y; then
-#       printf "Yes\n"
-#   else
-#       printf "No\n"
-#   fi
 
-ask_YN() {
-    local question prompt default reply
-    #
-    question="${1:-Does that look correct?}"
-    #
-    if [ "${2:-}" = "Y" ]; then
-        prompt="Y/n"
-        default="Y"
-    elif [ "${2:-}" = "N" ]; then
-        prompt="y/N"
-        default="N"
-    else
-        prompt="y/n"
-        default=
-    fi
+function ask_YN() {
+    local OPTIND maxSwitch prompt clearScreenP silentSwitch yesno default reply
+
+    help() {
+        cat <<EOF
+ask_YN -- ask Yes/No questions, wait for <cr> to proceed.
+
+USAGE:
+    ask_YN [OPTIONS...] [PROMPT_STRING]
+
+OPTIONS:
+    -h      Print this message.
+    -m      Only read maxSwitch characters
+    -c      Clear screen before returning.
+    -s      silentSwitch - don't echo any keystrokes.
+    -Y      Default to Y if a <cr> is the first character typed.
+    -N      Default to N if a <cr> is the first character typed.
+
+EOF
+    }
+
+    while getopts ":m:hcsYN" opt; do
+        case $opt in
+        h)
+            help
+            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            return
+            ;;
+        m)
+            maxSwitch="-n $OPTARG"
+            ;;
+        c)
+            clearScreenP="yes"
+            ;;
+        s)
+            silentSwitch="-s"
+            ;;
+        Y)
+            yesno="[Y/n] "
+            default="Y"
+            ;;
+        N)
+            yesno="[y/N] "
+            default="N"
+            ;;
+        \?)
+            printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+            ;;
+        :)
+            printf "Option -$OPTARG requires an argument'.\n\n" >&2
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    prompt="$1"
+    [ -z "$prompt" ] && prompt="Does that look correct?"
+    [ -z "$yesno" ] && yesno="[y/n] "
 
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
-        printf "$question [$prompt] "
+        printf "$prompt $yesno"
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
-        read reply </dev/tty
+        read $silentSwitch $maxSwitch reply </dev/tty
+        replyLen=${#reply}
         #
         # Default?
         if [ -z "$reply" ]; then
-            reply=$default
+            reply="$default"
         fi
         #
-        # Check if the reply is valid
         case "$reply" in
-        Y* | y*) return 0 ;;
-        N* | n*) return 1 ;;
+        Y* | y*)
+            [ -n "$clearScreenP" ] && clear
+            return 0
+            ;;
+        N* | n*)
+            [ -n "$clearScreenP" ] && clear
+            return 1
+            ;;
+        *)
+            [ -n "$silentSwitch" ] && printf "\n"
+            # [ -n "$maxSwitch" ] && [ "$replyLen" -ge "$maxSwitch" ] && printf "\nreplyLen = $replyLen\n"
+            # if (($replyLen >= $maxSwitch)); then
+            #    printf "\nreply length = ${#reply}\n"
+            # fi
+            ;;
         esac
     done
 }
