@@ -8,7 +8,7 @@
 printf "==> Testing ask_YN.function.\n"
 printf "==> Hit ${RED}<cr>${NO_COLOR} to submit an answer.\n\n"
 printf "==> First, lets test [y/n] prompts. Type a Y, y, N, or n.\n"
-printf "==> They should not proceed if you enter any other character, inclucing <cr>.\n\n"
+printf "==> They should not proceed if you enter any other character, including <cr>.\n\n"
 
 if ask_YN "Testing no default. Enter any string starting with y."; then
     printf "Yes\n"

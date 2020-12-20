@@ -7,7 +7,7 @@
 
 printf "==> Testing read_YN.function.\n\n"
 printf "==> First, lets test [y/n] prompts. Type a Y, y, N, or n.\n"
-printf "==> They should not proceed if you hit any other character, inclucing <cr>.\n\n"
+printf "==> They should not proceed if you hit any other character, including <cr>.\n\n"
 
 if read_YN "Testing no default. Hit y."; then
     printf "Yes\n"
