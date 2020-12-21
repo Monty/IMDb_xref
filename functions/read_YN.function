@@ -2,12 +2,10 @@
 
 # This is a general-purpose function to ask Yes/No questions in Bash, either
 # with or without a default answer. It keeps repeating the question until it
-# gets a valid answer. Only reads 1 character, no need to hit <CR>
+# gets a valid answer. Only reads 1 character, no need to hit <cr>
 #
 # 1st param is the question, defaults to: Does that look correct?
 # 2nd param can be Y, N, or blank, which prompt [Y/n], [y/N], or [y/n] respectively.
-#
-# Highly modified version of https://djm.me/ask - usage examples are there.
 #
 # USAGE
 # . functions/read_YN.function
