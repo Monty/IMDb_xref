@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Print the first 5 lines of any downloaded IMDb .gz files
 #
-# See https://www.imdb.com/interfaces/ for a description of IMDb Datasets
+# See https://www.imdb.com/interfaces/ for a description of IMDb datasets
 
 for file in $(ls *.tsv.gz); do
     echo "File = $file"

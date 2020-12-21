@@ -3,7 +3,7 @@
 # Generate show and cast spreadsheets from:
 #   1) .tconst file(s) containing a list of IMDb tconst identifiers
 #
-#       See https://www.imdb.com/interfaces/ for a description of IMDb Datasets
+#       See https://www.imdb.com/interfaces/ for a description of IMDb datasets
 #       tconst (string) - alphanumeric unique identifier of the title
 #
 #       For example:

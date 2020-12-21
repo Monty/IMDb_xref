@@ -85,7 +85,7 @@ fi
 if [ ! -e "title.basics.tsv.gz" ]; then
     printf "==> Missing title.basics.tsv.gz. Run downloadIMDbFiles.sh to fix this problem.\n"
     if ask_YN "Would you like me to do this for you?" N; then
-        printf "Ok. Downloading...\n"
+        printf "OK. Downloading...\n"
         ./downloadIMDbFiles.sh 2>/dev/null
     else
         printf "Skipping download. Try again after running downloadIMDbFiles.sh.\n"
@@ -95,7 +95,7 @@ fi
 
 function addToFileP() {
     if ask_YN "    Shall I add them to $TCONST_FILE?" Y; then
-        printf "Ok. Adding:\n"
+        printf "OK. Adding:\n"
         cat $FINAL_RESULTS >>$TCONST_FILE
         ask_YN "    Shall I sort $TCONST_FILE by title?" Y && ./augment_tconstFiles.sh -iy $TCONST_FILE
         ask_YN "    Shall I update your data files?" Y && ./generateXrefData.sh -q

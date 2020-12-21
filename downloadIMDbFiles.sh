@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Download needed files from IMDb, even if they already exist
 #
-# See https://www.imdb.com/interfaces/ for a description of IMDb Datasets
+# See https://www.imdb.com/interfaces/ for a description of IMDb datasets
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
