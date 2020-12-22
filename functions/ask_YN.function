@@ -1,58 +1,65 @@
 #!/usr/bin/env bash
 #
-# This is a general-purpose function to ask Yes/No questions in Bash, either
-# with or without a default answer. It keeps repeating the question until it
-# gets a valid answer. User Must hit <cr> to register answer. Longer strings
-# like "yes", "no" (and surprisingly "yellow") will work as only the first
-# character is checked.
+# This is a general-purpose function to ask Yes/No questions in Bash, or simply
+# wait for any keystroke. It takes an optional prompt string.
+#
+# Y or N questions can set a default. It keeps repeating the question until it
+# gets a valid answer.
+#
+# Normally it reads a single character and looks for y, Y, n, N, or <cr>
+#
+# With the -l switch, it also accepts longer answers, e.g. "yes" or "no" followed by <cr>
+# Surprisingly "yellow" will also work as only the first character is checked.
 
 function ask_YN() {
-    local OPTIND maxSwitch prompt clearScreenP silentSwitch yesno default reply
+    local OPTIND clearScreenP longRead yesno default anyKey reply
 
     help() {
         cat <<EOF
-ask_YN -- ask Yes/No questions, wait for <cr> to proceed.
+ask_YN -- ask Yes/No questions, or wait for any key, with an optional prompt
 
 USAGE:
     ask_YN [OPTIONS...] [PROMPT_STRING]
 
 OPTIONS:
     -h      Print this message.
-    -m      Only read maxSwitch characters
     -c      Clear screen before returning.
-    -s      silentSwitch - don't echo any keystrokes.
-    -Y      Default to Y if a <cr> is the first character typed.
+    -l      Allow longer answer, like "yes" or "no" followed by <cr>
     -N      Default to N if a <cr> is the first character typed.
+    -Y      Default to Y if a <cr> is the first character typed.
+    -w      Wait for any keystroke. Overrides -l switch.
 
 EOF
     }
 
-    while getopts ":m:hcsYN" opt; do
+    while getopts ":hclNYw" opt; do
         case $opt in
         h)
             help
             read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            printf "\n"
             return
-            ;;
-        m)
-            maxSwitch="-n $OPTARG"
             ;;
         c)
             clearScreenP="yes"
             ;;
-        s)
-            silentSwitch="-s"
-            ;;
-        Y)
-            yesno="[Y/n] "
-            default="Y"
+        l)
+            longRead="yes"
             ;;
         N)
             yesno="[y/N] "
             default="N"
             ;;
+        Y)
+            yesno="[Y/n] "
+            default="Y"
+            ;;
+        w)
+            anyKey="yes"
+            ;;
         \?)
-            printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+            printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
             ;;
         :)
             printf "Option -$OPTARG requires an argument'.\n\n" >&2
@@ -62,19 +69,30 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    prompt="$1"
-    [ -z "$prompt" ] && prompt="Does that look correct?"
+    # If we only want to wait for a key to be hit...
+    if [ -n "$anyKey" ]; then
+        read -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
+        printf "\n"
+        [ -n "$clearScreenP" ] && clear
+        return
+    fi
+
+    # Now we want a yes or no answer...
     [ -z "$yesno" ] && yesno="[y/n] "
 
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
-        printf "$prompt $yesno"
+        printf "${1:-Does that look correct?} $yesno"
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
-        read $silentSwitch $maxSwitch reply </dev/tty
-        replyLen=${#reply}
+        if [ -n "$longRead" ]; then
+            read reply </dev/tty
+        else
+            read -n 1 -s reply </dev/tty
+            [ -z "$reply" ] || [ "${#reply}" != 0 ] && printf "\n"
+        fi
         #
-        # Default?
+        # If no reply, use the default if it exists
         if [ -z "$reply" ]; then
             reply="$default"
         fi
@@ -87,13 +105,6 @@ EOF
         N* | n*)
             [ -n "$clearScreenP" ] && clear
             return 1
-            ;;
-        *)
-            [ -n "$silentSwitch" ] && printf "\n"
-            # [ -n "$maxSwitch" ] && [ "$replyLen" -ge "$maxSwitch" ] && printf "\nreplyLen = $replyLen\n"
-            # if (($replyLen >= $maxSwitch)); then
-            #    printf "\nreply length = ${#reply}\n"
-            # fi
             ;;
         esac
     done
