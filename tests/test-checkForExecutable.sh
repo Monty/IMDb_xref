@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-#
+
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME/..
 
 . ../functions/checkForExecutable.function
 

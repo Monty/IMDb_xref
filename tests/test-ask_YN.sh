@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Make sure we are in the correct directory
-cd ..
+DIRNAME=$(dirname "$0")
+cd $DIRNAME/..
 
 . functions/define_colors
 . functions/ask_YN.function
