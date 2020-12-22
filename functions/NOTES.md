@@ -3,7 +3,7 @@
 Common functions used by more than one script.
 
 They enable changes and additions to all scripts' functionality by simply
-changing these files.
+modifying or adding to these files.
 
 They are standard bash code. Load them into any script by using
 `. function/<function>.function`
@@ -26,4 +26,7 @@ creates them if they don't exist. For example: `configFile=".xref_config"`and
 **.function**  
 Loading **load_functions** at the start of any script enables you to use all
 other functions without explicitly loading them, including ones you write at a
-later time. You would just have to invoke the new function.
+later time. You would only have to invoke the new function.
+
+**ask_YN.function** -- a general-purpose function to ask Yes/No questions in Bash, or simply
+wait for any keystroke. It takes an optional prompt string.
