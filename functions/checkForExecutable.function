@@ -12,9 +12,9 @@
 #
 #   # If you want to handle failures yourself...
 #   if checkForExecutable curl quietly; then
-#       # code if passed
+#       # code to run if the executable is available
 #   else
-#       # code if failed
+#       # code to run if the executable is missing
 #   fi
 
 function checkForExecutable() {
@@ -24,7 +24,7 @@ function checkForExecutable() {
     mode="$2"
 
     # Make sure we can execute exeName.
-    if [ ! -x "$(which $exeName 2>/dev/null)" ]; then
+    if ! type -p $exeName >/dev/null; then
         if [ "$mode" != "quietly" ]; then
             printf "==> [${RED}Error${NO_COLOR}] Can't run ${RED}$exeName${NO_COLOR}. " >&2
             printf "Install ${RED}$exeName${NO_COLOR} and rerun this script.\n\n" >&2
