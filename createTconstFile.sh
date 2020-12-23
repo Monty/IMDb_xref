@@ -94,7 +94,7 @@ if [ ! -e "title.basics.tsv.gz" ]; then
 fi
 
 function addToFileP() {
-    if ask_YN -Y"    Shall I add them to $TCONST_FILE?"; then
+    if ask_YN -Y "    Shall I add them to $TCONST_FILE?"; then
         printf "OK. Adding:\n"
         cat $FINAL_RESULTS >>$TCONST_FILE
         ask_YN -Y "    Shall I sort $TCONST_FILE by title?" && ./augment_tconstFiles.sh -iy $TCONST_FILE
