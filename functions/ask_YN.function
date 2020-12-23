@@ -12,7 +12,7 @@
 # Surprisingly "yellow" will also work as only the first character is checked.
 
 function ask_YN() {
-    local OPTIND clearScreenP longRead yesno default anyKey reply
+    local OPTIND clearFirst longRead yesno default anyKey reply
 
     help() {
         cat <<EOF
@@ -41,7 +41,7 @@ EOF
             return
             ;;
         c)
-            clearScreenP="yes"
+            clearFirst="yes"
             ;;
         l)
             longRead="yes"
@@ -72,7 +72,7 @@ EOF
     # If we only want to wait for a key to be hit...
     if [ -n "$anyKey" ]; then
         printf "\n"
-        [ -n "$clearScreenP" ] && clear
+        [ -n "$clearFirst" ] && clear
         read -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
         printf "\n\n"
         return
@@ -83,7 +83,7 @@ EOF
 
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
-        [ -n "$clearScreenP" ] && clear
+        [ -n "$clearFirst" ] && clear
         printf "${1:-Does that look correct?} $yesno"
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
