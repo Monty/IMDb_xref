@@ -26,14 +26,14 @@ OPTIONS:
     -h      Print this message.
     -c      Clear screen before prompting.
     -l      Allow longer answer, like "yes" or "no" followed by <cr>
+    -k      Wait for any keystroke. Overrides -l switch.
     -N      Default to N if a <cr> is the first character typed.
     -Y      Default to Y if a <cr> is the first character typed.
-    -w      Wait for any keystroke. Overrides -l switch.
 
 EOF
     }
 
-    while getopts ":hclNYw" opt; do
+    while getopts ":hclkNY" opt; do
         case $opt in
         h)
             help
@@ -47,6 +47,9 @@ EOF
         l)
             longRead="yes"
             ;;
+        k)
+            anyKey="yes"
+            ;;
         N)
             yesno="[y/N] "
             default="N"
@@ -54,9 +57,6 @@ EOF
         Y)
             yesno="[Y/n] "
             default="Y"
-            ;;
-        w)
-            anyKey="yes"
             ;;
         \?)
             printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2

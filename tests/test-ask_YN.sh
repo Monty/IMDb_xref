@@ -13,12 +13,12 @@ ask_YN -h
 printf "\n"
 
 printf "==> Starting Section 1.\n\n"
-printf "==> 'ask_YN -w' with no prompt supplied. Expect 'Hit any key to continue, '^C' to quit.'\n"
-ask_YN -w
+printf "==> 'ask_YN -k' with no prompt supplied. Expect 'Hit any key to continue, '^C' to quit.'\n"
+ask_YN -k
 
-ask_YN -w "Custom prompt supplied with -w. Hit any key. Next test should clear the screen."
+ask_YN -k "Custom prompt supplied for -k. Hit any key. Next test should clear the screen."
 
-ask_YN -wc "Screen should have cleared from -wc. Hit any key."
+ask_YN -kc "Screen should have cleared from -kc. Hit any key."
 
 printf "==> Done with Section 1.\n\n"
 
