@@ -12,26 +12,22 @@ printf "First, print the help file...\n"
 ask_YN -h
 printf "\n"
 
-printf "==> Section 1. Test waiting for any key to be pressed. Hit any key.\n"
+printf "==> Starting Section 1.\n\n"
+printf "==> 'ask_YN -w' with no prompt supplied. Expect 'Hit any key to continue, '^C' to quit.'\n"
 ask_YN -w
 
-printf "==> Same with custom prompt. Hit any key.\n"
-ask_YN -w "Custom prompt."
+ask_YN -w "Custom prompt supplied with -w. Hit any key. Next test should clear the screen."
 
-printf "==> Test waiting for any key to be pressed to clear screen. Hit any key.\n"
-ask_YN -wc
-
-printf "==> Same with custom prompt & clear screen. Hit any key.\n"
-ask_YN -wc "Custom prompt."
+ask_YN -wc "Screen should have cleared from -wc. Hit any key."
 
 printf "==> Done with Section 1.\n\n"
 
 printf "==> Section 2. Test ${RED}[y/n]${NO_COLOR} prompts. Valid responses are Y, y, N, or n.\n"
-printf "==> It should not proceed if you hit any other character, including <cr>.\n\n"
+printf "==> It should not proceed if you hit any other character, including <cr>.\n"
 printf "==> It will return as soon as you type one character. It doesn't wait for a <cr>.\n"
 
 printf "\n==> Some tests to check basic functionality using the default prompt.\n"
-printf "==> An 'ask_YN' with no prompt supplied should prompt 'Does that look correct?'\n"
+printf "==> 'ask_YN' with no prompt supplied. Expect 'Does that look correct?'\n"
 if ask_YN; then
     printf "Yes\n"
 else
@@ -60,17 +56,21 @@ else
     printf "No\n"
 fi
 
-printf "==> With a prompt: 'ask_YN \"Can you set a custom prompt?\"'\n"
-if ask_YN "Can you set a custom prompt?"; then
+if ask_YN "With a custom prompt. Next test sleeps 3 seconds, then clears the screen before prompting."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
 
-printf "==> With a prompt: 'ask_YN \"Can you set a custom prompt and clear the screen with -c?\"'\n"
-ask_YN -c "Can you set a custom prompt and clear the screen with -c?"
+sleep 3
 
-printf "==> Show what is displayed if a bad param -x is sent.\n"
+if ask_YN -c "Did we set a custom prompt and clear the screen first with -c?"; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+
+printf "\n==> Show what is displayed if a bad param -x is sent.\n"
 if ask_YN -x "Phooey. I have a bad parameter in my source code."; then
     printf "Yes\n"
 else
@@ -116,22 +116,22 @@ printf "==> It should not proceed if you enter any other character than Y, y, N,
 
 # Default to Yes [Y/n] if the user presses enter without giving an answer:
 printf "\n==> Four tests to check possible responses to ${RED}[Y/n]${NO_COLOR} prompts.\n"
-if ask_YN -lY "1. Enter any string starting with y." Y; then
+if ask_YN -lY "1. Enter any string starting with y."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN -lY "2. Enter any string starting with n." Y; then
+if ask_YN -lY "2. Enter any string starting with n."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN -lY "3. Enter <cr>." Y; then
+if ask_YN -lY "3. Enter <cr>."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN -lY "4. Enter a different character. Should loop until Y, y, N, n, or <cr>." Y; then
+if ask_YN -lY "4. Enter a different character. Should loop until Y, y, N, n, or <cr>."; then
     printf "Yes\n"
 else
     printf "No\n"
@@ -139,22 +139,22 @@ fi
 
 # Default to No [y/N] if the user presses enter without giving an answer:
 printf "\n==> Four tests to check possible responses to ${RED}[y/N]${NO_COLOR} prompts.\n"
-if ask_YN -lN "1. Enter any string starting with y." N; then
+if ask_YN -lN "1. Enter any string starting with y."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN -lN "2. Enter any string starting with n." N; then
+if ask_YN -lN "2. Enter any string starting with n."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN -lN "3. Enter <cr>." N; then
+if ask_YN -lN "3. Enter <cr>."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
-if ask_YN -lN "4. Enter a different character. Should loop until Y, y, N, n, or <cr>." N; then
+if ask_YN -lN "4. Enter a different character. Should loop until Y, y, N, n, or <cr>."; then
     printf "Yes\n"
 else
     printf "No\n"

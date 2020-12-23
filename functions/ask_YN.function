@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 #
 # This is a general-purpose function to ask Yes/No questions in Bash, or simply
-# wait for any keystroke. It takes an optional prompt string.
+# prompt and then wait for any keystroke. It has default prompts, but can take
+# an optional prompt string.
 #
-# Y or N questions can set a default. It keeps repeating the question until it
-# gets a valid answer.
+# Y or N questions can set a default answer. It keeps repeating the question until
+# it gets a valid answer.
 #
 # Normally it reads a single character and looks for y, Y, n, N, or <cr>
 #
@@ -69,7 +70,8 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    # If we only want to wait for a key to be hit...
+    # If we only want to wait for any key to be hit...
+    # Print a blank line before the prompt, and after the key is hit
     if [ -n "$anyKey" ]; then
         printf "\n"
         [ -n "$clearFirst" ] && clear
@@ -79,6 +81,7 @@ EOF
     fi
 
     # Now we want a yes or no answer...
+    # Don't print a blank line before or after
     [ -z "$yesno" ] && yesno="[y/n] "
 
     while true; do

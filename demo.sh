@@ -27,7 +27,7 @@ even more fun learning about actors and shows.
 The following screens will first pose a question about the PBS show "The Crown"
 then pause. Hitting any key will find the answer, then pause again.
 EOF
-ask_YN -w
+ask_YN -w # Default prompt for -w is: "Hit any key to continue, '^C' to quit."
 
 ask_YN -wc 'What actresses played Princess Diana?'
 ./xrefCast.sh -a "Princess Diana"
@@ -50,4 +50,4 @@ ask_YN -wc 'Who was in The Crown?'
 ask_YN -w
 
 clear
-printf "That's All!\n\n"
+printf "\nThat's All!\n\n"
