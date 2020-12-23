@@ -62,7 +62,7 @@ shift $((OPTIND - 1))
 # Quote filenames so globbing takes place in the "deleteFiles" function,
 # i.e. the function is passed the number of parameters seen below, not
 # the expanded list which could be quite long.
-if ask_YN -N "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
+if waitUntil -N "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
     deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" "AssociatedTitles*.csv" \
         "LinksToPersons*.csv" "LinksToTitles*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
         "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_*"
@@ -70,25 +70,25 @@ else
     printf "Skipping...\n"
 fi
 
-if ask_YN -N "Delete primary spreadsheets that contain information on credits, shows, and episodes?"; then
+if waitUntil -N "Delete primary spreadsheets that contain information on credits, shows, and episodes?"; then
     deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" "AssociatedTitles*.csv"
 else
     printf "Skipping...\n"
 fi
 
-if ask_YN -N "Delete smaller files that only contain lists of persons and shows?"; then
+if waitUntil -N "Delete smaller files that only contain lists of persons and shows?"; then
     deleteFiles "LinksToPersons*.csv" "LinksToTitles*.csv" "uniq*.txt"
 else
     printf "Skipping...\n"
 fi
 
-if ask_YN -N "Delete all files generated during debugging?"; then
+if waitUntil -N "Delete all files generated during debugging?"; then
     deleteFiles "secondary" "diffs*.txt" "baseline" "test_results"
 else
     printf "Skipping...\n"
 fi
 
-if ask_YN -N "Delete all the .gz files downloaded from IMDb?"; then
+if waitUntil -N "Delete all the .gz files downloaded from IMDb?"; then
     deleteFiles "*.tsv.gz"
 else
     printf "Skipping...\n"
@@ -96,13 +96,13 @@ fi
 
 printf "\n[${RED}Warning${NO_COLOR}] The following files are usually manually created. They are ignored by git.\n"
 
-if ask_YN -N "Delete all manually maintained .tconst and .xlate files?"; then
+if waitUntil -N "Delete all manually maintained .tconst and .xlate files?"; then
     deleteFiles "*.tconst" "*.xlate"
 else
     printf "Skipping...\n"
 fi
 
-if ask_YN -N "Delete all user configuration (.xref_*) files?"; then
+if waitUntil -N "Delete all user configuration (.xref_*) files?"; then
     deleteFiles ".xref_*"
 else
     printf "Skipping...\n"

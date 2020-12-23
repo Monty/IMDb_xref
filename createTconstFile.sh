@@ -74,7 +74,7 @@ BESTMATCH=$(mktemp)
 if [ $# -eq 0 ]; then
     printf "==> [Error] Please supply one or more tconst IDs -- such as tt1606375,\n"
     printf "    which is the tconst for 'Downton Abbey'.\n"
-    if ask_YN -N "Would you like me to add this tconst for you?"; then
+    if waitUntil -N "Would you like me to add this tconst for you?"; then
         printf "tt1606375\n" >>$SEARCH_TERMS
     else
         exit 1
@@ -84,7 +84,7 @@ fi
 # Make sure we have the gz file to search
 if [ ! -e "title.basics.tsv.gz" ]; then
     printf "==> Missing title.basics.tsv.gz. Run downloadIMDbFiles.sh to fix this problem.\n"
-    if ask_YN -N "Would you like me to do this for you?"; then
+    if waitUntil -N "Would you like me to do this for you?"; then
         printf "OK. Downloading...\n"
         ./downloadIMDbFiles.sh 2>/dev/null
     else
@@ -94,11 +94,11 @@ if [ ! -e "title.basics.tsv.gz" ]; then
 fi
 
 function addToFileP() {
-    if ask_YN -Y "    Shall I add them to $TCONST_FILE?"; then
+    if waitUntil -Y "    Shall I add them to $TCONST_FILE?"; then
         printf "OK. Adding:\n"
         cat $FINAL_RESULTS >>$TCONST_FILE
-        ask_YN -Y "    Shall I sort $TCONST_FILE by title?" && ./augment_tconstFiles.sh -iy $TCONST_FILE
-        ask_YN -Y "    Shall I update your data files?" && ./generateXrefData.sh -q
+        waitUntil -Y "    Shall I sort $TCONST_FILE by title?" && ./augment_tconstFiles.sh -iy $TCONST_FILE
+        waitUntil -Y "    Shall I update your data files?" && ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
     fi

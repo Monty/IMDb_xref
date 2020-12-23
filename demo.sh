@@ -27,27 +27,27 @@ even more fun learning about actors and shows.
 The following screens will first pose a question about the PBS show "The Crown"
 then pause. Hitting any key will find the answer, then pause again.
 EOF
-ask_YN -k # Default prompt for -k is: "Hit any key to continue, '^C' to quit."
+waitUntil -k # Default prompt for -k is: "Hit any key to continue, '^C' to quit."
 
-ask_YN -kc 'What actresses played Princess Diana?'
+waitUntil -kc 'What actresses played Princess Diana?'
 ./xrefCast.sh -a "Princess Diana"
-ask_YN -k
+waitUntil -k
 
-ask_YN -kc 'What about Queen Elizabeth?'
+waitUntil -kc 'What about Queen Elizabeth?'
 ./xrefCast.sh -a "Queen Elizabeth II" 'Princess Diana'
-ask_YN -k
+waitUntil -k
 
-ask_YN -kc 'What other shows was Olivia Colman in?'
+waitUntil -kc 'What other shows was Olivia Colman in?'
 ./xrefCast.sh -s "Olivia Colman"
-ask_YN -k
+waitUntil -k
 
-ask_YN -kc 'Are there actors in common between "The Night Manager" "The Crown" "The Durrells in Corfu"?'
+waitUntil -kc 'Are there actors in common between "The Night Manager" "The Crown" "The Durrells in Corfu"?'
 ./xrefCast.sh -s "The Night Manager" 'The Crown' 'The Durrells in Corfu'
-ask_YN -k
+waitUntil -k
 
-ask_YN -kc 'Who was in The Crown?'
+waitUntil -kc 'Who was in The Crown?'
 ./xrefCast.sh -a "The Crown"
-ask_YN -k
+waitUntil -k
 
 clear
 printf "\nThat's All!\n\n"
