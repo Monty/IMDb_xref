@@ -23,7 +23,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -c      Clear screen before returning.
+    -c      Clear screen before prompting.
     -l      Allow longer answer, like "yes" or "no" followed by <cr>
     -N      Default to N if a <cr> is the first character typed.
     -Y      Default to Y if a <cr> is the first character typed.
@@ -71,9 +71,10 @@ EOF
 
     # If we only want to wait for a key to be hit...
     if [ -n "$anyKey" ]; then
-        read -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
         printf "\n"
         [ -n "$clearScreenP" ] && clear
+        read -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
+        printf "\n\n"
         return
     fi
 
@@ -82,6 +83,7 @@ EOF
 
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
+        [ -n "$clearScreenP" ] && clear
         printf "${1:-Does that look correct?} $yesno"
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
@@ -99,11 +101,9 @@ EOF
         #
         case "$reply" in
         Y* | y*)
-            [ -n "$clearScreenP" ] && clear
             return 0
             ;;
         N* | n*)
-            [ -n "$clearScreenP" ] && clear
             return 1
             ;;
         esac
