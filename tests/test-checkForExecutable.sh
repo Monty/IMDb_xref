@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-#
 
-. ../functions/checkForExecutable.function
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME/..
+
+source functions/checkForExecutable.function
 
 printf "==> Should find an executable for cat\n"
 if checkForExecutable cat quietly; then

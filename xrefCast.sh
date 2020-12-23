@@ -22,9 +22,9 @@
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
 cd $DIRNAME
-. functions/define_colors
-. functions/define_files
-. functions/load_functions
+source functions/define_colors
+source functions/define_files
+source functions/load_functions
 
 function help() {
     cat <<EOF
