@@ -432,13 +432,13 @@ function printAdjustedFileInfo() {
 # Output some stats from $SHOWS
 if [ -s $QUIET ]; then
     printf "\n==> Show types in $SHOWS:\n"
-    cut -f 4 $RAW_SHOWS | summarizeTypes
+    cut -f 4 $RAW_SHOWS | frequency
 
     # Output some stats from credits
     printf "\n==> Stats from processing $CREDITS_PERSON:\n"
     numPersons=$(sed -n '$=' $UNIQUE_PERSONS)
     printf "%8d people credited -- some in more than one job function\n" "$numPersons"
-    cut -f 1,5 $UNSORTED_CREDITS | sort -fu | cut -f 2 | summarizeTypes
+    cut -f 1,5 $UNSORTED_CREDITS | sort -fu | cut -f 2 | frequency
 
     # Output some stats, adjust by 1 if header line is included.
     printf "\n==> Stats from processing IMDb data:\n"

@@ -134,7 +134,7 @@ fi
 
 # Found some shows. Let us know what types.
 printf "==> This will add the following:\n"
-cut -f 2 $SEARCH_RESULTS | summarizeTypes
+cut -f 2 $SEARCH_RESULTS | frequency
 
 # Found too many results.
 if [[ $numFound -ge $maxResults ]]; then

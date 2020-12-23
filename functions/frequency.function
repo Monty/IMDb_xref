@@ -6,9 +6,9 @@
 #
 # USAGE
 #
-# source functions/summarizeTypes.function
+# source functions/frequency.function
 #
-#   cut -f 1 file | summarizeTypes
+#   cut -f 1 file | frequency
 #
 #   Given:
 #       actor
@@ -21,7 +21,7 @@
 #       3 director
 #       2 actor
 
-function summarizeTypes() {
+function frequency() {
     local fieldwidth fmt_str
 
     fieldwidth=8
