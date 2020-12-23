@@ -3,7 +3,7 @@
 # Check that there is an executable version of $1. Exit unless "quietly" is requested.
 #
 # USAGE
-#   . functions/checkForExecutable.function
+#   source functions/checkForExecutable.function
 #
 #   checkForExecutable exeName
 #   checkForExecutable quietly

@@ -28,9 +28,9 @@
 DIRNAME=$(dirname "$0")
 cd $DIRNAME
 export LC_COLLATE="C"
-. functions/define_colors
-. functions/define_files
-. functions/load_functions
+source functions/define_colors
+source functions/define_files
+source functions/load_functions
 
 # Keep track of elapsed time
 SECONDS=0

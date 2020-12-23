@@ -4,7 +4,7 @@
 DIRNAME=$(dirname "$0")
 cd $DIRNAME/..
 
-. ../functions/checkForExecutable.function
+source functions/checkForExecutable.function
 
 printf "==> Should find an executable for cat\n"
 if checkForExecutable cat quietly; then

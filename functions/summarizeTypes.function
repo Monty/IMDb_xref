@@ -6,7 +6,7 @@
 #
 # USAGE
 #
-# . functions/summarizeTypes.function
+# source functions/summarizeTypes.function
 #
 #   cut -f 1 file | summarizeTypes
 #

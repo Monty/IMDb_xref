@@ -3,7 +3,7 @@
 # Define escape sequences that produce the eight standard terminal colors
 #
 # USAGE:
-#   . functions/define_colors
+#   source functions/define_colors
 #
 #   printf "Do you prefer ${RED}Red${NO_COLOR} or ${BLUE}Blue${NO_COLOR}?\n"
 #
@@ -12,6 +12,17 @@
 #
 #   The above printf will print as normal text if this file has not been sourced
 #   so you can switch your preference between plain and colors by sourcing this file.
+#
+#   Should appear in the initial stanza of all non-trivial scripts, unless you
+#   don't want color output.
+#
+# EXAMPLE:
+#       # Make sure we are in the correct directory
+#       DIRNAME=$(dirname "$0")
+#       cd $DIRNAME
+#       source functions/define_colors  # Only if you want colors to be used in output
+#       source functions/define_files
+#       source functions/load_functions
 
 # Standard colors
 BLACK="\e[0;30m"
