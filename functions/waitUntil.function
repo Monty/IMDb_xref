@@ -11,29 +11,33 @@
 #
 # With the -l switch, it also accepts longer answers, e.g. "yes" or "no" followed by <cr>
 # Surprisingly "yellow" will also work as only the first character is checked.
+#
+# Calling this function instead of using "read -p" enables changing all default prompts
+# in this one function. The -k switch eliminates the need for a preceding "clear".
+# If you want to wait for a keystroke but don't want any prompt, just use "read -n 1 -s"
 
-function ask_YN() {
+function waitUntil() {
     local OPTIND clearFirst longRead yesno default anyKey reply
 
     help() {
         cat <<EOF
-ask_YN -- ask Yes/No questions, or wait for any key, with an optional prompt
+waitUntil -- ask Yes/No questions, or wait for any key, with an optional prompt
 
 USAGE:
-    ask_YN [OPTIONS...] [PROMPT_STRING]
+    waitUntil [OPTIONS...] [PROMPT_STRING]
 
 OPTIONS:
     -h      Print this message.
     -c      Clear screen before prompting.
     -l      Allow longer answer, like "yes" or "no" followed by <cr>
+    -k      Wait for any keystroke. Overrides -l switch.
     -N      Default to N if a <cr> is the first character typed.
     -Y      Default to Y if a <cr> is the first character typed.
-    -w      Wait for any keystroke. Overrides -l switch.
 
 EOF
     }
 
-    while getopts ":hclNYw" opt; do
+    while getopts ":hclkNY" opt; do
         case $opt in
         h)
             help
@@ -47,6 +51,9 @@ EOF
         l)
             longRead="yes"
             ;;
+        k)
+            anyKey="yes"
+            ;;
         N)
             yesno="[y/N] "
             default="N"
@@ -54,9 +61,6 @@ EOF
         Y)
             yesno="[Y/n] "
             default="Y"
-            ;;
-        w)
-            anyKey="yes"
             ;;
         \?)
             printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
