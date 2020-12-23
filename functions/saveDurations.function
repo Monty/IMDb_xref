@@ -10,8 +10,8 @@
 # Timestamp and Date String are the same time, Timestamp for sorting. Date String for humans.
 #
 # USAGE
-#   . functions/define_files
-#   . functions/saveDurations.function
+#   source functions/define_files
+#   source functions/saveDurations.function
 #
 #   saveDurations $SECONDS
 

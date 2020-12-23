@@ -6,9 +6,9 @@
 DIRNAME=$(dirname "$0")
 cd $DIRNAME
 export LC_COLLATE="C"
-. functions/define_colors
-. functions/define_files
-. functions/load_functions
+source functions/define_colors
+source functions/define_files
+source functions/load_functions
 
 # Limit the number of results to display in case someone uses an unquoted string
 # We may be able to suggest new search results after we enhance the search logic
@@ -74,7 +74,7 @@ BESTMATCH=$(mktemp)
 if [ $# -eq 0 ]; then
     printf "==> [Error] Please supply one or more tconst IDs -- such as tt1606375,\n"
     printf "    which is the tconst for 'Downton Abbey'.\n"
-    if ask_YN "Would you like me to add this tconst for you?" N; then
+    if ask_YN -N "Would you like me to add this tconst for you?"; then
         printf "tt1606375\n" >>$SEARCH_TERMS
     else
         exit 1
@@ -84,7 +84,7 @@ fi
 # Make sure we have the gz file to search
 if [ ! -e "title.basics.tsv.gz" ]; then
     printf "==> Missing title.basics.tsv.gz. Run downloadIMDbFiles.sh to fix this problem.\n"
-    if ask_YN "Would you like me to do this for you?" N; then
+    if ask_YN -N "Would you like me to do this for you?"; then
         printf "OK. Downloading...\n"
         ./downloadIMDbFiles.sh 2>/dev/null
     else
@@ -94,11 +94,11 @@ if [ ! -e "title.basics.tsv.gz" ]; then
 fi
 
 function addToFileP() {
-    if ask_YN "    Shall I add them to $TCONST_FILE?" Y; then
+    if ask_YN -Y"    Shall I add them to $TCONST_FILE?"; then
         printf "OK. Adding:\n"
         cat $FINAL_RESULTS >>$TCONST_FILE
-        ask_YN "    Shall I sort $TCONST_FILE by title?" Y && ./augment_tconstFiles.sh -iy $TCONST_FILE
-        ask_YN "    Shall I update your data files?" Y && ./generateXrefData.sh -q
+        ask_YN -Y "    Shall I sort $TCONST_FILE by title?" && ./augment_tconstFiles.sh -iy $TCONST_FILE
+        ask_YN -Y "    Shall I update your data files?" && ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
     fi

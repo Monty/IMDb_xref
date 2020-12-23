@@ -8,8 +8,8 @@
 # generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 #
 # USAGE
-#   . functions/define_files
-#   . functions/trimDurations.function
+#   source functions/define_files
+#   source functions/trimDurations.function
 #
 #   trimDurations maxlines
 

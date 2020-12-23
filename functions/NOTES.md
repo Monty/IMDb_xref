@@ -6,7 +6,7 @@ They enable changes and additions to all scripts' functionality by simply
 modifying or adding to these files.
 
 They are standard bash code. Load them into any script by using
-`. function/<function>.function`
+`source function/<function>.function`
 
 ### Definition functions
 
@@ -30,3 +30,4 @@ later time. You would only have to invoke the new function.
 
 **ask_YN.function** -- a general-purpose function to ask Yes/No questions in Bash, or simply
 wait for any keystroke. It takes an optional prompt string.
+:

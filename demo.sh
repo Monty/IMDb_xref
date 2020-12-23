@@ -1,15 +1,13 @@
 #!/usr/bin/env bash
 # Run a short demo
 
-function query() {
-    clear
-    read -p "$1"
-    shift
-    printf "\n"
-    ./xrefCast.sh "$@"
-    printf '\nHit "Enter" to continue, "^C" to quit. '
-    read
-}
+# Make sure we are in the correct directory
+DIRNAME=$(dirname "$0")
+cd $DIRNAME
+export LC_COLLATE="C"
+source functions/define_colors
+source functions/define_files
+source functions/load_functions
 
 clear
 cat <<EOF
@@ -27,18 +25,29 @@ I wrote IMDb_xref to answer such questions simply and quickly. Now I have
 even more fun learning about actors and shows.
 
 The following screens will first pose a question about the PBS show "The Crown"
-then pause. Hitting "Enter" will find the answer, then pause again.
+then pause. Hitting any key will find the answer, then pause again.
 EOF
+ask_YN -w # Default prompt for -w is: "Hit any key to continue, '^C' to quit."
 
-printf '\nHit "Enter" to continue, "^C" to quit. '
-read
+ask_YN -wc 'What actresses played Princess Diana?'
+./xrefCast.sh -a "Princess Diana"
+ask_YN -w
 
-query 'What actresses played Princess Diana? ' '-a' 'Princess Diana'
-query 'What about Queen Elizabeth? ' '-a' 'Queen Elizabeth II' 'Princess Diana'
-query 'What other shows was Olivia Colman in? ' '-s' 'Olivia Colman'
-query 'Are there actors in common between "The Night Manager" "The Crown" "The Durrells in Corfu"?' \
-    '-s' 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
-query 'Who was in The Crown? ' '-a' 'The Crown'
+ask_YN -wc 'What about Queen Elizabeth?'
+./xrefCast.sh -a "Queen Elizabeth II" 'Princess Diana'
+ask_YN -w
+
+ask_YN -wc 'What other shows was Olivia Colman in?'
+./xrefCast.sh -s "Olivia Colman"
+ask_YN -w
+
+ask_YN -wc 'Are there actors in common between "The Night Manager" "The Crown" "The Durrells in Corfu"?'
+./xrefCast.sh -s "The Night Manager" 'The Crown' 'The Durrells in Corfu'
+ask_YN -w
+
+ask_YN -wc 'Who was in The Crown?'
+./xrefCast.sh -a "The Crown"
+ask_YN -w
 
 clear
-printf "That's All!\n\n"
+printf "\nThat's All!\n\n"

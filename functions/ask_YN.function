@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 #
 # This is a general-purpose function to ask Yes/No questions in Bash, or simply
-# wait for any keystroke. It takes an optional prompt string.
+# prompt and then wait for any keystroke. It has default prompts, but can take
+# an optional prompt string.
 #
-# Y or N questions can set a default. It keeps repeating the question until it
-# gets a valid answer.
+# Y or N questions can set a default answer. It keeps repeating the question until
+# it gets a valid answer.
 #
 # Normally it reads a single character and looks for y, Y, n, N, or <cr>
 #
@@ -12,7 +13,7 @@
 # Surprisingly "yellow" will also work as only the first character is checked.
 
 function ask_YN() {
-    local OPTIND clearScreenP longRead yesno default anyKey reply
+    local OPTIND clearFirst longRead yesno default anyKey reply
 
     help() {
         cat <<EOF
@@ -23,7 +24,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -c      Clear screen before returning.
+    -c      Clear screen before prompting.
     -l      Allow longer answer, like "yes" or "no" followed by <cr>
     -N      Default to N if a <cr> is the first character typed.
     -Y      Default to Y if a <cr> is the first character typed.
@@ -41,7 +42,7 @@ EOF
             return
             ;;
         c)
-            clearScreenP="yes"
+            clearFirst="yes"
             ;;
         l)
             longRead="yes"
@@ -69,19 +70,23 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    # If we only want to wait for a key to be hit...
+    # If we only want to wait for any key to be hit...
+    # Print a blank line before the prompt, and after the key is hit
     if [ -n "$anyKey" ]; then
-        read -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
         printf "\n"
-        [ -n "$clearScreenP" ] && clear
+        [ -n "$clearFirst" ] && clear
+        read -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
+        printf "\n\n"
         return
     fi
 
     # Now we want a yes or no answer...
+    # Don't print a blank line before or after
     [ -z "$yesno" ] && yesno="[y/n] "
 
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
+        [ -n "$clearFirst" ] && clear
         printf "${1:-Does that look correct?} $yesno"
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
@@ -99,11 +104,9 @@ EOF
         #
         case "$reply" in
         Y* | y*)
-            [ -n "$clearScreenP" ] && clear
             return 0
             ;;
         N* | n*)
-            [ -n "$clearScreenP" ] && clear
             return 1
             ;;
         esac

@@ -3,7 +3,7 @@
 # Define standard files required by other scripts, create them if they don't exist
 #
 # USAGE:
-#   . functions/define_files
+#   source functions/define_files
 #
 # NOTES:
 #   Should appear in the initial stanza of all non-trivial scripts, even if they are not yet used
@@ -13,9 +13,9 @@
 #       # Make sure we are in the correct directory
 #       DIRNAME=$(dirname "$0")
 #       cd $DIRNAME
-#       . functions/define_colors  # Only if you want colors to be used in output
-#       . functions/define_files
-#       . functions/load_functions
+#       source functions/define_colors  # Only if you want colors to be used in output
+#       source functions/define_files
+#       source functions/load_functions
 
 # Standard files
 configFile=".xref_config"
