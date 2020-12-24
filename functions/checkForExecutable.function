@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Check that there is an executable version of a command.
+# General-purpose function to check that there is an executable version of a command.
 #
 # Print standard error message and exit unless -q is specified
 
@@ -9,7 +9,7 @@ function checkForExecutable() {
 
     help() {
         cat <<EOF
-checkForExecutable -- Check that there is an executable version of a command.
+checkForExecutable -- General-purpose: Check for an executable version of a command.
 
 USAGE:
     checkForExecutable [OPTIONS...] COMMAND

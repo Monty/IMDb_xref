@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# This is a general-purpose function to ask Yes/No questions in Bash, or simply
-# prompt and then wait for any keystroke. It has default prompts, but can take
-# an optional prompt string.
+# General-purpose function to ask Yes/No questions in Bash, or simply prompt
+# and then wait for any keystroke. It has default prompts, but can take an
+# optional prompt string.
 #
 # Y or N questions can set a default answer. It keeps repeating the question until
 # it gets a valid answer.
@@ -21,7 +21,7 @@ function waitUntil() {
 
     help() {
         cat <<EOF
-waitUntil -- ask Yes/No questions, or wait for any key, with an optional prompt
+waitUntil -- General-purpose: Ask Yes/No questions, or wait for any key, with an optional prompt
 
 USAGE:
     waitUntil [OPTIONS...] [PROMPT_STRING]
@@ -33,6 +33,16 @@ OPTIONS:
     -k      Wait for any keystroke. Overrides -l switch.
     -N      Default to N if a <cr> is the first character typed.
     -Y      Default to Y if a <cr> is the first character typed.
+
+EXAMPLES:
+    waitUntil
+    waitUntil -k
+    waitUntil -kc
+    waitUntil -Y
+    waitUntil -l "<prompt>'
+    waitUntil -lN "<prompt>'
+
+    For more examples see: tests/test-waitUntil.sh
 
 EOF
     }
@@ -67,7 +77,8 @@ EOF
             printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
             ;;
         :)
-            printf "Option -$OPTARG requires an argument'.\n\n" >&2
+            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR}" >&2
+            printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
             exit 1
             ;;
         esac

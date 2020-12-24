@@ -1,22 +1,58 @@
 #!/usr/bin/env bash
 #
-# Save the duration of scriptName in a file.
+# Internal function: Save the duration of scriptName in .xref_durations
 #
 # Duration files are tab separated -- used to record script durations for predictions and stats
 #
-#    Script Name          Timestamp            Date String               Duration
+#     Script Name         Timestamp              Date String             Duration
 # generateXrefData.sh   201210.202416   Thu Dec 10 20:24:16 PST 2020    16 seconds.
 #
 # Timestamp and Date String are the same time, Timestamp for sorting. Date String for humans.
-#
-# USAGE
-#   source functions/define_files
-#   source functions/saveDurations.function
-#
-#   saveDurations $SECONDS
 
 function saveDurations() {
-    local scriptName secs date_fmt date_str timestamp mins duration
+    local OPTIND scriptName secs date_fmt date_str timestamp mins duration
+
+    help() {
+        cat <<EOF
+saveDurations -- Internal function: Save the duration of \$0 in .xref_durations
+
+.xref_durations is read by printDuration to inform the user of the predicted duration of a
+long running process, .e.g. downloading all IMDb .gz files.
+
+USAGE:
+    saveDurations [OPTIONS...] \$SECONDS
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    SECONDS=0
+    # Execute something that takes a while, and isn't expected to vary much in duration.
+    saveDurations \$SECONDS
+
+EOF
+    }
+
+    while getopts ":h" opt; do
+        case $opt in
+        h)
+            help
+            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            printf "\n"
+            return
+            ;;
+        \?)
+            printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
+            ;;
+        :)
+            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR}" >&2
+            printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
 
     scriptName="$(basename $0)"
     secs="$1"

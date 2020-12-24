@@ -1,30 +1,69 @@
 #!/usr/bin/env bash
 #
-# Equivalent to sort | uniq -c | sort -nr
+# General-purpose function equivalent to sort | uniq -c | sort -nr
 #
 # This works without having to sort its input, and it formats the output better than uniq -c
-#
-# USAGE
-#
-# source functions/frequency.function
-#
-#   cut -f 1 file | frequency
-#
-#   Given:
-#       actor
-#       director
-#       director
-#       actor
-#       director
-#
-#   Return:
-#       3 director
-#       2 actor
 
 function frequency() {
-    local fieldwidth fmt_str
+    local OPTIND fieldwidth fmt_str
 
-    fieldwidth=8
-    fmt_str="%${fieldwidth}s %s\n"
+    help() {
+        cat <<EOF
+frequency -- General-purpose: Print frequency of occurrence of unique strings.
+             Equivalent to 'sort | uniq -c | sort -nr'
+
+It works without having to sort its input, and it formats the output better than uniq -c
+
+USAGE:
+    frequency [OPTIONS...]
+
+OPTIONS:
+    -h      Print this message.
+    -w      Set fieldwidth - defaults to 8 if not specified
+
+EXAMPLES:
+    cut -f 1 file | frequency
+    cut -f 3 file | frequency -w 5
+
+    Given:
+       actor
+       director
+       director
+       actor
+       director
+
+    Return:
+       3 director
+       2 actor
+
+EOF
+    }
+
+    while getopts ":hw:" opt; do
+        case $opt in
+        h)
+            help
+            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            printf "\n"
+            return
+            ;;
+        w)
+            fieldwidth="$OPTARG"
+            ;;
+        \?)
+            printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
+            ;;
+        :)
+            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR}" >&2
+            printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    # Default fieldwidth to 8
+    fmt_str="%${fieldwidth:-8}s %s\n"
     awk -v FW="$fmt_str" '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' | sort -nr
 }
