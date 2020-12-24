@@ -40,6 +40,7 @@ EXAMPLES:
     waitUntil -kc
     waitUntil -Y
     waitUntil -l "<prompt>'
+    waitUntil -cY "<prompt>'
     waitUntil -lN "<prompt>'
 
     For more examples see: tests/test-waitUntil.sh

@@ -16,7 +16,7 @@ maxResults=100
 
 function help() {
     cat <<EOF
-Add a tconst to a file
+createTconstFile.sh -- Add a tconst ID for any show to a file.
 
 USAGE:
     ./createTconstFile.sh [-f TCONST_FILE] TCONST [TCONST...] [SHOW TITLE...]
@@ -29,7 +29,6 @@ EXAMPLES:
     ./createTconstFile.sh tt1606375
     ./createTconstFile.sh tt1606375 tt1399664 'Broadchurch'
     ./createTconstFile.sh -f Dramas.tconst tt1606375
-
 EOF
 }
 

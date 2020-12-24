@@ -28,7 +28,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-Cross-reference shows, actors, and the characters they portray using data from IMDB.
+xrefCast.sh -- Cross-reference shows, actors, and the characters they portray using IMDB data.
 
 USAGE:
     ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] SEARCH_TERM [SEARCH_TERM ...]
@@ -45,7 +45,7 @@ EXAMPLES:
     ./xrefCast.sh 'Queen Elizabeth II' 'Princess Diana'
     ./xrefCast.sh 'The Crown'
     ./xrefCast.sh -s 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
-
+    ./xrefCast.sh -af Clooney.csv 'Brad Pitt'
 EOF
 }
 

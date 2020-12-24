@@ -37,8 +37,9 @@ SECONDS=0
 
 function help() {
     cat <<EOF
-Create lists and spreadsheets of shows, actors, and the characters they portray from
-downloaded IMDb .gz files. See https://www.imdb.com/interfaces/ for details of the data
+generateXrefData.sh -- Create lists/spreadsheets of shows, actors, and characters they portray.
+
+This uses downloaded IMDb .gz files. See https://www.imdb.com/interfaces/ for details of the data
 they contain.
 
 USAGE:

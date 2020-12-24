@@ -14,7 +14,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-Expand the IDs in .tconst files to add Type, Primary Title, and Original Title
+augment_tconstFiles.sh -- Modify .tconst files to add Type, Primary Title, and Original Title.
 
       For example, expand:
           tt1606375
@@ -38,7 +38,6 @@ EXAMPLES:
     ./augment_tconstFiles.sh Contrib/OPB.tconst
     ./augment_tconstFiles.sh -i Contrib/*.tconst
     ./augment_tconstFiles.sh -iy Contrib/*.tconst
-
 EOF
 }
 
