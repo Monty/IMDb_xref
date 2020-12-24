@@ -4,18 +4,22 @@
 DIRNAME=$(dirname "$0")
 cd $DIRNAME/..
 
+source functions/define_colors
 source functions/checkForExecutable.function
 
 printf "==> Should find an executable for cat\n"
-if checkForExecutable cat quietly; then
+if checkForExecutable -q cat; then
     printf "Found an executable for cat\n"
 else
     printf "Didn't find an executable for cat\n"
 fi
 
-printf "\n==> Should not find an executable for eee\n"
-if checkForExecutable eee quietly; then
-    printf "Found an executable for eee\n"
+printf "\n==> Should not find an executable for aaa\n"
+if checkForExecutable -q eee; then
+    printf "Found an executable for aaa\n"
 else
-    printf "Didn't find an executable for eee\n"
+    printf "Didn't find an executable for aaa\n"
 fi
+
+printf "\n==> If there is no executable for bbb, print an error and exit.\n"
+checkForExecutable bbb

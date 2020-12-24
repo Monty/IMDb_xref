@@ -1,31 +1,66 @@
 #!/usr/bin/env bash
 #
-# Check that there is an executable version of $1. Exit unless "quietly" is requested.
+# Check that there is an executable version of a command.
 #
-# USAGE
-#   source functions/checkForExecutable.function
-#
-#   checkForExecutable exeName
-#   checkForExecutable quietly
-#
-# EXAMPLE
-#
-#   # If you want to handle failures yourself...
-#   if checkForExecutable curl quietly; then
-#       # code to run if the executable is available
-#   else
-#       # code to run if the executable is missing
-#   fi
+# Print standard error message and exit unless -q is specified
 
 function checkForExecutable() {
-    local exeName mode
+    local OPTIND quietly exeName
+
+    help() {
+        cat <<EOF
+checkForExecutable -- Check that there is an executable version of a command.
+
+USAGE:
+    checkForExecutable [OPTIONS...] COMMAND
+
+OPTIONS:
+    -h      Print this message.
+    -q      Quiet - don't print fail/retry message. 'return 1' instead of 'exit 1'
+
+EXAMPLES:
+    checkForExecutable curl
+    checkForExecutable -q curl
+
+# If you want to handle failures yourself...
+if checkForExecutable -q curl; then
+    # code to run if the executable is available
+else
+    # code to run if the executable is missing
+fi
+
+EOF
+    }
+
+    while getopts ":hq" opt; do
+        case $opt in
+        h)
+            help
+            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            printf "\n"
+            return
+            ;;
+        q)
+            quietly="yes"
+            ;;
+        \?)
+            printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
+            ;;
+        :)
+            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR}" >&2
+            printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
 
     exeName="$1"
-    mode="$2"
 
     # Make sure we can execute exeName.
     if ! type -p $exeName >/dev/null; then
-        if [ "$mode" != "quietly" ]; then
+        if [ -z "$quietly" ]; then
             printf "==> [${RED}Error${NO_COLOR}] Can't run ${RED}$exeName${NO_COLOR}. " >&2
             printf "Install ${RED}$exeName${NO_COLOR} and rerun this script.\n\n" >&2
             exit 1

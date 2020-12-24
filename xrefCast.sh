@@ -140,7 +140,7 @@ perl -pi -e "s+\t'+\t+g;" $TMPFILE
 # Unless SUMMARIZE, put all search results into tabular format and print them
 if [ -z "$SUMMARIZE" ]; then
     printf "\n==> All names (Name|Job|Show|Episode|Role):\n"
-    if checkForExecutable xsv quietly; then
+    if checkForExecutable -q xsv; then
         xsv table -d "\t" $TMPFILE
     else
         awk -F "\t" -v PF="$PSPACE" '{printf (PF,$1,$2,$3,$4,$5)}' $TMPFILE
@@ -152,7 +152,7 @@ fi
 
 # Print duplicated names, i.e. where field 1 is repeated in successive lines, but field 3 is different
 printf "\n==> Duplicated names (Name|Job|Show|Episode|Role):\n"
-if checkForExecutable xsv quietly; then
+if checkForExecutable -q xsv; then
     awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
     printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' $TMPFILE | sort -fu | xsv table -d "\t"
 else
