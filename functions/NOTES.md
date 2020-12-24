@@ -28,6 +28,4 @@ Loading **load_functions** at the start of any script enables you to use all
 other functions without explicitly loading them, including ones you write at a
 later time. You would only have to invoke the new function.
 
-**waitUntil.function** -- a general-purpose function to ask Yes/No questions in Bash, or simply
-wait for any keystroke. It takes an optional prompt string.
-:
+To see which functions **load_functions** would load (and their definitions) run **explain_functions.sh**
