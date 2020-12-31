@@ -67,6 +67,7 @@ if waitUntil -N "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR
     deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" "AssociatedTitles*.csv" \
         "LinksToPersons*.csv" "LinksToTitles*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
         "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_*"
+    exit
 else
     printf "Skipping...\n"
 fi
