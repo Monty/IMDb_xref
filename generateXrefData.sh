@@ -207,6 +207,7 @@ LINKS_TO_TITLES="LinksToTitles$DATE_ID.csv"
 ASSOCIATED_TITLES="AssociatedTitles$DATE_ID.csv"
 
 # Final output lists
+UNIQUE_CHARS="uniqCharacters$DATE_ID.txt"
 UNIQUE_PERSONS="uniqPersons$DATE_ID.txt"
 UNIQUE_TITLES="uniqTitles$DATE_ID.txt"
 
@@ -245,6 +246,7 @@ PUBLISHED_LINKS_TO_PERSONS="$BASE/LinksToPersons.csv"
 PUBLISHED_LINKS_TO_TITLES="$BASE/LinksToTitles.csv"
 PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
 #
+PUBLISHED_UNIQUE_CHARS="$BASE/uniqCharacters.txt"
 PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
 PUBLISHED_UNIQUE_TITLES="$BASE/uniqTitles.txt"
 #
@@ -259,7 +261,7 @@ PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
 ALL_WORKING="$CONFLICTS $DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST "
 ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
 ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
-ALL_TXT="$UNIQUE_TITLES $UNIQUE_PERSONS"
+ALL_TXT="$UNIQUE_TITLES $UNIQUE_CHARS $UNIQUE_PERSONS"
 ALL_CSV="$RAW_SHOWS $RAW_PERSONS $UNSORTED_EPISODES $UNSORTED_CREDITS"
 ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS $ASSOCIATED_TITLES "
 ALL_SPREADSHEETS+="$CREDITS_SHOW $CREDITS_PERSON "
@@ -355,8 +357,9 @@ perl -pi -e 's/\\t.*}/}/' $TCONST_EPISODES_PL
 rg -wNz -f $NCONST_LIST name.basics.tsv.gz | perl -p -e 's+\\N++g;' | cut -f 1-2,6 | sort -fu --key=2 |
     tee $RAW_PERSONS | perl -F"\t" -lane 'print "s{^@F[0]\\b}\{@F[1]};";' >$NCONST_PL
 
-# Get rid of ugly \N fields, unneeded characters, and make sure commas are followed by spaces
-perl -pi -e 's+\\N++g; tr+"[]++d; s+,+, +g; s+,  +, +g;' $ALL_CSV
+# Get rid of ugly \N fields, and unneeded characters. Make sure commas are followed by spaces
+# Separate multiple characters portrayed with semicolons, remove quotes
+perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $ALL_CSV
 
 # Create the KNOWN_PERSONS spreadsheet, ensure always 5 fields
 printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tKnown For Titles: 4\n" \
@@ -404,6 +407,9 @@ perl -pi -f $NCONST_PL $KNOWN_PERSONS
 # Create UNIQUE_PERSONS
 cut -f 2 $RAW_PERSONS | sort -fu >$UNIQUE_PERSONS
 
+# Create UNIQUE_CHARS
+cut -f 6 $UNSORTED_CREDITS | sort -fu | rg -v "^$" | perl -p -e 's+; +\n+g;' | sort -fu >$UNIQUE_CHARS
+
 # Create the SHOWS spreadsheet by removing duplicate field from RAW_SHOWS
 printf "Show Title\tShow Type\tShow or Episode Title\tSn_#\tEp_#\tStart\tEnd\tMinutes\tGenres\n" >$SHOWS
 # Sort by Show Title (1), Show Type (2r), Sn_# (4n), Ep_# (5n), Start (6)
@@ -449,6 +455,7 @@ if [ -s $QUIET ]; then
     # printAdjustedFileInfo $RAW_SHOWS 0
     printAdjustedFileInfo $SHOWS 1
     # printAdjustedFileInfo $NCONST_LIST 0
+    printAdjustedFileInfo $UNIQUE_CHARS 0
     printAdjustedFileInfo $UNIQUE_PERSONS 0
     printAdjustedFileInfo $LINKS_TO_PERSONS 1
     # printAdjustedFileInfo $RAW_PERSONS 0
@@ -505,6 +512,7 @@ $(checkdiffs $PUBLISHED_EPISODES_LIST $EPISODES_LIST)
 $(checkdiffs $PUBLISHED_KNOWNFOR_LIST $KNOWNFOR_LIST)
 $(checkdiffs $PUBLISHED_NCONST_LIST $NCONST_LIST)
 $(checkdiffs $PUBLISHED_UNIQUE_TITLES $UNIQUE_TITLES)
+$(checkdiffs $PUBLISHED_UNIQUE_CHARS $UNIQUE_CHARS)
 $(checkdiffs $PUBLISHED_UNIQUE_PERSONS $UNIQUE_PERSONS)
 $(checkdiffs $PUBLISHED_RAW_PERSONS $RAW_PERSONS)
 $(checkdiffs $PUBLISHED_RAW_SHOWS $RAW_SHOWS)

@@ -56,6 +56,7 @@ cp -p $VERBOSE $WORK/tconst_known-$DATE.txt $BASE/tconst_known.txt
 cp -p $VERBOSE $WORK/tconst-episodes-$DATE.txt $BASE/tconst-episodes.csv
 
 cp -p $VERBOSE uniqTitles-$DATE.txt $BASE/uniqTitles.txt
+cp -p $VERBOSE uniqCharacters-$DATE.txt $BASE/uniqCharacters.txt
 cp -p $VERBOSE uniqPersons-$DATE.txt $BASE/uniqPersons.txt
 
 cp -p $VERBOSE Shows-Episodes-$DATE.csv $BASE/Shows.csv
