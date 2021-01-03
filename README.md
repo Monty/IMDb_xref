@@ -273,7 +273,7 @@ selects example.tconst, -d saves the results in test_results.*)
 
 <details><summary><b>Show output from this command</b></summary>
 
-	$ ./generateXrefData.sh -td
+    $ ./generateXrefData.sh -td
     ==> Using existing IMDb .gz files.
     
     ==> Using xlate.example for IMDb title translation.
@@ -281,7 +281,7 @@ selects example.tconst, -d saves the results in test_results.*)
     ==> Searching tconst.example for IMDb title identifiers.
     
     
-    ==> diffs-201209.183642.txt contains diffs between generated files and files saved in test_results
+    ==> diffs-210102.164157.txt contains diffs between generated files and files saved in test_results
     ==> Processing 98 shows found in tconst.example:
     	800 Words; A Man Called Ove; A Touch of Frost; Acquitted; American Experience;
     	An Inspector Calls; Arde Madrid; Art of Crime; Ashes to Ashes; Beck; Black
@@ -306,33 +306,35 @@ selects example.tconst, -d saves the results in test_results.*)
     	Van der Valk; Vera; Waking the Dead; Wallander: The Original Episodes; Winter;
     	Wire in the Blood; Young Wallander
     
-    ==> Previously, this took 18 seconds
+    ==> Previously, this took 36 seconds.
     
     
-    ==> Show types in Shows-Episodes-201209.csv:
-    	2159 tvEpisode
-    	  76 tvSeries
-    	  12 tvMiniSeries
-    	   8 movie
-    	   2 tvMovie
+    ==> Show types in Shows-Episodes.csv:
+        2184 tvEpisode
+          76 tvSeries
+          12 tvMiniSeries
+           8 movie
+           2 tvMovie
     
-    ==> Stats from processing Credits-Person-201209.csv:
-        3605 people credited -- some in more than one job function
-             1434 as actor
-             1030 as actress
-              625 as writer
-              428 as director
+    ==> Stats from processing Credits-Person.csv:
+        3629 people credited -- some in more than one job function
+        1449 actor
+        1029 actress
+         632 writer
+         430 director
+         118 cinematographer
     
     ==> Stats from processing IMDb data:
-    uniqTitles-201209.txt                          1.5K   Dec 9 18:36       98 lines
-    LinksToTitles-201209.csv                       9.2K   Dec 9 18:37       98 lines
-    Shows-Episodes-201209.csv                      161K   Dec 9 18:37     2257 lines
-    uniqPersons-201209.txt                          52K   Dec 9 18:37     3605 lines
-    LinksToPersons-201209.csv                      322K   Dec 9 18:37     3605 lines
-    Persons-KnownFor-201209.csv                    277K   Dec 9 18:37     3612 lines
-    AssociatedTitles-201209.csv                    694K   Dec 9 18:37     7378 lines
-    Credits-Show-201209.csv                        1.1M   Dec 9 18:37    17226 lines
-    Credits-Person-201209.csv                      1.1M   Dec 9 18:37    17226 lines
+    uniqTitles.txt                                 1.5K   Jan 2 16:41       98 lines
+    LinksToTitles.csv                              9.2K   Jan 2 16:42       98 lines
+    Shows-Episodes.csv                             167K   Jan 2 16:42     2282 lines
+    uniqCharacters.txt                              39K   Jan 2 16:42     2918 lines
+    uniqPersons.txt                                 52K   Jan 2 16:42     3629 lines
+    LinksToPersons.csv                             324K   Jan 2 16:42     3629 lines
+    Persons-KnownFor.csv                           279K   Jan 2 16:42     3635 lines
+    AssociatedTitles.csv                           701K   Jan 2 16:42     7455 lines
+    Credits-Show.csv                               1.1M   Jan 2 16:42    17324 lines
+    Credits-Person.csv                             1.1M   Jan 2 16:42    17324 lines
 </details>
 
 
