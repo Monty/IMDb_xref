@@ -41,11 +41,11 @@ OPTIONS:
     -i      Print info about any files that are searched.
 
 EXAMPLES:
-    ./xrefCast.sh 'Olivia Colman'
-    ./xrefCast.sh 'Queen Elizabeth II' 'Princess Diana'
-    ./xrefCast.sh 'The Crown'
-    ./xrefCast.sh -s 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
-    ./xrefCast.sh -af Clooney.csv 'Brad Pitt'
+    ./xrefCast.sh "Olivia Colman"
+    ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
+    ./xrefCast.sh "The Crown"
+    ./xrefCast.sh -s "The Night Manager" "The Crown" "The Durrells in Corfu"
+    ./xrefCast.sh -af Clooney.csv "Brad Pitt"
 EOF
 }
 
