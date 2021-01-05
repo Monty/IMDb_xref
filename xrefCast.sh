@@ -95,7 +95,7 @@ SEARCH_TERMS=$(mktemp)
 
 # Make sure a search term was supplied
 if [ $# -eq 0 ]; then
-    printf "==> [Error] Please supply one or more search terms.\n\n" >&2
+    printf "==> [${RED}Error${NO_COLOR}] Please supply one or more search terms.\n\n" >&2
     exit 1
 fi
 
@@ -103,13 +103,13 @@ fi
 [ -z "$SEARCH_FILE" ] && SEARCH_FILE="$(ls -1t Credits-Person*csv 2>/dev/null | head -1)"
 #
 if [ ! "$SEARCH_FILE" ]; then
-    printf "==> [Error] Missing search file: Credits-Person*csv\n" >&2
+    printf "==> [${RED}Error${NO_COLOR}] Missing search file: Credits-Person*csv\n" >&2
     printf "    Run ./generateXrefData.sh then re-run this search.\n\n" >&2
     exit 1
 fi
 # Make sure SEARCH_FILE exists
 if [ ! -e "$SEARCH_FILE" ]; then
-    printf "==> [Error] Missing search file: $SEARCH_FILE\n\n" >&2
+    printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
     exit 1
 fi
 #

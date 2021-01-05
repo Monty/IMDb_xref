@@ -77,7 +77,7 @@ TCONSTS=$(mktemp)
 
 # Make sure a file was supplied
 if [ $# -eq 0 ]; then
-    printf "==> [Error] Please supply a tconst filename on the command line.\n\n" >&2
+    printf "==> [${RED}Error${NO_COLOR}] Please supply a tconst filename on the command line.\n\n" >&2
     exit 1
 fi
 

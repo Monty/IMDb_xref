@@ -71,7 +71,7 @@ BESTMATCH=$(mktemp)
 
 # Make sure a tconst was supplied
 if [ $# -eq 0 ]; then
-    printf "==> [Error] Please supply one or more tconst IDs -- such as tt1606375,\n"
+    printf "==> [${RED}Error${NO_COLOR}] Please supply one or more tconst IDs -- such as tt1606375,\n"
     printf "    which is the tconst for 'Downton Abbey'.\n"
     if waitUntil -N "Would you like me to add this tconst for you?"; then
         printf "tt1606375\n" >>$SEARCH_TERMS

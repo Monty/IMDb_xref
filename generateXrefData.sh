@@ -163,7 +163,7 @@ else
     [ -s $QUIET ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
 fi
 if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
-    printf "==> [Error] No such file(s): $XLATE_FILES\n\n" >&2
+    printf "==>[${RED}Error${NO_COLOR}] No such file(s): $XLATE_FILES\n\n" >&2
     exit 1
 fi
 
@@ -177,7 +177,7 @@ else
     [ -s $QUIET ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n\n"
 fi
 if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
-    printf "==> [Error] No such file(s): $TCONST_FILES\n\n" >&2
+    printf "==> [${RED}Error${NO_COLOR}] No such file(s): $TCONST_FILES\n\n" >&2
     exit 1
 fi
 
@@ -289,7 +289,7 @@ rg -IN -f $DUPES $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$CONFLI
 cut -f 6 $RAW_SHOWS | sort -f | uniq -d >>$CONFLICTS
 if [ -s $CONFLICTS ]; then
     cat <<EOF >&2
-==> [Error] Conflicts are listed below. Fix them then rerun this script.
+==> [${RED}Error${NO_COLOR}] Conflicts are listed below. Fix them then rerun this script.
 ==> These shows have more than one tconst for the same title.
 $(rg -p -H -f $CONFLICTS $RAW_SHOWS | cut -f 1-7)
 
