@@ -114,6 +114,7 @@ printf "==> I can generate search strings based on ${sizeStr/%,/.}\n\n"
 # Select what action to take
 actionOptions+=("Clear the search string" "Search now" "Quit")
 searchString=""
+searchArray=()
 while true; do
     printf "What would you like to do?\n"
 
@@ -139,11 +140,12 @@ while true; do
             printf "Clearing search string...\n"
             printf "\n"
             searchString=""
+            searchArray=()
             continue 2
             ;;
         Search*)
             printf "\n"
-            ./xrefCast.sh "$searchString"
+            ./xrefCast.sh "${searchArray[@]}"
             printf "\n"
             continue 2
             ;;
@@ -180,7 +182,9 @@ while true; do
         elif [ "$hitCount" -eq 1 ]; then
             # printf "\nOnly one match found\n"
             # rg -NzSI $searchFor $searchFile
-            searchString+="\"$(rg -NzSI "$searchFor" "$searchFile")\" "
+            result="$(rg -NzSI $searchFor $searchFile)"
+            searchString+="\"$result\" "
+            searchArray+=("$result")
             break
         elif [ "$hitCount" -le "${maxHits:-10}" ]; then
             # printf "\n$hitCount matches found\n"
@@ -194,6 +198,7 @@ while true; do
                     # printf "You picked $pickMenu ($REPLY)\n"
                     # rg -NzSI $pickMenu "$searchFile"
                     searchString+="\"$pickMenu\" "
+                    searchArray+=("$pickMenu")
                     break
                 else
                     printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
