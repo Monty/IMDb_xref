@@ -112,7 +112,7 @@ sizeStr="${foundSizes[*]}"
 printf "==> I can generate search strings based on ${sizeStr/%,/.}\n\n"
 
 # Select what action to take
-actionOptions+=("Clear the search string" "Search now" "Quit")
+actionOptions+=("Clear the search string" "Full search" "Summary search" "Quit")
 searchString=""
 searchArray=()
 while true; do
@@ -143,9 +143,15 @@ while true; do
             searchArray=()
             continue 2
             ;;
-        Search*)
+        Full*)
             printf "\n"
             ./xrefCast.sh "${searchArray[@]}"
+            printf "\n"
+            continue 2
+            ;;
+        Summary*)
+            printf "\n"
+            ./xrefCast.sh '-s' "${searchArray[@]}"
             printf "\n"
             continue 2
             ;;
