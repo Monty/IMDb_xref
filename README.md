@@ -10,13 +10,14 @@ Command line utilities to quickly cross-reference and query shows, actors, and t
 [![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/IMDb_xref)
 
 If you don't care for long README files, jump directly to 
-[Automate the entire process](#automate-the-entire-process)
+[Automated startup](#automated-startup)
 
 **Table of Contents**
 
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [NEW! Automated startup](#automated-startup)
   - [Generate initial data](#generate-initial-data)
   - [Run sample queries](#run-sample-queries)
      - [Understanding query results](#understanding-query-results)
@@ -91,6 +92,13 @@ cd IMDb_xref
 ```
 
 ## Usage
+
+### Automated startup
+
+After completing the installation, run **./iQuery.sh** to bypass the steps below and get a
+quick start using **IMDb_xref**. If you are on a Mac, just double-click on
+**iQuery.command**. If you are comfortable typing commands into a terminal window, you may
+prefer using the shell scripts listed below.
 
 ### Generate initial data
 
@@ -192,7 +200,12 @@ unless run in debug mode.
 
 ### Run sample queries
 
-Run **./xrefCast.sh -h** (help) to see some example queries.
+Run **./iQuery.sh** to use incremental typing to generate queries with minimal keystrokes.
+If you aren't used to typing commands into a terminal window, this is by far the simplest
+way to use **IMDb_xref**. If you are on a Mac, just double-click on **iQuery.command**. 
+
+Run **./xrefCast.sh -h** (help) to see some example queries that can be typed into a
+terminal window.
 
 <details><summary><b>Show this help file</b></summary>
 
