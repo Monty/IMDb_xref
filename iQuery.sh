@@ -85,7 +85,7 @@ for file in "${uniqFiles[@]}"; do
         numFound="$(sed -n '$=' $file)"
         foundSizes+=("$numFound" "${categories[$idx]}s,")
         foundCategories+=("${categories[$idx]}")
-        actionOptions+=("Add a ${categories[$idx]} to the search string")
+        actionOptions+=("Add a ${categories[$idx]} to the search")
     else
         missingCategories+=("${categories[$idx]}")
     fi
@@ -109,31 +109,43 @@ fi
 
 # Let user know how much data we're dealing with
 sizeStr="${foundSizes[*]}"
-printf "==> I can generate search strings based on ${sizeStr/%,/.}\n\n"
+cat <<EOF
+==> I can generate searches based on ${sizeStr/%,/.}
+
+"Add a show" to list every person in a show. "Add a person" to see every show they were
+in. "Add a character" to see everyone who portrayed that character. Add multiple people to
+see all the shows they were in together. Add multiple shows to see if any people were in
+more than one. You can add more search terms after executing the search, or switch from a
+full search to a summary search.
+
+As soon as you type enough characters, a proposed search term will appear. Experiment!
+
+EOF
 
 # Select what action to take
-actionOptions+=("Clear the search string" "Full search" "Summary search" "Quit")
+actionOptions+=("Clear the search" "Full search" "Summary search" "Quit")
 searchString=""
 searchArray=()
 while true; do
     printf "What would you like to do?\n"
 
     PS3="Select a number from 1-${#actionOptions[@]}: "
+    COLUMNS=80
     select actionMenu in "${actionOptions[@]}"; do
         case "$actionMenu" in
         *show*)
             searchFile="uniqTitles.txt"
-            action="\nType to search show titles: "
+            action="\nType to search for show titles: "
             break
             ;;
         *person*)
             searchFile="uniqPersons.txt"
-            action="\nType to search persons: "
+            action="\nType to search for persons: "
             break
             ;;
         *character*)
             searchFile="uniqCharacters.txt"
-            action="\nType to search characters: "
+            action="\nType to search for characters: "
             break
             ;;
         Clear*)
@@ -214,5 +226,5 @@ while true; do
         fi
     done
 
-    printf "\nsearchString = $searchString\n\n"
+    printf "\nSearch for: $searchString\n\n"
 done
