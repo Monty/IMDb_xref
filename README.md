@@ -10,14 +10,14 @@ Command line utilities to quickly cross-reference and query shows, actors, and t
 [![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/IMDb_xref)
 
 If you don't care for long README files, jump directly to 
-[Automated startup](#automated-startup)
+[Automated quickstart](#automated-quickstart)
 
 **Table of Contents**
 
 - [Motivation](#motivation)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [NEW! Automated startup](#automated-startup)
+  - [NEW! Automated quickstart](#automated-quickstart)
   - [Generate initial data](#generate-initial-data)
   - [Run sample queries](#run-sample-queries)
      - [Understanding query results](#understanding-query-results)
@@ -93,12 +93,91 @@ cd IMDb_xref
 
 ## Usage
 
-### Automated startup
+### Automated quickstart
 
 After completing the installation, run **./iQuery.sh** to bypass the steps below and get a
-quick start using **IMDb_xref**. If you are on a Mac, just double-click on
-**iQuery.command**. If you are comfortable typing commands into a terminal window, you may
-prefer using the shell scripts listed below.
+quick menu-driven intro to using **IMDb_xref**. If you are on a Mac, just double-click on
+**iQuery.command**.
+
+If you are comfortable typing commands into a terminal window, you may prefer using the
+shell scripts so you can copy and paste as you explore the data.
+
+<details><summary><b>Show output from this command</b></summary>
+
+    $ ./iQuery.sh
+    ==> I can generate searches based on 3 shows, 81 persons, 50 characters.
+    
+    "Add a show" to list every person in a show. "Add a person" to see every show they were
+    in. "Add a character" to see everyone who portrayed that character. Add multiple people to
+    see all the shows they were in together. Add multiple shows to see if any people were in
+    more than one. You can add more search terms after executing the search, or switch from a
+    full search to a summary search.
+    
+    As soon as you type enough characters, a proposed search term will appear. Experiment!
+    
+    What would you like to do?
+    1) Add a show to search for       3) Add a character to search for
+    2) Add a person to search for     4) Quit
+    Select a number from 1-4: 1
+    
+    Type to search for show titles: D
+    Search terms: "The Durrells in Corfu"
+    
+    What would you like to do?
+    1) Add a show to search for       5) Execute full search
+    2) Add a person to search for     6) Execute summary search
+    3) Add a character to search for  7) Quit
+    4) Remove search term
+    Select a number from 1-7: 1
+    
+    Type to search for show titles: N
+    Search terms: "The Durrells in Corfu" "The Night Manager"
+    
+    What would you like to do?
+    1) Add a show to search for       5) Delete all search terms
+    2) Add a person to search for     6) Execute full search
+    3) Add a character to search for  7) Execute summary search
+    4) Remove one search term         8) Quit
+    Select a number from 1-8: 1
+    
+    Type to search for show titles: C
+    1) The Crown
+    2) The Durrells in Corfu
+    Select a number from 1-2: 1
+    
+    Search terms: "The Durrells in Corfu" "The Night Manager" "The Crown"
+    
+    What would you like to do?
+    1) Add a show to search for       5) Delete all search terms
+    2) Add a person to search for     6) Execute full search
+    3) Add a character to search for  7) Execute summary search
+    4) Remove one search term         8) Quit
+    Select a number from 1-8: 7
+    
+    ==> Searching for:
+    The Durrells in Corfu
+    The Night Manager
+    The Crown
+    
+    ==> Duplicated names (Name|Job|Show|Episode|Role):
+    Elizabeth Debicki  actress  The Crown              Episode #5.1  Princess Diana
+    Elizabeth Debicki  actress  The Night Manager      Episode #1.2  Jed Marshall
+    Josh O'Connor      actor    The Crown              Avalanche     Prince Charles
+    Josh O'Connor      actor    The Durrells in Corfu                Lawrence Durrell
+    Olivia Colman      actress  The Crown              48:1          Queen Elizabeth II
+    Olivia Colman      actress  The Night Manager                    Angela Burr
+    Tobias Menzies     actor    The Crown              48:1          Prince Philip, Duke of Edinburgh
+    Tobias Menzies     actor    The Night Manager      Episode #1.6  Geoffrey Dromgoole
+    
+    What would you like to do?
+    1) Add a show to search for       5) Delete all search terms
+    2) Add a person to search for     6) Execute full search
+    3) Add a character to search for  7) Execute summary search
+    4) Remove one search term         8) Quit
+    Select a number from 1-8: 8
+    
+    Quitting...
+</details>
 
 ### Generate initial data
 
@@ -200,12 +279,8 @@ unless run in debug mode.
 
 ### Run sample queries
 
-Run **./iQuery.sh** to use incremental typing to generate queries with minimal keystrokes.
-If you aren't used to typing commands into a terminal window, this is by far the simplest
-way to use **IMDb_xref**. If you are on a Mac, just double-click on **iQuery.command**. 
-
-Run **./xrefCast.sh -h** (help) to see some example queries that can be typed into a
-terminal window.
+Run **./xrefCast.sh -h** (help) to see some example queries that can be typed
+into a terminal window.
 
 <details><summary><b>Show this help file</b></summary>
 
