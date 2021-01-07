@@ -9,4 +9,4 @@
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME"/..
 
-exec ./iQuery.sh
+exec ./demo.sh

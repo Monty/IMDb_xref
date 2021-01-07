@@ -97,7 +97,7 @@ cd IMDb_xref
 
 After completing the installation, run **./iQuery.sh** to bypass the steps below and get a
 quick menu-driven intro to using **IMDb_xref**. If you are on a Mac, just double-click on
-**iQuery.command**.
+**Interactive query** in the "macOS commands" directory.
 
 If you are comfortable typing commands into a terminal window, you may prefer using the
 shell scripts so you can copy and paste as you explore the data.
