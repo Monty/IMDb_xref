@@ -19,7 +19,7 @@
 # EXAMPLE:
 #       # Make sure we are in the correct directory
 #       DIRNAME=$(dirname "$0")
-#       cd $DIRNAME
+#       cd "$DIRNAME"
 #       source functions/define_colors  # Only if you want colors to be used in output
 #       source functions/define_files
 #       source functions/load_functions
