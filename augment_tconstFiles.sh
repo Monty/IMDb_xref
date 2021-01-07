@@ -71,6 +71,9 @@ while getopts ":hiy" opt; do
 done
 shift $((OPTIND - 1))
 
+# Make sure we can execute rg.
+checkForExecutable rg
+
 # Need some tempfiles
 RESULT=$(mktemp)
 TCONSTS=$(mktemp)

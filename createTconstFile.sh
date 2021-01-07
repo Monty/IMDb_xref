@@ -63,6 +63,9 @@ while getopts ":f:h" opt; do
 done
 shift $((OPTIND - 1))
 
+# Make sure we can execute rg.
+checkForExecutable rg
+
 # Need some tempfiles
 SEARCH_TERMS=$(mktemp)
 SEARCH_RESULTS=$(mktemp)

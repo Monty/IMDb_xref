@@ -60,6 +60,19 @@ EOF
 
     # Make sure we can execute exeName.
     if ! type -p $exeName >/dev/null; then
+        # Special case for riprep
+        if [ "$exeName" == "rg" ]; then
+            cat <<EOF  >&2
+
+This script requires that the program rg (also known as ripgrep) is available before it
+will run. Detailed information on rg, precompiled binaries for macOS and Linux, and
+various other ways of installing rg are available at https://crates.io/crates/ripgrep.
+
+Please install rg and then re-run this script.
+
+EOF
+            exit 1
+        fi
         if [ -z "$quietly" ]; then
             printf "==> [${RED}Error${NO_COLOR}] Can't run ${RED}$exeName${NO_COLOR}. " >&2
             printf "Install ${RED}$exeName${NO_COLOR} and rerun this script.\n\n" >&2

@@ -13,6 +13,9 @@ source functions/define_colors
 source functions/define_files
 source functions/load_functions
 
+# Make sure we can execute rg.
+checkForExecutable rg
+
 for srchString in "$@"; do
     for file in $(ls *.tsv.gz); do
         count=$(rg -wcz "$srchString" $file)
