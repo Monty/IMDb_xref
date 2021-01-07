@@ -238,6 +238,9 @@ while true; do
             # printf "\nOnly one match found\n"
             # rg -NzSI $searchFor $searchFile
             result="$(rg -NzSI $searchFor $searchFile)"
+            for term in "${searchArray[@]}"; do
+                [ "$result" == "$term" ] && break 2
+            done
             searchString+="\"$result\" "
             searchArray+=("$result")
             break
@@ -252,6 +255,9 @@ while true; do
                 if [ 1 -le "$REPLY" ] 2>/dev/null && [ "$REPLY" -le "${#pickOptions[@]}" ]; then
                     # printf "You picked $pickMenu ($REPLY)\n"
                     # rg -NzSI $pickMenu "$searchFile"
+                    for term in "${searchArray[@]}"; do
+                        [ "$pickMenu" == "$term" ] && break 2
+                    done
                     searchString+="\"$pickMenu\" "
                     searchArray+=("$pickMenu")
                     break
