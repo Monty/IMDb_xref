@@ -20,6 +20,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -w      Set fieldwidth - defaults to 8 if not specified
+    -t      Tab - create two tab sepatared fields. Ignore fieldwidth
 
 EXAMPLES:
     cut -f 1 file | frequency
@@ -39,13 +40,16 @@ EXAMPLES:
 EOF
     }
 
-    while getopts ":hw:" opt; do
+    while getopts ":htw:" opt; do
         case $opt in
         h)
             help
             read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
             printf "\n"
             return
+            ;;
+        t)
+            tab_separated="yes"
             ;;
         w)
             fieldwidth="$OPTARG"
@@ -65,5 +69,6 @@ EOF
 
     # Default fieldwidth to 8
     fmt_str="%${fieldwidth:-8}s %s\n"
+    [ -n $tab_separated ] && fmt_str="%s\t%s\n"
     awk -v FW="$fmt_str" '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' | sort -nr
 }
