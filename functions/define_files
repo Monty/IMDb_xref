@@ -24,6 +24,9 @@ configFile=".xref_config"
 durationFile=".xref_durations"
 [ ! -e "$durationFile" ] && touch "$durationFile"
 
+numRecordsFile=".xref_numRecords"
+[ ! -e "$numRecordsFile" ] && touch "$numRecordsFile"
+
 # Look for the string "files" in $DEBUG_XREF to enable debugging
 if [[ $DEBUG_XREF == *"files"* ]]; then
     printf "[${YELLOW}Debug-files${NO_COLOR}] Running:              $PWD/$(basename $0)\n" >&2

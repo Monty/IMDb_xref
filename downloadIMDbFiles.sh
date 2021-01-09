@@ -23,17 +23,22 @@ function terminate() {
 # Make sure we can execute curl. If not, quit.
 checkForExecutable curl
 
+gz_files=(name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz)
+
 printf "==> Downloading new IMDb .gz files.\n"
 
 # Let us know how long it took last time
 printDuration
 
-for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
+for file in "${gz_files[@]}"; do
     source="https://datasets.imdbws.com/$file"
     printf "Downloading $source\n"
     curl -O $source
     printf "\n"
 done
+
+printf "==> Recording IMDb .gz file sizes.\n"
+rg -cz "^." ${gz_files[*]} | sort | perl -p -e "s/:/\\t/;" >$numRecordsFile
 
 # Save durations and exit
 terminate
