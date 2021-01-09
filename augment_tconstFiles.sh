@@ -91,7 +91,7 @@ for file in "$@"; do
     rg -Nv "^tt" "$file" >$RESULT
 
     # Gather all the lines with tconsts in column 1
-    rg -Ne "^tt" "$file" | cut -f 1 >$TCONSTS
+    rg -N "^tt" "$file" | cut -f 1 >$TCONSTS
 
     # Look them up, get fields 1-4, and sort by Primary Title
     rg -wNz -f "$TCONSTS" title.basics.tsv.gz | cut -f 1-4 |
