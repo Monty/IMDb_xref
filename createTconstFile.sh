@@ -35,7 +35,7 @@ EOF
 }
 
 # Don't leave tempfiles around
-# trap "rm -f $ALL_TERMS $TCONST_TERMS $SHOWS_TERMS $POSSIBLE_MATCHES $MATCH_COUNTS $FINAL_RESULTS" EXIT
+trap "rm -f $ALL_TERMS $TCONST_TERMS $SHOWS_TERMS $POSSIBLE_MATCHES $MATCH_COUNTS $FINAL_RESULTS" EXIT
 
 # trap ctrl-c and call cleanup
 trap cleanup INT
@@ -71,20 +71,13 @@ shift $((OPTIND - 1))
 # Make sure we can execute rg.
 checkForExecutable rg
 
-# Required subdirectories
-WORK="secondary"
-mkdir -p $WORK
-
 # Need some tempfiles
-ALL_TERMS=$WORK/ALL_TERMS.txt
-TCONST_TERMS=$WORK/TCONST_TERMS.txt
-SHOWS_TERMS=$WORK/SHOWS_TERMS.txt
-POSSIBLE_MATCHES=$WORK/POSSIBLE_MATCHES.txt
-MATCH_COUNTS=$WORK/MATCH_COUNTS.txt
-FINAL_RESULTS=$WORK/FINAL_RESULTS.txt
-
-rm -f $ALL_TERMS $TCONST_TERMS $SHOWS_TERMS $POSSIBLE_MATCHES $MATCH_COUNTS $FINAL_RESULTS
-touch $ALL_TERMS $TCONST_TERMS $SHOWS_TERMS $POSSIBLE_MATCHES $MATCH_COUNTS $FINAL_RESULTS
+ALL_TERMS=$(mktemp)
+TCONST_TERMS=$(mktemp)
+SHOWS_TERMS=$(mktemp)
+POSSIBLE_MATCHES=$(mktemp)
+MATCH_COUNTS=$(mktemp)
+FINAL_RESULTS=$(mktemp)
 
 # Make sure a tconst was supplied
 if [ $# -eq 0 ]; then
@@ -109,6 +102,7 @@ if [ ! -e "title.basics.tsv.gz" ]; then
     fi
 fi
 
+# Do the work of adding the matches to the TCONST_FILE
 function addToFileP() {
     if waitUntil -Y "\n==> Add them to $TCONST_FILE?"; then
         printf "OK. Adding...\n"
@@ -145,8 +139,10 @@ perl -p -e 's/^/\\t/; s/$/\\t/;' $SHOWS_TERMS >>$ALL_TERMS
 rg -NzSI -f $ALL_TERMS title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4 |
     sort -f --field-separator=$'\t' --key=3 >$POSSIBLE_MATCHES
 
+# Figure how many matches for each possible match
 cut -f 3 $POSSIBLE_MATCHES | frequency -t >$MATCH_COUNTS
 
+# Add possible matches one at a time
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
@@ -205,6 +201,7 @@ if [ ! -s $FINAL_RESULTS ]; then
     exit
 fi
 
+# Found results, check with user before adding
 printf "These are the matches I can add:\n"
 if checkForExecutable -q xsv; then
     xsv table -d "\t" $FINAL_RESULTS
