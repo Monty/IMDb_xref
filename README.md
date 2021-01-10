@@ -548,31 +548,29 @@ one word). Run **createTconstFile.sh -h** for ideas.
 <details><summary><b>Show output from this command</b></summary>
 
     $ ./createTconstFile.sh tt1606375 tt1399664 Broadchurch
-    ==> Adding tconst IDs to monty.tconst
-
-    ==> Searching for:
-    tt1606375
+    ==> Adding tconst IDs to: monty.tconst
+    
+    ==> Searching 7501587 records for:
     tt1399664
+    tt1606375
     Broadchurch
-
-    ==> This will add the following:
-       1 tvMiniSeries
-       2 tvSeries
-
-    # tconst    Type           Title
-    tt1399664   tvMiniSeries   The Night Manager
-    tt2249364   tvSeries       Broadchurch
-    tt1606375   tvSeries       Downton Abbey
-
-    ==> Found all the shows searched for.
-        Shall I add them to monty.tconst? [Y/n]
-    Ok. Adding:
-        Shall I sort monty.tconst by title? [Y/n]
-        Shall I update your data files? [Y/n]
-    ==> Processing 5 shows found in *.tconst:
-        Broadchurch; Downton Abbey; The Crown; The Durrells in Corfu; The Night Manager
-
+    
+    These are the matches I can add:
+    tt1399664  tvMiniSeries  The Night Manager  The Night Manager
+    tt1606375  tvSeries      Downton Abbey      Downton Abbey
+    tt2249364  tvSeries      Broadchurch        Broadchurch
+    
+    ==> Add them to monty.tconst? [Y/n]
+    OK. Adding...
+    
+    ==> Shall I sort monty.tconst by title? [Y/n]
+    
+    ==> Shall I update your data files? [Y/n]
+    ==> Processing 3 shows found in *.tconst:
+    	Broadchurch; Downton Abbey; The Night Manager
+    
     ==> Previously, this took 16 seconds.
+    
 </details>
 
 ## Suggestions
