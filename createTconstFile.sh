@@ -123,7 +123,7 @@ function addToFileP() {
 # Get a TCONST_FILE
 [ -z "$TCONST_FILE" ] && TCONST_FILE="$USER.tconst"
 #
-printf "==> Adding tconst IDs to $TCONST_FILE\n\n"
+printf "==> Adding tconst IDs to: ${BLUE}$TCONST_FILE${NO_COLOR}\n\n"
 
 # Setup ALL_TERMS with one search term per line
 numRecords="$(rg -N title.basics.tsv.gz $numRecordsFile 2>/dev/null | cut -f 2)"
