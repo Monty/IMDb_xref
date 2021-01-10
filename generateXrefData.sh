@@ -68,7 +68,7 @@ function terminate() {
     saveDurations $SECONDS
     # Only keep 10 duration lines for this script
     trimDurations 10
-    [ -s $DEBUG ] && rm -f $ALL_WORKING $ALL_CSV
+    [ -s "$DEBUG" ] && rm -f $ALL_WORKING $ALL_CSV
     exit
 }
 
@@ -126,30 +126,30 @@ checkForExecutable rg
 # Make sure we have downloaded the IMDb files
 if [ -e "name.basics.tsv.gz" ] && [ -e "title.basics.tsv.gz" ] && [ -e "title.principals.tsv.gz" ] &&
     [ -e "title.episode.tsv.gz" ]; then
-    [ -s $QUIET ] && printf "==> Using existing IMDb .gz files.\n"
+    [ -s "$QUIET" ] && printf "==> Using existing IMDb .gz files.\n"
 else
-    [ -s $QUIET ] && printf "==> Downloading new IMDb .gz files.\n"
+    [ -s "$QUIET" ] && printf "==> Downloading new IMDb .gz files.\n"
     # Make sure we can execute curl.
     checkForExecutable curl
     #
     for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
         if [ ! -e "$file" ]; then
             source="https://datasets.imdbws.com/$file"
-            [ -s $QUIET ] && printf "Downloading $source\n"
+            [ -s "$QUIET" ] && printf "Downloading $source\n"
             curl -s -O $source
         fi
     done
 fi
-[ -s $QUIET ] && printf "\n"
+[ -s "$QUIET" ] && printf "\n"
 
 # If the user hasn't created a .tconst or .xlate file, create a small example from a PBS show.
 # This is relatively harmless, and keeps this script simpler.
 if [ ! "$(ls *.xlate 2>/dev/null)" ]; then
-    [ -s $QUIET ] && printf "==> Creating an example translation file: PBS.xlate\n\n"
+    [ -s "$QUIET" ] && printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -Ne "^#" -e "^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
 if [ ! "$(ls *.tconst 2>/dev/null)" ]; then
-    [ -s $QUIET ] && printf "==> Creating an example tconst file: PBS.tconst\n\n"
+    [ -s "$QUIET" ] && printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -Ne "^#" -e "^$" -e "The Durrells" -e "The Night Manager" -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
@@ -158,9 +158,9 @@ fi
 [ -n "$TEST_MODE" ] && XLATE_FILES="xlate.example"
 #
 if [ "$XLATE_FILES" == "*.xlate" ]; then
-    [ -s $QUIET ] && printf "==> Using all .xlate files for IMDb title translation.\n\n"
+    [ -s "$QUIET" ] && printf "==> Using all .xlate files for IMDb title translation.\n\n"
 else
-    [ -s $QUIET ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
+    [ -s "$QUIET" ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
 fi
 if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
     printf "==>[${RED}Error${NO_COLOR}] No such file(s): $XLATE_FILES\n\n" >&2
@@ -172,9 +172,9 @@ fi
 [ -n "$TEST_MODE" ] && TCONST_FILES="tconst.example"
 #
 if [ "$TCONST_FILES" == "*.tconst" ]; then
-    [ -s $QUIET ] && printf "==> Searching all .tconst files for IMDb title identifiers.\n\n"
+    [ -s "$QUIET" ] && printf "==> Searching all .tconst files for IMDb title identifiers.\n\n"
 else
-    [ -s $QUIET ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n\n"
+    [ -s "$QUIET" ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n\n"
 fi
 if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
     printf "==> [${RED}Error${NO_COLOR}] No such file(s): $TCONST_FILES\n\n" >&2
@@ -287,7 +287,7 @@ rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1 | sort -f | uniq -d >$DUPES
 
 rg -IN -f $DUPES $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$CONFLICTS
 cut -f 6 $RAW_SHOWS | sort -f | uniq -d >>$CONFLICTS
-if [ -s $CONFLICTS ]; then
+if [ -s "$CONFLICTS" ]; then
     cat <<EOF >&2
 ==> [${RED}Error${NO_COLOR}] Conflicts are listed below. Fix them then rerun this script.
 ==> These shows have more than one tconst for the same title.
@@ -437,7 +437,7 @@ function printAdjustedFileInfo() {
 }
 
 # Output some stats from $SHOWS
-if [ -s $QUIET ]; then
+if [ -s "$QUIET" ]; then
     printf "\n==> Show types in $SHOWS:\n"
     cut -f 4 $RAW_SHOWS | frequency
 
