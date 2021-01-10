@@ -5,7 +5,7 @@
 # This works without having to sort its input, and it formats the output better than uniq -c
 
 function frequency() {
-    local OPTIND fieldwidth fmt_str
+    local OPTIND fieldwidth fmt_str tab_separated
 
     help() {
         cat <<EOF
@@ -69,6 +69,6 @@ EOF
 
     # Default fieldwidth to 8
     fmt_str="%${fieldwidth:-8}s %s\n"
-    [ -n $tab_separated ] && fmt_str="%s\t%s\n"
+    [ -n "$tab_separated" ] && fmt_str="%s\t%s\n"
     awk -v FW="$fmt_str" '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' | sort -nr
 }
