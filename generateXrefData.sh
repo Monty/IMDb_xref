@@ -326,13 +326,15 @@ rg -wNz -f $EPISODES_LIST title.basics.tsv.gz | cut -f 1-4,6-9 | perl -p -f $XLA
 
 # Use the tconst list to lookup principal titles and generate a tconst/nconst credits csv
 # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
-rg -wNz -f $TCONST_LIST title.principals.tsv.gz | rg -w -e actor -e actress -e writer -e director |
+rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
+    rg -w -e actor -e actress -e writer -e director -e producer |
     sort --key=1,1 --key=2,2n | perl -p -e 's+nm0745728+nm0745694+' | perl -p -e 's+\\N++g;' |
     perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' | tee $UNSORTED_CREDITS |
     cut -f 1 | sort -u >$NCONST_LIST
 
 # Use the episodes list to lookup principal titles and add to the tconst/nconst credits csv
-rg -wNz -f $EPISODES_LIST title.principals.tsv.gz | rg -w -e actor -e actress -e writer -e director |
+rg -wNz -f $EPISODES_LIST title.principals.tsv.gz |
+    rg -w -e actor -e actress -e writer -e director -e producer |
     sort --key=1,1 --key=2,2n | perl -p -e 's+\\N++g;' |
     perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' | tee -a $UNSORTED_CREDITS |
     cut -f 1 | sort -u | rg -v -f $NCONST_LIST >>$NCONST_LIST
