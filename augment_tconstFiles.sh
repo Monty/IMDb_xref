@@ -31,6 +31,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -a      Allow tvEpisodes -- normally they are filtered out
     -i      In place -- overwrite original file
     -y      Yes -- skip asking "OK to overwrite...
 
@@ -52,17 +53,20 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":hiy" opt; do
+while getopts ":haiy" opt; do
     case $opt in
     h)
         help
         exit
         ;;
+    a)
+        ALLOW_EPISODES="yes"
+        ;;
     i)
         INPLACE="yes"
         ;;
     y)
-        SKIP="yes"
+        DONT_ASK="yes"
         ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
@@ -84,6 +88,14 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+function copyResults() {
+    if [ -n "$ALLOW_EPISODES" ]; then
+        cat $RESULT
+    else
+        rg -wNv "tvEpisode" $RESULT
+    fi
+}
+
 for file in "$@"; do
     [ -z "$INPLACE" ] && printf "==> $file\n"
 
@@ -98,17 +110,14 @@ for file in "$@"; do
         sort -f --field-separator=$'\t' --key=3,3 >>$RESULT
 
     # Either overwrite or print on stdout
-    if [ -n "$INPLACE" ]; then
-        if [ -n "$SKIP" ]; then
-            cp $RESULT $file
-        else
-            read -r -p "OK to overwrite $file? [y/N] " YESNO
-            if [ "$YESNO" == "y" ]; then
-                cp $RESULT $file
-            fi
-        fi
-    else
-        cat $RESULT
+    if [ -z "$INPLACE" ]; then
+        copyResults
         printf "\n"
+    else
+        if [ -z "$DONT_ASK" ]; then
+            waitUntil -N "OK to overwrite $file?" && copyResults >$file
+        else
+            copyResults >$file
+        fi
     fi
 done
