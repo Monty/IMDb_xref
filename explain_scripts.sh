@@ -21,7 +21,7 @@ source functions/load_functions
 checkForExecutable rg
 
 for script in $(ls *.sh); do
-    if [ $(rg -cF 'help()' $script) ]; then
+    if [ "$(rg -cF 'help()' $script)" ]; then
         [ $script == "explain_scripts.sh" ] && continue
         clear
         eval ./$script -h
