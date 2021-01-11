@@ -49,7 +49,7 @@ while true; do
         ./createTconstFile.sh aaa
     fi
 
-    ! waitUntil -Y '\n==> Tests completed. Run again?' && break
+    ! waitUntil -Y '\nTests completed. Run again?' && break
     printf "\n"
 
 done
