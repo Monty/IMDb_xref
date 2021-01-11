@@ -58,12 +58,10 @@ while getopts ":hm:" opt; do
         maxHits="$OPTARG"
         ;;
     \?)
-        printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
-        printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n\n" >&2
+        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
     :)
-        printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
-        printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
+        printf "==> Option -$OPTARG requires a 'maximim hits' argument.'\n\n" >&2
         exit 1
         ;;
     esac

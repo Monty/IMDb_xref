@@ -110,7 +110,7 @@ while getopts ":o:x:hdqtv" opt; do
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
     :)
-        printf "Option -$OPTARG requires a 'translation file' argument'.\n\n" >&2
+        printf "==> Option -$OPTARG requires a 'translation file' argument'.\n\n" >&2
         exit 1
         ;;
     esac

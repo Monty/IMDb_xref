@@ -26,10 +26,10 @@ while getopts ":d:v" opt; do
         VERBOSE="-v"
         ;;
     \?)
-        printf "Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
     :)
-        printf "Option -$OPTARG requires a 'date' argument such as $DATE\n\n" >&2
+        printf "==> Option -$OPTARG requires a 'date' argument such as $DATE\n\n" >&2
         exit 1
         ;;
     esac
