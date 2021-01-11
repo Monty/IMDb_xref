@@ -195,7 +195,7 @@ done <$MATCH_COUNTS
 printf "\n"
 
 # Didn't find any results
-if [ ! -s $FINAL_RESULTS ]; then
+if [ ! -s "$FINAL_RESULTS" ]; then
     printf "==> Didn't find ${RED}any${NO_COLOR} matching shows.\n"
     printf "    Check the \"Searching $numRecords records for:\" section above.\n\n"
     exit
