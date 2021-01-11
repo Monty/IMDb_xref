@@ -21,29 +21,35 @@ printf "First, print the help file...\n"
 waitUntil -k
 clear
 
-if waitUntil -Y 'Run ./createTconstFile.sh tt1606375'; then
-    ./createTconstFile.sh tt1606375
-fi
+while true; do
+    if waitUntil -Y 'Run ./createTconstFile.sh tt1606375'; then
+        ./createTconstFile.sh tt1606375
+    fi
 
-if waitUntil -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"'; then
-    ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"
-fi
+    if waitUntil -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"'; then
+        ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"
+    fi
 
-if waitUntil -Y '\nRun ./createTconstFile.sh "The Crown"'; then
-    ./createTconstFile.sh "The Crown"
-fi
+    if waitUntil -Y '\nRun ./createTconstFile.sh "The Crown"'; then
+        ./createTconstFile.sh "The Crown"
+    fi
 
-if waitUntil -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 broadchurch "the crown"'; then
-    ./createTconstFile.sh tt1606375 tt1399664 broadchurch "the crown"
-fi
+    if waitUntil -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 broadchurch "the crown"'; then
+        ./createTconstFile.sh tt1606375 tt1399664 broadchurch "the crown"
+    fi
 
-if waitUntil -Y '\nRun ./createTconstFile.sh "The Crown" River'; then
-    ./createTconstFile.sh "The Crown" River
-fi
+    if waitUntil -Y '\nRun ./createTconstFile.sh "The Crown" River'; then
+        ./createTconstFile.sh "The Crown" River
+    fi
 
-if waitUntil -Y '\nRun ./createTconstFile.sh -f Dramas.tconst tt1606375'; then
-    ./createTconstFile.sh -f Dramas.tconst tt1606375
-fi
-if waitUntil -Y '\nRun ./createTconstFile.sh aaa'; then
-    ./createTconstFile.sh aaa
-fi
+    if waitUntil -Y '\nRun ./createTconstFile.sh -f Dramas.tconst tt1606375'; then
+        ./createTconstFile.sh -f Dramas.tconst tt1606375
+    fi
+    if waitUntil -Y '\nRun ./createTconstFile.sh aaa'; then
+        ./createTconstFile.sh aaa
+    fi
+
+    ! waitUntil -Y '\n==> Tests completed. Run again?' && break
+    printf "\n"
+
+done
