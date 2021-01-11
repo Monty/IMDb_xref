@@ -12,7 +12,7 @@ source functions/define_files
 source functions/load_functions
 
 for file in $(ls *.tsv.gz); do
-    printf "File = $file\n"
+    printf "==> $file\n"
     gzcat $file | head -5
     printf "\n"
 done
