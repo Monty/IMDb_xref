@@ -63,8 +63,8 @@ EOF
     timestamp=$(date +$date_fmt)
     #
     mins="minute"
-    [[ $secs -ge 120 ]] && mins="minutes"
-    if [[ $secs -gt 90 ]]; then
+    [[ "$secs" -ge 120 ]] && mins="minutes"
+    if [[ "$secs" -gt 90 ]]; then
         duration="$((secs / 60)) $mins and $((secs % 60)) seconds."
     else
         duration="$secs seconds."
