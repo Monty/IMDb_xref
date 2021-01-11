@@ -74,8 +74,7 @@ function terminate() {
 
 function breakpoint() {
     if [ -n "$DEBUG" ]; then
-        read -r -p "Quit now? [y/N] " YESNO
-        if [ "$YESNO" == "y" ]; then
+        if waitUntil -N "Quit now?"; then
             printf "Quitting ...\n"
             exit 1
         fi

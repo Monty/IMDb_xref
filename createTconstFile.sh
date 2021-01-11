@@ -157,9 +157,7 @@ while read -r line; do
 
     printf "I found $count shows titled \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
-        if waitUntil -Y "Should I skip trying to select one?"; then
-            continue
-        fi
+        waitUntil -Y "Should I skip trying to select one?" && continue
     fi
     # rg --color always "\t$match\t" $POSSIBLE_MATCHES | xsv table -d "\t"
     pickOptions=()
