@@ -68,7 +68,7 @@ function terminate() {
     saveDurations $SECONDS
     # Only keep 10 duration lines for this script
     trimDurations 10
-    [ -s "$DEBUG" ] && rm -f $ALL_WORKING $ALL_CSV
+    [ -z "$DEBUG" ] && rm -f $ALL_WORKING $ALL_CSV
     exit
 }
 
