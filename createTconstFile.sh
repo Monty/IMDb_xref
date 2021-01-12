@@ -107,7 +107,7 @@ function addToFileP() {
     if waitUntil -Y "\nShall I add them to $TCONST_FILE?"; then
         printf "OK. Adding...\n"
         rg -Ne "^tt" $FINAL_RESULTS >>$TCONST_FILE
-        waitUntil -Y "\nShall I sort $TCONST_FILE by title?" && ./augment_tconstFiles.sh -iy $TCONST_FILE
+        waitUntil -Y "\nShall I sort $TCONST_FILE by title?" && ./augment_tconstFiles.sh -y $TCONST_FILE
         waitUntil -Y "\nShall I update your data files?" && ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
