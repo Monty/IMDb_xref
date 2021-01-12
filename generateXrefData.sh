@@ -287,8 +287,8 @@ rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1 | sort -f | uniq -d >$DUPES
 rg -IN -f $DUPES $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$CONFLICTS
 cut -f 6 $RAW_SHOWS | sort -f | uniq -d >>$CONFLICTS
 if [ -s "$CONFLICTS" ]; then
+    printf "[${RED}Error${NO_COLOR}] Conflicts are listed below. Fix them then re-run this script.\n"
     cat <<EOF >&2
-==> [${RED}Error${NO_COLOR}] Conflicts are listed below. Fix them then rerun this script.
 ==> These shows have more than one tconst for the same title.
 $(rg -p -H -f $CONFLICTS $RAW_SHOWS | cut -f 1-7)
 
