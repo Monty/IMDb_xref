@@ -33,7 +33,7 @@ OPTIONS:
     -h      Print this message.
     -a      Allow tvEpisodes -- normally they are filtered out
     -i      In place -- overwrite original file
-    -y      Yes -- skip asking "OK to overwrite...
+    -y      Yes -- overwrite without asking "OK to overwrite...
 
 EXAMPLES:
     ./augment_tconstFiles.sh Contrib/OPB.tconst
@@ -66,6 +66,7 @@ while getopts ":haiy" opt; do
         INPLACE="yes"
         ;;
     y)
+        INPLACE="yes"
         DONT_ASK="yes"
         ;;
     \?)
