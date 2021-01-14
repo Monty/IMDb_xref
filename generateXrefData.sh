@@ -66,10 +66,12 @@ function cleanup() {
 }
 
 function terminate() {
+    [ -z "$DEBUG" ] && rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
+    # If we're not in the primary directory, don't record times
+    [ -n "$OUTPUT_DIR" ] && exit
     saveDurations $SECONDS
     # Only keep 10 duration lines for this script
     trimDurations 10
-    [ -z "$DEBUG" ] && rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
     exit
 }
 
@@ -335,9 +337,10 @@ rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >$SKIP_TCONST
 num_titles=$(sed -n '$=' $UNIQUE_TITLES)
 printf "\n==> Processing $num_titles shows found in $TCONST_FILES:\n"
 perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
+[ -n "$OUTPUT_DIR" ] && printf "\n"
 
-# Let us know how long it took last time
-printDuration
+# Let us know how long it took last time, unless we're not in the primary directory
+[ -z "$OUTPUT_DIR" ] && printDuration
 
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
 rg -wNz -f $TCONST_LIST title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
