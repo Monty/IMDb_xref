@@ -310,7 +310,7 @@ if [ -s "$DUPES" ]; then
     # perl -p -e 's+^+\$6 == "+; s+$+" {\$6 = \$6 " (" \$7 ")"}+;' $DUPES >>$AWKFILE
     printf '{print}\n' >>$AWKFILE
     # Let the user know what we will change
-    printf "==> Adding dates to titles to fix these title conflicts.\n" >&2
+    printf "\n==> Adding dates to titles to fix these title conflicts.\n" >&2
     perl -pi -e 's+^+\\t+; s+$+\\t+;' $DUPES
     if checkForExecutable -q xsv; then
         rg -N --color always -f $DUPES $RAW_SHOWS | cut -f 1,4-7 |
@@ -322,7 +322,6 @@ if [ -s "$DUPES" ]; then
     # Change the shows by adding (<DATE>) to title
     cp $RAW_SHOWS $TEMPFILE
     awk -F "\t" -f $AWKFILE $TEMPFILE >$RAW_SHOWS
-    printf "\n" >&2
 fi
 
 # We should now be conflict free
@@ -335,7 +334,7 @@ rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >$SKIP_TCONST
 
 # Let us know what shows we're processing - format for readability, separate with ";"
 num_titles=$(sed -n '$=' $UNIQUE_TITLES)
-printf "==> Processing $num_titles shows found in $TCONST_FILES:\n"
+printf "\n==> Processing $num_titles shows found in $TCONST_FILES:\n"
 perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
 
 # Let us know how long it took last time
