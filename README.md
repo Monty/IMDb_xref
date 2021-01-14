@@ -63,6 +63,10 @@ The data used is extracted from downloaded IMDb .gz files. See
 [https://www.imdb.com/interfaces/](https://www.imdb.com/interfaces/) for details
 of the data in those files.
 
+Although I wrote **IMDb_xref**  mainly to explore favorite shows I manually add to a list,
+I've added the ability to search IMDb for shows by name and add them to the local
+spreadsheets automatically using **createTconstFile.sh**.
+
 ## Installation
 
 ### Compatibility
