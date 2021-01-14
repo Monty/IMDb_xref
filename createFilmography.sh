@@ -261,9 +261,3 @@ while read -r line; do
         printf "\n==> There aren't ${RED}any${NO_COLOR} $nconstName titles to add.\n"
     fi
 done <$NCONST_TERMS
-
-if waitUntil -Y "\n==> Shall I update all your data files?"; then
-    ./generateXrefData.sh -q
-else
-    printf "Skipping....\n"
-fi
