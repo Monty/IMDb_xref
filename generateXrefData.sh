@@ -131,30 +131,30 @@ checkForExecutable rg
 # Make sure we have downloaded the IMDb files
 if [ -e "name.basics.tsv.gz" ] && [ -e "title.basics.tsv.gz" ] && [ -e "title.principals.tsv.gz" ] &&
     [ -e "title.episode.tsv.gz" ]; then
-    [ -s "$QUIET" ] && printf "==> Using existing IMDb .gz files.\n"
+    [ -z "$QUIET" ] && printf "==> Using existing IMDb .gz files.\n"
 else
-    [ -s "$QUIET" ] && printf "==> Downloading new IMDb .gz files.\n"
+    [ -z "$QUIET" ] && printf "==> Downloading new IMDb .gz files.\n"
     # Make sure we can execute curl.
     checkForExecutable curl
     #
     for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
         if [ ! -e "$file" ]; then
             source="https://datasets.imdbws.com/$file"
-            [ -s "$QUIET" ] && printf "Downloading $source\n"
+            [ -z "$QUIET" ] && printf "Downloading $source\n"
             curl -s -O $source
         fi
     done
 fi
-[ -s "$QUIET" ] && printf "\n"
+[ -z "$QUIET" ] && printf "\n"
 
 # If the user hasn't created a .tconst or .xlate file, create a small example from a PBS show.
 # This is relatively harmless, and keeps this script simpler.
 if [ ! "$(ls *.xlate 2>/dev/null)" ]; then
-    [ -s "$QUIET" ] && printf "==> Creating an example translation file: PBS.xlate\n\n"
+    [ -z "$QUIET" ] && printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -Ne "^#" -e "^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
 if [ ! "$(ls *.tconst 2>/dev/null)" ]; then
-    [ -s "$QUIET" ] && printf "==> Creating an example tconst file: PBS.tconst\n\n"
+    [ -z "$QUIET" ] && printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -Ne "^#" -e "^$" -e "The Durrells" -e "The Night Manager" -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
@@ -163,9 +163,9 @@ fi
 [ -n "$TEST_MODE" ] && XLATE_FILES="xlate.example"
 #
 if [ "$XLATE_FILES" == "*.xlate" ]; then
-    [ -s "$QUIET" ] && printf "==> Using all .xlate files for IMDb title translation.\n\n"
+    [ -z "$QUIET" ] && printf "==> Using all .xlate files for IMDb title translation.\n\n"
 else
-    [ -s "$QUIET" ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
+    [ -z "$QUIET" ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
 fi
 if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
     printf "==>[${RED}Error${NO_COLOR}] No such file(s): $XLATE_FILES\n\n" >&2
@@ -177,9 +177,9 @@ fi
 [ -n "$TEST_MODE" ] && TCONST_FILES="tconst.example"
 #
 if [ "$TCONST_FILES" == "*.tconst" ]; then
-    [ -s "$QUIET" ] && printf "==> Searching all .tconst files for IMDb title identifiers.\n\n"
+    [ -z "$QUIET" ] && printf "==> Searching all .tconst files for IMDb title identifiers.\n"
 else
-    [ -s "$QUIET" ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n\n"
+    [ -z "$QUIET" ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n"
 fi
 if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
     printf "==> [${RED}Error${NO_COLOR}] No such file(s): $TCONST_FILES\n\n" >&2
@@ -466,8 +466,8 @@ function printAdjustedFileInfo() {
 }
 
 # Output some stats from $SHOWS
-if [ -s "$QUIET" ]; then
-    printf "\n==> Show types in $SHOWS:\n"
+if [ -z "$QUIET" ]; then
+    printf "==> Show types in $SHOWS:\n"
     cut -f 4 $RAW_SHOWS | frequency
 
     # Output some stats from credits
