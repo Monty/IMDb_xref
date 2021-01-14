@@ -38,13 +38,13 @@ while true; do
         ./createFilmography.sh nm0000123 "Quentin Tarantino"
     fi
 
-    if waitUntil -Y '\nRun ./createFilmography.sh nm0000123 "John Wayne"'; then
-        ./createFilmography.sh nm0000123 "John Wayne"
+    if waitUntil -Y '\nRun ./createFilmography.sh nm0000123 "Alfred Hitchcock"'; then
+        ./createFilmography.sh nm0000123 "Alfred Hitchcock"
     fi
 
     if waitUntil -Y \
-        '\nRun ./createFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "John Wayne"'; then
-        ./createFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "John Wayne"
+        '\nRun ./createFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"'; then
+        ./createFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"
     fi
 
     if waitUntil -Y '\nRun ./createFilmography.sh nm9999999'; then
