@@ -273,6 +273,8 @@ ALL_SPREADSHEETS+="$CREDITS_SHOW $CREDITS_PERSON "
 
 # Cleanup any possible leftover files
 rm -f $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
+# In case TEMPFILE doesn't get created but is referenced as part of ALL_CSV
+touch $TEMPFILE
 
 # Coalesce a single tconst input list
 rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >$TCONST_LIST
