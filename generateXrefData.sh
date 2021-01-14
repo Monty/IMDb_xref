@@ -47,7 +47,8 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -d      Diff -- Create a 'diff' file comparing current against previously saved results.
+    -c      Compare -- Create a 'diff' file comparing current against previously saved results.
+    -d      Directory -- Create a subdirectory for results. Don't overwrite existing files.
     -o      Output -- Save file that can later be used for queries with "xrefCast.sh -f"
     -q      Quiet -- Minimize output, print only the list of shows being processed.
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
@@ -81,14 +82,17 @@ function breakpoint() {
     fi
 }
 
-while getopts ":o:x:hdqtv" opt; do
+while getopts ":d:o:x:hcqtv" opt; do
     case $opt in
-    d)
+    c)
         CREATE_DIFF="yes"
         ;;
     h)
         help
         exit
+        ;;
+    d)
+        OUTPUT_DIR="./$OPTARG/"
         ;;
     o)
         OUTPUT_FILE="$OPTARG"
@@ -188,6 +192,7 @@ LONGDATE="-$(date +%y%m%d.%H%M%S)"
 WORK="secondary"
 BASE="baseline"
 [ -n "$TEST_MODE" ] && BASE="test_results"
+[ -n "$OUTPUT_DIR" ] && mkdir -p $OUTPUT_DIR
 mkdir -p $WORK $BASE
 
 # Error and debugging info (per run)
@@ -197,26 +202,27 @@ ERRORS="anomalies$LONGDATE.txt"
     printf "\n==> $POSSIBLE_DIFFS contains diffs between generated files and files saved in $BASE\n"
 
 # Final output spreadsheets
-CREDITS_SHOW="Credits-Show$DATE_ID.csv"
-CREDITS_PERSON="Credits-Person$DATE_ID.csv"
-KNOWN_PERSONS="Persons-KnownFor$DATE_ID.csv"
-SHOWS="Shows-Episodes$DATE_ID.csv"
-LINKS_TO_PERSONS="LinksToPersons$DATE_ID.csv"
-LINKS_TO_TITLES="LinksToTitles$DATE_ID.csv"
-ASSOCIATED_TITLES="AssociatedTitles$DATE_ID.csv"
+CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
+CREDITS_PERSON="${OUTPUT_DIR}Credits-Person$DATE_ID.csv"
+KNOWN_PERSONS="${OUTPUT_DIR}Persons-KnownFor$DATE_ID.csv"
+SHOWS="${OUTPUT_DIR}Shows-Episodes$DATE_ID.csv"
+LINKS_TO_PERSONS="${OUTPUT_DIR}LinksToPersons$DATE_ID.csv"
+LINKS_TO_TITLES="${OUTPUT_DIR}LinksToTitles$DATE_ID.csv"
+ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
 
 # Final output lists
-UNIQUE_CHARS="uniqCharacters$DATE_ID.txt"
-UNIQUE_PERSONS="uniqPersons$DATE_ID.txt"
-UNIQUE_TITLES="uniqTitles$DATE_ID.txt"
+UNIQUE_CHARS="${OUTPUT_DIR}uniqCharacters$DATE_ID.txt"
+UNIQUE_PERSONS="${OUTPUT_DIR}uniqPersons$DATE_ID.txt"
+UNIQUE_TITLES="${OUTPUT_DIR}uniqTitles$DATE_ID.txt"
 
 # Intermediate working files
 DUPES="$WORK/dupes$DATE_ID.txt"
-CONFLICTS="$WORK/conflicts$DATE_ID.txt"
+AWKFILE="$WORK/conflicts$DATE_ID.awk"
 TCONST_LIST="$WORK/tconst$DATE_ID.txt"
 EPISODES_LIST="$WORK/tconst-episodes$DATE_ID.txt"
 KNOWNFOR_LIST="$WORK/tconst_known$DATE_ID.txt"
 NCONST_LIST="$WORK/nconst$DATE_ID.txt"
+TEMPFILE="$WORK/temp_shows$DATE_ID.csv"
 RAW_SHOWS="$WORK/raw_shows$DATE_ID.csv"
 RAW_EPISODES="$WORK/raw_episodes$DATE_ID.csv"
 RAW_PERSONS="$WORK/raw_persons$DATE_ID.csv"
@@ -257,11 +263,11 @@ PUBLISHED_RAW_SHOWS="$BASE/raw_shows.csv"
 PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
 
 # Filename groups used for cleanup
-ALL_WORKING="$CONFLICTS $DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST "
+ALL_WORKING="$AWKFILE $DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST "
 ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
 ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
 ALL_TXT="$UNIQUE_TITLES $UNIQUE_CHARS $UNIQUE_PERSONS"
-ALL_CSV="$RAW_SHOWS $RAW_PERSONS $RAW_EPISODES $UNSORTED_EPISODES $UNSORTED_CREDITS"
+ALL_CSV="$TEMPFILE $RAW_SHOWS $RAW_PERSONS $RAW_EPISODES $UNSORTED_EPISODES $UNSORTED_CREDITS"
 ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS $ASSOCIATED_TITLES "
 ALL_SPREADSHEETS+="$CREDITS_SHOW $CREDITS_PERSON "
 
@@ -276,30 +282,49 @@ rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >$TCONST_LIST
 rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1,2 | sort -fu |
     perl -p -e 's+\t+\\t}\{\\t+; s+^+s{\\t+; s+$+\\t};+' >$XLATE_PL
 
+# Check for translation conflicts
+rg -INv -e "^#" -e "^$" $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$DUPES
+### Stop here if there are translation conflicts.
+if [ -s "$DUPES" ]; then
+    printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "
+    cat $DUPES
+    printf "\n==> These files have different translations for the same show title.\n"
+    printf "    Ensure all translations for a title are the same, then re-run this script\n"
+    rg -p -f $DUPES $XLATE_FILES | rg -v ":#"
+    exit 1
+fi
+
 # Generate a csv of titles from the tconst list, remove the "adult" field,
 # translate any known non-English titles to their English equivalent,
 rg -wNz -f $TCONST_LIST title.basics.tsv.gz | cut -f 1-4,6-9 | perl -p -f $XLATE_PL |
-    perl -p -e 's+\t+\t\t\t+;' | tee $RAW_SHOWS | cut -f 5 | sort -fu >$UNIQUE_TITLES
+    perl -p -e 's+\t+\t\t\t+;' >$RAW_SHOWS
 
-# Check for translation conflicts
-rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1 | sort -f | uniq -d >$DUPES
-
-rg -IN -f $DUPES $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$CONFLICTS
-cut -f 6 $RAW_SHOWS | sort -f | uniq -d >>$CONFLICTS
-if [ -s "$CONFLICTS" ]; then
-    printf "[${RED}Error${NO_COLOR}] Conflicts are listed below. Fix them then re-run this script.\n"
-    cat <<EOF >&2
-==> These shows have more than one tconst for the same title.
-$(rg -p -H -f $CONFLICTS $RAW_SHOWS | cut -f 1-7)
-
-==> You need to delete all but one tconst per title in any files listed below.
-    It may help to look up each tconst on IMDb to pick the best one to keep.
-    Make sure to delete corresponding .tconst lines if more than one file is listed.
-$(rg -p -f $CONFLICTS $XLATE_FILES $TCONST_FILES)
-
-EOF
-    exit 1
+### Check for and repair duplicate titles
+cut -f 6 $RAW_SHOWS | sort -f | uniq -d >$DUPES
+if [ -s "$DUPES" ]; then
+    # Create an awk script to add dates to titles on shows with title conflicts
+    printf 'BEGIN {OFS = "\\t"}\n' >$AWKFILE
+    perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' $DUPES >>$AWKFILE
+    # perl -p -e 's+^+\$6 == "+; s+$+" {\$6 = \$6 " (" \$7 ")"}+;' $DUPES >>$AWKFILE
+    printf '{print}\n' >>$AWKFILE
+    # Let the user know what we will change
+    printf "==> Adding dates to titles to fix these title conflicts.\n" >&2
+    perl -pi -e 's+^+\\t+; s+$+\\t+;' $DUPES
+    if checkForExecutable -q xsv; then
+        rg -N --color always -f $DUPES $RAW_SHOWS | cut -f 1,4-7 |
+            sort -f --field-separator=$'\t' --key=3 | xsv table -d "\t" >&2
+    else
+        rg -N --color always -f $DUPES $RAW_SHOWS | cut -f 1,4-7 |
+            sort -f --field-separator=$'\t' --key=3 >&2
+    fi
+    # Change the shows by adding (<DATE>) to title
+    cp $RAW_SHOWS $TEMPFILE
+    awk -F "\t" -f $AWKFILE $TEMPFILE >$RAW_SHOWS
+    printf "\n" >&2
 fi
+
+# We should now be conflict free
+cut -f 5 $RAW_SHOWS | sort -fu >$UNIQUE_TITLES
 
 # We don't want to check for episodes in any tvSeries that has hundreds of tvEpisodes
 # or that has episodes with titles that aren't unique like "Episode 1" that can't be "translated"
