@@ -117,10 +117,10 @@ fi
 function addToFileP() {
     if waitUntil -Y "==> Shall I add them?"; then
         printf "OK. Adding...\n"
+        mkdir -p $filmographyDir
         rg -Ne "^tt" $FINAL_RESULTS >>$TCONST_FILE
-        waitUntil -Y "\n==> Shall I generate a $filmographyDB data file?" &&
-            ./generateXrefData.sh -q -o $filmographyDB -d $filmographyDir $filmographyFile |
-            rg -v -e "==> Previously," -e "^$"
+        waitUntil -Y "\n==> Shall I generate a ${BLUE}$filmographyDB${NO_COLOR} data file?" &&
+            ./generateXrefData.sh -q -o $filmographyDB -d $filmographyDir $filmographyFile
     else
         printf "Skipping....\n"
     fi
@@ -232,8 +232,9 @@ while read -r line; do
     >$FINAL_RESULTS
     nconstID="$line"
     nconstName="$(rg -N $line $PERSON_RESULTS | cut -f 2)"
-    filmographyFile="${nconstName//[[:space:]]/_}"
-    filmographyDir="$filmographyFile"
+    noSpaceName="${nconstName//[[:space:]]/_}"
+    filmographyDir="$noSpaceName-Filmography"
+    filmographyFile="$filmographyDir/$noSpaceName"
     rg -Nw "$nconstID" $POSSIBLE_MATCHES | cut -f 3 | frequency -t >$MATCH_COUNTS
     while read -r job; do
         count=$(cut -f 1 <<<"$job")
@@ -252,7 +253,7 @@ while read -r line; do
     filmographyDB="$filmographyFile.csv"
     filmographyFile+=".tconst"
     TCONST_FILE="$filmographyFile"
-    [ -N "$FILE_PARAM" ] && TCONST_FILE="$FILE_PARAM"
+    [ -n "$FILE_PARAM" ] && TCONST_FILE="$FILE_PARAM"
     if [ -s "$FINAL_RESULTS" ]; then
         numlines=$(sed -n '$=' $FINAL_RESULTS)
         printf "\nI can add $numlines tconst IDs to: ${BLUE}$TCONST_FILE${NO_COLOR}\n"
