@@ -69,7 +69,7 @@ function terminate() {
     saveDurations $SECONDS
     # Only keep 10 duration lines for this script
     trimDurations 10
-    [ -z "$DEBUG" ] && rm -f $ALL_WORKING $ALL_CSV
+    [ -z "$DEBUG" ] && rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
     exit
 }
 
@@ -217,12 +217,12 @@ UNIQUE_TITLES="${OUTPUT_DIR}uniqTitles$DATE_ID.txt"
 
 # Intermediate working files
 DUPES="$WORK/dupes$DATE_ID.txt"
-AWKFILE="$WORK/conflicts$DATE_ID.awk"
+TEMP_AWK="$WORK/conflicts$DATE_ID.awk"
 TCONST_LIST="$WORK/tconst$DATE_ID.txt"
 EPISODES_LIST="$WORK/tconst-episodes$DATE_ID.txt"
 KNOWNFOR_LIST="$WORK/tconst_known$DATE_ID.txt"
 NCONST_LIST="$WORK/nconst$DATE_ID.txt"
-TEMPFILE="$WORK/temp_shows$DATE_ID.csv"
+TEMP_SHOWS="$WORK/temp_shows$DATE_ID.csv"
 RAW_SHOWS="$WORK/raw_shows$DATE_ID.csv"
 RAW_EPISODES="$WORK/raw_episodes$DATE_ID.csv"
 RAW_PERSONS="$WORK/raw_persons$DATE_ID.csv"
@@ -263,18 +263,17 @@ PUBLISHED_RAW_SHOWS="$BASE/raw_shows.csv"
 PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
 
 # Filename groups used for cleanup
-ALL_WORKING="$AWKFILE $DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST "
+ALL_TEMPS="$TEMP_AWK $TEMP_SHOWS"
+ALL_WORKING="$DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST "
 ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
 ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
 ALL_TXT="$UNIQUE_TITLES $UNIQUE_CHARS $UNIQUE_PERSONS"
-ALL_CSV="$TEMPFILE $RAW_SHOWS $RAW_PERSONS $RAW_EPISODES $UNSORTED_EPISODES $UNSORTED_CREDITS"
+ALL_CSV="$RAW_SHOWS $RAW_PERSONS $RAW_EPISODES $UNSORTED_EPISODES $UNSORTED_CREDITS"
 ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS $ASSOCIATED_TITLES "
 ALL_SPREADSHEETS+="$CREDITS_SHOW $CREDITS_PERSON "
 
 # Cleanup any possible leftover files
-rm -f $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
-# In case TEMPFILE doesn't get created but is referenced as part of ALL_CSV
-touch $TEMPFILE
+rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
 
 # Coalesce a single tconst input list
 rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >$TCONST_LIST
@@ -305,10 +304,10 @@ rg -wNz -f $TCONST_LIST title.basics.tsv.gz | cut -f 1-4,6-9 | perl -p -f $XLATE
 cut -f 6 $RAW_SHOWS | sort -f | uniq -d >$DUPES
 if [ -s "$DUPES" ]; then
     # Create an awk script to add dates to titles on shows with title conflicts
-    printf 'BEGIN {OFS = "\\t"}\n' >$AWKFILE
-    perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' $DUPES >>$AWKFILE
-    # perl -p -e 's+^+\$6 == "+; s+$+" {\$6 = \$6 " (" \$7 ")"}+;' $DUPES >>$AWKFILE
-    printf '{print}\n' >>$AWKFILE
+    printf 'BEGIN {OFS = "\\t"}\n' >$TEMP_AWK
+    perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' $DUPES >>$TEMP_AWK
+    # perl -p -e 's+^+\$6 == "+; s+$+" {\$6 = \$6 " (" \$7 ")"}+;' $DUPES >>$TEMP_AWK
+    printf '{print}\n' >>$TEMP_AWK
     # Let the user know what we will change
     printf "\n==> Adding dates to titles to fix these title conflicts.\n" >&2
     perl -pi -e 's+^+\\t+; s+$+\\t+;' $DUPES
@@ -320,8 +319,8 @@ if [ -s "$DUPES" ]; then
             sort -f --field-separator=$'\t' --key=3 >&2
     fi
     # Change the shows by adding (<DATE>) to title
-    cp $RAW_SHOWS $TEMPFILE
-    awk -F "\t" -f $AWKFILE $TEMPFILE >$RAW_SHOWS
+    cp $RAW_SHOWS $TEMP_SHOWS
+    awk -F "\t" -f $TEMP_AWK $TEMP_SHOWS >$RAW_SHOWS
 fi
 
 # We should now be conflict free
