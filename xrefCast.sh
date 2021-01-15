@@ -54,7 +54,7 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "Terminating...\n" >&2
+        printf "\nTerminating...\n" >&2
         printf "Not removing:\n" >&2
         printf "$TMPFILE $SEARCH_TERMS\n" >&2
     else
