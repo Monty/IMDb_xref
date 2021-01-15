@@ -130,7 +130,7 @@ function addToFileP() {
         printf "OK. Adding...\n"
         mkdir -p $filmographyDir
         rg -Ne "^tt" $FINAL_RESULTS >>$TCONST_FILE
-        waitUntil -Y "\n==> Shall I generate a ${BLUE}$filmographyDB${NO_COLOR} data file?" &&
+        waitUntil -Y "\n==> Shall I generate ${BLUE}$(basename $filmographyDB)${NO_COLOR}?" &&
             ./generateXrefData.sh -q -o $filmographyDB -d $filmographyDir $filmographyFile
     else
         printf "Skipping....\n"
@@ -245,6 +245,7 @@ while read -r line; do
     nconstName="$(rg -N $line $PERSON_RESULTS | cut -f 2)"
     noSpaceName="${nconstName//[[:space:]]/_}"
     filmographyDir="$noSpaceName-Filmography"
+    printf "\n==> Any files generated for $nconstName will be saved in ${BLUE}$filmographyDir${NO_COLOR}\n"
     filmographyFile="$filmographyDir/$noSpaceName"
     rg -Nw "$nconstID" $POSSIBLE_MATCHES | cut -f 3 | frequency -t >$MATCH_COUNTS
     while read -r job; do
@@ -274,7 +275,7 @@ while read -r line; do
     [ -n "$FILE_PARAM" ] && TCONST_FILE="$FILE_PARAM"
     if [ -s "$FINAL_RESULTS" ]; then
         numlines=$(sed -n '$=' $FINAL_RESULTS)
-        printf "\nI can add $numlines tconst IDs to: ${BLUE}$TCONST_FILE${NO_COLOR}\n"
+        printf "\nI can add $numlines tconst IDs to ${BLUE}$(basename $TCONST_FILE)${NO_COLOR}\n"
         addToFileP
     else
         printf "\n==> There aren't ${RED}any${NO_COLOR} $nconstName titles to add.\n"
