@@ -45,7 +45,7 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating...\n" >&2
+        printf "\nTerminating: $(basename $0)\n" >&2
     fi
 }
 

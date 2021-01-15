@@ -38,7 +38,7 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating...\n" >&2
+        printf "\nTerminating: $(basename $0)\n" >&2
         printf "Not removing:\n" >&2
         printf "$ALL_TERMS $NCONST_TERMS $PERSON_TERMS $POSSIBLE_MATCHES\n" >&2
         printf "$MATCH_COUNTS $PERSON_RESULTS $JOB_RESULTS $FINAL_RESULTS\n" >&2
