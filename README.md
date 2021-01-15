@@ -25,6 +25,7 @@ If you don't care for long README files, jump directly to
   - [Generate additional data](#generate-additional-data)
   - [Add your own data](#add-your-own-data)
   - [Automate the entire process](#automate-the-entire-process)
+  - [Add a Filmography](#Add-a-filmography)
 - [Performance](#performance)
 - [Contributing](#contributing)
 - [License](#license)
@@ -519,6 +520,14 @@ The two beginning with "Link" are for persons and titles we already generated.
 The "AssociatedTitles" is generated from the "Known For" section of a persons
 IMDb page.  It only lists up to four shows for each person, and they may not be
 the ones you expected.
+
+#### Add a Filmography
+
+If your focus is on people rather than shows, it's simple to add a filmography. Run
+**createFilmography.sh** with the name or names you are interested in. Filmographies
+are created in subdirectories so they will not overload the primary directory. You'll
+have the opportunity to review results before committing. If you are just playing
+around, answer no to relevant prompts, or `rm -rf` the directory when you're done.
 
 ### Automate the entire process
 
