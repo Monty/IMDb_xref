@@ -23,6 +23,8 @@
 #           ...
 #
 #       Defaults to all .xlate files, or specify one with -x [file] on the command line
+#
+#   Set DEBUG environment variable to enable 'breakpoint' function, save secondary files
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
@@ -52,7 +54,6 @@ OPTIONS:
     -o      Output -- Save file that can later be used for queries with "xrefCast.sh -f"
     -q      Quiet -- Minimize output, print only the list of shows being processed.
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
-    -v      Debug mode -- enable 'breakpoint' function, save secondary files
     -x      Xlate -- Use a specific translation file instead of *xlate.
 EOF
 }
@@ -96,7 +97,7 @@ function breakpoint() {
     fi
 }
 
-while getopts ":d:o:x:hcqtv" opt; do
+while getopts ":d:o:x:hcqt" opt; do
     case $opt in
     c)
         CREATE_DIFF="yes"
@@ -116,9 +117,6 @@ while getopts ":d:o:x:hcqtv" opt; do
         ;;
     t)
         TEST_MODE="yes"
-        ;;
-    v)
-        DEBUG="yes"
         ;;
     x)
         XLATE_FILES="$OPTARG"
