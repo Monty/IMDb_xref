@@ -49,7 +49,6 @@ function terminate() {
     fi
 }
 
-
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
