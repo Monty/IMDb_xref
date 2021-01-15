@@ -257,9 +257,9 @@ while read -r line; do
         printf "I found $numResults titles listing $nconstName as: $match\n"
         if waitUntil -Y "==> Do you want to review them before adding them?"; then
             if checkForExecutable -q xsv; then
-                cut -f 2,3 $JOB_RESULTS | xsv table -d "\t"
+                cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
             else
-                cat $JOB_RESULTS
+                cut -f 2,3 $JOB_RESULTS | sort -fu
             fi
         fi
         if waitUntil -Y "==> Shall I add them?"; then
