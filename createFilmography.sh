@@ -18,13 +18,15 @@ Search IMDb titles for a match to a nconst or a person name. A nconst should be 
 but a person name can have several or even many matches. Allow user to select one match
 or skip if there are too many.
 
+Filmographies are created in subdirectories so they will not overload the primary
+directory. You'll have the opportunity to review results before committing.
+
 USAGE:
-    ./createFilmography.sh [-f TCONST_FILE] NCONST or PERSON NAME [NCONST...] [PERSON NAME...]
+    ./createFilmography.sh NCONST or PERSON NAME [NCONST...] [PERSON NAME...]
 
 OPTIONS:
     -h      Print this message.
     -m      Maximum matches for a person name allowed in menu - defaults to 10
-    -f      File -- Add to specific file rather than the default $USER.nconst
 
 EXAMPLES:
     ./createFilmography.sh nm0000123
@@ -56,14 +58,11 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":f:hm:" opt; do
+while getopts ":hm:" opt; do
     case $opt in
     h)
         help
         exit
-        ;;
-    f)
-        FILE_PARAM="$OPTARG"
         ;;
     m)
         maxMenuSize="$OPTARG"
@@ -272,7 +271,6 @@ while read -r line; do
     filmographyDB="$filmographyFile.csv"
     filmographyFile+=".tconst"
     TCONST_FILE="$filmographyFile"
-    [ -n "$FILE_PARAM" ] && TCONST_FILE="$FILE_PARAM"
     if [ -s "$FINAL_RESULTS" ]; then
         numlines=$(sed -n '$=' $FINAL_RESULTS)
         printf "\nI can add $numlines tconst IDs to ${BLUE}$(basename $TCONST_FILE)${NO_COLOR}\n"
