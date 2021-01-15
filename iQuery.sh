@@ -40,6 +40,16 @@ EXAMPLES:
 EOF
 }
 
+# Don't leave tempfiles around
+trap terminate EXIT
+#
+function terminate() {
+    if [ -n "$DEBUG" ]; then
+        printf "Terminating...\n" >&2
+    fi
+}
+
+
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #

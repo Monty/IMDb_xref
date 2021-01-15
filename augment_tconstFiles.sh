@@ -43,7 +43,17 @@ EOF
 }
 
 # Don't leave tempfiles around
-trap "rm -rf $TMPFILE $SEARCH_TERMS" EXIT
+trap terminate EXIT
+#
+function terminate() {
+    if [ -n "$DEBUG" ]; then
+        printf "Terminating...\n" >&2
+        printf "Not removing:\n" >&2
+        printf "$TMPFILE $SEARCH_TERMS\n" >&2
+    else
+        rm -rf $TMPFILE $SEARCH_TERMS
+    fi
+}
 
 # trap ctrl-c and call cleanup
 trap cleanup INT

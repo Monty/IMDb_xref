@@ -57,6 +57,19 @@ OPTIONS:
 EOF
 }
 
+# Don't leave tempfiles around
+trap terminate EXIT
+#
+function terminate() {
+    if [ -n "$DEBUG" ]; then
+        printf "Terminating...\n" >&2
+        printf "Not removing:\n" >&2
+        printf "$ALL_TEMPS $ALL_WORKING $ALL_CSV\n" >&2
+    else
+        rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
+    fi
+}
+
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
@@ -65,8 +78,7 @@ function cleanup() {
     exit 130
 }
 
-function terminate() {
-    [ -z "$DEBUG" ] && rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
+function processDurations() {
     # If we're not in the primary directory, don't record times
     [ -n "$OUTPUT_DIR" ] && exit
     saveDurations $SECONDS
@@ -496,7 +508,7 @@ if [ -z "$QUIET" ]; then
 fi
 
 # Skip diff output if requested. Save durations and exit
-[ -z "$CREATE_DIFF" ] && terminate
+[ -z "$CREATE_DIFF" ] && processDurations
 
 # Shortcut for checking differences between two files.
 # checkdiffs basefile newfile
@@ -558,4 +570,4 @@ $(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
 EOF
 
 # Save durations and exit
-terminate
+processDurations
