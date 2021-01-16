@@ -21,6 +21,8 @@ or skip if there are too many.
 Filmographies are created in subdirectories so they will not overload the primary
 directory. You'll have the opportunity to review results before committing.
 
+If you don't enter a parameter on the command line, you'll be prompted for input.
+
 USAGE:
     ./createFilmography.sh [NCONST...] [PERSON NAME...]
 
@@ -101,12 +103,22 @@ rm -f $ALL_TERMS $NCONST_TERMS $PERSON_TERMS $POSSIBLE_MATCHES $MATCH_COUNTS \
 touch $ALL_TERMS $NCONST_TERMS $PERSON_TERMS $POSSIBLE_MATCHES $MATCH_COUNTS \
     $PERSON_RESULTS $JOB_RESULTS $FINAL_RESULTS
 
-# Make sure a nconst was supplied
+# Make sure a search term is supplied
 if [ $# -eq 0 ]; then
-    printf "==> I can generate a filmography based on a person name or nconst ID,\n"
-    printf "    such as nm0000123 -- which is the nconst for 'George Clooney'.\n\n"
-    read -p "Enter an (unquoted) person name or nconst ID: " line </dev/tty
-    printf "$line\n" >>$ALL_TERMS
+    printf "==> I can generate a filmography based on person names or nconst IDs,\n"
+    printf "    such as nm0000123 -- which is the nconst for George Clooney.\n\n"
+    printf "Only one search term per line. Enter a blank line to finish.\n"
+    while read -r -p "Enter a person name or nconst ID: " searchTerm; do
+        [ -z "$searchTerm" ] && break
+        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
+    done </dev/tty
+    if [ ! -s "$ALL_TERMS" ]; then
+        if waitUntil -N "Would you like me to add the George Clooney nconst for you?"; then
+            printf "nm0000123\n" >>$ALL_TERMS
+        else
+            exit 1
+        fi
+    fi
     printf "\n"
 fi
 

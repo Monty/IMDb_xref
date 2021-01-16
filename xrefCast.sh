@@ -30,8 +30,10 @@ function help() {
     cat <<EOF
 xrefCast.sh -- Cross-reference shows, actors, and the characters they portray using IMDB data.
 
+If you don't enter a search term on the command line, you'll be prompted for input.
+
 USAGE:
-    ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] SEARCH_TERM [SEARCH_TERM ...]
+    ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] [SEARCH_TERM ...]
 
 OPTIONS:
     -h      Print this message.
@@ -103,10 +105,23 @@ shift $((OPTIND - 1))
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
 
-# Make sure a search term was supplied
+# Make sure a search term is supplied
 if [ $# -eq 0 ]; then
-    printf "==> [${RED}Error${NO_COLOR}] Please supply one or more search terms.\n\n" >&2
-    exit 1
+    printf "==> I can cross-reference shows, actors, and the characters they portray,\n"
+    printf "    such as The Crown, Olivia Colman, and Queen Elizabeth.\n\n"
+    printf "Only one search term per line. Enter a blank line to finish.\n"
+    while read -r -p "Enter a show, actor, or character: " searchTerm; do
+        [ -z "$searchTerm" ] && break
+        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$SEARCH_TERMS
+    done </dev/tty
+    if [ ! -s "$SEARCH_TERMS" ]; then
+        if waitUntil -N "Would you like to see who played Queen Elizabeth II?"; then
+            printf "Queen Elizabeth II\n" >>$SEARCH_TERMS
+            printf "\n"
+        else
+            exit 1
+        fi
+    fi
 fi
 
 # Get latest Credits-Person file to search

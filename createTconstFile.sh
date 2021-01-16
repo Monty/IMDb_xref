@@ -18,8 +18,10 @@ Search IMDb titles for a match to a tconst or a show name. A tconst should be un
 but a show name can have several or even many matches. Allow user to select one match
 or skip if there are too many.
 
+If you don't enter a parameter on the command line, you'll be prompted for input.
+
 USAGE:
-    ./createTconstFile.sh [-f TCONST_FILE] TCONST or SHOW TITLE [TCONST...] [SHOW TITLE...]
+    ./createTconstFile.sh [-f TCONST_FILE] [TCONST...] [SHOW TITLE...]
 
 OPTIONS:
     -h      Print this message.
@@ -27,6 +29,7 @@ OPTIONS:
     -f      File -- Add to specific file rather than the default $USER.tconst
 
 EXAMPLES:
+    ./createTconstFile.sh
     ./createTconstFile.sh tt1606375
     ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"
     ./createTconstFile.sh "The Crown"
@@ -91,15 +94,23 @@ POSSIBLE_MATCHES=$(mktemp)
 MATCH_COUNTS=$(mktemp)
 FINAL_RESULTS=$(mktemp)
 
-# Make sure a tconst was supplied
+# Make sure a search term is supplied
 if [ $# -eq 0 ]; then
-    printf "==> [${RED}Error${NO_COLOR}] Please supply one or more show names or tconst IDs,\n"
-    printf "    such as tt1606375 -- which is the tconst for 'Downton Abbey'.\n\n"
-    if waitUntil -N "Would you like me to add the Downton Abbey tconst for you?"; then
-        printf "tt1606375\n" >>$ALL_TERMS
-    else
-        exit 1
+    printf "==> I can create data files based on show names or tconst IDs,\n"
+    printf "    such as tt1606375 -- which is the tconst for Downton Abbey.\n\n"
+    printf "Only one search term per line. Enter a blank line to finish.\n"
+    while read -r -p "Enter a show name or tconst ID: " searchTerm; do
+        [ -z "$searchTerm" ] && break
+        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
+    done </dev/tty
+    if [ ! -s "$ALL_TERMS" ]; then
+        if waitUntil -N "Would you like me to add the Downton Abbey tconst for you?"; then
+            printf "tt1606375\n" >>$ALL_TERMS
+        else
+            exit 1
+        fi
     fi
+    printf "\n"
 fi
 
 # Make sure we have the gz file to search
