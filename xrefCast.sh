@@ -138,7 +138,8 @@ if [ ! -e "$SEARCH_FILE" ]; then
     exit 1
 fi
 #
-[ "$INFO" == "yes" ] && printf "==> Searching $SEARCH_FILE for cast data.\n\n"
+numRecords=$(sed -n '$=' $SEARCH_FILE)
+[ "$INFO" == "yes" ] && printf "==> Searching $numRecords records in $SEARCH_FILE for cast data.\n\n"
 
 # Setup SEARCH_TERMS with one search term per line, let us know what's in it.
 printf "==> Searching for:\n"
