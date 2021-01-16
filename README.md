@@ -529,6 +529,9 @@ are created in subdirectories so they will not overload the primary directory. Y
 have the opportunity to review results before committing. If you are just playing
 around, answer no to relevant prompts, or `rm -rf` the directory when you're done.
 
+If you don't enter a name on the command line, it will prompt you to enter one. If you are
+on a Mac, just double-click on **Generate Filmography** in the "macOS commands" directory.
+
 ### Automate the entire process
 
 Once you've [installed the software](#installation), simply run
