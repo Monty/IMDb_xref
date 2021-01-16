@@ -64,9 +64,10 @@ The data used is extracted from downloaded IMDb .gz files. See
 [https://www.imdb.com/interfaces/](https://www.imdb.com/interfaces/) for details
 of the data in those files.
 
-Although I wrote **IMDb_xref**  mainly to explore favorite shows I manually add to a list,
+Although I wrote **IMDb_xref** mainly to explore favorite shows I manually add to a list,
 I've added the ability to search IMDb for shows by name and add them to the local
-spreadsheets automatically using **createTconstFile.sh**.
+spreadsheets automatically using **createTconstFile.sh** and create filmographies using
+**createFilmography.sh**.
 
 ## Installation
 
@@ -290,10 +291,12 @@ into a terminal window.
 <details><summary><b>Show this help file</b></summary>
 
     $ ./xrefCast.sh -h
-    Cross-reference shows, actors, and the characters they portray using data from IMDB.
+    xrefCast.sh -- Cross-reference shows, actors, and the characters they portray using IMDB data.
+    
+    If you don't enter a search term on the command line, you'll be prompted for input.
     
     USAGE:
-        ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] SEARCH_TERM [SEARCH_TERM ...]
+        ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] [SEARCH_TERM ...]
     
     OPTIONS:
         -h      Print this message.
@@ -303,10 +306,11 @@ into a terminal window.
         -i      Print info about any files that are searched.
     
     EXAMPLES:
-        ./xrefCast.sh Searching for
-        ./xrefCast.sh 'Queen Elizabeth II' 'Princess Diana'
-        ./xrefCast.sh 'The Crown'
-        ./xrefCast.sh -s 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
+        ./xrefCast.sh "Olivia Colman"
+        ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
+        ./xrefCast.sh "The Crown"
+        ./xrefCast.sh -s "The Night Manager" "The Crown" "The Durrells in Corfu"
+        ./xrefCast.sh -af Clooney.csv "Brad Pitt"
 </details>
 
 Run **./demo.sh** to see the information returned from these queries and more.
@@ -435,7 +439,7 @@ selects example.tconst, -d saves the results in test_results.*)
 
 IMDb_xref data is generated from tconst lists. You can create your own or use 
 ones from the [Contrib](Contrib) directory. Or you can do it automatically using 
-**createTconstFile.sh**.
+**createTconstFile.sh** or **createFilmography.sh**.
 
 #### What is a tconst and how do I find one?
 A tconst is a unique ID that IMDb assigns to each movie, TV series or episode, etc.
@@ -539,25 +543,35 @@ Once you've [installed the software](#installation), simply run
 automatically downloading the data from IMDb, creating your own tconst file, and
 generating data using the tconst file it creates.
 
-If you run it with no parameters, it will suggest adding "Downton Abbey". Or
-you can provide a tconst ID or even a show name (in quotes if it's more than
-one word). Run **createTconstFile.sh -h** for ideas.
+If you don't enter a parameter on the command line, it will prompt you to enter one. If
+you are on a Mac, just double-click on **Add Shows** in the "macOS commands" directory.
+
+Run **createTconstFile.sh -h** for other ideas.
 
 <details><summary><b>Show this help file</b></summary>
 
     $ ./createTconstFile.sh -h
-    Add a tconst to a file
-
+    createTconstFile.sh -- Add a tconst ID for any show to a file.
+    
+    Search IMDb titles for a match to a tconst or a show name. A tconst should be unique,
+    but a show name can have several or even many matches. Allow user to select one match
+    or skip if there are too many.
+    
+    If you don't enter a parameter on the command line, you'll be prompted for input.
+    
     USAGE:
-        ./createTconstFile.sh [-f TCONST_FILE] TCONST [TCONST...] [SHOW TITLE...]
-
+        ./createTconstFile.sh [-f TCONST_FILE] [TCONST...] [SHOW TITLE...]
+    
     OPTIONS:
         -h      Print this message.
+        -m      Maximum matches for a show title allowed in menu - defaults to 25
         -f      File -- Add to specific file rather than the default monty.tconst
-
+    
     EXAMPLES:
+        ./createTconstFile.sh
         ./createTconstFile.sh tt1606375
-        ./createTconstFile.sh tt1606375 tt1399664 'Broadchurch'
+        ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"
+        ./createTconstFile.sh "The Crown"
         ./createTconstFile.sh -f Dramas.tconst tt1606375
 </details>
 
