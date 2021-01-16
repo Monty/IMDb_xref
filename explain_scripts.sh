@@ -17,11 +17,8 @@ source functions/define_colors
 source functions/define_files
 source functions/load_functions
 
-# Make sure we can execute rg.
-checkForExecutable rg
-
 for script in $(ls *.sh); do
-    if [ "$(rg -cF 'help()' $script)" ]; then
+    if [ "$(grep -cF 'help()' $script)" -ne 0 ]; then
         [ $script == "explain_scripts.sh" ] && continue
         clear
         eval ./$script -h

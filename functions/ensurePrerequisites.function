@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+#
+# General-purpose function to...
+
+function ensurePrerequisites() {
+    local OPTIND local_variables
+
+    help() {
+        cat <<EOF
+ensurePrerequisites -- General-purpose function: ensure prerequisites are satisfied
+
+USAGE:
+    ensurePrerequisites
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    ensurePrerequisites
+
+EOF
+    }
+
+    while getopts ":h" opt; do
+        case $opt in
+        h)
+            help
+            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            printf "\n"
+            return
+            ;;
+        \?)
+            printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
+            ;;
+        :)
+            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    # Makke sure we have the necessary IMDb .gz files
+    if [ ! -e "name.basics.tsv.gz" ] || [ ! -e "title.basics.tsv.gz" ] ||
+        [ ! -e "title.episode.tsv.gz" ] || [ ! -e "title.principals.tsv.gz" ]; then
+        printf "==> Missing IMDb data files. Run downloadIMDbFiles.sh to fix this problem.\n"
+        if waitUntil -N "Would you like me to do this for you?"; then
+            printf "OK. Downloading...\n"
+            ./downloadIMDbFiles.sh 2>/dev/null
+            printf "\n"
+        else
+            printf "Skipping download. Try again after running downloadIMDbFiles.sh.\n"
+            exit
+        fi
+    fi
+
+    # Make sure we can execute rg.
+    if ! checkForExecutable -q rg; then
+        cat <<EOF >&2
+
+This script requires that the program rg (also known as ripgrep) is available before it
+will run. Detailed information on rg, precompiled binaries for macOS and Linux, and
+various other ways of installing rg are available at https://crates.io/crates/ripgrep.
+
+Please install rg and then re-run this script.
+
+EOF
+        exit 1
+    fi
+
+    return
+}

@@ -15,12 +15,12 @@ source functions/define_colors
 source functions/define_files
 source functions/load_functions
 
-# Make sure we can execute rg.
-checkForExecutable rg
+# Make sure prerequisites are satisfied
+ensurePrerequisites
 
 for srchString in "$@"; do
     for file in $(ls *.tsv.gz); do
-        printf "==> $file\n"
+        printf "==> in $file\n"
         rg -wNz "$srchString" $file
         printf "\n"
     done

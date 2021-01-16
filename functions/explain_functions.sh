@@ -17,11 +17,8 @@ source functions/define_colors
 source functions/define_files
 source functions/load_functions
 
-# Make sure we can execute rg.
-checkForExecutable rg
-
 for file in $(ls functions/*.function); do
-    if [ $(rg -cF 'help()' $file) ]; then
+    if [ "$(grep -cF 'help()' $file)" -ne 0 ]; then
         clear
         function="$(basename ${file%\.function})"
         eval $function -h

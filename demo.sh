@@ -9,8 +9,8 @@ source functions/define_colors
 source functions/define_files
 source functions/load_functions
 
-# Make sure we can execute rg.
-checkForExecutable rg
+# Make sure prerequisites are satisfied
+ensurePrerequisites
 
 clear
 cat <<EOF

@@ -58,7 +58,7 @@ EOF
     maxLines="${1:-10}"
 
     linesFound=$(rg -c "^$scriptName\t" $durationFile)
-    if [[ "$linesFound" -gt "$maxLines" ]]; then
+    if [[ $linesFound -gt $maxLines ]]; then
         TMPFILE=$(mktemp)
         rg "^$scriptName\t" $durationFile | tail -$maxLines >$TMPFILE
         rg -v "^$scriptName\t" $durationFile >>$TMPFILE

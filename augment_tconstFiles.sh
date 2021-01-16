@@ -86,8 +86,8 @@ while getopts ":haiy" opt; do
 done
 shift $((OPTIND - 1))
 
-# Make sure we can execute rg.
-checkForExecutable rg
+# Make sure prerequisites are satisfied
+ensurePrerequisites
 
 # Need some tempfiles
 RESULT=$(mktemp)

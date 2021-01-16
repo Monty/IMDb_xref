@@ -132,8 +132,8 @@ while getopts ":d:o:x:hcqt" opt; do
 done
 shift $((OPTIND - 1))
 
-# Make sure we can execute rg.
-checkForExecutable rg
+# Make sure prerequisites are satisfied
+ensurePrerequisites
 
 # If we ALWAYS want QUIET
 [ $(rg -c "QUIET=yes" $configFile) ] && QUIET="yes"

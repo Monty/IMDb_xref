@@ -101,6 +101,9 @@ while getopts ":f:hasi" opt; do
 done
 shift $((OPTIND - 1))
 
+# Make sure prerequisites are satisfied
+ensurePrerequisites
+
 # Need some tempfiles
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
