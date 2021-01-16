@@ -22,13 +22,14 @@ Filmographies are created in subdirectories so they will not overload the primar
 directory. You'll have the opportunity to review results before committing.
 
 USAGE:
-    ./createFilmography.sh NCONST or PERSON NAME [NCONST...] [PERSON NAME...]
+    ./createFilmography.sh [NCONST...] [PERSON NAME...]
 
 OPTIONS:
     -h      Print this message.
     -m      Maximum matches for a person name allowed in menu - defaults to 10
 
 EXAMPLES:
+    ./createFilmography.sh
     ./createFilmography.sh nm0000123
     ./createFilmography.sh "George Clooney"
     ./createFilmography.sh nm0000123 "Quentin Tarantino"
@@ -102,13 +103,11 @@ touch $ALL_TERMS $NCONST_TERMS $PERSON_TERMS $POSSIBLE_MATCHES $MATCH_COUNTS \
 
 # Make sure a nconst was supplied
 if [ $# -eq 0 ]; then
-    printf "==> [${RED}Error${NO_COLOR}] Please supply one or more person names or nconst IDs,\n"
+    printf "==> I can generate a filmography based on a person name or nconst ID,\n"
     printf "    such as nm0000123 -- which is the nconst for 'George Clooney'.\n\n"
-    if waitUntil -N "Would you like me to add the George Clooney nconst for you?"; then
-        printf "nm0000123\n" >>$ALL_TERMS
-    else
-        exit 1
-    fi
+    read -p "Enter an (unquoted) person name or nconst ID: " line </dev/tty
+    printf "$line\n" >>$ALL_TERMS
+    printf "\n"
 fi
 
 # Make sure we have the gz file to search
