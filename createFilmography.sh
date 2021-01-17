@@ -211,7 +211,7 @@ if [ ! -s "$PERSON_RESULTS" ]; then
 fi
 
 # Found results, check with user before adding
-printf "These are the matches I can process:\n"
+printf "These are the matches I found:\n"
 if checkForExecutable -q xsv; then
     xsv table -d "\t" $PERSON_RESULTS
 else
@@ -244,18 +244,20 @@ while read -r line; do
         rg -Nw -e "$nconstID\t$match" $POSSIBLE_MATCHES >$JOB_RESULTS
         ./augment_tconstFiles.sh -y $JOB_RESULTS
         numResults=$(sed -n '$=' $JOB_RESULTS)
-        printf "I found $numResults titles listing $nconstName as: $match\n"
-        if waitUntil -Y "==> Do you want to review them before adding them?"; then
-            if checkForExecutable -q xsv; then
-                cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
-            else
-                cut -f 2,3 $JOB_RESULTS | sort -fu
+        if [[ $numResults -gt 0 ]]; then
+            printf "I found $numResults titles listing $nconstName as: $match\n"
+            if waitUntil -Y "==> Do you want to review them before adding them?"; then
+                if checkForExecutable -q xsv; then
+                    cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
+                else
+                    cut -f 2,3 $JOB_RESULTS | sort -fu
+                fi
             fi
-        fi
-        if waitUntil -Y "==> Shall I add them?"; then
-            filmographyFile+="-$match"
-            # printf "filmographyFile = $filmographyFile\n"
-            cat $JOB_RESULTS >>$FINAL_RESULTS
+            if waitUntil -Y "==> Shall I add them?"; then
+                filmographyFile+="-$match"
+                # printf "filmographyFile = $filmographyFile\n"
+                cat $JOB_RESULTS >>$FINAL_RESULTS
+            fi
         fi
     done <$MATCH_COUNTS
     filmographyDB="$filmographyFile.csv"
