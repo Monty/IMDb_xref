@@ -113,18 +113,6 @@ if [ $# -eq 0 ]; then
     printf "\n"
 fi
 
-# Make sure we have the gz file to search
-if [ ! -e "name.basics.tsv.gz" ]; then
-    printf "==> Missing name.basics.tsv.gz. Run downloadIMDbFiles.sh to fix this problem.\n"
-    if waitUntil -N "Would you like me to do this for you?"; then
-        printf "OK. Downloading...\n"
-        ./downloadIMDbFiles.sh 2>/dev/null
-    else
-        printf "Skipping download. Try again after running downloadIMDbFiles.sh.\n"
-        exit
-    fi
-fi
-
 # Do the work of adding the matches to the TCONST_FILE
 function addToFileP() {
     if waitUntil -Y "==> Shall I add them?"; then
