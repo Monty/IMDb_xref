@@ -26,9 +26,11 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -m      Maximum matches for a person name allowed in menu - defaults to 10
+    -y      Yes -- assume the answer to job category prompts is "Y".
 
 EXAMPLES:
     ./listAllFilmsWith.sh
+    ./listAllFilmsWith.sh -y "Tom Hanks"
     ./listAllFilmsWith.sh nm0000123
     ./listAllFilmsWith.sh "George Clooney"
     ./listAllFilmsWith.sh nm0000123 "Quentin Tarantino"
@@ -58,7 +60,7 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":hm:" opt; do
+while getopts ":hm:y" opt; do
     case $opt in
     h)
         help
@@ -66,6 +68,9 @@ while getopts ":hm:" opt; do
         ;;
     m)
         maxMenuSize="$OPTARG"
+        ;;
+    y)
+        skipPrompts="yes"
         ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
@@ -224,7 +229,7 @@ while read -r line; do
         numResults=$(sed -n '$=' $JOB_RESULTS)
         if [[ $numResults -gt 0 ]]; then
             printf "==> I found $numResults titles listing $nconstName as: $match\n"
-            if waitUntil -Y "==> Shall I list them?"; then
+            if [ -n "$skipPrompts" ] || waitUntil -Y "==> Shall I list them?"; then
                 if checkForExecutable -q xsv; then
                     cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
                 else
