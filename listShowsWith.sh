@@ -12,7 +12,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-listAllFilmsWith.sh -- List a filmography for a named person in IMDb
+listShowsWith.sh -- List a filmography for a named person in IMDb
 
 Search IMDb titles for a match to a nconst or a person name. A nconst should be unique,
 but a person name can have several or even many matches. Allow user to select one match
@@ -21,7 +21,7 @@ or skip if there are too many.
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
 USAGE:
-    ./listAllFilmsWith.sh [NCONST...] [PERSON NAME...]
+    ./listShowsWith.sh [NCONST...] [PERSON NAME...]
 
 OPTIONS:
     -h      Print this message.
@@ -29,11 +29,11 @@ OPTIONS:
     -y      Yes -- assume the answer to job category prompts is "Y".
 
 EXAMPLES:
-    ./listAllFilmsWith.sh
-    ./listAllFilmsWith.sh -y "Tom Hanks"
-    ./listAllFilmsWith.sh nm0000123
-    ./listAllFilmsWith.sh "George Clooney"
-    ./listAllFilmsWith.sh nm0000123 "Quentin Tarantino"
+    ./listShowsWith.sh
+    ./listShowsWith.sh -y "Tom Hanks"
+    ./listShowsWith.sh nm0000123
+    ./listShowsWith.sh "George Clooney"
+    ./listShowsWith.sh nm0000123 "Quentin Tarantino"
 EOF
 }
 
