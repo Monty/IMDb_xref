@@ -42,7 +42,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    # Makke sure we have the necessary IMDb .gz files
+    # Make sure we have the necessary IMDb .gz files
     if [ ! -e "name.basics.tsv.gz" ] || [ ! -e "title.basics.tsv.gz" ] ||
         [ ! -e "title.episode.tsv.gz" ] || [ ! -e "title.principals.tsv.gz" ]; then
         printf "==> Missing IMDb data files. Run downloadIMDbFiles.sh to fix this problem.\n"
@@ -65,6 +65,10 @@ will run. Detailed information on rg, precompiled binaries for macOS and Linux, 
 various other ways of installing rg are available at https://crates.io/crates/ripgrep.
 
 Please install rg and then re-run this script.
+
+We suggest you also install xsv, which is by the same developer. While it's not required,
+xsv greatly improves table layout, especially for non-English names, by using "elastic
+tabs". See https://crates.io/crates/xsv.
 
 EOF
         exit 1
