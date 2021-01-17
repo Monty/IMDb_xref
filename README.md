@@ -536,6 +536,10 @@ around, answer no to relevant prompts, or `rm -rf` the directory when you're don
 If you don't enter a name on the command line, it will prompt you to enter one. If you are
 on a Mac, just double-click on **Generate Filmography** in the "macOS commands" directory.
 
+If you'd like to quickly see a Filmography without saving it, use **listShowsWith.sh**
+instead. If you are on a Mac, just double-click on **List Shows with** in the "macOS
+commands" directory.
+
 ### Automate the entire process
 
 Once you've [installed the software](#installation), simply run
