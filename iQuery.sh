@@ -146,17 +146,17 @@ while true; do
         case "$actionMenu" in
         *show*)
             searchFile="uniqTitles.txt"
-            action="Type to search for show titles: "
+            action="Start typing to search for show titles: "
             break
             ;;
         *person*)
             searchFile="uniqPersons.txt"
-            action="Type to search for persons: "
+            action="Start typing to search for persons: "
             break
             ;;
         *character*)
             searchFile="uniqCharacters.txt"
-            action="Type to search for characters: "
+            action="Start typing to search for characters: "
             break
             ;;
         *one*)
