@@ -215,13 +215,6 @@ while true; do
 
     printf "$action"
 
-    # Should never happen!
-    if [ ! "$searchFile" ]; then
-        printf "==> [${RED}Error${NO_COLOR}] Missing search file for ${RED}$actionMenu${NO_COLOR}.\n" >&2
-        printf "    Run ./generateXrefData.sh then re-run this script.\n\n" >&2
-        exit 1
-    fi
-
     # Do the minimal typing search in a specific category
     nchars=0
     searchFor=""
