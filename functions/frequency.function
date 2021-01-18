@@ -20,7 +20,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -w      Set fieldwidth - defaults to 8 if not specified
-    -t      Tab - create two tab sepatared fields. Ignore fieldwidth
+    -t      Tab - create two tab separated fields. Ignore fieldwidth
 
 EXAMPLES:
     cut -f 1 file | frequency
