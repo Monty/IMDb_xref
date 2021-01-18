@@ -108,10 +108,27 @@ ensurePrerequisites
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
 
+# Get latest Credits-Person file to search
+[ -z "$SEARCH_FILE" ] && SEARCH_FILE="$(ls -1t Credits-Person*csv 2>/dev/null | head -1)"
+
+# If no search file was specified and we can't find one, generate one
+[ ! "$SEARCH_FILE" ] && ensureDataFiles
+
+# Make sure SEARCH_FILE exists
+if [ ! -e "$SEARCH_FILE" ]; then
+    printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
+    exit 1
+fi
+
+# We made it through ensureDataFiles, so Credits-Person.csv must exist
+# Set Credits-Person.csv as the search file unless a different one was specified
+[ -z "$SEARCH_FILE" ] && SEARCH_FILE="Credits-Person.csv"
+
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
     printf "==> I can cross-reference shows, actors, and the characters they portray,\n"
-    printf "    such as The Crown, Olivia Colman, and Queen Elizabeth.\n\n"
+    printf "    such as The Crown, Olivia Colman, and Queen Elizabeth -- as long as\n"
+    printf "    the search terms exist in $SEARCH_FILE\n\n"
     printf "Only one search term per line. Enter a blank line to finish.\n"
     while read -r -p "Enter a show, actor, or character: " searchTerm; do
         [ -z "$searchTerm" ] && break
@@ -127,20 +144,7 @@ if [ $# -eq 0 ]; then
     fi
 fi
 
-# Get latest Credits-Person file to search
-[ -z "$SEARCH_FILE" ] && SEARCH_FILE="$(ls -1t Credits-Person*csv 2>/dev/null | head -1)"
-#
-if [ ! "$SEARCH_FILE" ]; then
-    printf "==> [${RED}Error${NO_COLOR}] Missing search file: Credits-Person*csv\n" >&2
-    printf "    Run ./generateXrefData.sh then re-run this search.\n\n" >&2
-    exit 1
-fi
-# Make sure SEARCH_FILE exists
-if [ ! -e "$SEARCH_FILE" ]; then
-    printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
-    exit 1
-fi
-#
+# Let us know how many records we're searching
 numRecords=$(sed -n '$=' $SEARCH_FILE)
 [ "$INFO" == "yes" ] && printf "==> Searching $numRecords records in $SEARCH_FILE for cast data.\n\n"
 

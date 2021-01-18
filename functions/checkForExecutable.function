@@ -62,7 +62,7 @@ EOF
     if ! type -p $exeName >/dev/null; then
         if [ -z "$quietly" ]; then
             printf "==> [${RED}Error${NO_COLOR}] Can't run ${RED}$exeName${NO_COLOR}. " >&2
-            printf "Install ${RED}$exeName${NO_COLOR} and rerun this script.\n\n" >&2
+            printf "Install ${RED}$exeName${NO_COLOR} and re-run this script.\n\n" >&2
             exit 1
         fi
         return 1

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# General-purpose function to...
+# General-purpose function to install prerequisites if they don't exist
 
 function ensurePrerequisites() {
-    local OPTIND local_variables
+    local OPTIND
 
     help() {
         cat <<EOF
