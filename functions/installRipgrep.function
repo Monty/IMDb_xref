@@ -48,28 +48,33 @@ EOF
         if [ ! -d "/Applications/Xcode.app" ]; then
             cat <<EOF
 
-On macOS, compiling rg requires the command line developer tools. This will cause a popup
-asking if you would like to install the tools. You don't need to "Get Xcode". Just Click
-the "Install" button. This can take a minute or more.
+On macOS, compiling rg requires the command line developer tools. This will
+cause a popup asking if you would like to install the tools. You don't need to
+"Get Xcode". Just Click the "Install" button. This can take a minute or more.
 EOF
             waitUntil -k
             cc --version >/dev/null 2>/dev/null
+            if ! waitUntil -N "Have you completed installing the developer tools?"; then
+                printf "\n==> [${RED}Error${NO_COLOR}] Missing the developer tools.\n" >&2
+                printf "    Please install the developer tools and then re-run this script.\n" >&2
+            fi
         fi
     }
 
     # Explain what we're planning
     cat <<EOF
-This script requires that the program rg (also known as ripgrep) is available before it
-will run. Detailed information on rg, precompiled binaries for macOS and Linux, and
-various other ways of installing rg are available at https://crates.io/crates/ripgrep.
+This script requires that the program rg (also known as ripgrep) is available
+before it will run. Detailed information on rg, precompiled binaries for macOS
+and Linux, and various other ways of installing rg are available at
+https://crates.io/crates/ripgrep.
 
-We suggest you also install xsv, which is by the same developer. While it's not required,
-xsv greatly improves table layout, especially for non-English names, by using "elastic
-tabs". See https://crates.io/crates/xsv.
+We suggest you also install xsv, which is by the same developer. While it's not
+required, xsv greatly improves table layout, especially for non-English names,
+by using "elastic tabs". See https://crates.io/crates/xsv.
 
-Those sites describe numerous ways to install rg and xsv, which are written in the Rust
-programming language. If you'd prefer to get started quickly, type these commands into a
-terminal window.
+Those sites describe numerous ways to install rg and xsv, which are written in
+the Rust programming language. If you'd prefer to get started quickly, type
+these commands into a terminal window.
 
 EOF
 
