@@ -101,7 +101,7 @@ EOF
     if waitUntil -N "==> Would you prefer I do the installation for you?"; then
         if ! checkForExecutable -q cargo; then
             printf "==> Installing the Rust programming language.\n\n"
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh  2>/dev/null
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 2>/dev/null
             source $HOME/.cargo/env
             # Possibly check for cargo again just to make sure
         fi
