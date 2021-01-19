@@ -62,7 +62,7 @@ EOF
     }
 
     # Explain what we're planning
-    cat <<EOF
+    cat <<EOX-1
 This script requires that the program rg (also known as ripgrep) is available
 before it will run. Detailed information on rg, precompiled binaries for macOS
 and Linux, and various other ways of installing rg are available at
@@ -76,26 +76,26 @@ Those sites describe numerous ways to install rg and xsv, which are written in
 the Rust programming language. If you'd prefer to get started quickly, type
 these commands into a terminal window.
 
-EOF
+EOX-1
 
     # Skip the cargo instructions if it's already installed
     if ! checkForExecutable -q cargo; then
-        cat <<EOF
+        cat <<EOX-2
     # Install the Rust programming language
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     source $HOME/.cargo/env
 
-EOF
+EOX-2
     fi
 
-    cat <<EOF
+    cat <<EOX-3
     # Install rg
     cargo install ripgrep
 
     # Install xsv
     cargo install xsv
 
-EOF
+EOX-3
 
     # Done with instructions. Time to install rust, rg, & xsv
     if waitUntil -N "==> Would you prefer I do the installation for you?"; then
