@@ -56,7 +56,7 @@ EOF
             cc --version >/dev/null 2>/dev/null
             if ! waitUntil -N "Have you completed installing the developer tools?"; then
                 printf "\n==> [${RED}Error${NO_COLOR}] Missing the developer tools.\n" >&2
-                printf "    Please install the developer tools and then re-run this script.\n" >&2
+                printf "    Please install the developer tools, then re-run this script.\n" >&2
             fi
         fi
     }
@@ -118,7 +118,7 @@ EOX-3
         return
     else
         printf "\n==> [${RED}Error${NO_COLOR}] Missing required program 'rg'.\n" >&2
-        printf "    Please install rg and then re-run this script.\n" >&2
+        printf "    Please install rg, then re-run this script.\n" >&2
         exit 1
     fi
 }

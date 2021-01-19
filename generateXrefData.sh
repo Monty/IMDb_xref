@@ -304,7 +304,7 @@ if [ -s "$DUPES" ]; then
     printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "
     cat $DUPES
     printf "\n==> These files have different translations for the same show title.\n"
-    printf "    Ensure all translations for a title are the same, then re-run this script\n"
+    printf "    Please ensure all translations for a title are the same, then re-run this script\n"
     rg -p -f $DUPES $XLATE_FILES | rg -v ":#"
     exit 1
 fi

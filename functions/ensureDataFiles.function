@@ -47,7 +47,7 @@ EOF
         ./generateXrefData.sh -q | rg --color never '==> Previously,'
     else
         printf "==> [${RED}Error${NO_COLOR}] Missing required data files.\n" >&2
-        printf "    Run ./generateXrefData.sh then re-run this script.\n" >&2
+        printf "    Please run ./generateXrefData.sh, then re-run this script.\n" >&2
         exit 1
     fi
 }
