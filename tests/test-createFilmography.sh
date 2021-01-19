@@ -47,6 +47,10 @@ while true; do
         ./createFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"
     fi
 
+    if waitUntil -Y '\nRun ./createFilmography.sh'; then
+        ./createFilmography.sh
+    fi
+
     if waitUntil -Y '\nRun ./createFilmography.sh nm9999999'; then
         ./createFilmography.sh nm9999999
     fi

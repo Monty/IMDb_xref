@@ -45,6 +45,9 @@ while true; do
     if waitUntil -Y '\nRun ./createTconstFile.sh -f Dramas.tconst tt1606375'; then
         ./createTconstFile.sh -f Dramas.tconst tt1606375
     fi
+    if waitUntil -Y '\nRun ./createTconstFile.sh'; then
+        ./createTconstFile.sh
+    fi
     if waitUntil -Y '\nRun ./createTconstFile.sh aaa'; then
         ./createTconstFile.sh aaa
     fi
