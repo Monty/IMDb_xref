@@ -1,0 +1,118 @@
+#!/us#!/usr/bin/env bashr/bin/env bash
+#
+# Internal function to install rg and xsv
+
+function installRipgrep() {
+    local OPTIND
+
+    help() {
+        cat <<EOF
+installRipgrep -- Internal function: install rg and xsv
+
+Call this function only if you have determined rg is not installed.
+
+USAGE:
+    installRipgrep [OPTIONS...]
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    installRipgrep
+
+EOF
+    }
+
+    while getopts ":h" opt; do
+        case $opt in
+        h)
+            help
+            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            printf "\n"
+            return
+            ;;
+        \?)
+            printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
+            ;;
+        :)
+            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    function enable_macOS_cc() {
+        if [ ! -d "/Applications/Xcode.app" ]; then
+            cat <<EOF
+
+On macOS, compiling rg requires the command line developer tools. This will cause a popup
+asking if you would like to install the tools. You don't need to "Get Xcode". Just Click
+the "Install" button. This can take a minute or more.
+EOF
+            waitUntil -k
+            cc --version >/dev/null 2>/dev/null
+        fi
+    }
+
+    # Explain what we're planning
+    cat <<EOF
+This script requires that the program rg (also known as ripgrep) is available before it
+will run. Detailed information on rg, precompiled binaries for macOS and Linux, and
+various other ways of installing rg are available at https://crates.io/crates/ripgrep.
+
+We suggest you also install xsv, which is by the same developer. While it's not required,
+xsv greatly improves table layout, especially for non-English names, by using "elastic
+tabs". See https://crates.io/crates/xsv.
+
+Those sites describe numerous ways to install rg and xsv, which are written in the Rust
+programming language. If you'd prefer to get started quickly, type these commands into a
+terminal window.
+
+EOF
+
+    if ! checkForExecutable -q cargo; then
+        cat <<EOF
+    # Install the Rust programming language
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh  2>/dev/null
+    source $HOME/.cargo/env
+
+EOF
+    fi
+
+    cat <<EOF
+    # Install rg
+    cargo install ripgrep
+
+    # Install xsv
+    cargo install xsv
+
+EOF
+
+    if waitUntil -N \
+        "==> If you prefer, I can do the installation for you. Would you like me to do that?"; then
+        if ! checkForExecutable -q cargo; then
+            printf "==> Installing the Rust programming language.\n\n"
+            echo "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh"
+            echo "source $HOME/.cargo/env"
+            # Possibly check for cargo again just to make sure
+        fi
+        #
+        [ "$(uname -sm)" = "Darwin x86_64" ] && enable_macOS_cc
+        printf "==> Installing rg. This can take several minutes.\n"
+        waitUntil -k
+        echo "cargo install -q ripgrep"
+        #
+        printf "==> Installing xsv. This can take a minute or more.\n"
+        waitUntil -k
+        echo "cargo install -q xsv"
+        #
+        return
+    else
+        printf "\n==> [${RED}Error${NO_COLOR}] Missing required program 'rg'.\n" >&2
+        printf "    Please install rg and then re-run this script.\n" >&2
+        exit 1
+    fi
+}

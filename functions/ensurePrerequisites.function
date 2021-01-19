@@ -58,21 +58,6 @@ EOF
 
     # Make sure we can execute rg.
     if ! checkForExecutable -q rg; then
-        cat <<EOF >&2
-
-This script requires that the program rg (also known as ripgrep) is available before it
-will run. Detailed information on rg, precompiled binaries for macOS and Linux, and
-various other ways of installing rg are available at https://crates.io/crates/ripgrep.
-
-Please install rg and then re-run this script.
-
-We suggest you also install xsv, which is by the same developer. While it's not required,
-xsv greatly improves table layout, especially for non-English names, by using "elastic
-tabs". See https://crates.io/crates/xsv.
-
-EOF
-        exit 1
+        installRipgrep
     fi
-
-    return
 }
