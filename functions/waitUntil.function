@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 #
-# General-purpose function to ask Yes/No questions in Bash, or simply prompt
-# and then wait for any keystroke. It has default prompts, but can take an
-# optional prompt string.
+# General-purpose function to ask Yes/No questions in Bash, or simply prompt and then wait
+# for any keystroke. It has default prompts, but can take an optional prompt string.
 #
-# Y or N questions can set a default answer. It keeps repeating the question until
-# it gets a valid answer.
+# Y or N questions can set a default answer. It keeps repeating the question until it gets
+# a valid answer.
 #
 # Normally it reads a single character and looks for y, Y, n, N, or <cr>
 #
 # With the -l switch, it also accepts longer answers, e.g. "yes" or "no" followed by <cr>
 # Surprisingly "yellow" will also work as only the first character is checked.
 #
-# Calling this function instead of using "read -p" enables changing all default prompts
-# in this one function. The -k switch eliminates the need for a preceding "clear".
-# If you want to wait for a keystroke but don't want any prompt, just use "read -n 1 -s"
+# Calling this function instead of using "read -p" enables changing all default prompts in
+# this one function. The -k switch eliminates the need for a preceding "clear". If you
+# want to wait for a keystroke but don't want any prompt, just use "read -n 1 -s"
 
 function waitUntil() {
     local OPTIND clearFirst longRead yesno default anyKey reply

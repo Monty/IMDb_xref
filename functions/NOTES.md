@@ -10,7 +10,7 @@ They are standard bash code. Load them into any script by using
 
 ### Definition functions
 
-**define_colors** -- Defines names for eight standard terminal colors.  It
+**define_colors** -- Defines names for eight standard terminal colors. It
 enables the use of named color variables instead of escape codes. For example:
 `printf "Do you prefer ${RED}Red${NO_COLOR} or ${BLUE}Blue${NO_COLOR}?\n"`.  
 Loading **define_colors** will render that text with colors. Not loading
@@ -28,4 +28,6 @@ Loading **load_functions** at the start of any script enables you to use all
 other functions without explicitly loading them, including ones you write at a
 later time. You would only have to invoke the new function.
 
-To see which functions **load_functions** would load (and their definitions) run **explain_functions.sh**
+To see which functions **load_functions** would load (and their definitions) run
+**explain_functions.sh**
+

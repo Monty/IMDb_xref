@@ -2,7 +2,7 @@
 #
 # General-purpose function equivalent to sort | uniq -c | sort -nr
 #
-# This works without having to sort its input, and it formats the output better than uniq -c
+# Works without having to sort its input, and formats the output better than uniq -c
 
 function frequency() {
     local OPTIND fieldwidth fmt_str tab_separated

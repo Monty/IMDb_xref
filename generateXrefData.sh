@@ -14,7 +14,8 @@
 #
 #       Defaults to all .tconst files, or specify them on the command line
 #
-#    2) .xlate file(s) with tab separated pairs of non-English titles and their English equivalents
+#    2) .xlate file(s) with tab separated pairs of non-English titles and their English
+#    equivalents
 #
 #       For example:
 #           Brandvägg	Wallander: The Original Episodes
@@ -22,7 +23,8 @@
 #           Den fördömde	Sebastian Bergman
 #           ...
 #
-#       Defaults to all .xlate files, or specify one with -x [file] on the command line
+#       Defaults to all .xlate files, or specify one with -x [file] on the command
+#       linegqap
 #
 #   Set DEBUG environment variable to enable 'breakpoint' function, save secondary files
 

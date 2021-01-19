@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#
 # Run a short demo
 
 # Make sure we are in the correct directory

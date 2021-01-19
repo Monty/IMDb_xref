@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Save the current days "generateXrefData.sh -v" debug results as a baseline
-# so we can check for changes in the future
 #
-# -d DATE picks a different date
-# -v does verbose copying
+# Save the current days "generateXrefData.sh -v" debug results as a baseline so we can
+# check for changes in the future
+#
+# -d DATE picks a different date -v does verbose copying
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")

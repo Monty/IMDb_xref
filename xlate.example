@@ -1,10 +1,12 @@
 # This is a manually managed tab separated file of show title translations
 
-# Some IMDB titles default to non-English names, e.g. "Hodejegerne" for the movie "Headhunters"
-# or you may prefer a more familiar title, e.g. "The Durrells in Corfu" rather than "The Durrells"
+# Some IMDB titles default to non-English names, e.g. "Hodejegerne" for the movie
+# "Headhunters" or you may prefer a more familiar title, e.g. "The Durrells in Corfu"
+# rather than "The Durrells"
 
-# Create a similar file of any translations you'd like. If it has a .xlate extension, it will be
-# automatically used. Alternatively, it can be specified as a command line option with the -x switch.
+# Create a similar file of any translations you'd like. If it has a .xlate extension, it
+# will be automatically used. Alternatively, it can be specified as a command line option
+# with the -x switch.
 
 # Hint:
 #   rg -wNz tt4080728 title.basics.tsv.gz | cut -f 1-4

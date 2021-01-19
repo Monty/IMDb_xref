@@ -5,11 +5,12 @@
 # The tconst for any show can be found in its IMDb URL, -e.g. the URL for "The Crown" is
 #       https://www.imdb.com/title/tt4786824/
 
-# Create a similar tconst file of shows you've watched or are interested in. If it
-# has a .tconst extension, it will be automatically processed. However it can have any
-# name and extension and be passed as a parameter on the command line, e.g. Netflix.tconst.txt
+# Create a similar tconst file of shows you've watched or are interested in. If it has a
+# .tconst extension, it will be automatically processed. However it can have any name and
+# extension and be passed as a parameter on the command line, e.g. Netflix.tconst.txt
 
-# Only the tconst field is used. Additional fields are not needed, but useful for documentation.
+# Only the tconst field is used. Additional fields are not needed, but useful for
+# documentation.
 
 # Hint:
 #    rg -wNz tt4380324 title.basics.tsv.gz | cut -f 1-4

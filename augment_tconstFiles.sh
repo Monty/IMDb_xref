@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Expand the IDs in a .tconst file to add IMDb Primary and Original Titles and sort by Primary Title
+# Expand IDs in a .tconst file. Add IMDb Primary/Original Titles, sort by Primary Title
 #
 # Preserve all non-tconst lines into a header
 
@@ -22,9 +22,9 @@ augment_tconstFiles.sh -- Modify .tconst files to add Type, Primary Title, and O
           tt3351208
 
       To:
-          tt1606375	tvSeries	Downton Abbey	Downton Abbey
-          tt1399664	tvMiniSeries	The Night Manager	The Night Manager
-          tt3351208	tvMovie	Two Little Girls in Blue	Deux petites filles en bleu
+          tt1606375   tvSeries      Downton Abbey       Downton Abbey
+          tt1399664   tvMiniSeries  The Night Manager   The Night Manager
+          tt3582458   tvSeries      Acquitted           Frikjent
 
 USAGE:
     ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]
