@@ -42,6 +42,11 @@ EOF
     done
     shift $((OPTIND - 1))
 
+    # Make sure we can execute rg.
+    if ! checkForExecutable -q rg; then
+        installRipgrep
+    fi
+
     # Make sure we have the necessary IMDb .gz files
     if [ ! -e "name.basics.tsv.gz" ] || [ ! -e "title.basics.tsv.gz" ] ||
         [ ! -e "title.episode.tsv.gz" ] || [ ! -e "title.principals.tsv.gz" ]; then
@@ -54,10 +59,5 @@ EOF
             printf "Skipping download. Try again after running downloadIMDbFiles.sh.\n"
             exit
         fi
-    fi
-
-    # Make sure we can execute rg.
-    if ! checkForExecutable -q rg; then
-        installRipgrep
     fi
 }
