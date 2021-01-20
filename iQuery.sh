@@ -14,17 +14,17 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-The files uniqTitles.txt, uniqPersons.txt, and uniqCharacters.txt contain all known
-entities in the database. Type characters incrementally to select one entity to use
-as a search term for xrefCast.
+The files uniqTitles.txt, uniqPersons.txt, and uniqCharacters.txt contain all
+known entities in the database. Type characters incrementally to select one
+entity to use as a search term for xrefCast.
 
-Once there are no possible matches, only one possible match, or a low enough number of
-matches to select one by number; ask user to select possible actions -- including adding
-the match as an xrefCast search parameter.
+Once there are no possible matches, only one possible match, or a low enough
+number of matches to select one by number; ask user to select possible actions
+-- including adding the match as an xrefCast search parameter.
 
-Minimizes the number of keystrokes required to obtain a search term with a guaranteed
-match, e.g. 'Hi' returns 'Tom Hiddleston' to use when when searching for people in the
-initial database.
+Minimizes the number of keystrokes required to obtain a search term with a
+guaranteed match, e.g. 'Hi' returns 'Tom Hiddleston' to use when when searching
+for people in the initial database.
 
 USAGE:
     iQuery.sh [OPTIONS...]

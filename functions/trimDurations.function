@@ -17,8 +17,8 @@ function trimDurations() {
 trimDurations -- Internal function: Trim .xref_durations by only keeping the last maxLines of
                  durations for \$0 (maxLines defaults to 10)
 
-.xref_durations is read by printDuration to inform the user of the predicted duration of a
-long running process, .e.g. downloading all IMDb .gz files.
+.xref_durations is read by printDuration to inform the user of the predicted
+duration of a long running process, .e.g. downloading all IMDb .gz files.
 
 USAGE:
     trimDurations [OPTIONS...] [maxLines]

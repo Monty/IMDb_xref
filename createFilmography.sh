@@ -14,14 +14,16 @@ function help() {
     cat <<EOF
 createFilmography.sh -- Create a filmography for a named person in IMDb
 
-Search IMDb titles for a match to a nconst or a person name. A nconst should be unique,
-but a person name can have several or even many matches. Allow user to select one match
-or skip if there are too many.
+Search IMDb titles for a match to a nconst or a person name. A nconst should be
+unique, but a person name can have several or even many matches. Allow user to
+select one match or skip if there are too many.
 
-Filmographies are created in subdirectories so they will not overload the primary
-directory. You'll have the opportunity to review results before committing.
+Filmographies are created in subdirectories so they will not overload the
+primary directory. You'll have the opportunity to review results before
+committing.
 
-If you don't enter a parameter on the command line, you'll be prompted for input.
+If you don't enter a parameter on the command line, you'll be prompted for
+input.
 
 USAGE:
     ./createFilmography.sh [NCONST...] [PERSON NAME...]

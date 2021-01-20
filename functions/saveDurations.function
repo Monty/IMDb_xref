@@ -16,8 +16,8 @@ function saveDurations() {
         cat <<EOF
 saveDurations -- Internal function: Save the duration of \$0 in .xref_durations
 
-.xref_durations is read by printDuration to inform the user of the predicted duration of a
-long running process, .e.g. downloading all IMDb .gz files.
+.xref_durations is read by printDuration to inform the user of the predicted
+duration of a long running process, .e.g. downloading all IMDb .gz files.
 
 USAGE:
     saveDurations [OPTIONS...] \$SECONDS

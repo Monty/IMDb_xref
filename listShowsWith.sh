@@ -14,9 +14,9 @@ function help() {
     cat <<EOF
 listShowsWith.sh -- List a filmography for a named person in IMDb
 
-Search IMDb titles for a match to a nconst or a person name. A nconst should be unique,
-but a person name can have several or even many matches. Allow user to select one match
-or skip if there are too many.
+Search IMDb titles for a match to a nconst or a person name. A nconst should be
+unique, but a person name can have several or even many matches. Allow user to
+select one match or skip if there are too many.
 
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
