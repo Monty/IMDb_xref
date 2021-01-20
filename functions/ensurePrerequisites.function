@@ -7,7 +7,10 @@ function ensurePrerequisites() {
 
     help() {
         cat <<EOF
-ensurePrerequisites -- General-purpose function: ensure prerequisites are satisfied
+ensurePrerequisites -- General-purpose function: ensure prerequisites are satisfied.
+
+Ensures that 'rg' is installed, and that IMDb .gz files are downloaded. It is
+automatically run before the main part of any script.
 
 USAGE:
     ensurePrerequisites

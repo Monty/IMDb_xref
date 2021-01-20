@@ -12,7 +12,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-createFilmography.sh -- Create a filmography for a named person in IMDb
+createFilmography.sh -- Create a filmography for a named person in IMDb.
 
 Search IMDb titles for a match to a nconst or a person name. A nconst should be
 unique, but a person name can have several or even many matches. Allow user to

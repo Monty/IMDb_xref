@@ -7,7 +7,9 @@ function ensureDataFiles() {
 
     help() {
         cat <<EOF
-ensureDataFiles -- General-purpose: Generate data files if they don't exist
+ensureDataFiles -- General-purpose: Generate Xref data files if any don't exist.
+
+Runs generateXrefData.sh and hides all its output except '==> Previously,'
 
 USAGE:
     ensureDataFiles [OPTIONS...]

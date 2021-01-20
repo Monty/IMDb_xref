@@ -7,7 +7,10 @@ function installRipgrep() {
 
     help() {
         cat <<EOF
-installRipgrep -- Internal function: install rg and xsv
+installRipgrep -- Internal function: install rg and xsv.
+
+Installs Rust programming language, compiles rg and xsv. Handles macOS popup
+requiring that developer tools be installed before using the c compiler.
 
 Call this function only if you have determined rg is not installed.
 
@@ -45,6 +48,7 @@ EOF
     shift $((OPTIND - 1))
 
     function enable_macOS_cc() {
+        ### Need better test here...
         if [ ! -d "/Applications/Xcode.app" ]; then
             cat <<EOF
 
@@ -105,6 +109,8 @@ EOX-3
             source $HOME/.cargo/env
             # Possibly check for cargo again just to make sure
         fi
+        #
+        ### Need info that Rush has been configured...
         #
         # On macOS, you may need to install the developer tools
         [ "$(uname -sm)" = "Darwin x86_64" ] && enable_macOS_cc

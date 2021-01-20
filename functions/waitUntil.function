@@ -23,7 +23,7 @@ function waitUntil() {
 
     help() {
         cat <<EOF
-waitUntil -- General-purpose: Ask Yes/No questions, or wait for any key, with an optional prompt
+waitUntil -- General-purpose: Ask Yes/No questions, or wait for any key, with optional prompt.
 
 USAGE:
     waitUntil [OPTIONS...] [PROMPT_STRING]

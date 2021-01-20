@@ -14,11 +14,10 @@ function trimDurations() {
 
     help() {
         cat <<EOF
-trimDurations -- Internal function: Trim .xref_durations by only keeping the last maxLines of
-                 durations for \$0 (maxLines defaults to 10)
+trimDurations -- Internal function: Limit the number of durations kept.
 
-.xref_durations is read by printDuration to inform the user of the predicted
-duration of a long running process, .e.g. downloading all IMDb .gz files.
+Only keep the last maxLines durations of any script so the durations file
+doesn't grow without bounds -- maxLines defaults to 10.
 
 USAGE:
     trimDurations [OPTIONS...] [maxLines]

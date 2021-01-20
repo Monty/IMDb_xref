@@ -14,10 +14,11 @@ function saveDurations() {
 
     help() {
         cat <<EOF
-saveDurations -- Internal function: Save the duration of \$0 in .xref_durations
+saveDurations -- Internal function: Save the duration of a script in seconds.
 
-.xref_durations is read by printDuration to inform the user of the predicted
-duration of a long running process, .e.g. downloading all IMDb .gz files.
+Save the duration so that printDuration can be used to inform the user of the
+predicted duration of a long running process, .e.g. downloading all IMDb .gz
+files.
 
 USAGE:
     saveDurations [OPTIONS...] \$SECONDS
