@@ -28,7 +28,6 @@ OPTIONS:
 EXAMPLES:
     trimDurations
     trimDurations 5
-
 EOF
     }
 
@@ -36,8 +35,7 @@ EOF
         case $opt in
         h)
             help
-            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
-            printf "\n"
+            waitUntil -k
             return
             ;;
         \?)
