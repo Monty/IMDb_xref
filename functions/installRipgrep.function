@@ -46,72 +46,82 @@ EOF
     shift $((OPTIND - 1))
 
     function enable_macOS_cc() {
-        ### Need better test here...
-        if [ ! -d "/Applications/Xcode.app" ]; then
-            cat <<EOF
+        # Need a failproof way to determine whether compiling rg will work
+        # Xcode is installed
+        [ -d "/Applications/Xcode.app" ] && return
+        # Used git to download IMDb_xref
+        [ -e ".git/config" ] && return
+        cat <<EOF
 
-On macOS, compiling rg requires the command line developer tools. This will
+On macOS, compiling rg requires the command line developer tools. This may
 cause a popup asking if you would like to install the tools. You don't need to
 "Get Xcode". Just Click the "Install" button. This can take a minute or more.
 EOF
-            waitUntil -k
-            cc --version >/dev/null 2>/dev/null
-            if ! waitUntil -N "Have you completed installing the developer tools?"; then
-                printf "\n==> [${RED}Error${NO_COLOR}] Missing the developer tools.\n" >&2
-                printf "    Please install the developer tools, then re-run this script.\n" >&2
-            fi
+        waitUntil -k
+        # This should trigger the popup
+        cc --version >/dev/null 2>/dev/null
+        #
+        if ! waitUntil "Have you completed installing the developer tools?"; then
+            printf "\n==> [${RED}Error${NO_COLOR}] Missing the macOS developer tools.\n" >&2
+            printf "    Please install the developer tools, then re-run this script.\n" >&2
+            exit 1
         fi
     }
 
     # Explain what we're planning
-    cat <<EOX-1
-This script requires that the program rg (also known as ripgrep) is available
-before it will run. Detailed information on rg, precompiled binaries for macOS
-and Linux, and various other ways of installing rg are available at
-https://crates.io/crates/ripgrep.
+    cat <<EXPLANATION-1
+This script uses the program rg (ripgrep) to quickly search compressed files. It
+will optionally use the program xsv to improve table column layout, especially
+for non-English names by using "elastic tabs".
 
-We suggest you also install xsv, which is by the same developer. While it's not
-required, xsv greatly improves table layout, especially for non-English names,
-by using "elastic tabs". See https://crates.io/crates/xsv.
+Full details, including various ways to install them are covered at
+https://crates.io/crates/ripgrep and https://crates.io/crates/xsv.
 
-Those sites describe numerous ways to install rg and xsv, which are written in
-the Rust programming language. If you'd prefer to get started quickly, type
-these commands into a terminal window.
+One simple way to install them is by typing these commands in a terminal window.
 
-EOX-1
+EXPLANATION-1
 
     # Skip the cargo instructions if it's already installed
     if ! checkForExecutable -q cargo; then
-        cat <<EOX-2
+        cat <<EXPLANATION-2
     # Install the Rust programming language
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     source $HOME/.cargo/env
 
-EOX-2
+EXPLANATION-2
     fi
 
-    cat <<EOX-3
+    cat <<EXPLANATION-3
     # Install rg
     cargo install ripgrep
 
     # Install xsv
     cargo install xsv
 
-EOX-3
+EXPLANATION-3
 
     # Done with instructions. Time to install rust, rg, & xsv
     if waitUntil -N "==> Would you prefer I do the installation for you?"; then
-        if ! checkForExecutable -q cargo; then
-            printf "==> Installing the Rust programming language.\n\n"
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 2>/dev/null
-            source $HOME/.cargo/env
-            # Possibly check for cargo again just to make sure
-        fi
-        #
-        ### Need info that Rush has been configured...
-        #
         # On macOS, you may need to install the developer tools
         [ "$(uname -sm)" = "Darwin x86_64" ] && enable_macOS_cc
+        #
+        # Install Rust if needed
+        if ! checkForExecutable -q cargo; then
+            printf "\n==> Installing the Rust programming language.\n\n"
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 2>/dev/null
+            source $HOME/.cargo/env
+            #
+            if checkForExecutable -q cargo; then
+                printf "\n==> We've sucessfully installed and configured "
+                printf "the Rust programming language.\n"
+            else
+                printf "\n==> [${RED}Error${NO_COLOR}] We were unable to install"
+                printf "the Rust programming language.\n"
+                printf "    Please install rg, then re-run this script.\n"
+                exit 1
+            fi
+            waitUntil -k
+        fi
         #
         printf "==> Installing rg. This can take several minutes.\n\n"
         cargo install -q ripgrep
@@ -121,7 +131,7 @@ EOX-3
         #
         return
     else
-        printf "\n==> [${RED}Error${NO_COLOR}] Missing required program 'rg'.\n" >&2
+        printf "\n==> [${RED}Error${NO_COLOR}] Unable to run required program 'rg'.\n" >&2
         printf "    Please install rg, then re-run this script.\n" >&2
         exit 1
     fi
