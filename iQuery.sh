@@ -115,7 +115,6 @@ fi
 # Let user know how much data we're dealing with
 sizeStr="${foundSizes[*]}"
 cat <<EOF
-
 ==> I can generate searches based on ${sizeStr/%,/.}
 
 "Add a show" to list every person in a show. "Add a person" to see every show they were

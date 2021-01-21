@@ -108,21 +108,18 @@ ensurePrerequisites
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
 
-# Get latest Credits-Person file to search
-[ -z "$SEARCH_FILE" ] && SEARCH_FILE="$(ls -1t Credits-Person*csv 2>/dev/null | head -1)"
-
-# If no search file was specified and we can't find one, generate one
-[ ! "$SEARCH_FILE" ] && ensureDataFiles
-
-# Make sure SEARCH_FILE exists
-if [ ! -e "$SEARCH_FILE" ]; then
-    printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
-    exit 1
+# If a SEARCH_FILE was specified...
+if [ -n "$SEARCH_FILE" ]; then
+    # Make sure it exists, no way to recover
+    if [ ! -e "$SEARCH_FILE" ]; then
+        printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
+        exit 1
+    fi
+else
+    SEARCH_FILE="Credits-Person.csv"
+    # If it doesn't exist, generate it
+    [ ! -e "$SEARCH_FILE" ] && ensureDataFiles
 fi
-
-# We made it through ensureDataFiles, so Credits-Person.csv must exist
-# Set Credits-Person.csv as the search file unless a different one was specified
-[ -z "$SEARCH_FILE" ] && SEARCH_FILE="Credits-Person.csv"
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
