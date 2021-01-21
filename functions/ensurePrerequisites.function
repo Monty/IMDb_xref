@@ -3,7 +3,7 @@
 # General-purpose function to install prerequisites if they don't exist
 
 function ensurePrerequisites() {
-    local OPTIND
+    local OPTIND tookAction
 
     help() {
         cat <<EOF
@@ -46,6 +46,7 @@ EOF
     # Make sure we can execute rg.
     if ! checkForExecutable -q rg; then
         installRipgrep
+        tookAction="yes"
     fi
 
     # Make sure we have the necessary IMDb .gz files
@@ -56,9 +57,17 @@ EOF
             printf "OK. Downloading...\n"
             ./downloadIMDbFiles.sh 2>/dev/null
             printf "\n"
+            tookAction="yes"
         else
             printf "Skipping download. Try again after running downloadIMDbFiles.sh.\n"
             exit
         fi
+    fi
+
+    # Let us know we were successful
+    if [ -n "$tookAction" ]; then
+        printf "==> Prerequisites sucessfully installed."
+        waitUntil -k "Hit any key to clear screen and continue, '^C' to quit."
+        clear
     fi
 }
