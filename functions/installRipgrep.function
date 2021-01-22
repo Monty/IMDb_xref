@@ -69,7 +69,7 @@ EOF
     }
 
     # Explain what we're planning
-    cat <<EXPLANATION-1
+    cat <<EOT-1
 This script uses the program rg (ripgrep) to quickly search compressed files. It
 will optionally use the program xsv to improve table column layout, especially
 for non-English names by using "elastic tabs".
@@ -79,26 +79,26 @@ https://crates.io/crates/ripgrep and https://crates.io/crates/xsv.
 
 One simple way to install them is by typing these commands in a terminal window.
 
-EXPLANATION-1
+EOT-1
 
     # Skip the cargo instructions if it's already installed
     if ! checkForExecutable -q cargo; then
-        cat <<EXPLANATION-2
+        cat <<EOT-2
     # Install the Rust programming language
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     source $HOME/.cargo/env
 
-EXPLANATION-2
+EOT-2
     fi
 
-    cat <<EXPLANATION-3
+    cat <<EOT-3
     # Install rg
     cargo install ripgrep
 
     # Install xsv
     cargo install xsv
 
-EXPLANATION-3
+EOT-3
 
     # Done with instructions. Time to install rust, rg, & xsv
     if waitUntil $ynPref -N "==> Would you prefer I do the installation for you?"; then
