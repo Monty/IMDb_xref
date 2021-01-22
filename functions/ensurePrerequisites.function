@@ -9,7 +9,7 @@ function ensurePrerequisites() {
         cat <<EOF
 ensurePrerequisites -- General-purpose function: ensure prerequisites are satisfied.
 
-Ensures that 'rg' is installed, and that IMDb .gz files are downloaded. It is
+Ensures that preferences are set, 'rg' is installed, and that IMDb .gz files are downloaded. It is
 automatically run before the main part of any script.
 
 USAGE:
@@ -42,6 +42,17 @@ EOF
         esac
     done
     shift $((OPTIND - 1))
+
+    if [ -n "$needPrefs" ]; then
+        cat <<EOT
+Welcome to IMDb_xref!
+
+First, I'll let you choose the interaction style you prefer. Then I'll install
+any missing prerequisites and download any necessary IMDb data files.
+
+EOT
+        source ./setPreferences.sh
+    fi
 
     # Make sure we can execute rg.
     if ! checkForExecutable -q rg; then

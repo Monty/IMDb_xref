@@ -33,6 +33,9 @@ configFile="$HOME/.config/IMDb_xref/config"
 # The long form (ynPref="-l ") requires you to type a <cr> after the y or n.
 # In either case, a <cr> selects the capital letter in a [Y/n] or [y/N] pair.
 ynPref=
+
+# needPrefs - set to yes by default, unset once setPreferences.sh is run
+needPrefs="yes"
 EOF
 
 durationFile=".xref_durations"
