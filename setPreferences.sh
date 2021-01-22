@@ -59,7 +59,7 @@ done
 shift $((OPTIND - 1))
 
 cat <<EOF
-Sometimes we will ask you Yes/No questions like:
+Sometimes I will ask you Yes/No questions like:
 ==> Would you like to create a filmography? [y/n]
 ==> Would you like to add a show? [Y/n]     -- <cr> defaults to Yes
 ==> Would you like to start over? [y/N]     -- <cr> defaults to No
