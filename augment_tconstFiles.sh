@@ -126,7 +126,7 @@ for file in "$@"; do
         printf "\n"
     else
         if [ -z "$DONT_ASK" ]; then
-            waitUntil -N "OK to overwrite $file?" && copyResults >$file
+            waitUntil $ynPref -N "OK to overwrite $file?" && copyResults >$file
         else
             copyResults >$file
         fi

@@ -19,8 +19,21 @@
 #       source functions/load_functions
 
 # Standard files
-configFile=".xref_config"
-[ ! -e "$configFile" ] && touch "$configFile"
+mkdir -p $HOME/.config/IMDb_xref
+configFile="$HOME/.config/IMDb_xref/config"
+[ ! -e "$configFile" ] && cat <<EOF >>$configFile
+#!/usr/bin/env bash
+#
+# This is the IMDb_xref configuration file. Each line either contains a comment
+# or an environment variable to be set before the start of any IMDb_xref script.
+
+# ynPref - set the style of answering yes/no questions.such as:
+#       ==> Should I create a George Clooney filmography? [y/n]
+# The default (ynPref=) returns as soon as a y or n is typed. No <cr> required.
+# The long form (ynPref="-l ") requires you to type a <cr> after the y or n.
+# In either case, a <cr> selects the capital letter in a [Y/n] or [y/N] pair.
+ynPref=
+EOF
 
 durationFile=".xref_durations"
 [ ! -e "$durationFile" ] && touch "$durationFile"

@@ -105,7 +105,7 @@ if [ $# -eq 0 ]; then
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil -N "Would you like me to add the George Clooney nconst for you?"; then
+        if waitUntil $ynPref -N "Would you like me to add the George Clooney nconst for you?"; then
             printf "nm0000123\n" >>$ALL_TERMS
         else
             exit 1
@@ -155,7 +155,7 @@ while read -r line; do
 
     printf "I found $count persons named \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-10}" ]; then
-        if waitUntil -Y "Should I skip trying to select one?"; then
+        if waitUntil $ynPref -Y "Should I skip trying to select one?"; then
             continue
         fi
     fi
@@ -206,7 +206,7 @@ else
     cat $PERSON_RESULTS
 fi
 
-if ! waitUntil -Y; then
+if ! waitUntil $ynPref -Y; then
     printf "Quitting...\n"
     exit
 fi
@@ -229,7 +229,7 @@ while read -r line; do
         numResults=$(sed -n '$=' $JOB_RESULTS)
         if [[ $numResults -gt 0 ]]; then
             printf "==> I found $numResults titles listing $nconstName as: $match\n"
-            if [ -n "$skipPrompts" ] || waitUntil -Y "==> Shall I list them?"; then
+            if [ -n "$skipPrompts" ] || waitUntil $ynPref -Y "==> Shall I list them?"; then
                 if checkForExecutable -q xsv; then
                     cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
                 else

@@ -18,6 +18,9 @@
 #       source functions/define_files
 #       source functions/load_functions
 
+# Make sure we pick up any global environment variables.
+source $configFile
+
 for file in $(ls functions/*.function); do
     source $file
     [[ $DEBUG_XREF == *"load"* ]] &&

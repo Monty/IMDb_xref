@@ -132,7 +132,7 @@ if [ $# -eq 0 ]; then
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$SEARCH_TERMS
     done </dev/tty
     if [ ! -s "$SEARCH_TERMS" ]; then
-        if waitUntil -N "Would you like to see who played Queen Elizabeth II?"; then
+        if waitUntil $ynPref -N "Would you like to see who played Queen Elizabeth II?"; then
             printf "Queen Elizabeth II\n" >>$SEARCH_TERMS
             printf "\n"
         else

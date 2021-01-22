@@ -53,7 +53,7 @@ EOF
     if [ ! -e "name.basics.tsv.gz" ] || [ ! -e "title.basics.tsv.gz" ] ||
         [ ! -e "title.episode.tsv.gz" ] || [ ! -e "title.principals.tsv.gz" ]; then
         printf "==> Missing IMDb data files. Run downloadIMDbFiles.sh to fix this problem.\n"
-        if waitUntil -N "Would you like me to do this for you?"; then
+        if waitUntil $ynPref -N "Would you like me to do this for you?"; then
             printf "OK. Downloading...\n"
             ./downloadIMDbFiles.sh 2>/dev/null
             printf "\n"

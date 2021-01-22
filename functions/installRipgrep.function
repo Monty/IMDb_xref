@@ -61,7 +61,7 @@ EOF
         # This should trigger the popup
         cc --version >/dev/null 2>/dev/null
         #
-        if ! waitUntil "Have you completed installing the developer tools?"; then
+        if ! waitUntil $ynPref "Have you completed installing the developer tools?"; then
             printf "\n==> [${RED}Error${NO_COLOR}] Missing the macOS developer tools.\n" >&2
             printf "    Please install the developer tools, then re-run this script.\n" >&2
             exit 1
@@ -101,7 +101,7 @@ EXPLANATION-2
 EXPLANATION-3
 
     # Done with instructions. Time to install rust, rg, & xsv
-    if waitUntil -N "==> Would you prefer I do the installation for you?"; then
+    if waitUntil $ynPref -N "==> Would you prefer I do the installation for you?"; then
         # On macOS, you may need to install the developer tools
         [ "$(uname -sm)" = "Darwin x86_64" ] && enable_macOS_cc
         #

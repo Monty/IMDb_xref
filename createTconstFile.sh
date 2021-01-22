@@ -105,7 +105,7 @@ if [ $# -eq 0 ]; then
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil -N "Would you like me to add the Downton Abbey tconst for you?"; then
+        if waitUntil $ynPref -N "Would you like me to add the Downton Abbey tconst for you?"; then
             printf "tt1606375\n" >>$ALL_TERMS
         else
             exit 1
@@ -116,11 +116,13 @@ fi
 
 # Do the work of adding the matches to the TCONST_FILE
 function addToFileP() {
-    if waitUntil -Y "\nShall I add them to $TCONST_FILE?"; then
+    if waitUntil $ynPref -Y "\nShall I add them to $TCONST_FILE?"; then
         printf "OK. Adding...\n"
         rg -Ne "^tt" $FINAL_RESULTS >>$TCONST_FILE
-        waitUntil -Y "\nShall I sort $TCONST_FILE by title?" && ./augment_tconstFiles.sh -y $TCONST_FILE
-        waitUntil -Y "\nShall I update your data files?" && ./generateXrefData.sh -q
+        waitUntil $ynPref -Y "\nShall I sort $TCONST_FILE by title?" &&
+            ./augment_tconstFiles.sh -y $TCONST_FILE
+        waitUntil $ynPref -Y "\nShall I update your data files?" &&
+            ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
     fi
@@ -169,7 +171,7 @@ while read -r line; do
 
     printf "I found $count shows titled \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
-        waitUntil -Y "Should I skip trying to select one?" && continue
+        waitUntil $ynPref -Y "Should I skip trying to select one?" && continue
     fi
     # rg --color always "\t$match\t" $POSSIBLE_MATCHES | xsv table -d "\t"
     pickOptions=()
