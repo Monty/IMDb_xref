@@ -152,6 +152,9 @@ for a in "$@"; do
 done
 cat $SEARCH_TERMS
 
+# Escape metacharacters known to appear in titles, persons, characters
+sed -I "" 's/[()?]/\\&/g' $SEARCH_TERMS
+
 # Setup awk printf formats with spaces or tabs
 # Name|Job|Show|Episode|Role
 PSPACE='%-20s  %-10s  %-40s  %-17s  %s\n'
