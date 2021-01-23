@@ -60,6 +60,16 @@ function cleanup() {
     exit 130
 }
 
+function loopOrExitP() {
+    if waitUntil $ynPref -N "\n==> Would you like to search for another person?"; then
+        printf "\n"
+        exec ./listShowsWith.sh
+    else
+        printf "Quitting...\n"
+        exit
+    fi
+}
+
 while getopts ":hm:y" opt; do
     case $opt in
     h)
@@ -108,7 +118,7 @@ if [ $# -eq 0 ]; then
         if waitUntil $ynPref -N "Would you like me to add the George Clooney nconst for you?"; then
             printf "nm0000123\n" >>$ALL_TERMS
         else
-            exit 1
+            loopOrExitP
         fi
     fi
     printf "\n"
@@ -194,8 +204,8 @@ printf "\n"
 # Didn't find any results
 if [ ! -s "$PERSON_RESULTS" ]; then
     printf "==> Didn't find ${RED}any${NO_COLOR} matching persons.\n"
-    printf "    Check the \"Searching $numRecords records for:\" section above.\n\n"
-    exit
+    printf "    Check the \"Searching $numRecords records for:\" section above.\n"
+    loopOrExitP
 fi
 
 # Found results, check with user before adding
@@ -207,8 +217,7 @@ else
 fi
 
 if ! waitUntil $ynPref -Y; then
-    printf "Quitting...\n"
-    exit
+    loopOrExitP
 fi
 
 cut -f 1 $PERSON_RESULTS >$NCONST_TERMS
@@ -239,3 +248,6 @@ while read -r line; do
         fi
     done <$MATCH_COUNTS
 done <$NCONST_TERMS
+
+# Do we really want to quit?
+loopOrExitP
