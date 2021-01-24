@@ -61,6 +61,16 @@ function cleanup() {
     exit 130
 }
 
+function loopOrExitP() {
+    if waitUntil $ynPref -N "\n==> Would you like to search for another show?"; then
+        printf "\n"
+        exec ./createTconstFile.sh
+    else
+        printf "Quitting...\n"
+        exit
+    fi
+}
+
 while getopts ":f:hm:" opt; do
     case $opt in
     h)
@@ -108,7 +118,7 @@ if [ $# -eq 0 ]; then
         if waitUntil $ynPref -N "Would you like me to add the Downton Abbey tconst for you?"; then
             printf "tt1606375\n" >>$ALL_TERMS
         else
-            exit 1
+            loopOrExitP
         fi
     fi
     printf "\n"
@@ -210,15 +220,18 @@ printf "\n"
 if [ ! -s "$FINAL_RESULTS" ]; then
     printf "==> Didn't find ${RED}any${NO_COLOR} matching shows.\n"
     printf "    Check the \"Searching $numRecords records for:\" section above.\n\n"
-    exit
+    loopOrExitP
 fi
 
-# Found results, check with user before adding
+# Found results, check with user before adding to local data
 printf "These are the matches I can add:\n"
 if checkForExecutable -q xsv; then
     xsv table -d "\t" $FINAL_RESULTS
 else
     cat $FINAL_RESULTS
 fi
-
+#
 addToFileP
+
+# Do we really want to quit?
+loopOrExitP
