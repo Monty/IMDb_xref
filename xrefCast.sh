@@ -41,12 +41,14 @@ OPTIONS:
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -s      Summarize -- Only print 'Duplicated names' section.
     -i      Print info about any files that are searched.
+    -n      No loop - don't offer to do another search upon exit
 
 EXAMPLES:
     ./xrefCast.sh "Olivia Colman"
     ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
     ./xrefCast.sh "The Crown"
     ./xrefCast.sh -s "The Night Manager" "The Crown" "The Durrells in Corfu"
+    ./xrefCast.sh -sn "Elizabeth Debicki"
     ./xrefCast.sh -af Clooney.csv "Brad Pitt"
 EOF
 }
@@ -72,7 +74,19 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":f:hasi" opt; do
+function loopOrExitP() {
+    # If we were called from another program, we'd have parameters.
+    [ -n "$noLoop" ] && exit
+    if waitUntil $ynPref -N "\n==> Would you like to do another search?"; then
+        printf "\n"
+        exec ./xrefCast.sh
+    else
+        printf "Quitting...\n"
+        exit
+    fi
+}
+
+while getopts ":f:hasin" opt; do
     case $opt in
     h)
         help
@@ -86,6 +100,9 @@ while getopts ":f:hasi" opt; do
         ;;
     i)
         INFO="yes"
+        ;;
+    n)
+        noLoop="yes"
         ;;
     f)
         SEARCH_FILE="$OPTARG"
@@ -113,7 +130,7 @@ if [ -n "$SEARCH_FILE" ]; then
     # Make sure it exists, no way to recover
     if [ ! -e "$SEARCH_FILE" ]; then
         printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
-        exit 1
+        loopOrExitP
     fi
 else
     SEARCH_FILE="Credits-Person.csv"
@@ -136,7 +153,7 @@ if [ $# -eq 0 ]; then
             printf "Queen Elizabeth II\n" >>$SEARCH_TERMS
             printf "\n"
         else
-            exit 1
+            loopOrExitP
         fi
     fi
 fi
@@ -181,7 +198,7 @@ if [ -z "$SUMMARIZE" ]; then
 fi
 
 # If ALL_NAMES_ONLY, exit here
-[ -n "$ALL_NAMES_ONLY" ] && exit
+[ -n "$ALL_NAMES_ONLY" ] && loopOrExitP
 
 # Print duplicated names, i.e. where field 1 is repeated in successive lines, but field 3 is different
 printf "\n==> Duplicated names (Name|Job|Show|Episode|Role):\n"
@@ -192,3 +209,6 @@ else
     awk -F "\t" -v PF="$PSPACE" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
     printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' $TMPFILE | sort -fu
 fi
+
+# Do we really want to quit?
+loopOrExitP

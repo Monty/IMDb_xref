@@ -197,11 +197,11 @@ while true; do
             continue 2
             ;;
         *full*)
-            ./xrefCast.sh "${searchArray[@]}"
+            ./xrefCast.sh -n "${searchArray[@]}"
             continue 2
             ;;
         *summary*)
-            ./xrefCast.sh '-s' "${searchArray[@]}"
+            ./xrefCast.sh '-sn' "${searchArray[@]}"
             continue 2
             ;;
         Quit)
