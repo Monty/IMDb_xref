@@ -165,7 +165,7 @@ shell scripts so you can copy and paste as you explore the data.
     The Night Manager
     The Crown
     
-    ==> Duplicated names (Name|Job|Show|Episode|Role):
+    ==> Multiply occurring names (Name|Job|Show|Episode|Role):
     Elizabeth Debicki  actress  The Crown              Episode #5.1  Princess Diana
     Elizabeth Debicki  actress  The Night Manager      Episode #1.2  Jed Marshall
     Josh O'Connor      actor    The Crown              Avalanche     Prince Charles
@@ -302,14 +302,16 @@ into a terminal window.
         -h      Print this message.
         -a      All -- Only print 'All names' section.
         -f      File -- Query a specific file rather than "Credits-Person*csv".
-        -s      Summarize -- Only print 'Duplicated names' section.
+        -m      Multiples -- Only print names that appear multiple times
         -i      Print info about any files that are searched.
+        -n      No loop - don't offer to do another search upon exit
     
     EXAMPLES:
         ./xrefCast.sh "Olivia Colman"
         ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
         ./xrefCast.sh "The Crown"
-        ./xrefCast.sh -s "The Night Manager" "The Crown" "The Durrells in Corfu"
+        ./xrefCast.sh -m "The Night Manager" "The Crown" "The Durrells in Corfu"
+        ./xrefCast.sh -mn "Elizabeth Debicki"
         ./xrefCast.sh -af Clooney.csv "Brad Pitt"
 </details>
 
@@ -324,18 +326,18 @@ Diana' or "'Princess Diana".
 The "All names" section contains all rows with a match for **any** term. It can be
 quite long for complex queries.
 
-The "Duplicated names" section contains only rows with names found in more than one
+The "Multiply occurring names" section contains only rows with names found in more than one
 show. It can be empty.
 
-The "-s" (summarize) switch hides the "All names" section. The "-a" (All) switch
-hides the "Duplicated names" section. Running the example queries with and
+The "-m" (multiples) switch hides the "All names" section. The "-a" (All) switch
+hides the "Multiply occurring names" section. Running the example queries with and
 without those two switches will give you an understanding of when they are useful.
 
 ### Make your own queries
 
 Experiment. The results from one query may reveal information that leads to further
 queries. For example, `./xrefCast.sh actor actress` will list all actors and actress,
-and "Duplicated names" will contain only people who appeared in more than one show.
+and "Multiply occurring names" will contain only people who appeared in more than one show.
 (*Use "-s" to skip the longer list.*)
 
 ***Protip***: Create a more flexible **xref** command that can be run from any

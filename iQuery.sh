@@ -121,7 +121,7 @@ cat <<EOF
 in. "Add a character" to see everyone who portrayed that character. Add multiple people to
 see all the shows they were in together. Add multiple shows to see if any people were in
 more than one. You can add more search terms after executing the search, or switch from a
-full search to a summary search.
+full search to a 'multiples only' search.
 
 As soon as you type enough characters, a proposed search term will appear. Experiment!
 EOF
@@ -136,7 +136,8 @@ while true; do
     searchArraySize="${#searchArray[@]}"
     [ "$searchArraySize" -eq 1 ] && actionOptions+=("Remove search term")
     [ "$searchArraySize" -gt 1 ] && actionOptions+=("Remove one search term" "Delete all search terms")
-    [ "$searchArraySize" -gt 0 ] && actionOptions+=("Execute full search" "Execute summary search")
+    [ "$searchArraySize" -gt 0 ] &&
+        actionOptions+=("Run full search" "Run 'multiples only' search")
     actionOptions+=("Quit")
 
     printf "What would you like to do?\n"
@@ -200,8 +201,8 @@ while true; do
             ./xrefCast.sh -n "${searchArray[@]}"
             continue 2
             ;;
-        *summary*)
-            ./xrefCast.sh '-sn' "${searchArray[@]}"
+        *multiples*)
+            ./xrefCast.sh '-mn' "${searchArray[@]}"
             continue 2
             ;;
         Quit)
