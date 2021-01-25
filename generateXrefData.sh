@@ -24,7 +24,7 @@
 #           ...
 #
 #       Defaults to all .xlate files, or specify one with -x [file] on the command
-#       linegqap
+#       line
 #
 #   Set DEBUG environment variable to enable 'breakpoint' function, save secondary files
 
