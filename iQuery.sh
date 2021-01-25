@@ -33,8 +33,8 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -m      Maximum hits allowed in the selection menu. Continue typing until there are
-            fewer hits. (defaults to 10)
+    -m      Maximum hits allowed in the selection menu. Continue typing until
+            there are fewer hits. (defaults to 10)
 
 EXAMPLES:
     iQuery.sh
@@ -117,11 +117,12 @@ sizeStr="${foundSizes[*]}"
 cat <<EOF
 ==> I can generate searches based on ${sizeStr/%,/.}
 
-"Add a show" to list every person in a show. "Add a person" to see every show they were
-in. "Add a character" to see everyone who portrayed that character. Add multiple people to
-see all the shows they were in together. Add multiple shows to see if any people were in
-more than one. You can add more search terms after executing the search, or switch from a
-full search to a 'multiples only' search.
+"Add a show" to list every person in a show. "Add a person" to see every show
+they were in. "Add a character" to see everyone who portrayed that character.
+Add multiple people to see all the shows they were in together. Add multiple
+shows to see if any people were in more than one. You can add more search terms
+after executing the search, or switch from a full search to a 'multiples only'
+search.
 
 As soon as you type enough characters, a proposed search term will appear. Experiment!
 EOF
@@ -135,7 +136,8 @@ while true; do
 
     searchArraySize="${#searchArray[@]}"
     [ "$searchArraySize" -eq 1 ] && actionOptions+=("Remove search term")
-    [ "$searchArraySize" -gt 1 ] && actionOptions+=("Remove one search term" "Delete all search terms")
+    [ "$searchArraySize" -gt 1 ] &&
+        actionOptions+=("Remove one search term" "Delete all search terms")
     [ "$searchArraySize" -gt 0 ] &&
         actionOptions+=("Run full search" "Run 'multiples only' search")
     actionOptions+=("Quit")
@@ -246,7 +248,8 @@ while true; do
             PS3="Select a number from 1-${#pickOptions[@]}: "
             COLUMNS=40
             select pickMenu in "${pickOptions[@]}"; do
-                if [ 1 -le "$REPLY" ] 2>/dev/null && [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+                if [ 1 -le "$REPLY" ] 2>/dev/null &&
+                    [ "$REPLY" -le "${#pickOptions[@]}" ]; then
                     # printf "You picked $pickMenu ($REPLY)\n"
                     # rg -NzSI $pickMenu "$searchFile"
                     for term in "${searchArray[@]}"; do

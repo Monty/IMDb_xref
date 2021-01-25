@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Save the current days "generateXrefData.sh -v" debug results as a baseline so we can
-# check for changes in the future
+# Save the current days "generateXrefData.sh -v" debug results as a baseline so
+# we can check for changes in the future
 #
 # -d DATE picks a different date -v does verbose copying
 

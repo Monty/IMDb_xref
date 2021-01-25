@@ -14,8 +14,8 @@
 #
 #       Defaults to all .tconst files, or specify them on the command line
 #
-#    2) .xlate file(s) with tab separated pairs of non-English titles and their English
-#    equivalents
+#    2) .xlate file(s) with tab separated pairs of non-English titles and their
+#    English equivalents
 #
 #       For example:
 #           Brandvägg	Wallander: The Original Episodes
@@ -23,10 +23,11 @@
 #           Den fördömde	Sebastian Bergman
 #           ...
 #
-#       Defaults to all .xlate files, or specify one with -x [file] on the command
-#       line
+#       Defaults to all .xlate files, or specify one with -x [file] on the
+#       command line
 #
-#   Set DEBUG environment variable to enable 'breakpoint' function, save secondary files
+#   Set DEBUG environment variable to enable 'breakpoint' function, save
+#   secondary files
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
@@ -43,8 +44,8 @@ function help() {
     cat <<EOF
 generateXrefData.sh -- Create lists/spreadsheets of shows, actors, and characters they portray.
 
-This uses downloaded IMDb .gz files. See https://www.imdb.com/interfaces/ for details of the data
-they contain.
+This uses downloaded IMDb .gz files. See https://www.imdb.com/interfaces/ for
+details of the data they contain.
 
 USAGE:
     ./generateXrefData.sh [-x translation file] [tconst file ...]
@@ -140,34 +141,18 @@ ensurePrerequisites
 # If we ALWAYS want QUIET
 [ $(rg -c "QUIET=yes" $configFile) ] && QUIET="yes"
 
-# Make sure we have downloaded the IMDb files
-if [ -e "name.basics.tsv.gz" ] && [ -e "title.basics.tsv.gz" ] && [ -e "title.principals.tsv.gz" ] &&
-    [ -e "title.episode.tsv.gz" ]; then
-    [ -z "$QUIET" ] && printf "==> Using existing IMDb .gz files.\n"
-else
-    [ -z "$QUIET" ] && printf "==> Downloading new IMDb .gz files.\n"
-    # Make sure we can execute curl.
-    checkForExecutable curl
-    #
-    for file in name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz; do
-        if [ ! -e "$file" ]; then
-            source="https://datasets.imdbws.com/$file"
-            [ -z "$QUIET" ] && printf "Downloading $source\n"
-            curl -s -O $source
-        fi
-    done
-fi
-[ -z "$QUIET" ] && printf "\n"
-
-# If the user hasn't created a .tconst or .xlate file, create a small example from a PBS show.
-# This is relatively harmless, and keeps this script simpler.
+# If the user hasn't created a .tconst or .xlate file, create a small example
+# from a PBS show. This is relatively harmless, and keeps this script simpler.
 if [ ! "$(ls *.xlate 2>/dev/null)" ]; then
-    [ -z "$QUIET" ] && printf "==> Creating an example translation file: PBS.xlate\n\n"
+    [ -z "$QUIET" ] &&
+        printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -Ne "^#" -e "^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
 if [ ! "$(ls *.tconst 2>/dev/null)" ]; then
-    [ -z "$QUIET" ] && printf "==> Creating an example tconst file: PBS.tconst\n\n"
-    rg -Ne "^#" -e "^$" -e "The Durrells" -e "The Night Manager" -e "The Crown" tconst.example >"PBS.tconst"
+    [ -z "$QUIET" ] &&
+        printf "==> Creating an example tconst file: PBS.tconst\n\n"
+    rg -Ne "^#" -e "^$" -e "The Durrells" -e "The Night Manager" \
+        -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
 # Pick xlate file(s) to process if not specified with -x option
@@ -175,9 +160,11 @@ fi
 [ -n "$TEST_MODE" ] && XLATE_FILES="xlate.example"
 #
 if [ "$XLATE_FILES" == "*.xlate" ]; then
-    [ -z "$QUIET" ] && printf "==> Using all .xlate files for IMDb title translation.\n\n"
+    [ -z "$QUIET" ] &&
+        printf "==> Using all .xlate files for IMDb title translation.\n\n"
 else
-    [ -z "$QUIET" ] && printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
+    [ -z "$QUIET" ] &&
+        printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
 fi
 if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
     printf "==>[${RED}Error${NO_COLOR}] No such file(s): $XLATE_FILES\n\n" >&2
@@ -189,9 +176,11 @@ fi
 [ -n "$TEST_MODE" ] && TCONST_FILES="tconst.example"
 #
 if [ "$TCONST_FILES" == "*.tconst" ]; then
-    [ -z "$QUIET" ] && printf "==> Searching all .tconst files for IMDb title identifiers.\n"
+    [ -z "$QUIET" ] &&
+        printf "==> Searching all .tconst files for IMDb title identifiers.\n"
 else
-    [ -z "$QUIET" ] && printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n"
+    [ -z "$QUIET" ] &&
+        printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n"
 fi
 if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
     printf "==> [${RED}Error${NO_COLOR}] No such file(s): $TCONST_FILES\n\n" >&2
@@ -251,7 +240,7 @@ NCONST_PL="$WORK/nconst-pl$DATE_ID.txt"
 XLATE_PL="$WORK/xlate-pl$DATE_ID.txt"
 
 # Manually entered list of tconst ID's that we don't want tvEpisodes for
-# either because they have too many episodes, or the episodes don't translate well
+# either because they have too many episodes, or episodes don't translate well
 SKIP_EPISODES="skipEpisodes.example"
 SKIP_TCONST="$WORK/tconst-skip$DATE_ID.txt"
 
@@ -283,8 +272,8 @@ ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
 ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
 ALL_TXT="$UNIQUE_TITLES $UNIQUE_CHARS $UNIQUE_PERSONS"
 ALL_CSV="$RAW_SHOWS $RAW_PERSONS $RAW_EPISODES $UNSORTED_EPISODES $UNSORTED_CREDITS"
-ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS $ASSOCIATED_TITLES "
-ALL_SPREADSHEETS+="$CREDITS_SHOW $CREDITS_PERSON "
+ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS "
+ALL_SPREADSHEETS+="$ASSOCIATED_TITLES $CREDITS_SHOW $CREDITS_PERSON "
 
 # Cleanup any possible leftover files
 rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
@@ -292,13 +281,16 @@ rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
 # Coalesce a single tconst input list
 rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >$TCONST_LIST
 
-# Create a perl "substitute" script to translate any known non-English titles to their English equivalent
-# Regex delimiter needs to avoid any characters present in the input, use {} for readability
+# Create a perl "substitute" script to translate any known non-English titles to
+# their English equivalent. Regex delimiter needs to avoid any characters
+# present in the input, use {} for readability
+
 rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1,2 | sort -fu |
     perl -p -e 's+\t+\\t}\{\\t+; s+^+s{\\t+; s+$+\\t};+' >$XLATE_PL
 
 # Check for translation conflicts
-rg -INv -e "^#" -e "^$" $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$DUPES
+rg -INv -e "^#" -e "^$" $XLATE_FILES | sort -fu | cut -f 1 | sort -f |
+    uniq -d >$DUPES
 ### Stop here if there are translation conflicts.
 if [ -s "$DUPES" ]; then
     printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "
@@ -311,8 +303,8 @@ fi
 
 # Generate a csv of titles from the tconst list, remove the "adult" field,
 # translate any known non-English titles to their English equivalent,
-rg -wNz -f $TCONST_LIST title.basics.tsv.gz | cut -f 1-4,6-9 | perl -p -f $XLATE_PL |
-    perl -p -e 's+\t+\t\t\t+;' >$RAW_SHOWS
+rg -wNz -f $TCONST_LIST title.basics.tsv.gz | cut -f 1-4,6-9 |
+    perl -p -f $XLATE_PL | perl -p -e 's+\t+\t\t\t+;' >$RAW_SHOWS
 
 ### Check for and repair duplicate titles
 cut -f 6 $RAW_SHOWS | sort -f | uniq -d >$DUPES
@@ -340,9 +332,10 @@ fi
 # We should now be conflict free
 cut -f 5 $RAW_SHOWS | sort -fu >$UNIQUE_TITLES
 
-# We don't want to check for episodes in any tvSeries that has hundreds of tvEpisodes
-# or that has episodes with titles that aren't unique like "Episode 1" that can't be "translated"
-# back to the original show. Manually maintain a skip list in $SKIP_EPISODES.
+# We don't want to check for episodes in any tvSeries that has hundreds of
+# tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
+# that can't be "translated" back to the original show. Manually maintain a skip
+# list in $SKIP_EPISODES.
 rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >$SKIP_TCONST
 
 # Let us know what shows we're processing - format for readability, separate with ";"
@@ -356,37 +349,42 @@ perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s
 
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
 rg -wNz -f $TCONST_LIST title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
-    sort -f --field-separator=$'\t' --key=2,2 --key=3,3n --key=4,4n | rg -wv -f $SKIP_TCONST |
-    tee $UNSORTED_EPISODES | cut -f 1 >$EPISODES_LIST
+    sort -f --field-separator=$'\t' --key=2,2 --key=3,3n --key=4,4n |
+    rg -wv -f $SKIP_TCONST | tee $UNSORTED_EPISODES | cut -f 1 >$EPISODES_LIST
 
 # Use the episodes list to generate raw episodes
-rg -wNz -f $EPISODES_LIST title.basics.tsv.gz | cut -f 1-4,6-9 | perl -p -f $XLATE_PL |
-    perl -p -e 's+\\N++g;' | sort -f --field-separator=$'\t' --key=3,3 --key=5,5 --key=4,4 >$RAW_EPISODES
+rg -wNz -f $EPISODES_LIST title.basics.tsv.gz | cut -f 1-4,6-9 |
+    perl -p -f $XLATE_PL | perl -p -e 's+\\N++g;' |
+    sort -f --field-separator=$'\t' --key=3,3 --key=5,5 --key=4,4 >$RAW_EPISODES
 
-# Use the tconst list to lookup principal titles and generate a tconst/nconst credits csv
+# Use tconst list to lookup principal titles & generate tconst/nconst credits csv
 # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
 rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
     rg -w -e actor -e actress -e writer -e director -e producer |
-    sort --key=1,1 --key=2,2n | perl -p -e 's+nm0745728+nm0745694+' | perl -p -e 's+\\N++g;' |
-    perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' | tee $UNSORTED_CREDITS |
-    cut -f 1 | sort -u >$NCONST_LIST
+    sort --key=1,1 --key=2,2n | perl -p -e 's+nm0745728+nm0745694+' |
+    perl -p -e 's+\\N++g;' |
+    perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
+    tee $UNSORTED_CREDITS | cut -f 1 | sort -u >$NCONST_LIST
 
-# Use the episodes list to lookup principal titles and add to the tconst/nconst credits csv
+# Use episodes list to lookup principal titles and add to tconst/nconst credits csv
 rg -wNz -f $EPISODES_LIST title.principals.tsv.gz |
     rg -w -e actor -e actress -e writer -e director -e producer |
     sort --key=1,1 --key=2,2n | perl -p -e 's+\\N++g;' |
-    perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' | tee -a $UNSORTED_CREDITS |
-    cut -f 1 | sort -u | rg -v -f $NCONST_LIST >>$NCONST_LIST
+    perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
+    tee -a $UNSORTED_CREDITS | cut -f 1 | sort -u |
+    rg -v -f $NCONST_LIST >>$NCONST_LIST
 
 # Create a perl script to globally convert a show tconst to a show title
-cut -f 1,5 $RAW_SHOWS | perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >$TCONST_SHOWS_PL
+cut -f 1,5 $RAW_SHOWS |
+    perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >$TCONST_SHOWS_PL
 
 # Create a perl script to convert an episode tconst to its parent show title
 perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[1]\\t@F[2]\\t@F[3]};";' $UNSORTED_EPISODES |
     perl -p -f $TCONST_SHOWS_PL >$TCONST_EPISODES_PL
 
 # Create a perl script to convert an episode tconst to its episode title
-perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[2]};";' $RAW_EPISODES >$TCONST_EPISODE_NAMES_PL
+perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[2]};";' $RAW_EPISODES \
+    >$TCONST_EPISODE_NAMES_PL
 
 # Convert raw episodes to raw shows
 perl -pi -f $TCONST_EPISODES_PL $RAW_EPISODES
@@ -395,11 +393,13 @@ perl -pi -f $TCONST_EPISODES_PL $RAW_EPISODES
 perl -pi -e 's/\\t.*}/}/' $TCONST_EPISODES_PL
 
 # Create a perl script to convert an nconst to a name
-rg -wNz -f $NCONST_LIST name.basics.tsv.gz | perl -p -e 's+\\N++g;' | cut -f 1-2,6 | sort -fu --key=2 |
-    tee $RAW_PERSONS | perl -F"\t" -lane 'print "s{^@F[0]\\b}\{@F[1]};";' >$NCONST_PL
+rg -wNz -f $NCONST_LIST name.basics.tsv.gz | perl -p -e 's+\\N++g;' |
+    cut -f 1-2,6 | sort -fu --key=2 | tee $RAW_PERSONS |
+    perl -F"\t" -lane 'print "s{^@F[0]\\b}\{@F[1]};";' >$NCONST_PL
 
-# Get rid of ugly \N fields, and unneeded characters. Make sure commas are followed by spaces
-# Separate multiple characters portrayed with semicolons, remove quotes
+# Get rid of ugly \N fields, and unneeded characters. Make sure commas are
+# followed by spaces. Separate multiple characters portrayed with semicolons,
+# remove quotes
 perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $ALL_CSV
 
 # Create the KNOWN_PERSONS spreadsheet, ensure always 5 fields
@@ -449,7 +449,8 @@ perl -pi -f $NCONST_PL $KNOWN_PERSONS
 cut -f 2 $RAW_PERSONS | sort -fu >$UNIQUE_PERSONS
 
 # Create UNIQUE_CHARS
-cut -f 6 $UNSORTED_CREDITS | sort -fu | rg -v "^$" | perl -p -e 's+; +\n+g;' | sort -fu >$UNIQUE_CHARS
+cut -f 6 $UNSORTED_CREDITS | sort -fu | rg -v "^$" | perl -p -e 's+; +\n+g;' |
+    sort -fu >$UNIQUE_CHARS
 
 # Create the SHOWS spreadsheet by removing duplicate field from RAW_SHOWS
 printf "Show Title\tShow Type\tShow or Episode Title\tSn_#\tEp_#\tStart\tEnd\tMinutes\tGenres\n" >$SHOWS
@@ -458,9 +459,11 @@ perl -F"\t" -lane 'printf "%s\t%s\t'\''%s\t%s\t%s\t%s\t%s\t%s\t%s\n", @F[0,3,5,1
     sort -f --field-separator=$'\t' --key=1,1 --key=2,2r --key=4,4n --key=5,5n --key=6,6 >>$SHOWS
 
 # Create the sorted CREDITS spreadsheets
-printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" | tee $CREDITS_SHOW >$CREDITS_PERSON
+printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" |
+    tee $CREDITS_SHOW >$CREDITS_PERSON
 # Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
-sort -f --field-separator=$'\t' --key=1,2 --key=4,4 --key=3,3 $UNSORTED_CREDITS >>$CREDITS_PERSON
+sort -f --field-separator=$'\t' --key=1,2 --key=4,4 --key=3,3 $UNSORTED_CREDITS \
+    >>$CREDITS_PERSON
 # Sort by Show Title (2), Episode Title (3), Rank (4)
 sort -f --field-separator=$'\t' --key=2,4 $UNSORTED_CREDITS >>$CREDITS_SHOW
 

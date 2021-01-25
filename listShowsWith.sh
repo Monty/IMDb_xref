@@ -61,7 +61,8 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil $ynPref -N "\n==> Would you like to search for another person?"; then
+    if waitUntil $ynPref -N \
+        "\n==> Would you like to search for another person?"; then
         printf "\n"
         terminate
         exec ./listShowsWith.sh
@@ -108,15 +109,19 @@ JOB_RESULTS=$(mktemp)
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
-    printf "==> I can generate a filmography based on person names or nconst IDs,\n"
-    printf "    such as nm0000123 -- which is the nconst for George Clooney.\n\n"
-    printf "Only one search term per line. Enter a blank line to finish.\n"
+    cat <<EOF
+==> I can generate a filmography based on person names or nconst IDs,
+    such as nm0000123 -- which is the nconst for George Clooney.
+
+Only one search term per line. Enter a blank line to finish.
+EOF
     while read -r -p "Enter a person name or nconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil $ynPref -N "Would you like me to add the George Clooney nconst for you?"; then
+        if waitUntil $ynPref -N \
+            "Would you like me to add the George Clooney nconst for you?"; then
             printf "nm0000123\n" >>$ALL_TERMS
         else
             loopOrExitP
@@ -144,8 +149,6 @@ perl -p -e 's/^/\\t/; s/$/\\t/;' $PERSON_TERMS >>$ALL_TERMS
 # Get all possible matches at once
 rg -NzSI -f $ALL_TERMS name.basics.tsv.gz | rg -wN "tt[0-9]{7,8}" | cut -f 1-5 |
     sort -f --field-separator=$'\t' --key=2 >$POSSIBLE_MATCHES
-# perl -pi -e 's+\\N++g;' $POSSIBLE_MATCHES
-# perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $POSSIBLE_MATCHES
 perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' $POSSIBLE_MATCHES
 
 # Figure how many matches for each possible match
@@ -159,10 +162,12 @@ while read -r line; do
         rg "\t$match\t" $POSSIBLE_MATCHES >>$PERSON_RESULTS
         continue
     fi
-    printf "\n"
-    printf "Some person names on IMDb occur more than once, e.g. John Wayne or John Lennon.\n"
-    printf "You can track down the correct one by searching for it's nconst ID on IMDb.com.\n"
-    printf "\n"
+    cat <<EOF
+
+Some person names on IMDb occur more than once, e.g. John Wayne or John Lennon.
+You can track down the correct one by searching for it's nconst ID on IMDb.com.
+
+EOF
 
     printf "I found $count persons named \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-10}" ]; then
@@ -178,7 +183,8 @@ while read -r line; do
     PS3="Select a number from 1-${#pickOptions[@]}: "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
-        if [ "$REPLY" -ge 1 ] 2>/dev/null && [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+        if [ "$REPLY" -ge 1 ] 2>/dev/null &&
+            [ "$REPLY" -le "${#pickOptions[@]}" ]; then
             case "$pickMenu" in
             Skip*)
                 printf "Skipping...\n"
@@ -223,7 +229,8 @@ fi
 
 cut -f 1 $PERSON_RESULTS >$NCONST_TERMS
 rg -Nz -f $NCONST_TERMS title.principals.tsv.gz |
-    rg -w -e actor -e actress -e writer -e director -e producer | cut -f 1,3,4 >$POSSIBLE_MATCHES
+    rg -w -e actor -e actress -e writer -e director -e producer |
+    cut -f 1,3,4 >$POSSIBLE_MATCHES
 perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $POSSIBLE_MATCHES
 
 while read -r line; do
@@ -239,7 +246,8 @@ while read -r line; do
         numResults=$(sed -n '$=' $JOB_RESULTS)
         if [[ $numResults -gt 0 ]]; then
             printf "==> I found $numResults titles listing $nconstName as: $match\n"
-            if [ -n "$skipPrompts" ] || waitUntil $ynPref -Y "==> Shall I list them?"; then
+            if [ -n "$skipPrompts" ] || waitUntil $ynPref -Y \
+                "==> Shall I list them?"; then
                 if checkForExecutable -q xsv; then
                     cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
                 else

@@ -63,22 +63,27 @@ shift $((OPTIND - 1))
 # Quote filenames so globbing takes place in the "deleteFiles" function,
 # i.e. the function is passed the number of parameters seen below, not
 # the expanded list which could be quite long.
-if waitUntil $ynPref -N "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
-    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" "AssociatedTitles*.csv" \
-        "LinksToPersons*.csv" "LinksToTitles*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
-        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_*"
+if waitUntil $ynPref -N \
+    "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
+    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
+        "AssociatedTitles*.csv" "LinksToPersons*.csv" "LinksToTitles*.csv" \
+        "uniq*.txt" "secondary" "diffs*.txt" "baseline" "test_results" \
+        "*.tsv.gz" "*.tconst" "*.xlate" ".xref_*"
     exit
 else
     printf "Skipping...\n"
 fi
 
-if waitUntil $ynPref -N "Delete primary spreadsheets containing credits, shows, and episodes?"; then
-    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" "AssociatedTitles*.csv"
+if waitUntil $ynPref -N \
+    "Delete primary spreadsheets containing credits, shows, and episodes?"; then
+    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
+        "AssociatedTitles*.csv"
 else
     printf "Skipping...\n"
 fi
 
-if waitUntil $ynPref -N "Delete smaller files that contain lists of persons and shows?"; then
+if waitUntil $ynPref -N \
+    "Delete smaller files that contain lists of persons and shows?"; then
     deleteFiles "LinksToPersons*.csv" "LinksToTitles*.csv" "uniq*.txt"
 else
     printf "Skipping...\n"
@@ -99,7 +104,8 @@ fi
 printf "\n[${RED}Warning${NO_COLOR}] The following files are usually manually created. "
 printf "They are ignored by git.\n"
 
-if waitUntil $ynPref -N "Delete all manually maintained .tconst and .xlate files?"; then
+if waitUntil $ynPref -N \
+    "Delete all manually maintained .tconst and .xlate files?"; then
     deleteFiles "*.tconst" "*.xlate"
 else
     printf "Skipping...\n"

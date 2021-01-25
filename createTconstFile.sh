@@ -117,7 +117,8 @@ if [ $# -eq 0 ]; then
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil $ynPref -N "Would you like me to add the Downton Abbey tconst for you?"; then
+        if waitUntil $ynPref -N \
+            "Would you like me to add the Downton Abbey tconst for you?"; then
             printf "tt1606375\n" >>$ALL_TERMS
         else
             loopOrExitP
@@ -176,10 +177,12 @@ while read -r line; do
         rg "\t$match\t" $POSSIBLE_MATCHES >>$FINAL_RESULTS
         continue
     fi
-    printf "\n"
-    printf "Some titles on IMDb occur more than once, e.g. as both a movie and TV show.\n"
-    printf "You can track down the correct one by searching for it's tconst ID on IMDb.com.\n"
-    printf "\n"
+    cat <<EOF
+
+Some titles on IMDb occur more than once, e.g. as both a movie and TV show.
+You can track down the correct one by searching for it's tconst ID on IMDb.com.
+
+EOF
 
     printf "I found $count shows titled \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
@@ -194,7 +197,8 @@ while read -r line; do
     PS3="Select a number from 1-${#pickOptions[@]}: "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
-        if [ "$REPLY" -ge 1 ] 2>/dev/null && [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+        if [ "$REPLY" -ge 1 ] 2>/dev/null &&
+            [ "$REPLY" -le "${#pickOptions[@]}" ]; then
             case "$pickMenu" in
             Skip*)
                 printf "Skipping...\n"

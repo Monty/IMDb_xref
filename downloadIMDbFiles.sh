@@ -24,7 +24,8 @@ function terminate() {
 # Make sure we can execute curl. If not, quit.
 checkForExecutable curl
 
-gz_files=(name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz title.principals.tsv.gz)
+gz_files=(name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz
+    title.principals.tsv.gz)
 
 printf "==> Downloading new IMDb .gz files.\n"
 
@@ -34,8 +35,7 @@ printDuration
 for file in "${gz_files[@]}"; do
     source="https://datasets.imdbws.com/$file"
     printf "Downloading $source\n"
-    curl -O $source
-    printf "\n"
+    curl -s -O $source
 done
 
 printf "==> Recording IMDb .gz file sizes.\n"

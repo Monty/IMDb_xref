@@ -245,8 +245,6 @@ unless run in debug mode.
 <details><summary><b>Show output from this command</b></summary>
 
     $ ./generateXrefData.sh
-    ==> Using existing IMDb .gz files.
-    
     ==> Using all .xlate files for IMDb title translation.
     
     ==> Searching all .tconst files for IMDb title identifiers.
