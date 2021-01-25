@@ -109,9 +109,12 @@ FINAL_RESULTS=$(mktemp)
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
-    printf "==> I can create data files based on show names or tconst IDs,\n"
-    printf "    such as tt1606375 -- which is the tconst for Downton Abbey.\n\n"
-    printf "Only one search term per line. Enter a blank line to finish.\n"
+    cat <<EOF
+==> I can create data files based on show names or tconst IDs,
+    such as tt1606375 -- which is the tconst for Downton Abbey.
+
+Only one search term per line. Enter a blank line to finish.
+EOF
     while read -r -p "Enter a show name or tconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
