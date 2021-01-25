@@ -107,6 +107,7 @@ EOT-3
         #
         # Install Rust if needed
         if ! checkForExecutable -q cargo; then
+            checkForExecutable curl
             printf "\n==> Installing the Rust programming language.\n\n"
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 2>/dev/null
             source $HOME/.cargo/env
