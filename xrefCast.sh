@@ -6,8 +6,8 @@
 #   Requires cast member files produced by generateXrefData.sh
 #   Note: Cast member data from IMDb sometimes has errors or omissions
 #
-#   To help refine searches, the output is rather wordy (unless the -m option is used).
-#   The final section (Multiply occurring names) is the section of highest interest.
+#   To help refine searches, the output is rather wordy (unless -m is used).
+#   The final section (Names that occur more than once) is of highest interest.
 #
 #   It may help to start with an actor or character, e.g.
 #       ./xrefCast.sh 'Olivia Colman'
@@ -30,7 +30,7 @@ function help() {
     cat <<EOF
 xrefCast.sh -- Cross-reference shows, actors, and the characters they portray using IMDB data.
 
-If you don't enter a search term on the command line, you'll be prompted for input.
+If you don't enter a search term on the command line, you'll be prompted for one.
 
 USAGE:
     ./xrefCast.sh [OPTIONS] [-f SEARCH_FILE] [SEARCH_TERM ...]
@@ -39,7 +39,7 @@ OPTIONS:
     -h      Print this message.
     -a      All -- Only print 'All names' section.
     -f      File -- Query a specific file rather than "Credits-Person*csv".
-    -m      Multiples -- Only print names that appear multiple times
+    -m      Multiples -- Only print names that occur more than once
     -i      Print info about any files that are searched.
     -n      No loop - don't offer to do another search upon exit
 
@@ -144,16 +144,20 @@ fi
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
-    printf "==> I can cross-reference shows, actors, and the characters they portray,\n"
-    printf "    such as The Crown, Olivia Colman, and Queen Elizabeth -- as long as\n"
-    printf "    the search terms exist in $SEARCH_FILE\n\n"
-    printf "Only one search term per line. Enter a blank line to finish.\n"
+    cat <<EOF
+==> I can cross-reference shows, actors, and the characters they portray,
+    such as The Crown, Olivia Colman, and Queen Elizabeth -- as long as
+    the search terms exist in $SEARCH_FILE
+
+Only one search term per line. Enter a blank line to finish.
+EOF
     while read -r -p "Enter a show, actor, or character: " searchTerm; do
         [ -z "$searchTerm" ] && break
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$SEARCH_TERMS
     done </dev/tty
     if [ ! -s "$SEARCH_TERMS" ]; then
-        if waitUntil $ynPref -N "Would you like to see who played Queen Elizabeth II?"; then
+        if waitUntil $ynPref -N \
+            "Would you like to see who played Queen Elizabeth II?"; then
             printf "Queen Elizabeth II\n" >>$SEARCH_TERMS
             printf "\n"
         else
@@ -164,7 +168,8 @@ fi
 
 # Let us know how many records we're searching
 numRecords=$(sed -n '$=' $SEARCH_FILE)
-[ "$INFO" == "yes" ] && printf "==> Searching $numRecords records in $SEARCH_FILE for cast data.\n\n"
+[ "$INFO" == "yes" ] &&
+    printf "==> Searching $numRecords records in $SEARCH_FILE for cast data.\n\n"
 
 # Setup SEARCH_TERMS with one search term per line, let us know what's in it.
 printf "==> Searching for:\n"
@@ -209,8 +214,8 @@ else
 fi
 
 # Save MULTIPLE_NAMES
-# Print multiply occurring names, i.e. where field 1 is repeated in successive lines,
-# but field 3 is different
+# Print names that occur more than once, i.e. where field 1 is repeated in
+# successive lines, but field 3 is different
 if checkForExecutable -q xsv; then
     awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
     printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' $TMPFILE | sort -fu |
@@ -242,7 +247,7 @@ fi
 [ -n "$ALL_NAMES_ONLY" ] && loopOrExitP
 
 # Print all search results
-printf "\n==> Multiply occurring names (Name|Job|Show|Episode|Role):\n"
+printf "\n==> Names that occur more than once (Name|Job|Show|Episode|Role):\n"
 cat $MULTIPLE_NAMES
 
 # Do we really want to quit?

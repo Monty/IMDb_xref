@@ -165,7 +165,7 @@ shell scripts so you can copy and paste as you explore the data.
     The Night Manager
     The Crown
     
-    ==> Multiply occurring names (Name|Job|Show|Episode|Role):
+    ==> Names that occur more than once (Name|Job|Show|Episode|Role):
     Elizabeth Debicki  actress  The Crown              Episode #5.1  Princess Diana
     Elizabeth Debicki  actress  The Night Manager      Episode #1.2  Jed Marshall
     Josh O'Connor      actor    The Crown              Avalanche     Prince Charles
@@ -326,18 +326,18 @@ Diana' or "'Princess Diana".
 The "All names" section contains all rows with a match for **any** term. It can be
 quite long for complex queries.
 
-The "Multiply occurring names" section contains only rows with names found in more than one
+The "Names that occur more than once" section contains only rows with names found in more than one
 show. It can be empty.
 
 The "-m" (multiples) switch hides the "All names" section. The "-a" (All) switch
-hides the "Multiply occurring names" section. Running the example queries with and
+hides the "Names that occur more than once" section. Running the example queries with and
 without those two switches will give you an understanding of when they are useful.
 
 ### Make your own queries
 
 Experiment. The results from one query may reveal information that leads to further
 queries. For example, `./xrefCast.sh actor actress` will list all actors and actress,
-and "Multiply occurring names" will contain only people who appeared in more than one show.
+and "Names that occur more than once" will contain only people who appeared in more than one show.
 (*Use "-s" to skip the longer list.*)
 
 ***Protip***: Create a more flexible **xref** command that can be run from any
