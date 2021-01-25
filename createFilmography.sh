@@ -66,6 +66,7 @@ function cleanup() {
 function loopOrExitP() {
     if waitUntil $ynPref -N "\n==> Would you like to search for another person?"; then
         printf "\n"
+        terminate
         exec ./createFilmography.sh
     else
         printf "Quitting...\n"

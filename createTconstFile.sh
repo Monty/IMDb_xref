@@ -64,6 +64,8 @@ function cleanup() {
 function loopOrExitP() {
     if waitUntil $ynPref -N "\n==> Would you like to search for another show?"; then
         printf "\n"
+        terminate
+        [ -n "$TCONST_FILE" ] && exec ./createTconstFile.sh -f "$TCONST_FILE"
         exec ./createTconstFile.sh
     else
         printf "Quitting...\n"
