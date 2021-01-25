@@ -267,9 +267,9 @@ PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
 
 # Filename groups used for cleanup
 ALL_TEMPS="$TEMP_AWK $TEMP_SHOWS"
-ALL_WORKING="$DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST "
-ALL_WORKING+="$EPISODES_LIST $KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL "
-ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
+ALL_WORKING="$DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST $EPISODES_LIST "
+ALL_WORKING+="$KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL $NCONST_PL "
+ALL_WORKING+="$TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
 ALL_TXT="$UNIQUE_TITLES $UNIQUE_CHARS $UNIQUE_PERSONS"
 ALL_CSV="$RAW_SHOWS $RAW_PERSONS $RAW_EPISODES $UNSORTED_EPISODES $UNSORTED_CREDITS"
 ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS "
@@ -311,8 +311,8 @@ cut -f 6 $RAW_SHOWS | sort -f | uniq -d >$DUPES
 if [ -s "$DUPES" ]; then
     # Create an awk script to add dates to titles on shows with title conflicts
     printf 'BEGIN {OFS = "\\t"}\n' >$TEMP_AWK
-    perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' $DUPES >>$TEMP_AWK
-    # perl -p -e 's+^+\$6 == "+; s+$+" {\$6 = \$6 " (" \$7 ")"}+;' $DUPES >>$TEMP_AWK
+    perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' $DUPES \
+        >>$TEMP_AWK
     printf '{print}\n' >>$TEMP_AWK
     # Let the user know what we will change
     printf "\n==> Adding dates to titles to fix these title conflicts.\n" >&2
@@ -338,10 +338,11 @@ cut -f 5 $RAW_SHOWS | sort -fu >$UNIQUE_TITLES
 # list in $SKIP_EPISODES.
 rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >$SKIP_TCONST
 
-# Let us know what shows we're processing - format for readability, separate with ";"
+# Let us know shows we're processing. Format for readability, separate with ";"
 num_titles=$(sed -n '$=' $UNIQUE_TITLES)
 printf "\n==> Processing $num_titles shows found in $TCONST_FILES:\n"
-perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' | sed '$ s+.$++'
+perl -p -e 's+$+;+' $UNIQUE_TITLES | fmt -w 80 | perl -p -e 's+^+\t+' |
+    sed '$ s+.$++'
 [ -n "$OUTPUT_DIR" ] && printf "\n"
 
 # Let us know how long it took last time, unless we're not in the primary directory
@@ -366,7 +367,7 @@ rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
     perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
     tee $UNSORTED_CREDITS | cut -f 1 | sort -u >$NCONST_LIST
 
-# Use episodes list to lookup principal titles and add to tconst/nconst credits csv
+# Use episodes list to lookup principal titles & add to tconst/nconst credits csv
 rg -wNz -f $EPISODES_LIST title.principals.tsv.gz |
     rg -w -e actor -e actress -e writer -e director -e producer |
     sort --key=1,1 --key=2,2n | perl -p -e 's+\\N++g;' |
@@ -406,7 +407,8 @@ perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $A
 printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tKnown For Titles: 4\n" \
     >$KNOWN_PERSONS
 cut -f 1,3 $RAW_PERSONS | perl -p -e 's+, +\t+g' |
-    perl -F"\t" -lane 'printf "%s\t%s\t%s\t%s\t%s\n", @F[0,1,2,3,4]' >>$KNOWN_PERSONS
+    perl -F"\t" -lane 'printf "%s\t%s\t%s\t%s\t%s\n", @F[0,1,2,3,4]' \
+        >>$KNOWN_PERSONS
 
 # Create the LINKS_TO_PERSONS spreadsheet
 printf "nconst\tName\tHyperlink to Name\n" >$LINKS_TO_PERSONS
@@ -415,10 +417,12 @@ cut -f 1,2 $RAW_PERSONS | perl -F"\t" -lane \
     sort -fu --field-separator=$'\t' --key=2,2 >>$LINKS_TO_PERSONS
 
 # Create a tconst list of the knownForTitles
-cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' | sort -u >$KNOWNFOR_LIST
+cut -f 3 $RAW_PERSONS | rg "^tt" | perl -p -e 's+, +\n+g' |
+    sort -u >$KNOWNFOR_LIST
 
 # Create a perl script to globally convert a known show tconst to a show title
-rg -wNz -f $KNOWNFOR_LIST title.basics.tsv.gz | perl -p -f $XLATE_PL | cut -f 1,3 |
+rg -wNz -f $KNOWNFOR_LIST title.basics.tsv.gz | perl -p -f $XLATE_PL |
+    cut -f 1,3 |
     perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >$TCONST_KNOWN_PL
 
 # Create the LINKS_TO_TITLES spreadsheet
@@ -429,9 +433,11 @@ perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_SHOWS_PL | perl -F"\t"
 
 # Create a spreadsheet of associated titles gained from IMDb knownFor data
 printf "tconst\tShow Title\tHyperlink to Title\n" >$ASSOCIATED_TITLES
-perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL | perl -F"\t" -lane \
-    'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
-    sort -fu --field-separator=$'\t' --key=2,2 | rg -wv -f $TCONST_LIST >>$ASSOCIATED_TITLES
+perl -p -e 's+^.*btt+tt+; s+\\b}\{+\t+; s+}.*++;' $TCONST_KNOWN_PL |
+    perl -F"\t" -lane \
+        'print "@F[0]\t@F[1]\t=HYPERLINK(\"https://www.imdb.com/title/@F[0]\";\"" . substr(@F[1],1) . "\")";' |
+    sort -fu --field-separator=$'\t' --key=2,2 | rg -wv -f $TCONST_LIST \
+    >>$ASSOCIATED_TITLES
 
 # Add episodes into raw shows
 perl -p -f $TCONST_EPISODES_PL $RAW_EPISODES >>$RAW_SHOWS
@@ -456,7 +462,8 @@ cut -f 6 $UNSORTED_CREDITS | sort -fu | rg -v "^$" | perl -p -e 's+; +\n+g;' |
 printf "Show Title\tShow Type\tShow or Episode Title\tSn_#\tEp_#\tStart\tEnd\tMinutes\tGenres\n" >$SHOWS
 # Sort by Show Title (1), Show Type (2r), Sn_# (4n), Ep_# (5n), Start (6)
 perl -F"\t" -lane 'printf "%s\t%s\t'\''%s\t%s\t%s\t%s\t%s\t%s\t%s\n", @F[0,3,5,1,2,6,7,8,9]' $RAW_SHOWS |
-    sort -f --field-separator=$'\t' --key=1,1 --key=2,2r --key=4,4n --key=5,5n --key=6,6 >>$SHOWS
+    sort -f --field-separator=$'\t' --key=1,1 --key=2,2r --key=4,4n --key=5,5n \
+        --key=6,6 >>$SHOWS
 
 # Create the sorted CREDITS spreadsheets
 printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" |
