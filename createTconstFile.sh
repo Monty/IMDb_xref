@@ -149,9 +149,11 @@ function addToFileP() {
 #
 printf "==> Adding tconst IDs to: ${BLUE}$TCONST_FILE${NO_COLOR}\n\n"
 
-# Setup ALL_TERMS with one search term per line
+# Get gz file size - which should already exist but make sure...
 numRecords="$(rg -N title.basics.tsv.gz $numRecordsFile 2>/dev/null | cut -f 2)"
 [ -z "$numRecords" ] && numRecords="$(rg -cz "^t" title.basics.tsv.gz)"
+
+# Setup ALL_TERMS with one search term per line
 for param in "$@"; do
     printf "$param\n" >>$ALL_TERMS
 done
