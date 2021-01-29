@@ -134,7 +134,7 @@ fi
 function addToFileP() {
     if waitUntil $ynPref -Y "\nShall I add them to $TCONST_FILE?"; then
         printf "OK. Adding...\n"
-        rg -Ne "^tt" $FINAL_RESULTS >>$TCONST_FILE
+        rg -N "^tt" $FINAL_RESULTS >>$TCONST_FILE
         waitUntil $ynPref -Y "\nShall I sort $TCONST_FILE by title?" &&
             ./augment_tconstFiles.sh -y $TCONST_FILE
         waitUntil $ynPref -Y "\nShall I update your data files?" &&

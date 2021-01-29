@@ -153,12 +153,12 @@ ensurePrerequisites
 if [ ! "$(ls *.xlate 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
-    rg -Ne "^#" -e "^$" -e "The Durrells" xlate.example >"PBS.xlate"
+    rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
 if [ ! "$(ls *.tconst 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example tconst file: PBS.tconst\n\n"
-    rg -Ne "^#" -e "^$" -e "The Durrells" -e "The Night Manager" \
+    rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
         -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
@@ -292,12 +292,11 @@ rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >$TCONST_LIST
 # their English equivalent. Regex delimiter needs to avoid any characters
 # present in the input, use {} for readability
 
-rg -INv -e "^#" -e "^$" $XLATE_FILES | cut -f 1,2 | sort -fu |
+rg -INv "^#|^$" $XLATE_FILES | cut -f 1,2 | sort -fu |
     perl -p -e 's+\t+\\t}\{\\t+; s+^+s{\\t+; s+$+\\t};+' >$XLATE_PL
 
 # Check for translation conflicts
-rg -INv -e "^#" -e "^$" $XLATE_FILES | sort -fu | cut -f 1 | sort -f |
-    uniq -d >$DUPES
+rg -INv "^#|^$" $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >$DUPES
 ### Stop here if there are translation conflicts.
 if [ -s "$DUPES" ]; then
     printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "

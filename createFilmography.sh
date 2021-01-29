@@ -136,7 +136,7 @@ function addToFileP() {
     if waitUntil $ynPref -Y "==> Shall I add them?"; then
         printf "OK. Adding...\n"
         mkdir -p $filmographyDir
-        rg -Ne "^tt" $FINAL_RESULTS >>$TCONST_FILE
+        rg -N "^tt" $FINAL_RESULTS >>$TCONST_FILE
         waitUntil $ynPref -Y \
             "\n==> Shall I generate ${BLUE}$(basename $filmographyDB)${NO_COLOR}?" &&
             ./generateXrefData.sh -q -o $filmographyDB -d $filmographyDir $filmographyFile
