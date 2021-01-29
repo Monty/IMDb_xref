@@ -287,7 +287,6 @@ num_TP="$(rg -N title.principals.tsv.gz $numRecordsFile 2>/dev/null | cut -f 2)"
 # Leave the episode title field blank!
 printf "==> Searching $num_TP records for principal cast members.\n"
 rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
-    rg -w -e actor -e actress -e writer -e director -e producer |
     perl -p -e 's+nm0745728+nm0745694+' |
     perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
     tee $CREDITS_CSV | cut -f 1 | sort -u >$NCONST_LIST
@@ -295,7 +294,6 @@ rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
 # Use episodes list to lookup principal titles and add to credits csv
 # Copy field 1 to the episode title field!
 rg -wNz -f $EPISODES_LIST title.principals.tsv.gz |
-    rg -w -e actor -e actress -e writer -e director -e producer |
     perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
     tee -a $CREDITS_CSV | cut -f 1 | sort -u |
     rg -v -f $NCONST_LIST >>$NCONST_LIST
