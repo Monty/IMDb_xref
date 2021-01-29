@@ -52,6 +52,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -a      All jobs -- not just actor, actress, writer, director, producer
     -c      Compare -- Create a 'diff' file comparing current against previously saved results.
     -d      Directory -- Create a subdirectory for results. Don't overwrite existing files.
     -o      Output -- Save file that can later be used for queries with "xrefCast.sh -f"
@@ -100,8 +101,11 @@ function breakpoint() {
     fi
 }
 
-while getopts ":d:o:x:hcqt" opt; do
+while getopts ":d:o:x:hacqt" opt; do
     case $opt in
+    a)
+        ALL_JOBS="^"
+        ;;
     c)
         CREATE_DIFF="yes"
         ;;
@@ -140,6 +144,9 @@ ensurePrerequisites
 
 # If we ALWAYS want QUIET
 [ $(rg -c "QUIET=yes" $configFile) ] && QUIET="yes"
+
+# All jobs or just the most important ones?
+[ -z "$ALL_JOBS" ] && ALL_JOBS="\b(actor|actress|writer|director|producer)\b"
 
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
@@ -361,17 +368,17 @@ rg -wNz -f $EPISODES_LIST title.basics.tsv.gz | cut -f 1-4,6-9 |
 # Use tconst list to lookup principal titles & generate tconst/nconst credits csv
 # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
 rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
-    rg -w -e actor -e actress -e writer -e director -e producer |
     sort --key=1,1 --key=2,2n | perl -p -e 's+nm0745728+nm0745694+' |
     perl -p -e 's+\\N++g;' |
     perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
+    rg "$ALL_JOBS" |
     tee $UNSORTED_CREDITS | cut -f 1 | sort -u >$NCONST_LIST
 
 # Use episodes list to lookup principal titles & add to tconst/nconst credits csv
 rg -wNz -f $EPISODES_LIST title.principals.tsv.gz |
-    rg -w -e actor -e actress -e writer -e director -e producer |
     sort --key=1,1 --key=2,2n | perl -p -e 's+\\N++g;' |
     perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
+    rg "$ALL_JOBS" |
     tee -a $UNSORTED_CREDITS | cut -f 1 | sort -u |
     rg -v -f $NCONST_LIST >>$NCONST_LIST
 
