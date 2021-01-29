@@ -37,9 +37,9 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -a      All -- Only print 'All names' section.
+    -a      All -- Only print 'All cast members' section.
+    -m      Multiples -- Only print cast members that are in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
-    -m      Multiples -- Only print names that occur more than once
     -i      Print info about any files that are searched.
     -n      No loop - don't offer to do another search upon exit
 
@@ -190,7 +190,7 @@ PTAB='%s\t%s\t%s\t%s\t%s\n'
 if [ $(rg -wNzSI -c -f $SEARCH_TERMS $SEARCH_FILE) ]; then
     rg -wNzSI --color always -f $SEARCH_TERMS $SEARCH_FILE |
         awk -F "\t" -v PF="$PTAB" '{printf (PF, $1,$5,$2,$3,$6)}' |
-        sort -f --field-separator=$'\t' --key=1,1 --key=3,3 -fu >$TMPFILE
+        sort -f --field-separator=$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >$TMPFILE
 fi
 
 # Any results? If not, don't continue.
@@ -199,14 +199,15 @@ if [ ! -s "$TMPFILE" ]; then
     printf "    Check the \"Searching for:\" section above.\n"
     loopOrExitP
 else
-    numAll=$(sed -n '$=' $TMPFILE)
+    numAll=$(cut -f 1 $TMPFILE | sort -fu | wc -l | tr -d " ")
+    [ "$numAll" -eq 1 ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && ALL_NAMES_ONLY="yes"
 fi
 
 # Get rid of initial single quote used to force show/episode names in spreadsheet to be strings.
 perl -pi -e "s+\t'+\t+g;" $TMPFILE
 
 # Save ALL_NAMES
-printf "\n==> All names (Name|Job|Show|Episode|Role):\n" >$ALL_NAMES
+printf "\n==> All cast members (Name|Job|Show|Episode|Role):\n" >$ALL_NAMES
 if checkForExecutable -q xsv; then
     xsv table -d "\t" $TMPFILE >>$ALL_NAMES
 else
@@ -230,13 +231,16 @@ if [ ! -s "$MULTIPLE_NAMES" ]; then
     numMultiple="0"
     ALL_NAMES_ONLY="yes"
 else
-    numMultiple=$(sed -n '$=' $MULTIPLE_NAMES)
+    _vb="appears"
+    _pron="that"
+    numMultiple=$(cut -f 1 $TMPFILE | sort -f | uniq -d | wc -l | tr -d " ")
+    [ "$numMultiple" -gt 1 ] && _vb="appear" && _pron="those"
 fi
 
 # If we're in interactive mode, give user a choice of all or multiples only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$ALL_NAMES_ONLY" ]; then
-    printf "\n==> I found $numAll results. $numMultiple occur more than once.\n"
-    waitUntil $ynPref -N "Should I only print those $numMultiple?" &&
+    printf "\n==> I found $numAll cast members. $numMultiple $_vb in more than one show.\n"
+    waitUntil $ynPref -N "Should I only print $_pron $numMultiple?" &&
         MULTIPLE_NAMES_ONLY="yes"
 fi
 
@@ -247,7 +251,7 @@ fi
 [ -n "$ALL_NAMES_ONLY" ] && loopOrExitP
 
 # Print all search results
-printf "\n==> Names that occur more than once (Name|Job|Show|Episode|Role):\n"
+printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Episode|Role):\n"
 cat $MULTIPLE_NAMES
 
 # Do we really want to quit?
