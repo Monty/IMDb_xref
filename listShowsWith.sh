@@ -242,7 +242,7 @@ while read -r line; do
         count=$(cut -f 1 <<<"$job")
         match=$(cut -f 2 <<<"$job")
         printf "\n"
-        rg -Nw -e "$nconstID\t$match" $POSSIBLE_MATCHES >$JOB_RESULTS
+        rg -Nw "$nconstID\t$match" $POSSIBLE_MATCHES >$JOB_RESULTS
         ./augment_tconstFiles.sh -y $JOB_RESULTS
         numResults=$(sed -n '$=' $JOB_RESULTS)
         if [[ $numResults -gt 0 ]]; then
