@@ -230,10 +230,9 @@ if ! waitUntil $ynPref -Y; then
 fi
 
 cut -f 1 $PERSON_RESULTS >$NCONST_TERMS
-rg -Nz -f $NCONST_TERMS title.principals.tsv.gz |
-    rg -w -e actor -e actress -e writer -e director -e producer |
-    cut -f 1,3,4 >$POSSIBLE_MATCHES
-perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $POSSIBLE_MATCHES
+rg -Nz -f $NCONST_TERMS title.principals.tsv.gz | cut -f 1,3,4 >$POSSIBLE_MATCHES
+perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' \
+    $POSSIBLE_MATCHES
 
 while read -r line; do
     nconstID="$line"
