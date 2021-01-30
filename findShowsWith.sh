@@ -12,7 +12,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-listShowsWith.sh -- List a filmography for a named person in IMDb.
+findShowsWith.sh -- List a filmography for a named person in IMDb.
 
 Search IMDb titles for a match to a nconst or a person name. A nconst should be
 unique, but a person name can have several or even many matches. Allow user to
@@ -21,7 +21,7 @@ select one match or skip if there are too many.
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
 USAGE:
-    ./listShowsWith.sh [NCONST...] [PERSON NAME...]
+    ./findShowsWith.sh [NCONST...] [PERSON NAME...]
 
 OPTIONS:
     -h      Print this message.
@@ -29,11 +29,11 @@ OPTIONS:
     -y      Yes -- assume the answer to job category prompts is "Y".
 
 EXAMPLES:
-    ./listShowsWith.sh
-    ./listShowsWith.sh -y "Tom Hanks"
-    ./listShowsWith.sh nm0000123
-    ./listShowsWith.sh "George Clooney"
-    ./listShowsWith.sh nm0000123 "Quentin Tarantino"
+    ./findShowsWith.sh
+    ./findShowsWith.sh -y "Tom Hanks"
+    ./findShowsWith.sh nm0000123
+    ./findShowsWith.sh "George Clooney"
+    ./findShowsWith.sh nm0000123 "Quentin Tarantino"
 EOF
 }
 
@@ -65,7 +65,7 @@ function loopOrExitP() {
         "\n==> Would you like to search for another person?"; then
         printf "\n"
         terminate
-        exec ./listShowsWith.sh
+        exec ./findShowsWith.sh
     else
         printf "Quitting...\n"
         exit

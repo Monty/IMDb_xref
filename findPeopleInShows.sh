@@ -12,7 +12,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-listPeopleInShows.sh -- List people in a show on IMDb.
+findPeopleInShows.sh -- List people in a show on IMDb.
 
 Search IMDb titles for a match to a tconst or a show name. A tconst should be
 unique, but a show name can have several or even many matches. Allow user to
@@ -23,17 +23,17 @@ Then list all the people from that show.
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
 USAGE:
-    ./listPeopleInShows.sh [TCONST...] [SHOW TITLE...]
+    ./findPeopleInShows.sh [TCONST...] [SHOW TITLE...]
 
 OPTIONS:
     -h      Print this message.
     -m      Maximum matches for a show title allowed in menu - defaults to 25
 
 EXAMPLES:
-    ./listPeopleInShows.sh
-    ./listPeopleInShows.sh tt1606375
-    ./listPeopleInShows.sh tt1606375 tt1399664 "Broadchurch"
-    ./listPeopleInShows.sh "The Crown"
+    ./findPeopleInShows.sh
+    ./findPeopleInShows.sh tt1606375
+    ./findPeopleInShows.sh tt1606375 tt1399664 "Broadchurch"
+    ./findPeopleInShows.sh "The Crown"
 EOF
 }
 
@@ -88,7 +88,7 @@ function loopOrExitP() {
         "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
-        exec ./listPeopleInShows.sh
+        exec ./findPeopleInShows.sh
     else
         printf "Quitting...\n"
         exit
