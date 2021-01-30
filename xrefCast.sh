@@ -190,7 +190,7 @@ PTAB='%s\t%s\t%s\t%s\t%s\n'
 if [ $(rg -wNzSI -c -f $SEARCH_TERMS $SEARCH_FILE) ]; then
     rg -wNzSI --color always -f $SEARCH_TERMS $SEARCH_FILE |
         awk -F "\t" -v PF="$PTAB" '{printf (PF, $1,$5,$2,$3,$6)}' |
-        sort -f --field-separator=$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >$TMPFILE
+        sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >$TMPFILE
 fi
 
 # Any results? If not, don't continue.

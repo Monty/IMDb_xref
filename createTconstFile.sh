@@ -169,7 +169,7 @@ perl -p -e 's/^/\\t/; s/$/\\t/;' $SHOWS_TERMS >>$ALL_TERMS
 
 # Get all possible matches at once
 rg -NzSI -f $ALL_TERMS title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4 |
-    sort -f --field-separator=$'\t' --key=3 >$POSSIBLE_MATCHES
+    sort -f -t$'\t' --key=3 >$POSSIBLE_MATCHES
 
 # Figure how many matches for each possible match
 cut -f 3 $POSSIBLE_MATCHES | frequency -t >$MATCH_COUNTS
@@ -196,7 +196,7 @@ EOF
     # rg --color always "\t$match\t" $POSSIBLE_MATCHES | xsv table -d "\t"
     pickOptions=()
     IFS=$'\n' pickOptions=($(rg -N "\t$match\t" $POSSIBLE_MATCHES |
-        sort -f --field-separator=$'\t' --key=2))
+        sort -f -t$'\t' --key=2))
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "

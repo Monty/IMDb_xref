@@ -183,7 +183,7 @@ perl -p -e 's/^/\\t/; s/$/\\t/;' $SHOWS_TERMS >>$ALL_TERMS
 
 # Get all possible matches at once
 rg -NzSI -f $ALL_TERMS title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4 |
-    sort -f --field-separator=$'\t' --key=3 >$POSSIBLE_MATCHES
+    sort -f -t$'\t' --key=3 >$POSSIBLE_MATCHES
 
 # Figure how many matches for each possible match
 cut -f 3 $POSSIBLE_MATCHES | frequency -t >$MATCH_COUNTS
@@ -250,9 +250,9 @@ fi
 # Found results, check with user before adding to local data
 printf "These are the matches I found:\n"
 if checkForExecutable -q xsv; then
-    sort -f --field-separator=$'\t' --key=3 $ALL_MATCHES | xsv table -d "\t"
+    sort -f -t$'\t' --key=3 $ALL_MATCHES | xsv table -d "\t"
 else
-    sort -f --field-separator=$'\t' --key=3 $ALL_MATCHES
+    sort -f -t$'\t' --key=3 $ALL_MATCHES
 fi
 ! waitUntil $ynPref -Y && loopOrExitP
 printf "\n"
@@ -318,7 +318,7 @@ perl -pi -f $NAMES_PL $CREDITS_CSV
 printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
     >$CAST_CSV
 # Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
-sort -f --field-separator=$'\t' --key=1,2 --key=4,4 --key=3,3 $CREDITS_CSV \
+sort -f -t$'\t' --key=1,2 --key=4,4 --key=3,3 $CREDITS_CSV \
     >>$CAST_CSV
 
 [ -n "$DEBUG" ] && set -v

@@ -59,7 +59,7 @@ EOF
         TMPFILE=$(mktemp)
         rg "^$scriptName\t" $durationFile | tail -$maxLines >$TMPFILE
         rg -v "^$scriptName\t" $durationFile >>$TMPFILE
-        sort -f --field-separator=$'\t' --key=2,2 $TMPFILE >$durationFile
+        sort -f -t$'\t' --key=2,2 $TMPFILE >$durationFile
         rm -rf $TMPFILE
     fi
 }

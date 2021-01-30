@@ -165,7 +165,7 @@ perl -p -e 's/^/\\t/; s/$/\\t/;' $PERSON_TERMS >>$ALL_TERMS
 
 # Get all possible matches at once
 rg -NzSI -f $ALL_TERMS name.basics.tsv.gz | rg -wN "tt[0-9]{7,8}" | cut -f 1-5 |
-    sort -f --field-separator=$'\t' --key=2 >$POSSIBLE_MATCHES
+    sort -f -t$'\t' --key=2 >$POSSIBLE_MATCHES
 perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' $POSSIBLE_MATCHES
 
 # Figure how many matches for each possible match
@@ -194,7 +194,7 @@ EOF
     fi
     pickOptions=()
     IFS=$'\n' pickOptions=($(rg -N "\t$match\t" $POSSIBLE_MATCHES |
-        sort -f --field-separator=$'\t' --key=3,3r --key=5))
+        sort -f -t$'\t' --key=3,3r --key=5))
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
