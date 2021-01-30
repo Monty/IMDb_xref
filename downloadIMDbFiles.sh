@@ -38,6 +38,10 @@ for file in "${gz_files[@]}"; do
     curl -s -O $source
 done
 
+# Caches are no longer valid
+rm -rf $cacheDirectory
+mkdir -p $cacheDirectory
+
 printf "==> Recording IMDb .gz file sizes.\n"
 rg -cz "^." ${gz_files[*]} | sort | perl -p -e 's/:/\t/;' >$numRecordsFile
 
