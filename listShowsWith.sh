@@ -150,7 +150,7 @@ perl -p -e 's/^/\\t/; s/$/\\t/;' $PERSON_TERMS >>$ALL_TERMS
 
 # Get all possible matches at once
 rg -NzSI -f $ALL_TERMS name.basics.tsv.gz | rg -wN "tt[0-9]{7,8}" | cut -f 1-5 |
-    sort -f --field-separator=$'\t' --key=2 >$POSSIBLE_MATCHES
+    sort -f -t$'\t' --key=2 >$POSSIBLE_MATCHES
 perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' $POSSIBLE_MATCHES
 
 # Figure how many matches for each possible match
@@ -179,7 +179,7 @@ EOF
     fi
     pickOptions=()
     IFS=$'\n' pickOptions=($(rg -N "\t$match\t" $POSSIBLE_MATCHES |
-        sort -f --field-separator=$'\t' --key=3,3r --key=5))
+        sort -f -t$'\t' --key=3,3r --key=5))
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -246,13 +246,19 @@ while read -r line; do
         ./augment_tconstFiles.sh -y $JOB_RESULTS
         numResults=$(sed -n '$=' $JOB_RESULTS)
         if [[ $numResults -gt 0 ]]; then
-            printf "==> I found $numResults titles listing $nconstName as: $match\n"
+            _title="title"
+            _pron="it"
+            [ "$numResults" -gt 1 ] && _title="titles" && _pron="them"
+            printf "==> I found $numResults $_title listing $nconstName as: $match\n"
             if [ -n "$skipPrompts" ] || waitUntil $ynPref -Y \
-                "==> Shall I list them?"; then
+                "==> Shall I list $_pron?"; then
                 if checkForExecutable -q xsv; then
-                    cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
+                    cut -f 2,3,5 $JOB_RESULTS |
+                        sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 |
+                        xsv table -d "\t"
                 else
-                    cut -f 2,3 $JOB_RESULTS | sort -fu
+                    cut -f 2,3,5 $JOB_RESULTS |
+                        sort -f -t$'\t' --key=1,2  --key=3,3r --key=2,2
                 fi
             fi
         fi
