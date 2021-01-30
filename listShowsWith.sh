@@ -258,7 +258,7 @@ while read -r line; do
                         xsv table -d "\t"
                 else
                     cut -f 2,3,5 $JOB_RESULTS |
-                        sort -f -t$'\t' --key=1,2  --key=3,3r --key=2,2
+                        sort -f -t$'\t' --key=1,2 --key=3,3r --key=2,2
                 fi
             fi
         fi
