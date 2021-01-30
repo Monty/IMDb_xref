@@ -116,9 +116,10 @@ for file in "$@"; do
     # Gather all the lines with tconsts in column 1
     rg -N "^tt" "$file" | cut -f 1 >$TCONSTS
 
-    # Look them up, get fields 1-4, and sort by Primary Title
-    rg -wNz -f "$TCONSTS" title.basics.tsv.gz | cut -f 1-4 |
-        sort -f --field-separator=$'\t' --key=3,3 >>$RESULT
+    # Look them up, get fields 1-4,6 and sort by Primary Title
+    rg -wNz -f "$TCONSTS" title.basics.tsv.gz | cut -f 1-4,6 |
+        perl -p -e 's+\\N++g;' | sort -f --field-separator=$'\t' --key=3,3 \
+            >>$RESULT
 
     # Either overwrite or print on stdout
     if [ -z "$INPLACE" ]; then
