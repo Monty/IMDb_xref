@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
+
+# Expand initial tconst IDs in a .tconst file. Add the IMDb Primary Title,
+# Original Title, and Date. Sort by Primary Title
 #
-# Expand IDs in a .tconst file. Add IMDb Primary/Original Titles, sort by Primary Title
-#
-# Preserve all non-tconst lines into a header
+# Preserve all non-tconst lines, place in the header
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
@@ -14,7 +15,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-augment_tconstFiles.sh -- Modify .tconst files to add Type, Primary Title, and Original Title.
+augment_tconstFiles.sh -- Modify .tconst files. Add Type, Primary Title, Original Title, Date
 
       For example, expand:
           tt1606375
@@ -22,9 +23,9 @@ augment_tconstFiles.sh -- Modify .tconst files to add Type, Primary Title, and O
           tt3351208
 
       To:
-          tt1606375   tvSeries      Downton Abbey       Downton Abbey
-          tt1399664   tvMiniSeries  The Night Manager   The Night Manager
-          tt3582458   tvSeries      Acquitted           Frikjent
+          tt1606375   tvSeries      Downton Abbey       Downton Abbey       2010
+          tt1399664   tvMiniSeries  The Night Manager   The Night Manager   2016
+          tt3582458   tvSeries      Acquitted           Frikjent            2014
 
 USAGE:
     ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]
