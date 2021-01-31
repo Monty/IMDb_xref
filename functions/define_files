@@ -44,7 +44,7 @@ durationFile=".xref_durations"
 numRecordsFile=".xref_numRecords"
 [ ! -e "$numRecordsFile" ] && touch "$numRecordsFile"
 
-cacheDirectory=".xref_caches"
+cacheDirectory=".xref_cache"
 mkdir -p $cacheDirectory
 
 # Look for the string "files" in $DEBUG_XREF to enable debugging
