@@ -199,7 +199,7 @@ if [ ! -s "$TMPFILE" ]; then
     printf "    Check the \"Searching for:\" section above.\n"
     loopOrExitP
 else
-    numAll=$(cut -f 1 $TMPFILE | sort -fu | wc -l | tr -d " ")
+    numAll=$(cut -f 1 $TMPFILE | sort -fu | sed -n '$=')
     [ "$numAll" -eq 1 ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && ALL_NAMES_ONLY="yes"
 fi
 
@@ -233,7 +233,7 @@ if [ ! -s "$MULTIPLE_NAMES" ]; then
 else
     _vb="appears"
     _pron="that"
-    numMultiple=$(cut -f 1 $TMPFILE | sort -f | uniq -d | wc -l | tr -d " ")
+    numMultiple=$(cut -f 1 $TMPFILE | sort -f | uniq -d | sed -n '$=')
     [ "$numMultiple" -gt 1 ] && _vb="appear" && _pron="those"
 fi
 
