@@ -50,9 +50,9 @@ function terminate() {
     if [ -n "$DEBUG" ]; then
         printf "\nTerminating: $(basename $0)\n" >&2
         printf "Not removing:\n" >&2
-        printf "$RESULT $TCONSTS\n" >&2
+        printf "$RESULT $TCONST_LIST\n" >&2
     else
-        rm -rf $RESULT $TCONSTS
+        rm -rf $RESULT $TCONST_LIST
     fi
 }
 
@@ -92,7 +92,7 @@ ensurePrerequisites
 
 # Need some tempfiles
 RESULT=$(mktemp)
-TCONSTS=$(mktemp)
+TCONST_LIST=$(mktemp)
 
 # Make sure a file was supplied
 if [ $# -eq 0 ]; then
@@ -115,10 +115,10 @@ for file in "$@"; do
     rg -Nv "^tt" "$file" >$RESULT
 
     # Gather all the lines with tconsts in column 1
-    rg -N "^tt" "$file" | cut -f 1 >$TCONSTS
+    rg -N "^tt" "$file" | cut -f 1 >$TCONST_LIST
 
     # Look them up, get fields 1-4,6 and sort by Primary Title
-    rg -wNz -f "$TCONSTS" title.basics.tsv.gz | cut -f 1-4,6 |
+    rg -wNz -f "$TCONST_LIST" title.basics.tsv.gz | cut -f 1-4,6 |
         perl -p -e 's+\\N++g;' | sort -f -t$'\t' --key=3,3 \
         >>$RESULT
 
