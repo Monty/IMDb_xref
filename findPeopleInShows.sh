@@ -52,6 +52,8 @@ $POSSIBLE_MATCHES
 $MATCH_COUNTS
 $ALL_MATCHES
 
+$CACHE_LIST
+$SEARCH_LIST
 $TCONST_LIST
 $SHOW_NAMES
 $EPISODES_LIST
@@ -67,8 +69,8 @@ $EPISODES_CSV
 $CAST_CSV
 EOT
     else
-        rm -f $ALL_TERMS $TCONST_TERMS $SHOWS_TERMS
-        rm -f $POSSIBLE_MATCHES $MATCH_COUNTS $ALL_MATCHES
+        rm -f $ALL_TERMS $TCONST_TERMS $SHOWS_TERMS $POSSIBLE_MATCHES
+        rm -f $MATCH_COUNTS $ALL_MATCHES $CACHE_LIST $SEARCH_LIST
         rm -f $TCONST_LIST $SHOW_NAMES $EPISODES_LIST $NCONST_LIST
         rm -f $SHOWS_PL $EPISODES_PL $EPISODE_NAMES_PL $NAMES_PL
         rm -f $CREDITS_CSV $EPISODES_CSV $CAST_CSV
@@ -126,6 +128,8 @@ POSSIBLE_MATCHES=$(mktemp)
 MATCH_COUNTS=$(mktemp)
 ALL_MATCHES=$(mktemp)
 #
+CACHE_LIST=$(mktemp)
+SEARCH_LIST=$(mktemp)
 TCONST_LIST=$(mktemp)
 SHOW_NAMES=$(mktemp)
 EPISODES_LIST=$(mktemp)
@@ -257,74 +261,88 @@ fi
 ! waitUntil $ynPref -Y && loopOrExitP
 printf "\n"
 
-# Build the lists we need
-rg -N "^tt" $ALL_MATCHES | cut -f 1 >$TCONST_LIST
-rg -N "^tt" $ALL_MATCHES | cut -f 3 | sort -f >$SHOW_NAMES
+# Figure out which are cached and which aren't
+ls -1 $cacheDirectory >$CACHE_LIST
+cut -f 1 $ALL_MATCHES | sort >$SEARCH_LIST
 
-# Create a perl script to GLOBALLY convert a show tconst to a show title
-printf "==> Searching $num_TB records for show titles.\n"
-rg -wNz -f $TCONST_LIST title.basics.tsv.gz |
-    perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[2]}g;";' >$SHOWS_PL
+# Build the lists we need, sort SHOW_NAMES alphabetically
+comm -13 $CACHE_LIST $SEARCH_LIST >$TCONST_LIST
+cut -f 1,3 $ALL_MATCHES | sort -f -t$'\t' --key=2 >$SHOW_NAMES
 
-# Use tconst list to lookup episode IDs and generate an EPISODE TCONST file
-rg -wNz -f $TCONST_LIST title.episode.tsv.gz |
-    tee $EPISODES_CSV | cut -f 1 >$EPISODES_LIST
-# Create a perl script to convert an episode tconst to its parent show title
-perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[1]};";' $EPISODES_CSV |
-    perl -p -f $SHOWS_PL >$EPISODES_PL
+# If everthing is cached, skip searching entirely
+if [ $(rg -c "^tt" $TCONST_LIST) ]; then
 
-# Create a perl script to convert an episode tconst to its episode title
-rg -wNz -f $EPISODES_LIST title.basics.tsv.gz |
-    perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[3]};";' \
-        >$EPISODE_NAMES_PL
+    # Create a perl script to GLOBALLY convert a show tconst to a show title
+    printf "==> Searching $num_TB records for show titles.\n"
+    rg -wNz -f $TCONST_LIST title.basics.tsv.gz |
+        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[2]}g;";' >$SHOWS_PL
 
-# Get title.principals.tsv.gz file size - should already exist but make sure...
-num_TP="$(rg -N title.principals.tsv.gz $numRecordsFile 2>/dev/null | cut -f 2)"
-[ -z "$num_TP" ] && num_TP="$(rg -cz "^t" title.principals.tsv.gz)"
+    # Use tconst list to lookup episode IDs and generate an EPISODE TCONST file
+    rg -wNz -f $TCONST_LIST title.episode.tsv.gz |
+        tee $EPISODES_CSV | cut -f 1 >$EPISODES_LIST
+    # Create a perl script to convert an episode tconst to its parent show title
+    perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[1]};";' $EPISODES_CSV |
+        perl -p -f $SHOWS_PL >$EPISODES_PL
 
-# Use tconst list to lookup principal titles and generate credits csv
-# Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
-# Leave the episode title field blank!
-printf "==> Searching $num_TP records for principal cast members.\n"
-rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
-    perl -p -e 's+nm0745728+nm0745694+' |
-    perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
-    tee $CREDITS_CSV | cut -f 1 | sort -u >$NCONST_LIST
+    # Create a perl script to convert an episode tconst to its episode title
+    rg -wNz -f $EPISODES_LIST title.basics.tsv.gz |
+        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[3]};";' \
+            >$EPISODE_NAMES_PL
 
-# Use episodes list to lookup principal titles and add to credits csv
-# Copy field 1 to the episode title field!
-rg -wNz -f $EPISODES_LIST title.principals.tsv.gz |
-    perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
-    tee -a $CREDITS_CSV | cut -f 1 | sort -u |
-    rg -v -f $NCONST_LIST >>$NCONST_LIST
+    # Get title.principals.tsv.gz file size - should already exist but make sure...
+    num_TP="$(rg -N title.principals.tsv.gz $numRecordsFile 2>/dev/null | cut -f 2)"
+    [ -z "$num_TP" ] && num_TP="$(rg -cz "^t" title.principals.tsv.gz)"
 
-# Create a perl script to convert an nconst to a name
-rg -wNz -f $NCONST_LIST name.basics.tsv.gz |
-    perl -F"\t" -lane 'print "s{^@F[0]\\b}\{@F[1]};";' >$NAMES_PL
+    # Use tconst list to lookup principal titles and generate credits csv
+    # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
+    # Leave the episode title field blank!
+    printf "==> Searching $num_TP records for principal cast members.\n"
+    rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
+        perl -p -e 's+nm0745728+nm0745694+' |
+        perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
+        tee $CREDITS_CSV | cut -f 1 | sort -u >$NCONST_LIST
 
-# Get rid of ugly \N fields, and unneeded characters. Make sure commas are
-# followed by spaces. Separate multiple characters portrayed with semicolons,
-# remove quotes
-perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' \
-    $CREDITS_CSV
+    # Use episodes list to lookup principal titles and add to credits csv
+    # Copy field 1 to the episode title field!
+    rg -wNz -f $EPISODES_LIST title.principals.tsv.gz |
+        perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
+        tee -a $CREDITS_CSV | cut -f 1 | sort -u |
+        rg -v -f $NCONST_LIST >>$NCONST_LIST
 
-# Translate tconst and nconst into titles and names
-perl -pi -f $SHOWS_PL $CREDITS_CSV
-perl -pi -f $EPISODES_PL $CREDITS_CSV
-perl -pi -f $EPISODE_NAMES_PL $CREDITS_CSV
-perl -pi -f $NAMES_PL $CREDITS_CSV
+    # Create a perl script to convert an nconst to a name
+    rg -wNz -f $NCONST_LIST name.basics.tsv.gz |
+        perl -F"\t" -lane 'print "s{^@F[0]\\b}\{@F[1]};";' >$NAMES_PL
 
-# Create the sorted RESULTS
-printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
-    >$CAST_CSV
-# Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
-sort -f -t$'\t' --key=1,2 --key=4,4 --key=3,3 $CREDITS_CSV \
-    >>$CAST_CSV
+    # Get rid of ugly \N fields, and unneeded characters. Make sure commas are
+    # followed by spaces. Separate multiple characters portrayed with semicolons,
+    # remove quotes
+    perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' \
+        $CREDITS_CSV
+
+    # Translate tconst and nconst into titles and names
+    perl -pi -f $SHOWS_PL $CREDITS_CSV
+    perl -pi -f $EPISODES_PL $CREDITS_CSV
+    perl -pi -f $EPISODE_NAMES_PL $CREDITS_CSV
+    perl -pi -f $NAMES_PL $CREDITS_CSV
+
+    # Create the sorted RESULTS
+    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
+        >$CAST_CSV
+    # Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
+    sort -f -t$'\t' --key=1,2 --key=4,4 --key=3,3 $CREDITS_CSV \
+        >>$CAST_CSV
+fi
 
 [ -n "$DEBUG" ] && set -v
 while read -r line; do
-    showName="$line"
-    ./xrefCast.sh -f $CAST_CSV -an "$line"
+    cacheName=$(cut -f 1 <<<"$line")
+    showName=$(cut -f 2 <<<"$line")
+    if [ $(rg -c "^$cacheName$" "$CACHE_LIST") ]; then
+        cat "$cacheDirectory/$cacheName"
+    else
+        ./xrefCast.sh -f $CAST_CSV -an "$showName" |
+            tee "$cacheDirectory/$cacheName"
+    fi
     waitUntil -k
 done <$SHOW_NAMES
 
