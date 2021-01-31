@@ -296,7 +296,7 @@ if [ $(rg -c "^tt" $TCONST_LIST) ]; then
     # Use tconst list to lookup principal titles and generate credits csv
     # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
     # Leave the episode title field blank!
-    printf "==> Searching $num_TP records for principal cast members.\n"
+    printf "==> Searching $num_TP records for principal cast members.\n\n"
     rg -wNz -f $TCONST_LIST title.principals.tsv.gz |
         perl -p -e 's+nm0745728+nm0745694+' |
         perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
@@ -338,10 +338,10 @@ while read -r line; do
     cacheName=$(cut -f 1 <<<"$line")
     showName=$(cut -f 2 <<<"$line")
     if [ $(rg -c "^$cacheName$" "$CACHE_LIST") ]; then
-        cat "$cacheDirectory/$cacheName"
+        ./xrefCast.sh -f "$cacheDirectory/$cacheName" -an "$showName"
     else
-        ./xrefCast.sh -f $CAST_CSV -an "$showName" |
-            tee "$cacheDirectory/$cacheName"
+        rg "\t$showName\t" $CAST_CSV >"$cacheDirectory/$cacheName"
+        ./xrefCast.sh -f $CAST_CSV -an "$showName"
     fi
     waitUntil -k
 done <$SHOW_NAMES
