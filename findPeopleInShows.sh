@@ -261,8 +261,8 @@ fi
 ! waitUntil $ynPref -Y && loopOrExitP
 printf "\n"
 
-# Figure out which are cached and which aren't
-ls -1 $cacheDirectory >$CACHE_LIST
+# Figure out which tconst IDs are cached and which aren't
+ls -1 $cacheDirectory | rg "^tt" >$CACHE_LIST
 cut -f 1 $ALL_MATCHES | sort >$SEARCH_LIST
 
 # Build the lists we need, sort SHOW_NAMES alphabetically
