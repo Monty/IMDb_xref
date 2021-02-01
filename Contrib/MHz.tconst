@@ -48,7 +48,7 @@ tt2511752	tvMovie	Crimes of Passion: King Lily of the Valley	Kung Liljekonvalje 
 tt2477910	tvMovie	Crimes of Passion: No More Murders	Inte flera mord	2013
 tt2511776	tvMovie	Crimes of Passion: Roses, Kisses and Death	Rosor kyssar och döden	2013
 tt2621118	tvMovie	Crimes of Passion: Tragedy in a Country Churchyard	Tragedi på en lantkyrkogård	2013
-tt3268308	tvMovie	Daddy's Little Girl	Toi que j'aimais tant	2014
+tt3268308	tvEpisode	Daddy's Little Girl	Toi que j'aimais tant	2014
 tt1361253	tvEpisode	Das Gespenst	Das Gespenst	2009
 tt2455992	tvEpisode	Das goldene Band	Das goldene Band	2012
 tt2602070	tvMiniSeries	Death of a Pilgrim	En pilgrims död	2013
@@ -114,7 +114,7 @@ tt4714066	tvMovie	La mort d'Auguste	La mort d'Auguste	2015
 tt0406447	tvMiniSeries	La omicidi	La omicidi	2004
 tt1600419	movie	La scomparsa di Patò	La scomparsa di Patò	2010
 tt1809792	tvSeries	Le sang de la vigne	Le sang de la vigne	2011
-tt5040826	tvMovie	Les années perdues	Les années perdues	2015
+tt5040826	tvEpisode	Les années perdues	Les années perdues	2015
 tt0810076	tvMovie	Les innocents	Les innocents	2006
 tt1349600	tvSeries	Les petits meurtres d'Agatha Christie	Les petits meurtres d'Agatha Christie	2009
 tt9421436	tvMiniSeries	Les Secrets	Les Secrets	2018
@@ -158,7 +158,7 @@ tt0459579	tvMiniSeries	Petits meurtres en famille	Petits meurtres en famille	200
 tt8924868	tvMovie	Piégés	Piégés	2018
 tt0806901	tvSeries	Polizeiruf 110	Polizeiruf 110	1971
 tt0229924	tvSeries	Raid	Raid	2000
-tt4542814	tvMovie	Remember Me	Souviens-toi	2015
+tt4542814	tvEpisode	Remember Me	Souviens-toi	2015
 tt1254687	tvEpisode	Salzleiche	Salzleiche	2008
 tt2678356	tvMovie	Schneewittchen muss sterben	Schneewittchen muss sterben	2013
 tt2082966	tvEpisode	Schwarze Tiger, weiße Löwen	Schwarze Tiger, weiße Löwen	2011
@@ -172,7 +172,7 @@ tt0871900	video	Svalan, katten, rosen, döden	Svalan, katten, rosen, döden	2006
 tt0806910	tvSeries	Tatort	Tatort	1970
 tt8090714	tvMovie	The Berken Case	Peur sur la Base	2017
 tt0294939	movie	The Bomber	Sprängaren	2001
-tt4387348	tvMovie	The Cradle Will Fall	La clinique du docteur H	2015
+tt4387348	tvEpisode	The Cradle Will Fall	La clinique du docteur H	2015
 tt1343097	movie	The Girl Who Kicked the Hornet's Nest	Luftslottet som sprängdes	2009
 tt1216487	movie	The Girl Who Played with Fire	Flickan som lekte med elden	2009
 tt1132620	movie	The Girl with the Dragon Tattoo	Män som hatar kvinnor	2009
@@ -188,7 +188,7 @@ tt1565810	tvSeries	Those Who Kill	Den som dræber	2011
 tt3297484	tvMovie	Tiefe Wunden	Tiefe Wunden	2015
 tt4451240	tvMovie	Tu es mon fils	Tu es mon fils	2015
 tt6710454	tvSeries	Twin	TWIN	2019
-tt3351208	tvMovie	Two Little Girls in Blue	Deux petites filles en bleu	2014
+tt3351208	tvEpisode	Two Little Girls in Blue	Deux petites filles en bleu	2014
 tt1407121	tvEpisode	Um jeden Preis	Um jeden Preis	2009
 tt1581232	tvEpisode	Unsterblich schön	Unsterblich schön	2010
 tt2073137	movie	Vares: Gambling Chip	Vares - Uhkapelimerkki	2012
@@ -209,7 +209,7 @@ tt1449372	tvEpisode	Vergessene Erinnerung	Vergessene Erinnerung	2010
 tt2455986	tvEpisode	Wegwerfmädchen	Wegwerfmädchen	2012
 tt4966752	tvEpisode	Wendemanöver I	Wendemanöver I	2015
 tt5122596	tvEpisode	Wendemanöver II	Wendemanöver II	2015
-tt3572570	tvMovie	Where Are You Now?	Où es-tu maintenant?	2014
+tt3572570	tvEpisode	Where Are You Now?	Où es-tu maintenant?	2014
 tt1443197	tvEpisode	Wir sind die Guten	Wir sind die Guten	2009
 tt1595384	tvMovie	Wolfsfährte	Wolfsfährte	2010
 tt2999952	tvEpisode	Zwischen den Welten	Zwischen den Welten	2013
