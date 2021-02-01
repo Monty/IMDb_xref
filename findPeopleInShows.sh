@@ -336,13 +336,12 @@ fi
 [ -n "$DEBUG" ] && set -v
 while read -r line; do
     cacheName=$(cut -f 1 <<<"$line")
+    cacheFile="$cacheDirectory/$cacheName"
     showName=$(cut -f 2 <<<"$line")
-    if [ $(rg -c "^$cacheName$" "$CACHE_LIST") ]; then
-        ./xrefCast.sh -f "$cacheDirectory/$cacheName" -an "$showName"
-    else
-        rg "\t$showName\t" $CAST_CSV >"$cacheDirectory/$cacheName"
-        ./xrefCast.sh -f $CAST_CSV -an "$showName"
+    if [ ! $(rg -c "^$cacheName$" "$CACHE_LIST") ]; then
+        rg "\t$showName\t" $CAST_CSV >"$cacheFile"
     fi
+    ./xrefCast.sh -f "$cacheFile" -an "$showName"
     waitUntil -k
 done <$SHOW_NAMES
 
