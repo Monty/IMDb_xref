@@ -24,7 +24,7 @@ ensurePrerequisites
 for srchString in "$@"; do
     for file in $(ls *.tsv.gz); do
         printf "==> in $file\n"
-        rg -wNz "$srchString" $file
+        rg -wNz "$srchString" "$file"
         printf "\n"
     done
     printf "\n"

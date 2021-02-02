@@ -18,6 +18,6 @@ ensurePrerequisites
 
 for file in $(ls *.tsv.gz); do
     printf "==> $file\n"
-    gzcat $file | head -5
+    gzcat "$file" | head -5
     printf "\n"
 done

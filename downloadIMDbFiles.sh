@@ -37,15 +37,15 @@ printDuration
 for file in "${gz_files[@]}"; do
     source="https://datasets.imdbws.com/$file"
     printf "Downloading $source\n"
-    curl -s -O $source
+    curl -s -O "$source"
 done
 
 # Caches are no longer valid
-rm -rf $cacheDirectory
-mkdir -p $cacheDirectory
+rm -rf "$cacheDirectory"
+mkdir -p "$cacheDirectory"
 
 printf "==> Recording IMDb .gz file sizes.\n"
-rg -cz "^." ${gz_files[*]} | sort | perl -p -e 's/:/\t/;' >$numRecordsFile
+rg -cz "^." "${gz_files[*]}" | sort | perl -p -e 's/:/\t/;' >"$numRecordsFile"
 
 # Save durations and exit
 terminate

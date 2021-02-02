@@ -19,17 +19,17 @@ source functions/load_functions
 
 for script in *.sh; do
     [[ -e $script ]] || break # handle the case of no files
-    if [ "$(grep -cF 'help()' $script)" -ne 0 ]; then
-        [ $script == "explain_scripts.sh" ] && continue
+    if [ "$(grep -cF 'help()' "$script")" -ne 0 ]; then
+        [ "$script" == "explain_scripts.sh" ] && continue
         clear
-        eval ./$script -h
+        eval ./"$script" -h
         waitUntil -k
     fi
 done
 
 # clear
 # printf "The functions directory contains scripts useful for developers.\n"
-if waitUntil $YN_PREF -cN \
+if waitUntil "$YN_PREF" -cN \
     "The functions directory contains developer scripts. Would you like see them now?"; then
     eval functions/explain_functions.sh
 fi

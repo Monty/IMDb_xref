@@ -46,13 +46,13 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating: $(basename $0)\n" >&2
+        printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         printf "$ALL_TERMS $NCONST_TERMS $PERSON_TERMS $POSSIBLE_MATCHES\n" >&2
         printf "$MATCH_COUNTS $PERSON_RESULTS $JOB_RESULTS $FINAL_RESULTS\n" >&2
     else
-        rm -f $ALL_TERMS $NCONST_TERMS $PERSON_TERMS $POSSIBLE_MATCHES
-        rm -f $MATCH_COUNTS $PERSON_RESULTS $JOB_RESULTS $FINAL_RESULTS
+        rm -f "$ALL_TERMS" "$NCONST_TERMS" "$PERSON_TERMS" "$POSSIBLE_MATCHES"
+        rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS" "$FINAL_RESULTS"
     fi
 }
 
@@ -65,7 +65,7 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil $YN_PREF -N \
+    if waitUntil "$YN_PREF" -N \
         "\n==> Would you like to search for another person?"; then
         printf "\n"
         terminate
@@ -119,12 +119,12 @@ Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a person name or nconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
-        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
+        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>"$ALL_TERMS"
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil $YN_PREF -N \
+        if waitUntil "$YN_PREF" -N \
             "Would you like me to add the George Clooney nconst for you?"; then
-            printf "nm0000123\n" >>$ALL_TERMS
+            printf "nm0000123\n" >>"$ALL_TERMS"
         else
             loopOrExitP
         fi
@@ -134,50 +134,50 @@ fi
 
 # Do the work of adding the matches to the TCONST_FILE
 function addToFileP() {
-    if waitUntil $YN_PREF -Y "==> Shall I add them?"; then
+    if waitUntil "$YN_PREF" -Y "==> Shall I add them?"; then
         printf "OK. Adding...\n"
-        mkdir -p $filmographyDir
-        rg -N "^tt" $FINAL_RESULTS >>$TCONST_FILE
-        waitUntil $YN_PREF -Y \
-            "\n==> Shall I generate ${BLUE}$(basename $filmographyDB)${NO_COLOR}?" &&
-            ./generateXrefData.sh -q -o $filmographyDB -d $filmographyDir $filmographyFile
+        mkdir -p "$filmographyDir"
+        rg -N "^tt" "$FINAL_RESULTS" >>"$TCONST_FILE"
+        waitUntil "$YN_PREF" -Y \
+            "\n==> Shall I generate ${BLUE}$(basename "$filmographyDB")${NO_COLOR}?" &&
+            ./generateXrefData.sh -q -o "$filmographyDB" -d "$filmographyDir" "$filmographyFile"
     else
         printf "Skipping....\n"
     fi
 }
 
 # Get gz file size - which should already exist but make sure...
-numRecords="$(rg -N name.basics.tsv.gz $numRecordsFile 2>/dev/null | cut -f 2)"
+numRecords="$(rg -N name.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
 [ -z "$numRecords" ] && numRecords="$(rg -cz "^n" name.basics.tsv.gz)"
 
 # Setup ALL_TERMS with one search term per line
 for param in "$@"; do
-    printf "$param\n" >>$ALL_TERMS
+    printf "$param\n" >>"$ALL_TERMS"
 done
 # Split into two groups so we can process them differently
-rg -wN "^nm[0-9]{7,8}" $ALL_TERMS | sort -fu >$NCONST_TERMS
-rg -wNv "nm[0-9]{7,8}" $ALL_TERMS | sort -fu >$PERSON_TERMS
+rg -wN "^nm[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$NCONST_TERMS"
+rg -wNv "nm[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$PERSON_TERMS"
 printf "==> Searching $numRecords records for:\n"
-cat $NCONST_TERMS $PERSON_TERMS
+cat "$NCONST_TERMS" "$PERSON_TERMS"
 
 # Reconstitute ALL_TERMS with column guards
-perl -p -e 's/^/^/; s/$/\\t/;' $NCONST_TERMS >$ALL_TERMS
-perl -p -e 's/^/\\t/; s/$/\\t/;' $PERSON_TERMS >>$ALL_TERMS
+perl -p -e 's/^/^/; s/$/\\t/;' "$NCONST_TERMS" >"$ALL_TERMS"
+perl -p -e 's/^/\\t/; s/$/\\t/;' "$PERSON_TERMS" >>"$ALL_TERMS"
 
 # Get all possible matches at once
-rg -NzSI -f $ALL_TERMS name.basics.tsv.gz | rg -wN "tt[0-9]{7,8}" | cut -f 1-5 |
-    sort -f -t$'\t' --key=2 >$POSSIBLE_MATCHES
-perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' $POSSIBLE_MATCHES
+rg -NzSI -f "$ALL_TERMS" name.basics.tsv.gz | rg -wN "tt[0-9]{7,8}" | cut -f 1-5 |
+    sort -f -t$'\t' --key=2 >"$POSSIBLE_MATCHES"
+perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' "$POSSIBLE_MATCHES"
 
 # Figure how many matches for each possible match
-cut -f 2 $POSSIBLE_MATCHES | frequency -t >$MATCH_COUNTS
+cut -f 2 "$POSSIBLE_MATCHES" | frequency -t >"$MATCH_COUNTS"
 
 # Add possible matches one at a time
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" $POSSIBLE_MATCHES >>$PERSON_RESULTS
+        rg "\t$match\t" "$POSSIBLE_MATCHES" >>"$PERSON_RESULTS"
         continue
     fi
     cat <<EOF
@@ -189,12 +189,12 @@ EOF
 
     printf "I found $count persons named \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-10}" ]; then
-        if waitUntil $YN_PREF -Y "Should I skip trying to select one?"; then
+        if waitUntil "$YN_PREF" -Y "Should I skip trying to select one?"; then
             continue
         fi
     fi
     pickOptions=()
-    IFS=$'\n' pickOptions=($(rg -N "\t$match\t" $POSSIBLE_MATCHES |
+    IFS=$'\n' pickOptions=($(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=3,3r --key=5))
     pickOptions+=("Skip \"$match\"" "Quit")
 
@@ -214,7 +214,7 @@ EOF
                 ;;
             *)
                 printf "Adding: $pickMenu\n"
-                printf "$pickMenu\n" >>$PERSON_RESULTS
+                printf "$pickMenu\n" >>"$PERSON_RESULTS"
                 break
                 ;;
             esac
@@ -223,7 +223,7 @@ EOF
             printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
         fi
     done </dev/tty
-done <$MATCH_COUNTS
+done <"$MATCH_COUNTS"
 printf "\n"
 
 # Didn't find any results
@@ -236,65 +236,65 @@ fi
 # Found results, check with user before adding
 printf "These are the matches I found:\n"
 if checkForExecutable -q xsv; then
-    xsv table -d "\t" $PERSON_RESULTS
+    xsv table -d "\t" "$PERSON_RESULTS"
 else
-    cat $PERSON_RESULTS
+    cat "$PERSON_RESULTS"
 fi
 
-if ! waitUntil $YN_PREF -Y; then
+if ! waitUntil "$YN_PREF" -Y; then
     loopOrExitP
 fi
 
-cut -f 1 $PERSON_RESULTS >$NCONST_TERMS
-rg -Nz -f $NCONST_TERMS title.principals.tsv.gz |
-    cut -f 1,3,4 >$POSSIBLE_MATCHES
+cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
+rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz |
+    cut -f 1,3,4 >"$POSSIBLE_MATCHES"
 perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' \
-    $POSSIBLE_MATCHES
+    "$POSSIBLE_MATCHES"
 
 while read -r line; do
-    >$FINAL_RESULTS
+    >"$FINAL_RESULTS"
     nconstID="$line"
-    nconstName="$(rg -N $line $PERSON_RESULTS | cut -f 2)"
+    nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
     noSpaceName="${nconstName//[[:space:]]/_}"
     filmographyDir="$noSpaceName-Filmography"
     printf "\n==> Any files generated for $nconstName will be saved in ${BLUE}$filmographyDir${NO_COLOR}\n"
     filmographyFile="$filmographyDir/$noSpaceName"
-    rg -Nw "$nconstID" $POSSIBLE_MATCHES | cut -f 3 | frequency -t >$MATCH_COUNTS
+    rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
     while read -r job; do
         count=$(cut -f 1 <<<"$job")
         match=$(cut -f 2 <<<"$job")
         printf "\n"
-        rg -Nw "$nconstID\t$match" $POSSIBLE_MATCHES >$JOB_RESULTS
-        ./augment_tconstFiles.sh -y $JOB_RESULTS
-        numResults=$(sed -n '$=' $JOB_RESULTS)
+        rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
+        ./augment_tconstFiles.sh -y "$JOB_RESULTS"
+        numResults=$(sed -n '$=' "$JOB_RESULTS")
         if [[ $numResults -gt 0 ]]; then
             printf "I found $numResults titles listing $nconstName as: $match\n"
-            if waitUntil $YN_PREF -Y \
+            if waitUntil "$YN_PREF" -Y \
                 "==> Do you want to review them before adding them?"; then
                 if checkForExecutable -q xsv; then
-                    cut -f 2,3 $JOB_RESULTS | sort -fu | xsv table -d "\t"
+                    cut -f 2,3 "$JOB_RESULTS" | sort -fu | xsv table -d "\t"
                 else
-                    cut -f 2,3 $JOB_RESULTS | sort -fu
+                    cut -f 2,3 "$JOB_RESULTS" | sort -fu
                 fi
             fi
-            if waitUntil $YN_PREF -Y "==> Shall I add them?"; then
+            if waitUntil "$YN_PREF" -Y "==> Shall I add them?"; then
                 filmographyFile+="-$match"
                 # printf "filmographyFile = $filmographyFile\n"
-                cat $JOB_RESULTS >>$FINAL_RESULTS
+                cat "$JOB_RESULTS" >>"$FINAL_RESULTS"
             fi
         fi
-    done <$MATCH_COUNTS
+    done <"$MATCH_COUNTS"
     filmographyDB="$filmographyFile.csv"
     filmographyFile+=".tconst"
     TCONST_FILE="$filmographyFile"
     if [ -s "$FINAL_RESULTS" ]; then
-        numlines=$(sed -n '$=' $FINAL_RESULTS)
+        numlines=$(sed -n '$=' "$FINAL_RESULTS")
         printf "\nI can add $numlines tconst IDs to ${BLUE}$(basename $TCONST_FILE)${NO_COLOR}\n"
         addToFileP
     else
         printf "\n==> There aren't ${RED}any${NO_COLOR} $nconstName titles to add.\n"
     fi
-done <$NCONST_TERMS
+done <"$NCONST_TERMS"
 
 # Do we really want to quit?
 loopOrExitP

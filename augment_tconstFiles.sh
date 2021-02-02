@@ -117,7 +117,7 @@ function copyResults() {
 }
 
 cacheFile="$cacheDirectory/augmented"
-touch $cacheFile
+touch "$cacheFile"
 rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
 
 for file in "$@"; do
@@ -157,6 +157,6 @@ for file in "$@"; do
             copyResults >"$file"
         fi
     fi
-    cat $cacheFile >>"$RESULT"
-    sort -u "$RESULT" >$cacheFile
+    cat "$cacheFile" >>"$RESULT"
+    sort -u "$RESULT" >"$cacheFile"
 done

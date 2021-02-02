@@ -44,13 +44,13 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating: $(basename $0)\n" >&2
+        printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         printf "$ALL_TERMS $TCONST_TERMS $SHOWS_TERMS $POSSIBLE_MATCHES\n" >&2
         printf "$MATCH_COUNTS $FINAL_RESULTS\n" >&2
     else
-        rm -f $ALL_TERMS $TCONST_TERMS $SHOWS_TERMS $POSSIBLE_MATCHES
-        rm -f $MATCH_COUNTS $FINAL_RESULTS
+        rm -f "$ALL_TERMS" "$TCONST_TERMS" "$SHOWS_TERMS" "$POSSIBLE_MATCHES"
+        rm -f "$MATCH_COUNTS" "$FINAL_RESULTS"
     fi
 }
 
@@ -63,7 +63,7 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil $YN_PREF -N "\n==> Would you like to search for another show?"; then
+    if waitUntil "$YN_PREF" -N "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
         [ -n "$TCONST_FILE" ] && exec ./createTconstFile.sh -f "$TCONST_FILE"
@@ -118,12 +118,12 @@ Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a show name or tconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
-        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
+        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>"$ALL_TERMS"
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil $YN_PREF -N \
+        if waitUntil "$YN_PREF" -N \
             "Would you like me to add the Downton Abbey tconst for you?"; then
-            printf "tt1606375\n" >>$ALL_TERMS
+            printf "tt1606375\n" >>"$ALL_TERMS"
         else
             loopOrExitP
         fi
@@ -133,12 +133,12 @@ fi
 
 # Do the work of adding the matches to the TCONST_FILE
 function addToFileP() {
-    if waitUntil $YN_PREF -Y "\nShall I add them to $TCONST_FILE?"; then
+    if waitUntil "$YN_PREF" -Y "\nShall I add them to $TCONST_FILE?"; then
         printf "OK. Adding...\n"
-        rg -N "^tt" $FINAL_RESULTS >>$TCONST_FILE
-        waitUntil $YN_PREF -Y "\nShall I sort $TCONST_FILE by title?" &&
-            ./augment_tconstFiles.sh -y $TCONST_FILE
-        waitUntil $YN_PREF -Y "\nShall I update your data files?" &&
+        rg -N "^tt" "$FINAL_RESULTS" >>"$TCONST_FILE"
+        waitUntil "$YN_PREF" -Y "\nShall I sort $TCONST_FILE by title?" &&
+            ./augment_tconstFiles.sh -y "$TCONST_FILE"
+        waitUntil "$YN_PREF" -Y "\nShall I update your data files?" &&
             ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
@@ -151,36 +151,36 @@ function addToFileP() {
 printf "==> Adding tconst IDs to: ${BLUE}$TCONST_FILE${NO_COLOR}\n\n"
 
 # Get gz file size - which should already exist but make sure...
-numRecords="$(rg -N title.basics.tsv.gz $numRecordsFile 2>/dev/null | cut -f 2)"
+numRecords="$(rg -N title.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
 [ -z "$numRecords" ] && numRecords="$(rg -cz "^t" title.basics.tsv.gz)"
 
 # Setup ALL_TERMS with one search term per line
 for param in "$@"; do
-    printf "$param\n" >>$ALL_TERMS
+    printf "$param\n" >>"$ALL_TERMS"
 done
 # Split into two groups so we can process them differently
-rg -wN "^tt[0-9]{7,8}" $ALL_TERMS | sort -fu >$TCONST_TERMS
-rg -wNv "^tt[0-9]{7,8}" $ALL_TERMS | sort -fu >$SHOWS_TERMS
+rg -wN "^tt[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$TCONST_TERMS"
+rg -wNv "^tt[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$SHOWS_TERMS"
 printf "==> Searching $numRecords records for:\n"
-cat $TCONST_TERMS $SHOWS_TERMS
+cat "$TCONST_TERMS" "$SHOWS_TERMS"
 
 # Reconstitute ALL_TERMS with column guards
-perl -p -e 's/^/^/; s/$/\\t/;' $TCONST_TERMS >$ALL_TERMS
-perl -p -e 's/^/\\t/; s/$/\\t/;' $SHOWS_TERMS >>$ALL_TERMS
+perl -p -e 's/^/^/; s/$/\\t/;' "$TCONST_TERMS" >"$ALL_TERMS"
+perl -p -e 's/^/\\t/; s/$/\\t/;' "$SHOWS_TERMS" >>"$ALL_TERMS"
 
 # Get all possible matches at once
-rg -NzSI -f $ALL_TERMS title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4 |
-    sort -f -t$'\t' --key=3 >$POSSIBLE_MATCHES
+rg -NzSI -f "$ALL_TERMS" title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4 |
+    sort -f -t$'\t' --key=3 >"$POSSIBLE_MATCHES"
 
 # Figure how many matches for each possible match
-cut -f 3 $POSSIBLE_MATCHES | frequency -t >$MATCH_COUNTS
+cut -f 3 "$POSSIBLE_MATCHES" | frequency -t >"$MATCH_COUNTS"
 
 # Add possible matches one at a time
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" $POSSIBLE_MATCHES >>$FINAL_RESULTS
+        rg "\t$match\t" "$POSSIBLE_MATCHES" >>"$FINAL_RESULTS"
         continue
     fi
     cat <<EOF
@@ -192,11 +192,11 @@ EOF
 
     printf "I found $count shows titled \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
-        waitUntil $YN_PREF -Y "Should I skip trying to select one?" && continue
+        waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
     # rg --color always "\t$match\t" $POSSIBLE_MATCHES | xsv table -d "\t"
     pickOptions=()
-    IFS=$'\n' pickOptions=($(rg -N "\t$match\t" $POSSIBLE_MATCHES |
+    IFS=$'\n' pickOptions=($(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=2))
     pickOptions+=("Skip \"$match\"" "Quit")
 
@@ -216,7 +216,7 @@ EOF
                 ;;
             *)
                 printf "Adding: $pickMenu\n"
-                printf "$pickMenu\n" >>$FINAL_RESULTS
+                printf "$pickMenu\n" >>"$FINAL_RESULTS"
                 break
                 ;;
             esac
@@ -225,7 +225,7 @@ EOF
             printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
         fi
     done </dev/tty
-done <$MATCH_COUNTS
+done <"$MATCH_COUNTS"
 printf "\n"
 
 # Didn't find any results
@@ -238,9 +238,9 @@ fi
 # Found results, check with user before adding to local data
 printf "These are the matches I can add:\n"
 if checkForExecutable -q xsv; then
-    xsv table -d "\t" $FINAL_RESULTS
+    xsv table -d "\t" "$FINAL_RESULTS"
 else
-    cat $FINAL_RESULTS
+    cat "$FINAL_RESULTS"
 fi
 #
 addToFileP

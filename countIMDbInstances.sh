@@ -19,11 +19,11 @@ ensurePrerequisites
 
 for srchString in "$@"; do
     for file in $(ls *.tsv.gz); do
-        count=$(rg -wcz "$srchString" $file)
+        count=$(rg -wcz "$srchString" "$file")
         if [ "$count" == "" ]; then
             count=0
         fi
-        printf "%-10s %5d  %s\n" "$srchString" $count $file
+        printf "%-10s %5d  %s\n" "$srchString" $count "$file"
     done
     printf "\n"
 done

@@ -48,7 +48,7 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating: $(basename $0)\n" >&2
+        printf "\nTerminating: $(basename "$0")\n" >&2
     fi
 }
 
@@ -97,7 +97,7 @@ categoryOptions=()
 idx=0
 for file in "${uniqFiles[@]}"; do
     if [ -e "$file" ]; then
-        numFound="$(sed -n '$=' $file)"
+        numFound="$(sed -n '$=' "$file")"
         foundSizes+=("$numFound" "${categories[$idx]}s,")
         foundCategories+=("${categories[$idx]}")
         categoryOptions+=("Add a ${categories[$idx]} to search for")
@@ -227,14 +227,14 @@ while true; do
         read -n 1 -s
         printf "$REPLY"
         searchFor+="$REPLY"
-        hitCount="$(rg -NzSI -c $searchFor $searchFile)"
+        hitCount="$(rg -NzSI -c "$searchFor" $searchFile)"
         if [ "$hitCount" == "" ]; then
             printf "\nNo matches found.\n"
             break
         elif [ "$hitCount" -eq 1 ]; then
             # printf "\nOnly one match found\n"
             # rg -NzSI $searchFor $searchFile
-            result="$(rg -NzSI $searchFor $searchFile)"
+            result="$(rg -NzSI "$searchFor" $searchFile)"
             for term in "${searchArray[@]}"; do
                 [ "$result" == "$term" ] && break 2
             done

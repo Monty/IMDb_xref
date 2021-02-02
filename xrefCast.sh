@@ -60,11 +60,11 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating: $(basename $0)\n" >&2
+        printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         printf "$TMPFILE $SEARCH_TERMS $ALL_NAMES $MULTIPLE_NAMES\n" >&2
     else
-        rm -rf $TMPFILE $SEARCH_TERMS $ALL_NAMES $MULTIPLE_NAMES
+        rm -rf "$TMPFILE" "$SEARCH_TERMS" "$ALL_NAMES" "$MULTIPLE_NAMES"
     fi
 }
 
@@ -79,7 +79,7 @@ function cleanup() {
 # Shoud we loop or not? Loop unless we were called with -n
 function loopOrExitP() {
     [ -n "$noLoop" ] && exit
-    if waitUntil $YN_PREF -N "\n==> Would you like to do another search?"; then
+    if waitUntil "$YN_PREF" -N "\n==> Would you like to do another search?"; then
         printf "\n"
         terminate
         [ -n "$SEARCH_FILE" ] && exec ./xrefCast.sh -f "$SEARCH_FILE"
@@ -155,12 +155,12 @@ Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a show, actor, or character: " searchTerm; do
         [ -z "$searchTerm" ] && break
-        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$SEARCH_TERMS
+        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>"$SEARCH_TERMS"
     done </dev/tty
     if [ ! -s "$SEARCH_TERMS" ]; then
-        if waitUntil $YN_PREF -N \
+        if waitUntil "$YN_PREF" -N \
             "Would you like to see who played Queen Elizabeth II?"; then
-            printf "Queen Elizabeth II\n" >>$SEARCH_TERMS
+            printf "Queen Elizabeth II\n" >>"$SEARCH_TERMS"
             printf "\n"
         else
             loopOrExitP
@@ -176,12 +176,12 @@ numRecords=$(sed -n '$=' $SEARCH_FILE)
 # Setup SEARCH_TERMS with one search term per line, let us know what's in it.
 printf "==> Searching for:\n"
 for a in "$@"; do
-    printf "$a\n" >>$SEARCH_TERMS
+    printf "$a\n" >>"$SEARCH_TERMS"
 done
-cat $SEARCH_TERMS
+cat "$SEARCH_TERMS"
 
 # Escape metacharacters known to appear in titles, persons, characters
-sed -I "" 's/[()?]/\\&/g' $SEARCH_TERMS
+sed -I "" 's/[()?]/\\&/g' "$SEARCH_TERMS"
 
 # Setup awk printf formats with spaces or tabs
 # Name|Job|Show|Episode|Role
@@ -190,10 +190,10 @@ PTAB='%s\t%s\t%s\t%s\t%s\n'
 
 # If we find anything, rearrange it and put it in TMPFILE
 # Sort by Job (2), Person (1), Show Title (3)
-if [ $(rg -wNzSI -c -f $SEARCH_TERMS $SEARCH_FILE) ]; then
-    rg -wNzSI --color always -f $SEARCH_TERMS $SEARCH_FILE |
+if [ $(rg -wNzSI -c -f "$SEARCH_TERMS" $SEARCH_FILE) ]; then
+    rg -wNzSI --color always -f "$SEARCH_TERMS" $SEARCH_FILE |
         awk -F "\t" -v PF="$PTAB" '{printf (PF, $1,$5,$2,$3,$6)}' |
-        sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >$TMPFILE
+        sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
 fi
 
 # Any results? If not, don't continue.
@@ -202,19 +202,19 @@ if [ ! -s "$TMPFILE" ]; then
     printf "    Check the \"Searching for:\" section above.\n"
     loopOrExitP
 else
-    numAll=$(cut -f 1 $TMPFILE | sort -fu | sed -n '$=')
+    numAll=$(cut -f 1 "$TMPFILE" | sort -fu | sed -n '$=')
     [ "$numAll" -eq 1 ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && ALL_NAMES_ONLY="yes"
 fi
 
 # Get rid of initial single quote used to force show/episode names in spreadsheet to be strings.
-perl -pi -e "s+\t'+\t+g;" $TMPFILE
+perl -pi -e "s+\t'+\t+g;" "$TMPFILE"
 
 # Save ALL_NAMES
-printf "\n==> All cast members (Name|Job|Show|Episode|Role):\n" >$ALL_NAMES
+printf "\n==> All cast members (Name|Job|Show|Episode|Role):\n" >"$ALL_NAMES"
 if checkForExecutable -q xsv; then
-    xsv table -d "\t" $TMPFILE >>$ALL_NAMES
+    xsv table -d "\t" "$TMPFILE" >>"$ALL_NAMES"
 else
-    awk -F "\t" -v PF="$PSPACE" '{printf (PF,$1,$2,$3,$4,$5)}' $TMPFILE >>$ALL_NAMES
+    awk -F "\t" -v PF="$PSPACE" '{printf (PF,$1,$2,$3,$4,$5)}' "$TMPFILE" >>"$ALL_NAMES"
 fi
 
 # Save MULTIPLE_NAMES
@@ -222,11 +222,11 @@ fi
 # successive lines, but field 3 is different
 if checkForExecutable -q xsv; then
     awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
-    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' $TMPFILE | sort -fu |
-        xsv table -d "\t" >>$MULTIPLE_NAMES
+    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' "$TMPFILE" | sort -fu |
+        xsv table -d "\t" >>"$MULTIPLE_NAMES"
 else
     awk -F "\t" -v PF="$PSPACE" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
-    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' $TMPFILE | sort -fu >>$MULTIPLE_NAMES
+    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' "$TMPFILE" | sort -fu >>"$MULTIPLE_NAMES"
 fi
 
 # Multiple results?
@@ -236,26 +236,26 @@ if [ ! -s "$MULTIPLE_NAMES" ]; then
 else
     _vb="appears"
     _pron="that"
-    numMultiple=$(cut -f 1 $TMPFILE | sort -f | uniq -d | sed -n '$=')
+    numMultiple=$(cut -f 1 "$TMPFILE" | sort -f | uniq -d | sed -n '$=')
     [ "$numMultiple" -gt 1 ] && _vb="appear" && _pron="those"
 fi
 
 # If we're in interactive mode, give user a choice of all or multiples only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$ALL_NAMES_ONLY" ]; then
     printf "\n==> I found $numAll cast members. $numMultiple $_vb in more than one show.\n"
-    waitUntil $YN_PREF -N "Should I only print $_pron $numMultiple?" &&
+    waitUntil "$YN_PREF" -N "Should I only print $_pron $numMultiple?" &&
         MULTIPLE_NAMES_ONLY="yes"
 fi
 
 # Unless MULTIPLE_NAMES_ONLY, print all search results
-[ -z "$MULTIPLE_NAMES_ONLY" ] && cat $ALL_NAMES
+[ -z "$MULTIPLE_NAMES_ONLY" ] && cat "$ALL_NAMES"
 
 # If ALL_NAMES_ONLY, exit here
 [ -n "$ALL_NAMES_ONLY" ] && loopOrExitP
 
 # Print all search results
 printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Episode|Role):\n"
-cat $MULTIPLE_NAMES
+cat "$MULTIPLE_NAMES"
 
 # Do we really want to quit?
 loopOrExitP
