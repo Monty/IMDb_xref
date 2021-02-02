@@ -56,7 +56,7 @@ EOF
         case $opt in
         h)
             help
-            read -n 1 -s -p "Hit any key to continue, '^C' to quit. "
+            read -r -n 1 -s -p "Hit any key to continue, '^C' to quit. "
             printf "\n"
             return
             ;;
@@ -98,7 +98,7 @@ EOF
     if [ -n "$anyKey" ]; then
         printf "\n"
         [ -n "$clearFirst" ] && clear
-        read -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
+        read -r -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
         printf "\n\n"
         return
     fi
@@ -114,9 +114,9 @@ EOF
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
         if [ -n "$longRead" ]; then
-            read reply </dev/tty
+            read -r reply </dev/tty
         else
-            read -n 1 -s reply </dev/tty
+            read -r -n 1 -s reply </dev/tty
             [ -z "$reply" ] || [ "${#reply}" != 0 ] && printf "\n"
         fi
         #
