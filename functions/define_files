@@ -20,9 +20,9 @@
 #       source functions/load_functions
 
 # Standard files
-mkdir -p $HOME/.config/IMDb_xref
+mkdir -p "$HOME"/.config/IMDb_xref
 configFile="$HOME/.config/IMDb_xref/config"
-[ ! -e "$configFile" ] && cat <<EOF >>$configFile
+[ ! -e "$configFile" ] && cat <<EOF >>"$configFile"
 #!/usr/bin/env bash
 #
 # This is the IMDb_xref configuration file. Each line either contains a comment
@@ -50,7 +50,7 @@ mkdir -p $cacheDirectory
 
 # Look for the string "files" in $DEBUG_XREF to enable debugging
 if [[ $DEBUG_XREF == *"files"* ]]; then
-    printf "[${YELLOW}Debug-files${NO_COLOR}] Running:              $PWD/$(basename $0)\n" >&2
+    printf "[${YELLOW}Debug-files${NO_COLOR}] Running:              $PWD/$(basename "$0")\n" >&2
     printf "[${YELLOW}Debug-files${NO_COLOR}] Using configFile:     $PWD/$configFile\n" >&2
     printf "[${YELLOW}Debug-files${NO_COLOR}] Using durationFile:   $PWD/$durationFile\n" >&2
 fi

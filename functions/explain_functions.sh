@@ -18,10 +18,10 @@ source functions/define_files
 source functions/load_functions
 
 for file in $(ls functions/*.function); do
-    if [ "$(grep -cF 'help()' $file)" -ne 0 ]; then
+    if [ "$(grep -cF 'help()' "$file")" -ne 0 ]; then
         clear
-        function="$(basename ${file%\.function})"
-        eval $function -h
+        function="$(basename "${file%\.function}")"
+        eval "$function" -h
         printf "\n"
     fi
 done

@@ -20,10 +20,10 @@
 #       source functions/load_functions
 
 # Make sure we pick up any global environment variables.
-source $configFile
+source "$configFile"
 
 for file in $(ls functions/*.function); do
-    source $file
+    source "$file"
     [[ $DEBUG_XREF == *"load"* ]] &&
-        printf "[${YELLOW}Debug-load${NO_COLOR}] Loading: $(basename $file)\n"
+        printf "[${YELLOW}Debug-load${NO_COLOR}] Loading: $(basename "$file")\n"
 done
