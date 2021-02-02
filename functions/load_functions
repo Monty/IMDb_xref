@@ -20,6 +20,7 @@
 #       source functions/load_functions
 
 # Make sure we pick up any global environment variables.
+# shellcheck source=functions/define_files
 source "$configFile"
 
 for file in functions/*.function; do
