@@ -224,7 +224,7 @@ while true; do
     nchars=0
     searchFor=""
     while true; do
-        read -n 1 -s
+        read -r -n 1 -s
         printf "$REPLY"
         searchFor+="$REPLY"
         hitCount="$(rg -NzSI -c "$searchFor" $searchFile)"
