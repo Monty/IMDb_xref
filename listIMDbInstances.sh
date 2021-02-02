@@ -22,7 +22,8 @@ source functions/load_functions
 ensurePrerequisites
 
 for srchString in "$@"; do
-    for file in $(ls *.tsv.gz); do
+    for file in *.tsv.gz; do
+        [[ -e $file ]] || break # handle the case of no files
         printf "==> in $file\n"
         rg -wNz "$srchString" "$file"
         printf "\n"

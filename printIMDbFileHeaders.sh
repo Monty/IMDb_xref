@@ -16,7 +16,8 @@ source functions/load_functions
 # Make sure prerequisites are satisfied
 ensurePrerequisites
 
-for file in $(ls *.tsv.gz); do
+for file in *.tsv.gz; do
+    [[ -e $file ]] || break # handle the case of no files
     printf "==> $file\n"
     gzcat "$file" | head -5
     printf "\n"

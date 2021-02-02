@@ -151,12 +151,12 @@ ensurePrerequisites
 
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
-if [ ! "$(ls *.xlate 2>/dev/null)" ]; then
+if [ ! "$(ls ./*.xlate 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
-if [ ! "$(ls *.tconst 2>/dev/null)" ]; then
+if [ ! "$(ls ./*.tconst 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
