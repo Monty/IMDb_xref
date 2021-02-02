@@ -7,7 +7,7 @@
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
-cd "$DIRNAME"
+cd "$DIRNAME" || exit
 export LC_COLLATE="C"
 source functions/define_colors
 source functions/define_files
@@ -48,11 +48,11 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating: $(basename $0)\n" >&2
+        printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         printf "$RESULT $COMMENTS $CACHE_LIST $SEARCH_LIST $TCONST_LIST\n" >&2
     else
-        rm -rf $RESULT $COMMENTS $CACHE_LIST $SEARCH_LIST $TCONST_LIST
+        rm -rf "$RESULT" "$COMMENTS" "$CACHE_LIST" "$SEARCH_LIST" "$TCONST_LIST"
     fi
 }
 
@@ -105,42 +105,42 @@ fi
 
 function copyResults() {
     # Preserve comments at top
-    cat $COMMENTS
+    cat "$COMMENTS"
     # Then add the sorted tconst lines
     if [ -n "$ALLOW_EPISODES" ]; then
-        sort -f -t$'\t' --key=3,3 $RESULT
+        sort -f -t$'\t' --key=3,3 "$RESULT"
     else
-        sort -f -t$'\t' --key=3,3 $RESULT | rg -wNv "tvEpisode"
+        sort -f -t$'\t' --key=3,3 "$RESULT" | rg -wNv "tvEpisode"
     fi
 }
 
 cacheFile="$cacheDirectory/augmented"
 touch $cacheFile
-rg -N "^tt" "$cacheFile" | cut -f 1 | sort >$CACHE_LIST
+rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
 
 for file in "$@"; do
     [ -z "$INPLACE" ] && printf "==> $file\n"
 
     # Make sure there is no carryover
-    >$RESULT
+    true >"$RESULT"
 
     # Gather and preserve all non-tconst lines
-    rg -Nv "^tt" "$file" >$COMMENTS
+    rg -Nv "^tt" "$file" >"$COMMENTS"
 
     # Gather all the lines with tconsts in column 1
-    rg -N "^tt" "$file" | cut -f 1 | sort -u >$SEARCH_LIST
+    rg -N "^tt" "$file" | cut -f 1 | sort -u >"$SEARCH_LIST"
 
     # Figure out which tconst IDs are cached and which aren't
-    comm -13 $CACHE_LIST $SEARCH_LIST >$TCONST_LIST
+    comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 
     # Grab the ones already cached
-    rg -wNz -f "$SEARCH_LIST" "$cacheFile" >$RESULT
+    rg -wNz -f "$SEARCH_LIST" "$cacheFile" >"$RESULT"
 
     # If everthing is cached, skip searching entirely
-    if [ $(rg -c "^tt" $TCONST_LIST) ]; then
+    if [ "$(rg -c ^tt "$TCONST_LIST")" ]; then
         # Look the ones up that weren't cached, get fields 1-4,6
         rg -wNz -f "$TCONST_LIST" title.basics.tsv.gz | cut -f 1-4,6 |
-            perl -p -e 's+\\N++g;' >>$RESULT
+            perl -p -e 's+\\N++g;' >>"$RESULT"
     fi
 
     # Either overwrite or print on stdout
@@ -149,11 +149,12 @@ for file in "$@"; do
         printf "\n"
     else
         if [ -z "$DONT_ASK" ]; then
-            waitUntil $ynPref -N "OK to overwrite $file?" && copyResults >$file
+            waitUntil "$ynPref" -N "OK to overwrite $file?" && copyResults \
+                >"$file"
         else
-            copyResults >$file
+            copyResults >"$file"
         fi
     fi
-    cat $cacheFile >>$RESULT
-    sort -u $RESULT >$cacheFile
+    cat $cacheFile >>"$RESULT"
+    sort -u "$RESULT" >$cacheFile
 done
