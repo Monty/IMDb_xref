@@ -208,7 +208,6 @@ mkdir -p $WORK $BASE
 
 # Error and debugging info (per run)
 POSSIBLE_DIFFS="diffs$LONGDATE.txt"
-ERRORS="anomalies$LONGDATE.txt"
 [ -n "$CREATE_DIFF" ] &&
     printf "\n==> $POSSIBLE_DIFFS contains diffs between generated files and files saved in $BASE\n"
 
@@ -258,8 +257,6 @@ PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
 PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
 PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
-PUBLISHED_LINKS_TO_PERSONS="$BASE/LinksToPersons.csv"
-PUBLISHED_LINKS_TO_TITLES="$BASE/LinksToTitles.csv"
 PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
 #
 PUBLISHED_UNIQUE_CHARS="$BASE/uniqCharacters.txt"

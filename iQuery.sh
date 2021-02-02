@@ -221,7 +221,6 @@ while true; do
     printf "$action"
 
     # Do the minimal typing search in a specific category
-    nchars=0
     searchFor=""
     while true; do
         read -r -n 1 -s
