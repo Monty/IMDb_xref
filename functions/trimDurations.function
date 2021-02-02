@@ -51,15 +51,15 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="$(basename $0)"
+    scriptName="$(basename "$0")"
     maxLines="${1:-10}"
 
-    linesFound=$(rg -c "^$scriptName\t" $durationFile)
+    linesFound=$(rg -c "^$scriptName\t" "$durationFile")
     if [[ $linesFound -gt $maxLines ]]; then
         TMPFILE=$(mktemp)
-        rg "^$scriptName\t" $durationFile | tail -$maxLines >$TMPFILE
-        rg -v "^$scriptName\t" $durationFile >>$TMPFILE
-        sort -f -t$'\t' --key=2,2 $TMPFILE >$durationFile
-        rm -rf $TMPFILE
+        rg "^$scriptName\t" "$durationFile" | tail -"$maxLines" >"$TMPFILE"
+        rg -v "^$scriptName\t" "$durationFile" >>"$TMPFILE"
+        sort -f -t$'\t' --key=2,2 "$TMPFILE" >"$durationFile"
+        rm -rf "$TMPFILE"
     fi
 }

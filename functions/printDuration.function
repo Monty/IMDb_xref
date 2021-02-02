@@ -50,11 +50,11 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="$(basename $0)"
+    scriptName="$(basename "$0")"
 
-    if [ $(rg -c "^$scriptName\t" $durationFile) ]; then
+    if [ $(rg -c "^$scriptName\t" "$durationFile") ]; then
         printf "\n==> Previously, this took "
-        rg "^$scriptName\t" $durationFile | tail -1 | cut -f 4
+        rg "^$scriptName\t" "$durationFile" | tail -1 | cut -f 4
         printf "\n"
     fi
 }

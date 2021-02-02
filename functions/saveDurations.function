@@ -53,7 +53,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="$(basename $0)"
+    scriptName="$(basename "$0")"
     secs="$1"
 
     # The date & time this function ran
@@ -70,5 +70,5 @@ EOF
     fi
     #
     # Save this info for later
-    printf "$scriptName\t$timestamp\t$date_str\t$duration\n" >>$durationFile
+    printf "$scriptName\t$timestamp\t$date_str\t$duration\n" >>"$durationFile"
 }
