@@ -48,9 +48,10 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating: $(basename "$0")\n" >&2
+        printf "\nTerminating: %s\n" "$(basename "$0")" >&2
         printf "Not removing:\n" >&2
-        printf "$RESULT $COMMENTS $CACHE_LIST $SEARCH_LIST $TCONST_LIST\n" >&2
+        printf "%s\n" "$RESULT" "$COMMENTS" "$CACHE_LIST" "$SEARCH_LIST" \
+            "$TCONST_LIST" >&2
     else
         rm -rf "$RESULT" "$COMMENTS" "$CACHE_LIST" "$SEARCH_LIST" "$TCONST_LIST"
     fi
@@ -81,7 +82,7 @@ while getopts ":haiy" opt; do
         DONT_ASK="yes"
         ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     esac
 done
@@ -119,7 +120,7 @@ touch $cacheFile
 rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
 
 for file in "$@"; do
-    [ -z "$INPLACE" ] && printf "==> $file\n"
+    [ -z "$INPLACE" ] && printf "==> %s\n" "$file"
 
     # Make sure there is no carryover
     true >"$RESULT"
