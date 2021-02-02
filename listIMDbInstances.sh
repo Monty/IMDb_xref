@@ -11,7 +11,8 @@
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
-cd "$DIRNAME"
+cd "$DIRNAME" || exit
+
 export LC_COLLATE="C"
 source functions/define_colors
 source functions/define_files

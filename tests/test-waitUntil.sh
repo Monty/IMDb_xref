@@ -2,10 +2,11 @@
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
-cd "$DIRNAME"/..
+cd "$DIRNAME"/.. || exit
 
-. functions/define_colors
-. functions/waitUntil.function
+export LC_COLLATE="C"
+source functions/define_colors
+source functions/waitUntil.function
 
 printf "==> Testing the ${RED}waitUntil.function${NO_COLOR}.\n\n"
 printf "First, print the help file...\n"
