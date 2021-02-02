@@ -155,7 +155,7 @@ Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a show name or tconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
-        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>"$ALL_TERMS"
+        tr -ds '"' '[:space:]' <<<"$searchTerm" >>"$ALL_TERMS"
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
         if waitUntil "$YN_PREF" -N \

@@ -155,7 +155,7 @@ Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a show, actor, or character: " searchTerm; do
         [ -z "$searchTerm" ] && break
-        tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>"$SEARCH_TERMS"
+        tr -ds '"' '[:space:]' <<<"$searchTerm" >>"$SEARCH_TERMS"
     done </dev/tty
     if [ ! -s "$SEARCH_TERMS" ]; then
         if waitUntil "$YN_PREF" -N \
