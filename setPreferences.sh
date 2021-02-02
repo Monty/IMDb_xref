@@ -92,13 +92,13 @@ while true; do
         if [ "$REPLY" -ge 1 ] 2>/dev/null && [ "$REPLY" -le "${#ynOptions[@]}" ]; then
             case "$REPLY" in
             1)
-                ynPref=
-                perl -pi -e 's+^ynPref=.*+ynPref="-s"+;' $configFile
+                YN_PREF=
+                perl -pi -e 's+^YN_PREF=.*+YN_PREF="-s"+;' $configFile
                 break
                 ;;
             2)
-                ynPref="-l "
-                perl -pi -e 's+^ynPref=.*+ynPref="-l"+;' $configFile
+                YN_PREF="-l "
+                perl -pi -e 's+^YN_PREF=.*+YN_PREF="-l"+;' $configFile
                 break
                 ;;
             3)
@@ -114,6 +114,6 @@ while true; do
             printf "Your selection must be a number from 1-${#ynOptions[@]}\n"
         fi
     done </dev/tty
-    perl -pi -e 's+^needPrefs=.*+needPrefs=+;' $configFile
+    perl -pi -e 's+^NEED_PREFS=.*+NEED_PREFS=+;' $configFile
     break
 done

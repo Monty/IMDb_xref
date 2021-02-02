@@ -79,7 +79,7 @@ function cleanup() {
 # Shoud we loop or not? Loop unless we were called with -n
 function loopOrExitP() {
     [ -n "$noLoop" ] && exit
-    if waitUntil $ynPref -N "\n==> Would you like to do another search?"; then
+    if waitUntil $YN_PREF -N "\n==> Would you like to do another search?"; then
         printf "\n"
         terminate
         [ -n "$SEARCH_FILE" ] && exec ./xrefCast.sh -f "$SEARCH_FILE"
@@ -158,7 +158,7 @@ EOF
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$SEARCH_TERMS
     done </dev/tty
     if [ ! -s "$SEARCH_TERMS" ]; then
-        if waitUntil $ynPref -N \
+        if waitUntil $YN_PREF -N \
             "Would you like to see who played Queen Elizabeth II?"; then
             printf "Queen Elizabeth II\n" >>$SEARCH_TERMS
             printf "\n"
@@ -243,7 +243,7 @@ fi
 # If we're in interactive mode, give user a choice of all or multiples only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$ALL_NAMES_ONLY" ]; then
     printf "\n==> I found $numAll cast members. $numMultiple $_vb in more than one show.\n"
-    waitUntil $ynPref -N "Should I only print $_pron $numMultiple?" &&
+    waitUntil $YN_PREF -N "Should I only print $_pron $numMultiple?" &&
         MULTIPLE_NAMES_ONLY="yes"
 fi
 

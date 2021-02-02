@@ -87,7 +87,7 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil $ynPref -N \
+    if waitUntil $YN_PREF -N \
         "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
@@ -158,7 +158,7 @@ EOF
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil $ynPref -N \
+        if waitUntil $YN_PREF -N \
             "Would you like to see the cast of Downton Abbey?"; then
             printf "tt1606375\n" >>$ALL_TERMS
         else
@@ -210,7 +210,7 @@ EOF
 
     printf "I found $count shows titled \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
-        waitUntil $ynPref -Y "Should I skip trying to select one?" && continue
+        waitUntil $YN_PREF -Y "Should I skip trying to select one?" && continue
     fi
     # rg --color always "\t$match\t" $POSSIBLE_MATCHES | xsv table -d "\t"
     pickOptions=()
@@ -259,7 +259,7 @@ if checkForExecutable -q xsv; then
 else
     sort -f -t$'\t' --key=3 $ALL_MATCHES
 fi
-! waitUntil $ynPref -Y && loopOrExitP
+! waitUntil $YN_PREF -Y && loopOrExitP
 printf "\n"
 
 # Figure out which tconst IDs are cached and which aren't

@@ -24,37 +24,37 @@ waitUntil -k
 clear
 
 while true; do
-    if waitUntil "$ynPref" -Y 'Run ./createTconstFile.sh tt1606375'; then
+    if waitUntil "$YN_PREF" -Y 'Run ./createTconstFile.sh tt1606375'; then
         ./createTconstFile.sh tt1606375
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"'; then
         ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createTconstFile.sh "The Crown"'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createTconstFile.sh "The Crown"'; then
         ./createTconstFile.sh "The Crown"
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 broadchurch "the crown"'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createTconstFile.sh tt1606375 tt1399664 broadchurch "the crown"'; then
         ./createTconstFile.sh tt1606375 tt1399664 broadchurch "the crown"
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createTconstFile.sh "The Crown" River'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createTconstFile.sh "The Crown" River'; then
         ./createTconstFile.sh "The Crown" River
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createTconstFile.sh -f Dramas.tconst tt1606375'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createTconstFile.sh -f Dramas.tconst tt1606375'; then
         ./createTconstFile.sh -f Dramas.tconst tt1606375
     fi
-    if waitUntil "$ynPref" -Y '\nRun ./createTconstFile.sh'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createTconstFile.sh'; then
         ./createTconstFile.sh
     fi
-    if waitUntil "$ynPref" -Y '\nRun ./createTconstFile.sh aaa'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createTconstFile.sh aaa'; then
         ./createTconstFile.sh aaa
     fi
 
-    ! waitUntil "$ynPref" -Y '\nTests completed. Run again?' && break
+    ! waitUntil "$YN_PREF" -Y '\nTests completed. Run again?' && break
     printf "\n"
 
 done

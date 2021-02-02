@@ -63,7 +63,7 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil $ynPref -N "\n==> Would you like to search for another show?"; then
+    if waitUntil $YN_PREF -N "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
         [ -n "$TCONST_FILE" ] && exec ./createTconstFile.sh -f "$TCONST_FILE"
@@ -121,7 +121,7 @@ EOF
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil $ynPref -N \
+        if waitUntil $YN_PREF -N \
             "Would you like me to add the Downton Abbey tconst for you?"; then
             printf "tt1606375\n" >>$ALL_TERMS
         else
@@ -133,12 +133,12 @@ fi
 
 # Do the work of adding the matches to the TCONST_FILE
 function addToFileP() {
-    if waitUntil $ynPref -Y "\nShall I add them to $TCONST_FILE?"; then
+    if waitUntil $YN_PREF -Y "\nShall I add them to $TCONST_FILE?"; then
         printf "OK. Adding...\n"
         rg -N "^tt" $FINAL_RESULTS >>$TCONST_FILE
-        waitUntil $ynPref -Y "\nShall I sort $TCONST_FILE by title?" &&
+        waitUntil $YN_PREF -Y "\nShall I sort $TCONST_FILE by title?" &&
             ./augment_tconstFiles.sh -y $TCONST_FILE
-        waitUntil $ynPref -Y "\nShall I update your data files?" &&
+        waitUntil $YN_PREF -Y "\nShall I update your data files?" &&
             ./generateXrefData.sh -q
     else
         printf "Skipping....\n"
@@ -192,7 +192,7 @@ EOF
 
     printf "I found $count shows titled \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
-        waitUntil $ynPref -Y "Should I skip trying to select one?" && continue
+        waitUntil $YN_PREF -Y "Should I skip trying to select one?" && continue
     fi
     # rg --color always "\t$match\t" $POSSIBLE_MATCHES | xsv table -d "\t"
     pickOptions=()

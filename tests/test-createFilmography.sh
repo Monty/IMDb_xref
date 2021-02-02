@@ -24,40 +24,40 @@ waitUntil -k
 clear
 
 while true; do
-    if waitUntil "$ynPref" -Y 'Run ./createFilmography.sh nm0000233'; then
+    if waitUntil "$YN_PREF" -Y 'Run ./createFilmography.sh nm0000233'; then
         ./createFilmography.sh nm0000233
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createFilmography.sh nm0000123'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createFilmography.sh nm0000123'; then
         ./createFilmography.sh nm0000123
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createFilmography.sh "George Clooney"'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createFilmography.sh "George Clooney"'; then
         ./createFilmography.sh "George Clooney"
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createFilmography.sh nm0000123 "Quentin Tarantino"'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createFilmography.sh nm0000123 "Quentin Tarantino"'; then
         ./createFilmography.sh nm0000123 "Quentin Tarantino"
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createFilmography.sh nm0000123 "Alfred Hitchcock"'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createFilmography.sh nm0000123 "Alfred Hitchcock"'; then
         ./createFilmography.sh nm0000123 "Alfred Hitchcock"
     fi
 
-    if waitUntil "$ynPref" -Y \
+    if waitUntil "$YN_PREF" -Y \
         '\nRun ./createFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"'; then
         ./createFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createFilmography.sh'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createFilmography.sh'; then
         ./createFilmography.sh
     fi
 
-    if waitUntil "$ynPref" -Y '\nRun ./createFilmography.sh nm9999999'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./createFilmography.sh nm9999999'; then
         ./createFilmography.sh nm9999999
     fi
 
-    ! waitUntil "$ynPref" -Y '\nTests completed. Run again?' && break
+    ! waitUntil "$YN_PREF" -Y '\nTests completed. Run again?' && break
     printf "\n"
 
 done

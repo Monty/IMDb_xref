@@ -95,7 +95,7 @@ function processDurations() {
 
 function breakpoint() {
     if [ -n "$DEBUG" ]; then
-        if waitUntil $ynPref -N "Quit now?"; then
+        if waitUntil $YN_PREF -N "Quit now?"; then
             printf "Quitting ...\n"
             exit 1
         fi

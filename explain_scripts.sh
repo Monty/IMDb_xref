@@ -28,7 +28,7 @@ done
 
 # clear
 # printf "The functions directory contains scripts useful for developers.\n"
-if waitUntil $ynPref -cN \
+if waitUntil $YN_PREF -cN \
     "The functions directory contains developer scripts. Would you like see them now?"; then
     eval functions/explain_functions.sh
 fi

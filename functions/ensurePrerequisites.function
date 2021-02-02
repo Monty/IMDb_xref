@@ -43,7 +43,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    if [ -n "$needPrefs" ]; then
+    if [ -n "$NEED_PREFS" ]; then
         cat <<EOT
 Welcome to IMDb_xref!
 
@@ -64,7 +64,7 @@ EOT
     if [ ! -e "name.basics.tsv.gz" ] || [ ! -e "title.basics.tsv.gz" ] ||
         [ ! -e "title.episode.tsv.gz" ] || [ ! -e "title.principals.tsv.gz" ]; then
         printf "==> Missing IMDb data files. Run downloadIMDbFiles.sh to fix this problem.\n"
-        if waitUntil "$ynPref" -N "Would you like me to do this for you?"; then
+        if waitUntil "$YN_PREF" -N "Would you like me to do this for you?"; then
             printf "OK. Downloading...\n"
             ./downloadIMDbFiles.sh 2>/dev/null
             printf "\n"

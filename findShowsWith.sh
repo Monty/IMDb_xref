@@ -62,7 +62,7 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil $ynPref -N \
+    if waitUntil $YN_PREF -N \
         "\n==> Would you like to search for another person?"; then
         printf "\n"
         terminate
@@ -121,7 +121,7 @@ EOF
         tr -ds '"' '[[:space:]]' <<<"$searchTerm" >>$ALL_TERMS
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
-        if waitUntil $ynPref -N \
+        if waitUntil $YN_PREF -N \
             "Would you like me to add the George Clooney nconst for you?"; then
             printf "nm0000123\n" >>$ALL_TERMS
         else
@@ -174,7 +174,7 @@ EOF
 
     printf "I found $count persons named \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-10}" ]; then
-        if waitUntil $ynPref -Y "Should I skip trying to select one?"; then
+        if waitUntil $YN_PREF -Y "Should I skip trying to select one?"; then
             continue
         fi
     fi
@@ -226,7 +226,7 @@ else
     cat $PERSON_RESULTS
 fi
 
-if ! waitUntil $ynPref -Y; then
+if ! waitUntil $YN_PREF -Y; then
     loopOrExitP
 fi
 
@@ -251,7 +251,7 @@ while read -r line; do
             _pron="it"
             [ "$numResults" -gt 1 ] && _title="titles" && _pron="them"
             printf "==> I found $numResults $_title listing $nconstName as: $match\n"
-            if [ -n "$skipPrompts" ] || waitUntil $ynPref -Y \
+            if [ -n "$skipPrompts" ] || waitUntil $YN_PREF -Y \
                 "==> Shall I list $_pron?"; then
                 if checkForExecutable -q xsv; then
                     cut -f 2,3,5 $JOB_RESULTS |
