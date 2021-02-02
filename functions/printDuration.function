@@ -12,6 +12,8 @@
 function printDuration() {
     local OPTIND scriptName
 
+    source functions/define_files
+
     help() {
         cat <<EOF
 printDuration -- Internal function: Print the previous duration of a script.
@@ -52,7 +54,7 @@ EOF
 
     scriptName="$(basename "$0")"
 
-    if [ $(rg -c "^$scriptName\t" "$durationFile") ]; then
+    if [ "$(rg -c "^$scriptName\t" "$durationFile")" ]; then
         printf "\n==> Previously, this took "
         rg "^$scriptName\t" "$durationFile" | tail -1 | cut -f 4
         printf "\n"
