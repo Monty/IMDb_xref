@@ -20,8 +20,8 @@
 #       source functions/load_functions
 
 # Standard files
-mkdir -p "$HOME"/.config/IMDb_xref
-configFile="$HOME/.config/IMDb_xref/config"
+mkdir -p ~/.config/IMDb_xref
+configFile=~/.config/IMDb_xref/config
 [ ! -e "$configFile" ] && cat <<EOF >>"$configFile"
 #!/usr/bin/env bash
 #

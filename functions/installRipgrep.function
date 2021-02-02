@@ -86,7 +86,7 @@ EOT-1
         cat <<EOT-2
     # Install the Rust programming language
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-    source $HOME/.cargo/env
+    source ~/.cargo/env
 
 EOT-2
     fi
@@ -110,7 +110,8 @@ EOT-3
             checkForExecutable curl
             printf "\n==> Installing the Rust programming language.\n\n"
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 2>/dev/null
-            source "$HOME"/.cargo/env
+            # shellcheck source=/dev/null
+            source ~/.cargo/env
             #
             if checkForExecutable -q cargo; then
                 printf "\n==> We've sucessfully installed and configured "
