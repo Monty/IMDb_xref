@@ -252,7 +252,7 @@ perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' \
     "$POSSIBLE_MATCHES"
 
 while read -r line; do
-    >"$FINAL_RESULTS"
+    true >"$FINAL_RESULTS"
     nconstID="$line"
     nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
     noSpaceName="${nconstName//[[:space:]]/_}"
