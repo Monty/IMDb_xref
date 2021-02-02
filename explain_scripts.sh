@@ -18,7 +18,7 @@ source functions/define_files
 source functions/load_functions
 
 for script in *.sh; do
-    [[ -e "$script" ]] || break # handle the case of no files
+    [[ -e $script ]] || break # handle the case of no files
     if [ "$(grep -cF 'help()' $script)" -ne 0 ]; then
         [ $script == "explain_scripts.sh" ] && continue
         clear
