@@ -29,10 +29,10 @@ configFile="$HOME/.config/IMDb_xref/config"
 
 # ynPref - set the style of answering yes/no questions.such as:
 #       ==> Should I create a George Clooney filmography? [y/n]
-# The default (ynPref=) returns as soon as a y or n is typed. No <cr> required.
+# The default (ynPref="-s") returns as soon as a y or n is typed. No <cr> required.
 # The long form (ynPref="-l ") requires you to type a <cr> after the y or n.
 # In either case, a <cr> selects the capital letter in a [Y/n] or [y/N] pair.
-ynPref=
+ynPref="-s"
 
 # needPrefs - set to yes by default, unset once setPreferences.sh is run
 needPrefs="yes"

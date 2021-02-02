@@ -31,7 +31,8 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -c      Clear screen before prompting.
-    -l      Allow longer answer, like "yes" or "no" followed by <cr>
+    -l      Allow longer answer, i.e. "yes" or "no" followed by <cr>
+    -s      Allow shorter answer, i.e. a single "y" or "n"
     -k      Wait for any keystroke. Overrides -l switch.
     -N      Default to N if a <cr> is the first character typed.
     -Y      Default to Y if a <cr> is the first character typed.
@@ -42,6 +43,7 @@ EXAMPLES:
     waitUntil -kc
     waitUntil -Y
     waitUntil -l "<prompt>'
+    waitUntil -s "<prompt>'
     waitUntil -cY "<prompt>'
     waitUntil -lN "<prompt>'
 
@@ -50,7 +52,7 @@ EXAMPLES:
 EOF
     }
 
-    while getopts ":hclkNY" opt; do
+    while getopts ":hclksNY" opt; do
         case $opt in
         h)
             help
@@ -63,6 +65,9 @@ EOF
             ;;
         l)
             longRead="yes"
+            ;;
+        s)
+            longRead=
             ;;
         k)
             anyKey="yes"

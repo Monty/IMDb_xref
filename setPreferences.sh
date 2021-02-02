@@ -92,12 +92,12 @@ while true; do
             case "$REPLY" in
             1)
                 ynPref=
-                perl -pi -e 's+^ynPref=.*+ynPref=+;' $configFile
+                perl -pi -e 's+^ynPref=.*+ynPref="-s"+;' $configFile
                 break
                 ;;
             2)
                 ynPref="-l "
-                perl -pi -e 's+^ynPref=.*+ynPref="-l "+;' $configFile
+                perl -pi -e 's+^ynPref=.*+ynPref="-l"+;' $configFile
                 break
                 ;;
             3)
