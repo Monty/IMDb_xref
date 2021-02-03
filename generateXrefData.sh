@@ -232,6 +232,7 @@ TCONST_LIST="$WORK/tconst$DATE_ID.txt"
 EPISODES_LIST="$WORK/tconst-episodes$DATE_ID.txt"
 KNOWNFOR_LIST="$WORK/tconst_known$DATE_ID.txt"
 NCONST_LIST="$WORK/nconst$DATE_ID.txt"
+TEMP_LIST="$WORK/temp_list$DATE_ID.txt"
 TEMP_SHOWS="$WORK/temp_shows$DATE_ID.csv"
 RAW_SHOWS="$WORK/raw_shows$DATE_ID.csv"
 RAW_EPISODES="$WORK/raw_episodes$DATE_ID.csv"
@@ -271,7 +272,7 @@ PUBLISHED_RAW_SHOWS="$BASE/raw_shows.csv"
 PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
 
 # Filename groups used for cleanup
-ALL_TEMPS="$TEMP_AWK $TEMP_SHOWS"
+ALL_TEMPS="$TEMP_AWK $TEMP_SHOWS $TEMP_LIST"
 ALL_WORKING="$DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST $EPISODES_LIST "
 ALL_WORKING+="$KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL $NCONST_PL "
 ALL_WORKING+="$TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
@@ -368,8 +369,8 @@ rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
     sort --key=1,1 --key=2,2n | perl -p -e 's+nm0745728+nm0745694+' |
     perl -p -e 's+\\N++g;' |
     perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
-    rg "$ALL_JOBS" |
-    tee "$UNSORTED_CREDITS" | cut -f 1 | sort -u >"$NCONST_LIST"
+    rg "$ALL_JOBS" | tee "$UNSORTED_CREDITS" | cut -f 1 |
+    sort -u | tee "$TEMP_LIST" >"$NCONST_LIST"
 
 # Use episodes list to lookup principal titles & add to tconst/nconst credits csv
 rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
@@ -377,7 +378,7 @@ rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
     perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
     rg "$ALL_JOBS" |
     tee -a "$UNSORTED_CREDITS" | cut -f 1 | sort -u |
-    rg -v -f "$NCONST_LIST" >>"$NCONST_LIST"
+    rg -v -f "$TEMP_LIST" >>"$NCONST_LIST"
 
 # Create a perl script to globally convert a show tconst to a show title
 cut -f 1,5 "$RAW_SHOWS" |
@@ -405,7 +406,8 @@ rg -wNz -f "$NCONST_LIST" name.basics.tsv.gz | perl -p -e 's+\\N++g;' |
 # Get rid of ugly \N fields, and unneeded characters. Make sure commas are
 # followed by spaces. Separate multiple characters portrayed with semicolons,
 # remove quotes
-perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' "$ALL_CSV"
+# shellcheck disable=SC2086     # $ALL_CSV breaks if quoted
+perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $ALL_CSV
 
 # Create the KNOWN_PERSONS spreadsheet, ensure always 5 fields
 printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tKnown For Titles: 4\n" \

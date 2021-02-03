@@ -68,13 +68,15 @@ $NAMES_PL
 $CREDITS_CSV
 $EPISODES_CSV
 $CAST_CSV
+
+$TEMP_LIST
 EOT
     else
         rm -f "$ALL_TERMS" "$TCONST_TERMS" "$SHOWS_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$ALL_MATCHES" "$CACHE_LIST" "$SEARCH_LIST"
         rm -f "$TCONST_LIST" "$SHOW_NAMES" "$EPISODES_LIST" "$NCONST_LIST"
         rm -f "$SHOWS_PL" "$EPISODES_PL" "$EPISODE_NAMES_PL" "$NAMES_PL"
-        rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV"
+        rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV" "$TEMP_LIST"
     fi
 }
 
@@ -144,6 +146,8 @@ NAMES_PL=$(mktemp)
 CREDITS_CSV=$(mktemp)
 EPISODES_CSV=$(mktemp)
 CAST_CSV=$(mktemp)
+#
+TEMP_LIST=$(mktemp)
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
@@ -301,14 +305,14 @@ if [ "$(rg -c "^tt" "$TCONST_LIST")" ]; then
     rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
         perl -p -e 's+nm0745728+nm0745694+' |
         perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
-        tee "$CREDITS_CSV" | cut -f 1 | sort -u >"$NCONST_LIST"
+        tee "$CREDITS_CSV" | cut -f 1 | sort -u | tee "$TEMP_LIST" >"$NCONST_LIST"
 
     # Use episodes list to lookup principal titles and add to credits csv
     # Copy field 1 to the episode title field!
     rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
         perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
         tee -a "$CREDITS_CSV" | cut -f 1 | sort -u |
-        rg -v -f "$NCONST_LIST" >>"$NCONST_LIST"
+        rg -v -f "$TEMP_LIST" >>"$NCONST_LIST"
 
     # Create a perl script to convert an nconst to a name
     rg -wNz -f "$NCONST_LIST" name.basics.tsv.gz |
