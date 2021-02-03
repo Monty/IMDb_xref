@@ -144,7 +144,7 @@ shift $((OPTIND - 1))
 ensurePrerequisites
 
 # If we ALWAYS want QUIET
-[ $(rg -c "QUIET=yes" "$configFile") ] && QUIET="yes"
+[ "$(rg -c "QUIET=yes" "$configFile")" ] && QUIET="yes"
 
 # All jobs or just the most important ones?
 [ -z "$ALL_JOBS" ] && ALL_JOBS="\b(actor|actress|writer|director|producer)\b"
@@ -538,7 +538,7 @@ function checkdiffs() {
         printf "==> what changed between $1 and $2:\n"
         # first the stats
         diff -c "$1" "$2" | diffstat -sq \
-            -D $(cd $(dirname "$2") && pwd -P) |
+            -D "$(cd "$(dirname "$2")" && pwd -P)" |
             sed -e "s+ 1 file changed,+==>+" -e "s+([+-=\!])++g"
         # then the diffs
         diff \
