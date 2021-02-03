@@ -88,7 +88,7 @@ while true; do
 
     ynOptions=("Don't require a <cr>" "Require a <cr>" "Let me try those again" "Decide later")
     PS3="Select a number from 1-${#ynOptions[@]}: "
-    # shellcheck disable=SC2034 # ynMenu is intentionally not used
+    # shellcheck disable=SC2034      # ynMenu is intentionally not used
     select ynMenu in "${ynOptions[@]}"; do
         if [ "$REPLY" -ge 1 ] 2>/dev/null && [ "$REPLY" -le "${#ynOptions[@]}" ]; then
             case "$REPLY" in

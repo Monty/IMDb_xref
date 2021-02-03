@@ -110,7 +110,7 @@ EOT-3
             checkForExecutable curl
             printf "\n==> Installing the Rust programming language.\n\n"
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 2>/dev/null
-            # shellcheck source=/dev/null
+            # shellcheck source=/dev/null      # ~/.cargo/env is created above
             source ~/.cargo/env
             #
             if checkForExecutable -q cargo; then

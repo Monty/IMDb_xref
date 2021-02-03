@@ -36,8 +36,8 @@ EOF
 
 function deleteFiles() {
     printf "Deleting ...\n"
-    # Don't quote $@. Globbing needs to take place here.
-    # shellcheck disable=SC2068
+    # Globbing needs to take place here.
+    # shellcheck disable=SC2068      # Don't quote $@
     rm -rf "$ASK" "$TELL" $@
     printf "\n"
 }
