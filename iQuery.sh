@@ -104,7 +104,7 @@ for file in "${uniqFiles[@]}"; do
     else
         missingCategories+=("${categories[$idx]}")
     fi
-    let idx++
+    ((idx++)) || true
 done
 
 # If we don't have any data...
@@ -170,7 +170,7 @@ while true; do
             select deleteMenu in "${searchArray[@]}"; do
                 printf "Removing: \"$deleteMenu\"\n"
                 # Arrays are zero based
-                let REPLY--
+                ((REPLY--)) || true
                 tempArray=("${searchArray[@]}")
                 searchArray=()
                 searchString=""
