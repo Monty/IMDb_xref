@@ -98,8 +98,11 @@ EOF
     if [ -n "$anyKey" ]; then
         printf "\n"
         [ -n "$clearFirst" ] && clear
-        read -r -n 1 -s -p "${1:-Hit any key to continue, '^C' to quit.} " </dev/tty
-        printf "\n\n"
+        # printf doesn't work correctly with "alternative" in second field
+        # shellcheck disable=SC2059      # printf breaks otherwise
+        printf "${1:-Hit any key to continue, '^C' to quit.} "
+        read -r -n 1 -s </dev/tty
+        printf "\n"
         return
     fi
 
@@ -110,7 +113,7 @@ EOF
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
         [ -n "$clearFirst" ] && clear
-        printf "%s %s" "${1:-Does that look correct?}" "$yesno"
+        printf "${1:-Does that look correct?} %s" "$yesno"
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
         if [ -n "$longRead" ]; then

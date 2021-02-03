@@ -17,6 +17,8 @@ printf "==> Starting Section 1.\n\n"
 printf "==> 'waitUntil -k' with no prompt supplied. Expect 'Hit any key to continue, '^C' to quit.'\n"
 waitUntil -k
 #
+waitUntil -k "\nCustom newline prompt for -k. Shouldn't start with a slash. Hit any key."
+#
 waitUntil -k "Custom prompt supplied for -k. Hit any key. Next test should clear the screen."
 #
 waitUntil -kc "Screen should have cleared from -kc. Hit any key."
@@ -52,6 +54,12 @@ fi
 printf "==> A third simple 'waitUntil' that only accepts 1 character. Hit any key.\n"
 printf "==> It should loop waiting for y or n.\n"
 if waitUntil; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+#
+if waitUntil "\nWith a custom newline prompt. Shouldn't start with a slash."; then
     printf "Yes\n"
 else
     printf "No\n"
@@ -138,26 +146,32 @@ printf "==> Done with Section 3.\n\n"
 printf "==> Section 4. Test longer form answers that require a <cr> before proceeding.\n"
 printf "==> Only the first character is tested, so 'yes' works as well as 'y'.\n"
 
-printf "\n==> Four tests to check long responses to ${RED}[y/n]${NO_COLOR} prompts.\n"
+printf "\n==> Five tests to check long responses to ${RED}[y/n]${NO_COLOR} prompts.\n"
 if waitUntil -l "1. Enter any string starting with y."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
 #
-if waitUntil -l "2. Enter any string starting with n."; then
+if waitUntil -l "\n2. Newline. Enter any string starting with y. Shouldn't start with a slash."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
 #
-if waitUntil -l "3. Enter <cr>. Should loop waiting for y or n."; then
+if waitUntil -l "3. Enter any string starting with n."; then
     printf "Yes\n"
 else
     printf "No\n"
 fi
 #
-if waitUntil -l "4. Enter a different character. Should loop waiting for y or n."; then
+if waitUntil -l "4. Enter <cr>. Should loop waiting for y or n."; then
+    printf "Yes\n"
+else
+    printf "No\n"
+fi
+#
+if waitUntil -l "5. Enter a different character. Should loop waiting for y or n."; then
     printf "Yes\n"
 else
     printf "No\n"
