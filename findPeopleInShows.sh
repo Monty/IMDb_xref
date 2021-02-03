@@ -98,7 +98,7 @@ function loopOrExitP() {
     fi
 }
 
-while getopts ":hm:y" opt; do
+while getopts ":hm:" opt; do
     case $opt in
     h)
         help
