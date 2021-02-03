@@ -96,13 +96,13 @@ EOF
     # If we only want to wait for any key to be hit...
     # Print a blank line before the prompt, and after the key is hit
     if [ -n "$anyKey" ]; then
-        printf "\n"
+        printf "\n" >&2
         [ -n "$clearFirst" ] && clear
         # printf doesn't work correctly with "alternative" in second field
         # shellcheck disable=SC2059      # printf breaks otherwise
-        printf "${1:-Hit any key to continue, '^C' to quit.} "
+        printf "${1:-Hit any key to continue, '^C' to quit.} " >&2
         read -r -n 1 -s </dev/tty
-        printf "\n"
+        printf "\n" >&2
         return
     fi
 
@@ -113,14 +113,14 @@ EOF
     while true; do
         # Ask the question (not using "read -p" as it uses stderr not stdout)
         [ -n "$clearFirst" ] && clear
-        printf "${1:-Does that look correct?} %s" "$yesno"
+        printf "${1:-Does that look correct?} %s" "$yesno" >&2
         #
         # Read the answer (use /dev/tty in case stdin is redirected from somewhere else)
         if [ -n "$longRead" ]; then
             read -r reply </dev/tty
         else
             read -r -n 1 -s reply </dev/tty
-            [ -z "$reply" ] || [ "${#reply}" != 0 ] && printf "\n"
+            [ -z "$reply" ] || [ "${#reply}" != 0 ] && printf "\n" >&2
         fi
         #
         # If no reply, use the default if it exists
