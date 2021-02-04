@@ -581,7 +581,8 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 ### Any funny stuff with file lengths?
 
-$(wc "$ALL_WORKING" "$ALL_TXT" "$ALL_CSV" "$ALL_SPREADSHEETS")
+# shellcheck disable=SC2086     # $ALL_* breaks if quoted
+$(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
 
 EOF
 
