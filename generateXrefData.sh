@@ -180,7 +180,7 @@ if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
 fi
 
 # Pick tconst file(s) to process
-[ $# -eq 0 ] && TCONST_FILES="*.tconst" || TCONST_FILES="$@"
+[ $# -eq 0 ] && TCONST_FILES="*.tconst" || TCONST_FILES="$*"
 [ -n "$TEST_MODE" ] && TCONST_FILES="tconst.example"
 #
 if [ "$TCONST_FILES" == "*.tconst" ]; then
