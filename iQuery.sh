@@ -73,7 +73,7 @@ while getopts ":hm:" opt; do
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
         ;;
     :)
-        printf "==> Option -$OPTARG requires a 'maximim hits' argument.'\n\n" >&2
+        printf "==> Option -$OPTARG requires a 'maximum menu size' argument.'\n\n" >&2
         exit 1
         ;;
     esac
