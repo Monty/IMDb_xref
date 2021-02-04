@@ -226,14 +226,14 @@ while true; do
         read -r -n 1 -s
         printf "$REPLY"
         searchFor+="$REPLY"
-        hitCount="$(rg -NzSI -c "$searchFor" $searchFile)"
+        hitCount="$(rg -N -c "$searchFor" $searchFile)"
         if [ "$hitCount" == "" ]; then
             printf "\nNo matches found.\n"
             break
         elif [ "$hitCount" -eq 1 ]; then
             # printf "\nOnly one match found\n"
-            # rg -NzSI $searchFor $searchFile
-            result="$(rg -NzSI "$searchFor" $searchFile)"
+            # rg -N $searchFor $searchFile
+            result="$(rg -N "$searchFor" $searchFile)"
             for term in "${searchArray[@]}"; do
                 [ "$result" == "$term" ] && break 2
             done
@@ -242,8 +242,11 @@ while true; do
             break
         elif [ "$hitCount" -le "${maxHits:-10}" ]; then
             # printf "\n$hitCount matches found\n"
-            # printf "\n"
-            IFS=$'\n' pickOptions=($(rg -NzSI "$searchFor" "$searchFile"))
+            # rg --color always -N "$searchFor" "$searchFile" | xsv table -d "\t"
+            pickOptions=()
+            while IFS=$'\n' read -r line; do
+                pickOptions+=("$line")
+            done < <(rg -N "$searchFor" "$searchFile")
             printf "\n"
             PS3="Select a number from 1-${#pickOptions[@]}: "
             COLUMNS=40
@@ -251,7 +254,7 @@ while true; do
                 if [ 1 -le "$REPLY" ] 2>/dev/null &&
                     [ "$REPLY" -le "${#pickOptions[@]}" ]; then
                     # printf "You picked $pickMenu ($REPLY)\n"
-                    # rg -NzSI $pickMenu "$searchFile"
+                    # rg -N $pickMenu "$searchFile"
                     for term in "${searchArray[@]}"; do
                         [ "$pickMenu" == "$term" ] && break 2
                     done

@@ -194,10 +194,12 @@ EOF
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
-    # rg --color always "\t$match\t" $POSSIBLE_MATCHES | xsv table -d "\t"
+    # rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" | xsv table -d "\t"
     pickOptions=()
-    IFS=$'\n' pickOptions=($(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=2))
+    while IFS=$'\n' read -r line; do
+        pickOptions+=("$line")
+    done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
+        sort -f -t$'\t' --key=2)
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "

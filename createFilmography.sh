@@ -194,8 +194,11 @@ EOF
         fi
     fi
     pickOptions=()
-    IFS=$'\n' pickOptions=($(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=3,3r --key=5))
+    # rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" | xsv table -d "\t"
+    while IFS=$'\n' read -r line; do
+        pickOptions+=("$line")
+    done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
+        sort -f -t$'\t' --key=3,3r --key=5)
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
