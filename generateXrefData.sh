@@ -552,6 +552,7 @@ function checkdiffs() {
             --changed-group-format='==> changed %dn line%(n=1?:s) at line %df <==
 %<------ to:
 %>' "$1" "$2"
+        # shellcheck disable=SC2181      # Breaks unless $? is used
         if [ $? == 0 ]; then
             printf "==> no diffs found.\n"
         fi
@@ -581,6 +582,7 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 ### Any funny stuff with file lengths?
 
+# The following doesn't supress SC2086 error messages
 # shellcheck disable=SC2086     # $ALL_* breaks if quoted
 $(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
 
