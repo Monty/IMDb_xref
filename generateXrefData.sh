@@ -68,11 +68,17 @@ trap terminate EXIT
 #
 function terminate() {
     if [ -n "$DEBUG" ]; then
-        printf "\nTerminating: $(basename "$0")\n" >&2
+        printf "\nTerminating: %s\n" "$(basename "$0")" >&2
         printf "Not removing:\n" >&2
-        printf "$ALL_TEMPS $ALL_WORKING $ALL_CSV\n" >&2
+        cat <<EOT >&2
+ALL_TEMPS $ALL_TEMPS
+ALL_WORKING $ALL_WORKING
+ALL_CSV $ALL_CSV
+EOT
     else
-        rm -f "$ALL_TEMPS" "$ALL_WORKING" "$ALL_CSV"
+        rm -f "$ALL_TEMPS"
+        rm -f "$ALL_WORKING"
+        rm -f "$ALL_CSV"
     fi
 }
 
@@ -130,10 +136,10 @@ while getopts ":d:o:x:hacqt" opt; do
         XLATE_FILES="$OPTARG"
         ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     :)
-        printf "==> Option -$OPTARG requires an argument'.\n\n" >&2
+        printf "==> Option -%s requires an argument'.\n\n" "$OPTARG" >&2
         exit 1
         ;;
     esac
@@ -172,9 +178,10 @@ if [ "$XLATE_FILES" == "*.xlate" ]; then
         printf "==> Using all .xlate files for IMDb title translation.\n\n"
 else
     [ -z "$QUIET" ] &&
-        printf "==> Using $XLATE_FILES for IMDb title translation.\n\n"
+        printf "==> Using %s for IMDb title translation.\n\n" "$XLATE_FILES"
 fi
 if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
+    # shellcheck disable=SC2059      # variables in printf OK here
     printf "==>[${RED}Error${NO_COLOR}] No such file(s): $XLATE_FILES\n\n" >&2
     exit 1
 fi
@@ -188,9 +195,10 @@ if [ "$TCONST_FILES" == "*.tconst" ]; then
         printf "==> Searching all .tconst files for IMDb title identifiers.\n"
 else
     [ -z "$QUIET" ] &&
-        printf "==> Searching $TCONST_FILES for IMDb title identifiers.\n"
+        printf "==> Searching %s for IMDb title identifiers.\n" "$TCONST_FILES"
 fi
 if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
+    # shellcheck disable=SC2059      # variables in printf OK here
     printf "==> [${RED}Error${NO_COLOR}] No such file(s): $TCONST_FILES\n\n" >&2
     exit 1
 fi
@@ -209,7 +217,8 @@ mkdir -p $WORK $BASE
 # Error and debugging info (per run)
 POSSIBLE_DIFFS="diffs$LONGDATE.txt"
 [ -n "$CREATE_DIFF" ] &&
-    printf "\n==> $POSSIBLE_DIFFS contains diffs between generated files and files saved in $BASE\n"
+    printf "\n==> %s contains diffs between generated files and files saved in %s\n" \
+        "$POSSIBLE_DIFFS" "$BASE"
 
 # Final output spreadsheets
 CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
@@ -282,7 +291,11 @@ ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS "
 ALL_SPREADSHEETS+="$ASSOCIATED_TITLES $CREDITS_SHOW $CREDITS_PERSON "
 
 # Cleanup any possible leftover files
-rm -f "$ALL_TEMPS" "$ALL_WORKING" "$ALL_TXT" "$ALL_CSV" "$ALL_SPREADSHEETS"
+rm -f "$ALL_TEMPS"
+rm -f "$ALL_WORKING"
+rm -f "$ALL_TXT"
+rm -f "$ALL_CSV"
+rm -f "$ALL_SPREADSHEETS"
 
 # Coalesce a single tconst input list
 rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >"$TCONST_LIST"
@@ -298,6 +311,7 @@ rg -INv "^#|^$" $XLATE_FILES | cut -f 1,2 | sort -fu |
 rg -INv "^#|^$" $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >"$DUPES"
 ### Stop here if there are translation conflicts.
 if [ -s "$DUPES" ]; then
+    # shellcheck disable=SC2059      # variables in printf OK here
     printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "
     cat "$DUPES"
     printf "\n==> These files have different translations for the same show title.\n"
@@ -345,7 +359,7 @@ rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >"$SKIP_TCONST"
 
 # Let us know shows we're processing. Format for readability, separate with ";"
 num_titles=$(sed -n '$=' "$UNIQUE_TITLES")
-printf "\n==> Processing $num_titles shows found in $TCONST_FILES:\n"
+printf "\n==> Processing %s shows found in %s:\n" "$num_titles" "$TCONST_FILES"
 perl -p -e 's+$+;+' "$UNIQUE_TITLES" | fmt -w 80 | perl -p -e 's+^+\t+' |
     sed '$ s+.$++'
 [ -n "$OUTPUT_DIR" ] && printf "\n"
@@ -406,7 +420,7 @@ rg -wNz -f "$NCONST_LIST" name.basics.tsv.gz | perl -p -e 's+\\N++g;' |
 # Get rid of ugly \N fields, and unneeded characters. Make sure commas are
 # followed by spaces. Separate multiple characters portrayed with semicolons,
 # remove quotes
-# shellcheck disable=SC2086     # $ALL_CSV breaks if quoted
+# shellcheck disable=SC2086     # Need globbing here, breaks otherwise
 perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $ALL_CSV
 
 # Create the KNOWN_PERSONS spreadsheet, ensure always 5 fields
@@ -489,17 +503,18 @@ function printAdjustedFileInfo() {
     # Subtract lines to account for headers or trailers, 0 for no adjustment
     #   INVOCATION: printAdjustedFileInfo filename adjustment
     numlines=$(($(sed -n '$=' "$1") - $2))
+    # shellcheck disable=SC2012      # Breaks unless ls -loh is used
     ls -loh "$1" | perl -lane 'printf "%-45s%6s%6s %s %s ",@F[7,3,4,5,6];'
     printf "%8d lines\n" "$numlines"
 }
 
 # Output some stats from $SHOWS
 if [ -z "$QUIET" ]; then
-    printf "==> Show types in $SHOWS:\n"
+    printf "==> Show types in %s:\n" "$SHOWS"
     cut -f 4 "$RAW_SHOWS" | frequency
 
     # Output some stats from credits
-    printf "\n==> Stats from processing $CREDITS_PERSON:\n"
+    printf "\n==> Stats from processing %s:\n" "$CREDITS_PERSON"
     numPersons=$(sed -n '$=' "$UNIQUE_PERSONS")
     printf "%8d people credited -- some in more than one job function\n" "$numPersons"
     cut -f 1,5 "$UNSORTED_CREDITS" | sort -fu | cut -f 2 | frequency
@@ -534,10 +549,10 @@ function checkdiffs() {
         # If the basefile file doesn't yet exist, assume no differences
         # and copy the newfile to the basefile so it can serve
         # as a base for diffs in the future.
-        printf "==> $1 does not exist. Creating it, assuming no diffs.\n"
+        printf "==> %s does not exist. Creating it, assuming no diffs.\n" "$1"
         cp -p "$2" "$1"
     else
-        printf "==> what changed between $1 and $2:\n"
+        printf "==> what changed between %s and %s:\n" "$1" "$2"
         # first the stats
         diff -c "$1" "$2" | diffstat -sq \
             -D "$(cd "$(dirname "$2")" && pwd -P)" |
@@ -582,9 +597,10 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 ### Any funny stuff with file lengths?
 
-# The following doesn't supress SC2086 error messages
-# shellcheck disable=SC2086     # $ALL_* breaks if quoted
-$(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
+$(wc "$ALL_WORKING")
+$(wc "$ALL_TXT")
+$(wc "$ALL_CSV")
+$(wc "$ALL_SPREADSHEETS")
 
 EOF
 
