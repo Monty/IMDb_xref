@@ -62,7 +62,12 @@ function terminate() {
     if [ -n "$DEBUG" ]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
-        printf "$TMPFILE $SEARCH_TERMS $ALL_NAMES $MULTIPLE_NAMES\n" >&2
+        cat <<EOT >&2
+TMPFILE $TMPFILE
+SEARCH_TERMS $SEARCH_TERMS
+ALL_NAMES $ALL_NAMES
+MULTIPLE_NAMES $MULTIPLE_NAMES
+EOT
     else
         rm -rf "$TMPFILE" "$SEARCH_TERMS" "$ALL_NAMES" "$MULTIPLE_NAMES"
     fi

@@ -51,8 +51,13 @@ function terminate() {
     if [ -n "$DEBUG" ]; then
         printf "\nTerminating: %s\n" "$(basename "$0")" >&2
         printf "Not removing:\n" >&2
-        printf "%s\n" "$RESULT" "$COMMENTS" "$CACHE_LIST" "$SEARCH_LIST" \
-            "$TCONST_LIST" >&2
+        cat <<EOT >&2
+RESULT $RESULT
+COMMENTS $COMMENTS
+CACHE_LIST $CACHE_LIST
+SEARCH_LIST $SEARCH_LIST
+TCONST_LIST $TCONST_LIST
+EOT
     else
         rm -rf "$RESULT" "$COMMENTS" "$CACHE_LIST" "$SEARCH_LIST" "$TCONST_LIST"
     fi

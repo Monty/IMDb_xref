@@ -45,8 +45,15 @@ function terminate() {
     if [ -n "$DEBUG" ]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
-        printf "$ALL_TERMS $NCONST_TERMS $PERSON_TERMS $POSSIBLE_MATCHES\n" >&2
-        printf "$MATCH_COUNTS $PERSON_RESULTS $JOB_RESULTS\n" >&2
+        cat <<EOT >&2
+ALL_TERMS $ALL_TERMS
+NCONST_TERMS $NCONST_TERMS
+PERSON_TERMS $PERSON_TERMS
+POSSIBLE_MATCHES $POSSIBLE_MATCHES
+MATCH_COUNTS $MATCH_COUNTS
+PERSON_RESULTS $PERSON_RESULTS
+JOB_RESULTS $JOB_RESULTS
+EOT
     else
         rm -f "$ALL_TERMS" "$NCONST_TERMS" "$PERSON_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS"
