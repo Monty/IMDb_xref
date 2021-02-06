@@ -191,8 +191,8 @@ perl -p -e 's/^/^/; s/$/\\t/;' "$TCONST_TERMS" >"$ALL_TERMS"
 perl -p -e 's/^/\\t/; s/$/\\t/;' "$SHOWS_TERMS" >>"$ALL_TERMS"
 
 # Get all possible matches at once
-rg -NzSI -f "$ALL_TERMS" title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4 |
-    sort -f -t$'\t' --key=3 >"$POSSIBLE_MATCHES"
+rg -NzSI -f "$ALL_TERMS" title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4,6 |
+    perl -p -e 's+\\N++g;' | sort -f -t$'\t' --key=3 >"$POSSIBLE_MATCHES"
 
 # Figure how many matches for each possible match
 cut -f 3 "$POSSIBLE_MATCHES" | frequency -t >"$MATCH_COUNTS"
