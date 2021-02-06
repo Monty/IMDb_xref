@@ -157,12 +157,12 @@ ensurePrerequisites
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
 
-if [ ! -n "$(ls ./*.xlate 2>/dev/null)" ]; then
+if [ -z "$(ls ./*.xlate 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
-if [ ! -n "$(ls ./*.tconst 2>/dev/null)" ]; then
+if [ -z "$(ls ./*.tconst 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
@@ -184,7 +184,7 @@ else
         [ -z "$QUIET" ] &&
             printf "==> Using %s for IMDb title translation.\n\n" "${XLATE_FILES[@]}"
     fi
-    if [ ! -n "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]; then
+    if [ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]; then
         printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
         exit 1
     fi
@@ -599,9 +599,10 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 ### Any funny stuff with file lengths?
 
-$(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
-
 EOF
+
+# shellcheck disable=SC2086     # Need globbing here, breaks otherwise
+wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS >>"$POSSIBLE_DIFFS"
 
 # Save durations and exit
 processDurations
