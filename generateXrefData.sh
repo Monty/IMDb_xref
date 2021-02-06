@@ -131,7 +131,7 @@ while getopts ":d:o:x:hacqt" opt; do
         TEST_MODE="yes"
         ;;
     x)
-        XLATE_FILES="$OPTARG"
+        XLATE_FILES=("$OPTARG")
         ;;
     \?)
         printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
@@ -169,22 +169,22 @@ if [ ! "$(ls ./*.tconst 2>/dev/null)" ]; then
 fi
 
 if [ -n "$TEST_MODE" ]; then
-    XLATE_FILES="xlate.example"
+    XLATE_FILES=("xlate.example")
     TCONST_FILES=("tconst.example")
     printf "==> Using xlate.example files for IMDb title translation.\n\n"
-    printf "==> Searching tconst.example forIMDb title identifiers.\n"
+    printf "==> Searching tconst.example for IMDb title identifiers.\n"
 else
     # Pick xlate file(s) to process if not specified with -x option
-    if [ -z "$XLATE_FILES" ]; then
-        XLATE_FILES="*.xlate"
+    if [ -z "${XLATE_FILES[*]}" ]; then
+        XLATE_FILES=(*.xlate)
         [ -z "$QUIET" ] &&
             printf "==> Using all .xlate files for IMDb title translation.\n\n"
     else
         [ -z "$QUIET" ] &&
-            printf "==> Using %s for IMDb title translation.\n\n" "$XLATE_FILES"
+            printf "==> Using %s for IMDb title translation.\n\n" "${XLATE_FILES[@]}"
     fi
-    if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
-        printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "$XLATE_FILES" >&2
+    if [ ! "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]; then
+        printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
         exit 1
     fi
 
@@ -303,11 +303,11 @@ rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
 # their English equivalent. Regex delimiter needs to avoid any characters
 # present in the input, use {} for readability
 
-rg -INv "^#|^$" $XLATE_FILES | cut -f 1,2 | sort -fu |
+rg -INv "^#|^$" "${XLATE_FILES[@]}" | cut -f 1,2 | sort -fu |
     perl -p -e 's+\t+\\t}\{\\t+; s+^+s{\\t+; s+$+\\t};+' >"$XLATE_PL"
 
 # Check for translation conflicts
-rg -INv "^#|^$" $XLATE_FILES | sort -fu | cut -f 1 | sort -f | uniq -d >"$DUPES"
+rg -INv "^#|^$" "${XLATE_FILES[@]}" | sort -fu | cut -f 1 | sort -f | uniq -d >"$DUPES"
 ### Stop here if there are translation conflicts.
 if [ -s "$DUPES" ]; then
     # shellcheck disable=SC2059      # variables in printf OK here
@@ -315,7 +315,7 @@ if [ -s "$DUPES" ]; then
     cat "$DUPES"
     printf "\n==> These files have different translations for the same show title.\n"
     printf "    Please ensure all translations for a title are the same, then re-run this script\n"
-    rg -p -f "$DUPES" "$XLATE_FILES" | rg -v ":#"
+    rg -p -f "$DUPES" "${XLATE_FILES[@]}" | rg -v ":#"
     exit 1
 fi
 
