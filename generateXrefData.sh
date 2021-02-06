@@ -76,9 +76,7 @@ ALL_WORKING $ALL_WORKING
 ALL_CSV $ALL_CSV
 EOT
     else
-        rm -f "$ALL_TEMPS"
-        rm -f "$ALL_WORKING"
-        rm -f "$ALL_CSV"
+        rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
     fi
 }
 
@@ -157,6 +155,7 @@ ensurePrerequisites
 
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
+
 if [ ! "$(ls ./*.xlate 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
@@ -169,38 +168,42 @@ if [ ! "$(ls ./*.tconst 2>/dev/null)" ]; then
         -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
-# Pick xlate file(s) to process if not specified with -x option
-[ -z "$XLATE_FILES" ] && XLATE_FILES="*.xlate"
-[ -n "$TEST_MODE" ] && XLATE_FILES="xlate.example"
-#
-if [ "$XLATE_FILES" == "*.xlate" ]; then
-    [ -z "$QUIET" ] &&
-        printf "==> Using all .xlate files for IMDb title translation.\n\n"
+if [ -n "$TEST_MODE" ]; then
+    XLATE_FILES="xlate.example"
+    TCONST_FILES=("tconst.example")
+    printf "==> Using xlate.example files for IMDb title translation.\n\n"
+    printf "==> Searching tconst.example forIMDb title identifiers.\n"
 else
-    [ -z "$QUIET" ] &&
-        printf "==> Using %s for IMDb title translation.\n\n" "$XLATE_FILES"
-fi
-if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
-    # shellcheck disable=SC2059      # variables in printf OK here
-    printf "==>[${RED}Error${NO_COLOR}] No such file(s): $XLATE_FILES\n\n" >&2
-    exit 1
-fi
+    # Pick xlate file(s) to process if not specified with -x option
+    if [ -z "$XLATE_FILES" ]; then
+        XLATE_FILES="*.xlate"
+        [ -z "$QUIET" ] &&
+            printf "==> Using all .xlate files for IMDb title translation.\n\n"
+    else
+        [ -z "$QUIET" ] &&
+            printf "==> Using %s for IMDb title translation.\n\n" "$XLATE_FILES"
+    fi
+    if [ ! "$(ls $XLATE_FILES 2>/dev/null)" ]; then
+        printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "$XLATE_FILES" >&2
+        exit 1
+    fi
 
-# Pick tconst file(s) to process
-[ $# -eq 0 ] && TCONST_FILES="*.tconst" || TCONST_FILES="$*"
-[ -n "$TEST_MODE" ] && TCONST_FILES="tconst.example"
-#
-if [ "$TCONST_FILES" == "*.tconst" ]; then
-    [ -z "$QUIET" ] &&
-        printf "==> Searching all .tconst files for IMDb title identifiers.\n"
-else
-    [ -z "$QUIET" ] &&
-        printf "==> Searching %s for IMDb title identifiers.\n" "$TCONST_FILES"
-fi
-if [ ! "$(ls $TCONST_FILES 2>/dev/null)" ]; then
-    # shellcheck disable=SC2059      # variables in printf OK here
-    printf "==> [${RED}Error${NO_COLOR}] No such file(s): $TCONST_FILES\n\n" >&2
-    exit 1
+    # Pick tconst file(s) to process
+    if [ $# -eq 0 ]; then
+        TCONST_FILES=(*.tconst)
+        [ -z "$QUIET" ] &&
+            printf "==> Searching all .tconst files for IMDb title identifiers.\n"
+    else
+        for file in "$@"; do
+            if [ ! -e "$file" ]; then
+                printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "$file" >&2
+                exit 1
+            fi
+            TCONST_FILES+=("$file")
+        done
+        [ -z "$QUIET" ] &&
+            printf "==> Searching %s for IMDb title identifiers.\n" "${TCONST_FILES[*]}"
+    fi
 fi
 
 # Create some timestamps - only use DATE_ID if we're debugging
@@ -291,14 +294,10 @@ ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS "
 ALL_SPREADSHEETS+="$ASSOCIATED_TITLES $CREDITS_SHOW $CREDITS_PERSON "
 
 # Cleanup any possible leftover files
-rm -f "$ALL_TEMPS"
-rm -f "$ALL_WORKING"
-rm -f "$ALL_TXT"
-rm -f "$ALL_CSV"
-rm -f "$ALL_SPREADSHEETS"
+rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
 
 # Coalesce a single tconst input list
-rg -IN "^tt" $TCONST_FILES | cut -f 1 | sort -u >"$TCONST_LIST"
+rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
 
 # Create a perl "substitute" script to translate any known non-English titles to
 # their English equivalent. Regex delimiter needs to avoid any characters
@@ -316,7 +315,7 @@ if [ -s "$DUPES" ]; then
     cat "$DUPES"
     printf "\n==> These files have different translations for the same show title.\n"
     printf "    Please ensure all translations for a title are the same, then re-run this script\n"
-    rg -p -f "$DUPES" $XLATE_FILES | rg -v ":#"
+    rg -p -f "$DUPES" "$XLATE_FILES" | rg -v ":#"
     exit 1
 fi
 
@@ -359,7 +358,7 @@ rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >"$SKIP_TCONST"
 
 # Let us know shows we're processing. Format for readability, separate with ";"
 num_titles=$(sed -n '$=' "$UNIQUE_TITLES")
-printf "\n==> Processing %s shows found in %s:\n" "$num_titles" "$TCONST_FILES"
+printf "\n==> Processing %s shows found in %s:\n" "$num_titles" "${TCONST_FILES[*]}"
 perl -p -e 's+$+;+' "$UNIQUE_TITLES" | fmt -w 80 | perl -p -e 's+^+\t+' |
     sed '$ s+.$++'
 [ -n "$OUTPUT_DIR" ] && printf "\n"
@@ -503,6 +502,7 @@ function printAdjustedFileInfo() {
     # Subtract lines to account for headers or trailers, 0 for no adjustment
     #   INVOCATION: printAdjustedFileInfo filename adjustment
     numlines=$(($(sed -n '$=' "$1") - $2))
+    # We're formatting the output string of "ls -loh", not walking the result
     # shellcheck disable=SC2012      # Breaks unless ls -loh is used
     ls -loh "$1" | perl -lane 'printf "%-45s%6s%6s %s %s ",@F[7,3,4,5,6];'
     printf "%8d lines\n" "$numlines"
@@ -597,10 +597,7 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 ### Any funny stuff with file lengths?
 
-$(wc "$ALL_WORKING")
-$(wc "$ALL_TXT")
-$(wc "$ALL_CSV")
-$(wc "$ALL_SPREADSHEETS")
+$(wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS)
 
 EOF
 
