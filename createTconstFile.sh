@@ -179,7 +179,7 @@ rg -NzSI -f "$ALL_TERMS" title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4,6 
     perl -p -e 's+\\N++g;' | sort -f -t$'\t' --key=3 >"$POSSIBLE_MATCHES"
 
 # Figure how many matches for each possible match
-cut -f 3 "$POSSIBLE_MATCHES" | frequency -t >"$MATCH_COUNTS"
+cut -f 3 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 
 # Add possible matches one at a time
 while read -r line; do
@@ -205,7 +205,7 @@ EOF
     while IFS=$'\n' read -r line; do
         pickOptions+=("$line")
     done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=2)
+        sort -f -t$'\t' --key=2,2 --key=5,5r)
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
