@@ -76,6 +76,7 @@ ALL_WORKING $ALL_WORKING
 ALL_CSV $ALL_CSV
 EOT
     else
+        # shellcheck disable=SC2086     # Need globbing here, breaks otherwise
         rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
     fi
 }
@@ -91,7 +92,7 @@ function cleanup() {
 function processDurations() {
     # If we're not in the primary directory, don't record times
     [ -n "$OUTPUT_DIR" ] && exit
-    saveDurations $SECONDS
+    saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations 10
     exit
@@ -215,7 +216,7 @@ WORK="secondary"
 BASE="baseline"
 [ -n "$TEST_MODE" ] && BASE="test_results"
 [ -n "$OUTPUT_DIR" ] && mkdir -p "$OUTPUT_DIR"
-mkdir -p $WORK $BASE
+mkdir -p "$WORK" "$BASE"
 
 # Error and debugging info (per run)
 POSSIBLE_DIFFS="diffs$LONGDATE.txt"
@@ -294,6 +295,7 @@ ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS "
 ALL_SPREADSHEETS+="$ASSOCIATED_TITLES $CREDITS_SHOW $CREDITS_PERSON "
 
 # Cleanup any possible leftover files
+# shellcheck disable=SC2086     # Need globbing here, breaks otherwise
 rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
 
 # Coalesce a single tconst input list
@@ -354,7 +356,7 @@ cut -f 5 "$RAW_SHOWS" | sort -fu >"$UNIQUE_TITLES"
 # tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
 # that can't be "translated" back to the original show. Manually maintain a skip
 # list in $SKIP_EPISODES.
-rg -v -e "^#" -e "^$" $SKIP_EPISODES | cut -f 1 >"$SKIP_TCONST"
+rg -v -e "^#" -e "^$" "$SKIP_EPISODES" | cut -f 1 >"$SKIP_TCONST"
 
 # Let us know shows we're processing. Format for readability, separate with ";"
 num_titles=$(sed -n '$=' "$UNIQUE_TITLES")

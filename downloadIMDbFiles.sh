@@ -17,7 +17,7 @@ source functions/load_functions
 SECONDS=0
 
 function terminate() {
-    saveDurations $SECONDS
+    saveDurations "$SECONDS"
     # Only keep 3 duration lines for this script
     trimDurations 3
     exit

@@ -226,14 +226,14 @@ while true; do
         read -r -n 1 -s
         printf "$REPLY"
         searchFor+="$REPLY"
-        hitCount="$(rg -N -c "$searchFor" $searchFile)"
+        hitCount="$(rg -N -c "$searchFor" "$searchFile")"
         if [ "$hitCount" == "" ]; then
             printf "\nNo matches found.\n"
             break
         elif [ "$hitCount" -eq 1 ]; then
             # printf "\nOnly one match found\n"
             # rg -N $searchFor $searchFile
-            result="$(rg -N "$searchFor" $searchFile)"
+            result="$(rg -N "$searchFor" "$searchFile")"
             for term in "${searchArray[@]}"; do
                 [ "$result" == "$term" ] && break 2
             done
