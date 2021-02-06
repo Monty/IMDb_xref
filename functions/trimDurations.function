@@ -45,7 +45,7 @@ EOF
             printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
             ;;
         :)
-            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR}" >&2
+            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
             printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
             exit 1
             ;;
