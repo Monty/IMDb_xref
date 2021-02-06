@@ -81,13 +81,13 @@ EOF
             default="Y"
             ;;
         \?)
-            printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring invalid " >&2
-            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: ${YELLOW}$0${NO_COLOR}\n" >&2
+            printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
+            printf "${YELLOW}$0>waitUntil${NO_COLOR}.\n" >&2
             ;;
         :)
-            printf "==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
-            printf "in: ${RED}$0${NO_COLOR} requires an argument.'\n\n" >&2
-            exit 1
+            printf "\n==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0>waitUntil${NO_COLOR} requires an argument.\n" >&2
             ;;
         esac
     done
