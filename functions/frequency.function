@@ -20,6 +20,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -w      Set fieldwidth - defaults to 8 if not specified
+    -s      Sort by result value, not frequency
     -t      Tab - create two tab separated fields. Ignore fieldwidth
 
 EXAMPLES:
@@ -36,15 +37,23 @@ EXAMPLES:
     Return:
        3 director
        2 actor
+
+    Return: (if -s)
+       2 actor
+       3 director
 EOF
     }
 
-    while getopts ":htw:" opt; do
+    while getopts ":hstw:" opt; do
         case $opt in
         h)
             help
             waitUntil -k
             return
+            ;;
+        s)
+            sort_by_value="yes"
+            tab_separated="yes"
             ;;
         t)
             tab_separated="yes"
@@ -68,5 +77,13 @@ EOF
     # Default fieldwidth to 8
     fmt_str="%${fieldwidth:-8}s %s\n"
     [ -n "$tab_separated" ] && fmt_str="%s\t%s\n"
-    awk -v FW="$fmt_str" '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' | sort -nr
+    if [ -n "$sort_by_value" ]; then
+        awk -v FW="$fmt_str" \
+            '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' |
+            sort -f -t$'\t' --key=2
+    else
+        awk -v FW="$fmt_str" \
+            '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' |
+            sort -nr
+    fi
 }
