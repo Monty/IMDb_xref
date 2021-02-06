@@ -17,7 +17,7 @@ function cleanup() {
     exit 130
 }
 
-printf "==> Testing ${RED}createFilmography.sh${NO_COLOR}.\n"
+printf "==> Testing ${RED}pickOptions${NO_COLOR}.\n"
 cat <<EOF
     Supplying  parameters that should trigger pickOptions in scripts.
     Check that sort order and expected results are correct.
