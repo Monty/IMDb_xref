@@ -46,7 +46,7 @@ numRecordsFile=".xref_numRecords"
 [ ! -e "$numRecordsFile" ] && touch "$numRecordsFile"
 
 cacheDirectory=".xref_cache"
-mkdir -p $cacheDirectory
+mkdir -p "$cacheDirectory"
 
 # Look for the string "files" in $DEBUG_XREF to enable debugging
 if [[ $DEBUG_XREF == *"files"* ]]; then

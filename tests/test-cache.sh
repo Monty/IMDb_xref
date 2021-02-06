@@ -26,10 +26,10 @@ function cacheSize() {
     fi
     if [ "$numFiles" -eq 1 ]; then
         printf "\n==> There is %d cached file.\n" "$numFiles"
-        du -sh $cacheDirectory/* | sed -e s+$cacheDirectory/++
+        du -sh "$cacheDirectory"/* | sed -e s+"$cacheDirectory"/++
     else
         printf "\n==> There are %d cached files.\n" "$numFiles"
-        du -shc $cacheDirectory/* | sort -n | sed -e s+$cacheDirectory/++
+        du -shc "$cacheDirectory"/* | sort -n | sed -e s+"$cacheDirectory"/++
     fi
 }
 
