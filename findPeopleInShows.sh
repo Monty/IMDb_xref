@@ -279,7 +279,7 @@ comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 cut -f 1,3 "$ALL_MATCHES" | sort -f -t$'\t' --key=2 >"$SHOW_NAMES"
 
 # If everthing is cached, skip searching entirely
-if [ "$(rg -c "^tt" "$TCONST_LIST")" ]; then
+if [ -n "$(rg -c "^tt" "$TCONST_LIST")" ]; then
 
     # Create a perl script to GLOBALLY convert a show tconst to a show title
     printf "==> Searching $num_TB records for show titles.\n"
@@ -347,7 +347,7 @@ while read -r line; do
     cacheName=$(cut -f 1 <<<"$line")
     cacheFile="$cacheDirectory/$cacheName"
     showName=$(cut -f 2 <<<"$line")
-    if [ ! "$(rg -c "^$cacheName$" "$CACHE_LIST")" ]; then
+    if [ ! -n "$(rg -c "^$cacheName$" "$CACHE_LIST")" ]; then
         rg "\t$showName\t" "$CAST_CSV" >"$cacheFile"
     fi
     ./xrefCast.sh -f "$cacheFile" -an "$showName"

@@ -149,7 +149,7 @@ shift $((OPTIND - 1))
 ensurePrerequisites
 
 # If we ALWAYS want QUIET
-[ "$(rg -c "QUIET=yes" "$configFile")" ] && QUIET="yes"
+[ -n "$(rg -c "QUIET=yes" "$configFile")" ] && QUIET="yes"
 
 # All jobs or just the most important ones?
 [ -z "$ALL_JOBS" ] && ALL_JOBS="\b(actor|actress|writer|director|producer)\b"
@@ -157,12 +157,12 @@ ensurePrerequisites
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
 
-if [ ! "$(ls ./*.xlate 2>/dev/null)" ]; then
+if [ ! -n "$(ls ./*.xlate 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
-if [ ! "$(ls ./*.tconst 2>/dev/null)" ]; then
+if [ ! -n "$(ls ./*.tconst 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
@@ -184,7 +184,7 @@ else
         [ -z "$QUIET" ] &&
             printf "==> Using %s for IMDb title translation.\n\n" "${XLATE_FILES[@]}"
     fi
-    if [ ! "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]; then
+    if [ ! -n "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]; then
         printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
         exit 1
     fi
