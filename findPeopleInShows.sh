@@ -202,7 +202,8 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" "$POSSIBLE_MATCHES" >>"$ALL_MATCHES"
+        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed -e 's+^+imdb.com/title/+' \
+            >>"$ALL_MATCHES"
         continue
     fi
     cat <<EOF
@@ -220,7 +221,7 @@ EOF
     pickOptions=()
     # rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" | xsv table -d "\t"
     while IFS=$'\n' read -r line; do
-        pickOptions+=("$line")
+        pickOptions+=("imdb.com/title/$line")
     done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=2,2 --key=5,5r)
     pickOptions+=("Skip \"$match\"" "Quit")
@@ -269,6 +270,9 @@ else
 fi
 ! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
+
+# Get rid of the URL we added
+sed -I -e s+imdb.com/title/++ "$ALL_MATCHES"
 
 # Figure out which tconst IDs are cached and which aren't
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"

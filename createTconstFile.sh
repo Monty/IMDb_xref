@@ -186,7 +186,8 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" "$POSSIBLE_MATCHES" >>"$FINAL_RESULTS"
+        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed -e 's+^+imdb.com/title/+' \
+            >>"$FINAL_RESULTS"
         continue
     fi
     cat <<EOF
@@ -203,7 +204,7 @@ EOF
     # rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" | xsv table -d "\t"
     pickOptions=()
     while IFS=$'\n' read -r line; do
-        pickOptions+=("$line")
+        pickOptions+=("imdb.com/title/$line")
     done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=2,2 --key=5,5r)
     pickOptions+=("Skip \"$match\"" "Quit")
@@ -250,7 +251,11 @@ if checkForExecutable -q xsv; then
 else
     cat "$FINAL_RESULTS"
 fi
-#
+
+# Get rid of the URL preface we added
+sed -I -e s+imdb.com/title/++ "$FINAL_RESULTS"
+
+# Do we want  to add it?
 addToFileP
 
 # Do we really want to quit?
