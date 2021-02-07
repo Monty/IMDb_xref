@@ -186,7 +186,7 @@ done
 cat "$SEARCH_TERMS"
 
 # Escape metacharacters known to appear in titles, persons, characters
-sed -i 's/[()?]/\\&/g' "$SEARCH_TERMS"
+sed -i '' 's+[()?]+\\&+g' "$SEARCH_TERMS"
 
 # Setup awk printf formats with spaces or tabs
 # Name|Job|Show|Episode|Role

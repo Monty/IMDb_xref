@@ -185,7 +185,7 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed -e 's+^+imdb.com/name/+' \
+        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed 's+^+imdb.com/name/+' \
             >>"$PERSON_RESULTS"
         continue
     fi
@@ -254,7 +254,7 @@ else
 fi
 
 # Get rid of the URL preface we added
-sed -i -e s+imdb.com/name/++ "$PERSON_RESULTS"
+sed -i '' 's+imdb.com/name/++' "$PERSON_RESULTS"
 
 if ! waitUntil "$YN_PREF" -Y; then
     loopOrExitP

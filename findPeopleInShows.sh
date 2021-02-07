@@ -202,7 +202,7 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed -e 's+^+imdb.com/title/+' \
+        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed 's+^+imdb.com/title/+' \
             >>"$ALL_MATCHES"
         continue
     fi
@@ -272,7 +272,7 @@ fi
 printf "\n"
 
 # Get rid of the URL we added
-sed -i -e s+imdb.com/title/++ "$ALL_MATCHES"
+sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
 
 # Figure out which tconst IDs are cached and which aren't
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
