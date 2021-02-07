@@ -272,7 +272,7 @@ fi
 printf "\n"
 
 # Get rid of the URL we added
-sed -I -e s+imdb.com/title/++ "$ALL_MATCHES"
+sed -i -e s+imdb.com/title/++ "$ALL_MATCHES"
 
 # Figure out which tconst IDs are cached and which aren't
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"

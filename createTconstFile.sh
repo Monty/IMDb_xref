@@ -253,7 +253,7 @@ else
 fi
 
 # Get rid of the URL preface we added
-sed -I -e s+imdb.com/title/++ "$FINAL_RESULTS"
+sed -i -e s+imdb.com/title/++ "$FINAL_RESULTS"
 
 # Do we want  to add it?
 addToFileP

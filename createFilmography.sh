@@ -254,7 +254,7 @@ else
 fi
 
 # Get rid of the URL preface we added
-sed -I -e s+imdb.com/name/++ "$PERSON_RESULTS"
+sed -i -e s+imdb.com/name/++ "$PERSON_RESULTS"
 
 if ! waitUntil "$YN_PREF" -Y; then
     loopOrExitP
