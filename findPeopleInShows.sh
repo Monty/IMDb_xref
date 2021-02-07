@@ -282,7 +282,7 @@ cut -f 1 "$ALL_MATCHES" | sort >"$SEARCH_LIST"
 comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 cut -f 1,3 "$ALL_MATCHES" | sort -f -t$'\t' --key=2 >"$SHOW_NAMES"
 
-# If everthing is cached, skip searching entirely
+# If everything is cached, skip searching entirely
 if [ -n "$(rg -c "^tt" "$TCONST_LIST")" ]; then
 
     # Create a perl script to GLOBALLY convert a show tconst to a show title

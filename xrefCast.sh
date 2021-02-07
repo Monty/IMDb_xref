@@ -81,7 +81,7 @@ function cleanup() {
     exit 130
 }
 
-# Shoud we loop or not? Loop unless we were called with -n
+# Should we loop or not? Loop unless we were called with -n
 function loopOrExitP() {
     [ -n "$noLoop" ] && exit
     if waitUntil "$YN_PREF" -N "\n==> Would you like to do another search?"; then

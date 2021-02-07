@@ -143,7 +143,7 @@ for file in "$@"; do
     # Grab the ones already cached
     rg -wNz -f "$SEARCH_LIST" "$cacheFile" >"$RESULT"
 
-    # If everthing is cached, skip searching entirely
+    # If everything is cached, skip searching entirely
     if [ -n "$(rg -c ^tt "$TCONST_LIST")" ]; then
         # Look the ones up that weren't cached, get fields 1-4,6
         rg -wNz -f "$TCONST_LIST" title.basics.tsv.gz | cut -f 1-4,6 |
