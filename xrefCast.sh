@@ -160,12 +160,12 @@ Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a show, actor, or character: " searchTerm; do
         [ -z "$searchTerm" ] && break
-        tr -ds '"' '[:space:]' <<<"$searchTerm" >>"$SEARCH_TERMS"
+        tr -ds '"' '[:space:]' <<<"$searchTerm" >>"$TMPFILE"
     done </dev/tty
-    if [ ! -s "$SEARCH_TERMS" ]; then
+    if [ ! -s "$TMPFILE" ]; then
         if waitUntil "$YN_PREF" -N \
             "Would you like to see who played Queen Elizabeth II?"; then
-            printf "Queen Elizabeth II\n" >>"$SEARCH_TERMS"
+            printf "Queen Elizabeth II\n" >>"$TMPFILE"
             printf "\n"
         else
             loopOrExitP
@@ -181,9 +181,13 @@ numRecords=$(sed -n '$=' "$SEARCH_FILE")
 # Setup SEARCH_TERMS with one search term per line, let us know what's in it.
 printf "==> Searching for:\n"
 for a in "$@"; do
-    printf "$a\n" >>"$SEARCH_TERMS"
+    printf "$a\n" >>"$TMPFILE"
 done
+sort -fu "$TMPFILE" >"$SEARCH_TERMS"
 cat "$SEARCH_TERMS"
+
+# Make sure TMPFILE is empty
+true >"$TMPFILE"
 
 # Escape metacharacters known to appear in titles, persons, characters
 sed -i '' 's+[()?]+\\&+g' "$SEARCH_TERMS"
