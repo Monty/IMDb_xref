@@ -19,21 +19,26 @@ Search IMDb titles for a match to a tconst or a show name. A tconst should be
 unique, but a show name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
-Then list all the people from that show.
+List the principal cast members from that show. If you search for multiple
+shows, also list the names of any cast members that appear in more than one.
 
-If you don't enter a parameter on the command line, you'll be prompted for input.
+If you don't enter a parameter on the command line, you'll be prompted for
+input.
 
 USAGE:
     ./findPeopleInShows.sh [TCONST...] [SHOW TITLE...]
 
 OPTIONS:
     -h      Print this message.
+    -d      Duplicates -- Only print cast members that are in more than one show
     -m      Maximum matches for a show title allowed in menu - defaults to 25
 
 EXAMPLES:
     ./findPeopleInShows.sh
+    ./findPeopleInShows.sh -d
     ./findPeopleInShows.sh tt1606375
     ./findPeopleInShows.sh tt1606375 tt1399664 "Broadchurch"
+    ./findPeopleInShows.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
     ./findPeopleInShows.sh "The Crown"
 EOF
 }
@@ -69,14 +74,16 @@ CREDITS_CSV $CREDITS_CSV
 EPISODES_CSV $EPISODES_CSV
 CAST_CSV $CAST_CSV
 
-TEMP_LIST $TEMP_LIST
+TMPFILE $TMPFILE
+MULTIPLE_NAMES $MULTIPLE_NAMES
 EOT
     else
         rm -f "$ALL_TERMS" "$TCONST_TERMS" "$SHOWS_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$ALL_MATCHES" "$CACHE_LIST" "$SEARCH_LIST"
         rm -f "$TCONST_LIST" "$SHOW_NAMES" "$EPISODES_LIST" "$NCONST_LIST"
         rm -f "$SHOWS_PL" "$EPISODES_PL" "$EPISODE_NAMES_PL" "$NAMES_PL"
-        rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV" "$TEMP_LIST"
+        rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV"
+        rm -f "$TMPFILE" "$MULTIPLE_NAMES"
     fi
 }
 
@@ -93,6 +100,7 @@ function loopOrExitP() {
         "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
+        [ -n "$MULTIPLE_NAMES_ONLY" ] && exec ./findPeopleInShows.sh -d
         exec ./findPeopleInShows.sh
     else
         printf "Quitting...\n"
@@ -100,11 +108,14 @@ function loopOrExitP() {
     fi
 }
 
-while getopts ":hm:" opt; do
+while getopts ":hdm:" opt; do
     case $opt in
     h)
         help
         exit
+        ;;
+    d)
+        MULTIPLE_NAMES_ONLY="yes"
         ;;
     m)
         maxMenuSize="$OPTARG"
@@ -147,12 +158,13 @@ CREDITS_CSV=$(mktemp)
 EPISODES_CSV=$(mktemp)
 CAST_CSV=$(mktemp)
 #
-TEMP_LIST=$(mktemp)
+TMPFILE=$(mktemp)
+MULTIPLE_NAMES=$(mktemp)
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
     cat <<EOF
-==> I can create data files based on show names or tconst IDs,
+==> I can find cast members based on show names or tconst IDs,
     such as tt1606375 -- which is the tconst for Downton Abbey.
 
 Only one search term per line. Enter a blank line to finish.
@@ -271,6 +283,9 @@ fi
 ! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
 
+# Remember how many matches there were
+numMatches=$(sed -n '$=' "$ALL_MATCHES")
+
 # Get rid of the URL we added
 sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
 
@@ -313,14 +328,14 @@ if [ -n "$(rg -c "^tt" "$TCONST_LIST")" ]; then
     rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
         perl -p -e 's+nm0745728+nm0745694+' |
         perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
-        tee "$CREDITS_CSV" | cut -f 1 | sort -u | tee "$TEMP_LIST" >"$NCONST_LIST"
+        tee "$CREDITS_CSV" | cut -f 1 | sort -u | tee "$TMPFILE" >"$NCONST_LIST"
 
     # Use episodes list to lookup principal titles and add to credits csv
     # Copy field 1 to the episode title field!
     rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
         perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
         tee -a "$CREDITS_CSV" | cut -f 1 | sort -u |
-        rg -v -f "$TEMP_LIST" >>"$NCONST_LIST"
+        rg -v -f "$TMPFILE" >>"$NCONST_LIST"
 
     # Create a perl script to convert an nconst to a name
     rg -wNz -f "$NCONST_LIST" name.basics.tsv.gz |
@@ -346,6 +361,9 @@ if [ -n "$(rg -c "^tt" "$TCONST_LIST")" ]; then
         >>"$CAST_CSV"
 fi
 
+# Make sure we have an empty file
+true >"$TMPFILE"
+
 [ -n "$DEBUG" ] && set -v
 while read -r line; do
     cacheName=$(cut -f 1 <<<"$line")
@@ -354,9 +372,54 @@ while read -r line; do
     if [ -z "$(rg -c "^$cacheName$" "$CACHE_LIST")" ]; then
         rg "\t$showName\t" "$CAST_CSV" >"$cacheFile"
     fi
-    ./xrefCast.sh -f "$cacheFile" -an "$showName"
-    waitUntil -k
+    rg -N --color always "\t$showName\t" "$cacheFile" >>"$TMPFILE"
+    if [ -z "$MULTIPLE_NAMES_ONLY" ]; then
+        ./xrefCast.sh -f "$cacheFile" -an "$showName"
+        waitUntil -k
+    fi
 done <"$SHOW_NAMES"
+
+# Any results? If not, don't continue.
+if [ ! -s "$TMPFILE" ]; then
+    printf "==> Didn't find ${RED}any${NO_COLOR} matching records.\n"
+    printf "    Check the \"Searching for:\" section above.\n"
+    loopOrExitP
+fi
+
+# Name|Job|Show|Episode|Role
+PSPACE='%-20s  %-10s  %-40s  %-17s  %s\n'
+PTAB='%s\t%s\t%s\t%s\t%s\n'
+
+# Save MULTIPLE_NAMES
+# Need TMPFILE to be sorted by name, it's currently sorted by title then name
+# Print names that occur more than once, i.e. where field 1 is repeated in
+# successive lines, but field 2 is different
+if checkForExecutable -q xsv; then
+    sort -f "$TMPFILE" | awk -F "\t" -v PF="$PTAB" \
+        '{if($1==f[1]&&$2!=f[2]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
+    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' | sort -fu |
+        xsv table -d "\t" >>"$MULTIPLE_NAMES"
+else
+    sort -f "$TMPFILE" | awk -F "\t" -v PF="$PSPACE" \
+        '{if($1==f[1]&&$2!=f[2]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
+    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' | sort -fu >>"$MULTIPLE_NAMES"
+fi
+
+# Multiple results?
+if [ -s "$MULTIPLE_NAMES" ]; then
+    [ -z "$MULTIPLE_NAMES_ONLY" ] && printf "\n"
+    printf "==> Cast members who appear in more than one show (Name|Job|Show|Episode|Role):\n"
+    cat "$MULTIPLE_NAMES"
+else
+    if [ -n "$MULTIPLE_NAMES_ONLY" ]; then
+        printf "==> Didn't find ${RED}any${NO_COLOR} cast members who appear in more than one show.\n"
+        if [ "$numMatches" -eq 1 ]; then
+            ! waitUntil "$YN_PREF" -Y "Would you like to see all cast members in $showName?" &&
+                continue
+            ./xrefCast.sh -f "$cacheFile" -an "$showName"
+        fi
+    fi
+fi
 
 # Do we really want to quit?
 loopOrExitP
