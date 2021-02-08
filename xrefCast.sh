@@ -6,7 +6,7 @@
 #   Requires cast member files produced by generateXrefData.sh
 #   Note: Cast member data from IMDb sometimes has errors or omissions
 #
-#   To help refine searches, the output is rather wordy (unless -m is used).
+#   To help refine searches, the output is rather wordy (unless -d is used).
 #   The final section (Names that occur more than once) is of highest interest.
 #
 #   It may help to start with an actor or character, e.g.
@@ -15,7 +15,7 @@
 #
 #   Then move to more complex queries that expose other common cast members
 #       ./xrefCast.sh 'The Crown'
-#       ./xrefCast.sh -m 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
+#       ./xrefCast.sh -d 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
 #
 #   Experiment to find the most useful results.
 
@@ -40,7 +40,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -a      All -- Only print 'All cast members' section.
-    -m      Multiples -- Only print cast members that are in more than one show
+    -d      Duplicates -- Only print cast members that are in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
     -n      No loop - don't offer to do another search upon exit
@@ -49,8 +49,8 @@ EXAMPLES:
     ./xrefCast.sh "Olivia Colman"
     ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
     ./xrefCast.sh "The Crown"
-    ./xrefCast.sh -m "The Night Manager" "The Crown" "The Durrells in Corfu"
-    ./xrefCast.sh -mn "Elizabeth Debicki"
+    ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+    ./xrefCast.sh -dn "Elizabeth Debicki"
     ./xrefCast.sh -af Clooney.csv "Brad Pitt"
 EOF
 }
@@ -95,7 +95,7 @@ function loopOrExitP() {
     fi
 }
 
-while getopts ":f:hamin" opt; do
+while getopts ":f:hadin" opt; do
     case $opt in
     h)
         help
@@ -104,7 +104,7 @@ while getopts ":f:hamin" opt; do
     a)
         ALL_NAMES_ONLY="yes"
         ;;
-    m)
+    d)
         MULTIPLE_NAMES_ONLY="yes"
         ;;
     i)
@@ -245,7 +245,7 @@ else
     [ "$numMultiple" -gt 1 ] && _vb="appear" && _pron="those"
 fi
 
-# If we're in interactive mode, give user a choice of all or multiples only
+# If we're in interactive mode, give user a choice of all or duplicates only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$ALL_NAMES_ONLY" ]; then
     printf "\n==> I found $numAll cast members. $numMultiple $_vb in more than one show.\n"
     waitUntil "$YN_PREF" -N "Should I only print $_pron $numMultiple?" &&

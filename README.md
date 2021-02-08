@@ -300,7 +300,7 @@ into a terminal window.
         -h      Print this message.
         -a      All -- Only print 'All names' section.
         -f      File -- Query a specific file rather than "Credits-Person*csv".
-        -m      Multiples -- Only print names that appear multiple times
+        -d      Duplicates -- Only print names that appear multiple times
         -i      Print info about any files that are searched.
         -n      No loop - don't offer to do another search upon exit
     
@@ -308,8 +308,8 @@ into a terminal window.
         ./xrefCast.sh "Olivia Colman"
         ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
         ./xrefCast.sh "The Crown"
-        ./xrefCast.sh -m "The Night Manager" "The Crown" "The Durrells in Corfu"
-        ./xrefCast.sh -mn "Elizabeth Debicki"
+        ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+        ./xrefCast.sh -dn "Elizabeth Debicki"
         ./xrefCast.sh -af Clooney.csv "Brad Pitt"
 </details>
 
@@ -327,7 +327,7 @@ quite long for complex queries.
 The "Names that occur more than once" section contains only rows with names found in more than one
 show. It can be empty.
 
-The "-m" (multiples) switch hides the "All names" section. The "-a" (All) switch
+The "-d" (duplicates) switch hides the "All names" section. The "-a" (All) switch
 hides the "Names that occur more than once" section. Running the example queries with and
 without those two switches will give you an understanding of when they are useful.
 
