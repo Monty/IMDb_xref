@@ -75,15 +75,13 @@ EPISODES_CSV $EPISODES_CSV
 CAST_CSV $CAST_CSV
 
 TMPFILE $TMPFILE
-MULTIPLE_NAMES $MULTIPLE_NAMES
 EOT
     else
         rm -f "$ALL_TERMS" "$TCONST_TERMS" "$SHOWS_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$ALL_MATCHES" "$CACHE_LIST" "$SEARCH_LIST"
         rm -f "$TCONST_LIST" "$SHOW_NAMES" "$EPISODES_LIST" "$NCONST_LIST"
         rm -f "$SHOWS_PL" "$EPISODES_PL" "$EPISODE_NAMES_PL" "$NAMES_PL"
-        rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV"
-        rm -f "$TMPFILE" "$MULTIPLE_NAMES"
+        rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV" "$TMPFILE"
     fi
 }
 
@@ -159,7 +157,6 @@ EPISODES_CSV=$(mktemp)
 CAST_CSV=$(mktemp)
 #
 TMPFILE=$(mktemp)
-MULTIPLE_NAMES=$(mktemp)
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
@@ -369,10 +366,11 @@ while read -r line; do
     cacheName=$(cut -f 1 <<<"$line")
     cacheFile="$cacheDirectory/$cacheName"
     showName=$(cut -f 2 <<<"$line")
+    allNames+=("$showName")
     if [ -z "$(rg -c "^$cacheName$" "$CACHE_LIST")" ]; then
         rg "\t$showName\t" "$CAST_CSV" >"$cacheFile"
     fi
-    rg -N --color always "\t$showName\t" "$cacheFile" >>"$TMPFILE"
+    cat "$cacheFile" >>"$TMPFILE"
     if [ -z "$MULTIPLE_NAMES_ONLY" ]; then
         ./xrefCast.sh -f "$cacheFile" -an "$showName"
         waitUntil -k
@@ -386,40 +384,4 @@ if [ ! -s "$TMPFILE" ]; then
     loopOrExitP
 fi
 
-# Name|Job|Show|Episode|Role
-PSPACE='%-20s  %-10s  %-40s  %-17s  %s\n'
-PTAB='%s\t%s\t%s\t%s\t%s\n'
-
-# Save MULTIPLE_NAMES
-# Need TMPFILE to be sorted by name, it's currently sorted by title then name
-# Print names that occur more than once, i.e. where field 1 is repeated in
-# successive lines, but field 2 is different
-if checkForExecutable -q xsv; then
-    sort -f "$TMPFILE" | awk -F "\t" -v PF="$PTAB" \
-        '{if($1==f[1]&&$2!=f[2]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
-    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' | sort -fu |
-        xsv table -d "\t" >>"$MULTIPLE_NAMES"
-else
-    sort -f "$TMPFILE" | awk -F "\t" -v PF="$PSPACE" \
-        '{if($1==f[1]&&$2!=f[2]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
-    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' | sort -fu >>"$MULTIPLE_NAMES"
-fi
-
-# Multiple results?
-if [ -s "$MULTIPLE_NAMES" ]; then
-    [ -z "$MULTIPLE_NAMES_ONLY" ] && printf "\n"
-    printf "==> Cast members who appear in more than one show (Name|Job|Show|Episode|Role):\n"
-    cat "$MULTIPLE_NAMES"
-else
-    if [ -n "$MULTIPLE_NAMES_ONLY" ]; then
-        printf "==> Didn't find ${RED}any${NO_COLOR} cast members who appear in more than one show.\n"
-        if [ "$numMatches" -eq 1 ]; then
-            ! waitUntil "$YN_PREF" -Y "Would you like to see all cast members in $showName?" &&
-                continue
-            ./xrefCast.sh -f "$cacheFile" -an "$showName"
-        fi
-    fi
-fi
-
-# Do we really want to quit?
-loopOrExitP
+./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"

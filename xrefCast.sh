@@ -189,15 +189,15 @@ cat "$SEARCH_TERMS"
 sed -i '' 's+[()?]+\\&+g' "$SEARCH_TERMS"
 
 # Setup awk printf formats with spaces or tabs
-# Name|Job|Show|Episode|Role
-PSPACE='%-20s  %-10s  %-40s  %-17s  %s\n'
-PTAB='%s\t%s\t%s\t%s\t%s\n'
+# Name|Job|Show|Role
+PSPACE='%-20s  %-10s  %-40s  %s\n'
+PTAB='%s\t%s\t%s\t%s\n'
 
 # If we find anything, rearrange it and put it in TMPFILE
 # Sort by Job (2), Person (1), Show Title (3)
 if [ -n "$(rg -wNzSI -c -f "$SEARCH_TERMS" "$SEARCH_FILE")" ]; then
     rg -wNzSI --color always -f "$SEARCH_TERMS" "$SEARCH_FILE" |
-        awk -F "\t" -v PF="$PTAB" '{printf (PF, $1,$5,$2,$3,$6)}' |
+        awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' |
         sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
 fi
 
@@ -215,23 +215,23 @@ fi
 perl -pi -e "s+\t'+\t+g;" "$TMPFILE"
 
 # Save ALL_NAMES
-printf "\n==> All cast members (Name|Job|Show|Episode|Role):\n" >"$ALL_NAMES"
+printf "\n==> All cast members (Name|Job|Show|Role):\n" >"$ALL_NAMES"
 if checkForExecutable -q xsv; then
     xsv table -d "\t" "$TMPFILE" >>"$ALL_NAMES"
 else
-    awk -F "\t" -v PF="$PSPACE" '{printf (PF,$1,$2,$3,$4,$5)}' "$TMPFILE" >>"$ALL_NAMES"
+    awk -F "\t" -v PF="$PSPACE" '{printf(PF,$1,$2,$3,$4)}' "$TMPFILE" >>"$ALL_NAMES"
 fi
 
 # Save MULTIPLE_NAMES
 # Print names that occur more than once, i.e. where field 1 is repeated in
 # successive lines, but field 3 is different
 if checkForExecutable -q xsv; then
-    awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
-    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' "$TMPFILE" | sort -fu |
+    awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4]);
+    printf(PF,$1,$2,$3,$4)} split($0,f)}' "$TMPFILE" | sort -fu |
         xsv table -d "\t" >>"$MULTIPLE_NAMES"
 else
-    awk -F "\t" -v PF="$PSPACE" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
-    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' "$TMPFILE" | sort -fu >>"$MULTIPLE_NAMES"
+    awk -F "\t" -v PF="$PSPACE" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4]);
+    printf(PF,$1,$2,$3,$4)} split($0,f)}' "$TMPFILE" | sort -fu >>"$MULTIPLE_NAMES"
 fi
 
 # Multiple results?
@@ -259,7 +259,7 @@ fi
 [ -n "$ALL_NAMES_ONLY" ] && loopOrExitP
 
 # Print all search results
-printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Episode|Role):\n"
+printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Role):\n"
 cat "$MULTIPLE_NAMES"
 
 # Do we really want to quit?
