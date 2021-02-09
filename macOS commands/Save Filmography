@@ -14,4 +14,4 @@ clear
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME"/.. || exit
 
-exec ./createFilmography.sh
+exec ./saveFilmography.sh

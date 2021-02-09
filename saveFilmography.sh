@@ -13,9 +13,9 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-createFilmography.sh -- Create a filmography for a named person in IMDb.
+saveFilmography.sh -- Save a filmography for a named person in IMDb.
 
-Search IMDb titles for a match to a nconst or a person name. A nconst should be
+Search IMDb titles for a match to a person name or nconst. An nconst should be
 unique, but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
@@ -27,17 +27,17 @@ If you don't enter a parameter on the command line, you'll be prompted for
 input.
 
 USAGE:
-    ./createFilmography.sh [NCONST...] [PERSON NAME...]
+    ./saveFilmography.sh [NCONST...] [PERSON NAME...]
 
 OPTIONS:
     -h      Print this message.
     -m      Maximum matches for a person name allowed in menu - defaults to 10
 
 EXAMPLES:
-    ./createFilmography.sh
-    ./createFilmography.sh nm0000123
-    ./createFilmography.sh "George Clooney"
-    ./createFilmography.sh nm0000123 "Quentin Tarantino"
+    ./saveFilmography.sh
+    ./saveFilmography.sh "George Clooney"
+    ./saveFilmography.sh nm0000123
+    ./saveFilmography.sh nm0000123 "Quentin Tarantino"
 EOF
 }
 
@@ -77,7 +77,7 @@ function loopOrExitP() {
         "\n==> Would you like to search for another person?"; then
         printf "\n"
         terminate
-        exec ./createFilmography.sh
+        exec ./saveFilmography.sh
     else
         printf "Quitting...\n"
         exit
@@ -246,7 +246,7 @@ if [ ! -s "$PERSON_RESULTS" ]; then
 fi
 
 # Found results, check with user before adding
-printf "These are the matches I found:\n"
+printf "These are the names I found:\n"
 if checkForExecutable -q xsv; then
     xsv table -d "\t" "$PERSON_RESULTS"
 else
@@ -304,7 +304,7 @@ while read -r line; do
     TCONST_FILE="$filmographyFile"
     if [ -s "$FINAL_RESULTS" ]; then
         numlines=$(sed -n '$=' "$FINAL_RESULTS")
-        printf "\nI can add $numlines tconst IDs to ${BLUE}$(basename $TCONST_FILE)${NO_COLOR}\n"
+        printf "\nI can add $numlines titles to ${BLUE}$(basename $TCONST_FILE)${NO_COLOR}\n"
         addToFileP
     else
         printf "\n==> There aren't ${RED}any${NO_COLOR} $nconstName titles to add.\n"

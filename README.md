@@ -67,7 +67,7 @@ of the data in those files.
 Although I wrote **IMDb_xref** mainly to explore favorite shows I manually add to a list,
 I've added the ability to search IMDb for shows by name and add them to the local
 spreadsheets automatically using **saveShows.sh** and create filmographies using
-**createFilmography.sh**.
+**saveFilmography.sh**.
 
 ## Installation
 
@@ -439,7 +439,7 @@ selects example.tconst, -d saves the results in test_results.*)
 
 IMDb_xref data is generated from tconst lists. You can create your own or use 
 ones from the [Contrib](Contrib) directory. Or you can do it automatically using 
-**saveShows.sh** or **createFilmography.sh**.
+**saveShows.sh** or **saveFilmography.sh**.
 
 #### What is a tconst and how do I find one?
 A tconst is a unique ID that IMDb assigns to each movie, TV series or episode, etc.
@@ -528,7 +528,7 @@ the ones you expected.
 #### Add a Filmography
 
 If your focus is on people rather than shows, it's simple to add a filmography. Run
-**createFilmography.sh** with the name or names you are interested in. Filmographies
+**saveFilmography.sh** with the name or names you are interested in. Filmographies
 are created in subdirectories so they will not overload the primary directory. You'll
 have the opportunity to review results before committing. If you are just playing
 around, answer no to relevant prompts, or `rm -rf` the directory when you're done.

@@ -38,8 +38,8 @@ while true; do
         ./findShowsWith.sh "John Wayne" "Robert Downey"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./createFilmography.sh "John Wayne" "Robert Downey"'; then
-        ./createFilmography.sh "John Wayne" "Robert Downey"
+    if waitUntil "$YN_PREF" -Y '\nRun ./saveFilmography.sh "John Wayne" "Robert Downey"'; then
+        ./saveFilmography.sh "John Wayne" "Robert Downey"
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./iQuery.sh'; then
