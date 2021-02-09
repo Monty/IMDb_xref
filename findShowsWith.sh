@@ -13,9 +13,9 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findShowsWith.sh -- List a filmography for a named person in IMDb.
+findShowsWith.sh -- List all shows found for a named person in IMDb.
 
-Search IMDb titles for a match to a nconst or a person name. A nconst should be
+Search IMDb titles for a match to a person name or nconst. An nconst should be
 unique, but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
@@ -176,7 +176,7 @@ while read -r line; do
     cat <<EOF
 
 Some person names on IMDb occur more than once, e.g. John Wayne or John Lennon.
-You can track down the correct one by searching for it's nconst ID on IMDb.com.
+You can track down the correct one using these links to imdb.com.
 
 EOF
 

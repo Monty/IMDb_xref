@@ -16,17 +16,17 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-augment_tconstFiles.sh -- Modify .tconst files. Add Type, Primary Title, Original Title, Date
+augment_tconstFiles.sh -- Add Type, Primary Title, Original Title, Date. Sort by Primary Title.
 
       For example, expand:
           tt1606375
           tt1399664
-          tt3351208
+          tt3582458
 
       To:
+          tt3582458   tvSeries      Acquitted           Frikjent            2014
           tt1606375   tvSeries      Downton Abbey       Downton Abbey       2010
           tt1399664   tvMiniSeries  The Night Manager   The Night Manager   2016
-          tt3582458   tvSeries      Acquitted           Frikjent            2014
 
 USAGE:
     ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]

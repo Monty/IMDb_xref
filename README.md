@@ -484,17 +484,17 @@ time you add a tconst. Run `augment_tconstFiles.sh -h` to see examples.
 <details><summary><b>Show this help file</b></summary>
 
     $ ./augment_tconstFiles.sh -h
-    Expand the IDs in .tconst files to add Type, Primary Title, and Original Title
+    augment_tconstFiles.sh -- Add Type, Primary Title, Original Title, Date. Sort by Primary Title.
 
           For example, expand:
               tt1606375
               tt1399664
-              tt3351208
+              tt3582458
 
           To:
+              tt3582458	tvSeries	Acquitted	Frikjent
               tt1606375	tvSeries	Downton Abbey	Downton Abbey
               tt1399664	tvMiniSeries	The Night Manager	The Night Manager
-              tt3351208	tvMovie	Two Little Girls in Blue	Deux petites filles en bleu
 
     USAGE:
         ./augment_tconstFiles.sh [OPTIONS] FILE [FILE...]

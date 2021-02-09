@@ -192,7 +192,7 @@ while read -r line; do
     cat <<EOF
 
 Some person names on IMDb occur more than once, e.g. John Wayne or John Lennon.
-You can track down the correct one by searching for it's nconst ID on IMDb.com.
+You can track down the correct one using these links to imdb.com.
 
 EOF
 

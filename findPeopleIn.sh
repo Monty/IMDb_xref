@@ -13,7 +13,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findPeopleIn.sh -- List people in a show on IMDb.
+findPeopleIn.sh -- List all people found in a named show on IMDb.
 
 Search IMDb titles for a match to a show name or tconst. A tconst should be
 unique, but a show name can have several or even many matches. Allow user to

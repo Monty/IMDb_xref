@@ -11,6 +11,7 @@ function frequency() {
         cat <<EOF
 frequency -- General-purpose: Print frequency of occurrence of unique strings.
              Equivalent to 'sort | uniq -c | sort -nr'
+             or 'sort | uniq -c | sort' if the -s option is supplied.
 
 Works without having to sort its input. Formats the output better than uniq -c
 
