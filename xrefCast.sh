@@ -178,7 +178,7 @@ numRecords=$(sed -n '$=' "$SEARCH_FILE")
 [ "$INFO" == "yes" ] &&
     printf "==> Searching $numRecords records in $SEARCH_FILE for cast data.\n\n"
 
-# Setup SEARCH_TERMS with one search term per line, let us know what's in it.
+# Setup TMPFILE with one search term per line, let us know what's in it.
 printf "==> Searching for:\n"
 for a in "$@"; do
     printf "$a\n" >>"$TMPFILE"
@@ -241,7 +241,6 @@ fi
 # Multiple results?
 if [ ! -s "$MULTIPLE_NAMES" ]; then
     numMultiple="0"
-    ALL_NAMES_ONLY="yes"
 else
     _vb="appears"
     _pron="that"
@@ -250,7 +249,8 @@ else
 fi
 
 # If we're in interactive mode, give user a choice of all or duplicates only
-if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$ALL_NAMES_ONLY" ]; then
+if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] &&
+    [ -z "$ALL_NAMES_ONLY" ] && [ "$numMultiple" -ne 0 ]; then
     printf "\n==> I found $numAll cast members. $numMultiple $_vb in more than one show.\n"
     waitUntil "$YN_PREF" -N "Should I only print $_pron $numMultiple?" &&
         MULTIPLE_NAMES_ONLY="yes"
@@ -262,9 +262,14 @@ fi
 # If ALL_NAMES_ONLY, exit here
 [ -n "$ALL_NAMES_ONLY" ] && loopOrExitP
 
-# Print all search results
-printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Role):\n"
-cat "$MULTIPLE_NAMES"
+# Print multiple search results
+if [ "$numMultiple" -eq 0 ]; then
+    [ -n "$MULTIPLE_NAMES_ONLY" ] &&
+        printf "\n==> Didn't find ${RED}any${NO_COLOR} cast members who appear in more than one show.\n"
+else
+    printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Role):\n"
+    cat "$MULTIPLE_NAMES"
+fi
 
 # Do we really want to quit?
 loopOrExitP
