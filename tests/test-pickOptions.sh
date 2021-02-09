@@ -26,8 +26,8 @@ cat <<EOF
 EOF
 
 while true; do
-    if waitUntil "$YN_PREF" -Y 'Run ./createTconstFile.sh Fargo Shaft'; then
-        ./createTconstFile.sh Fargo Shaft
+    if waitUntil "$YN_PREF" -Y 'Run ./saveShows.sh Fargo Shaft'; then
+        ./saveShows.sh Fargo Shaft
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleInShows.sh Fargo Shaft'; then

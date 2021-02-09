@@ -13,9 +13,9 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-createTconstFile.sh -- Add a tconst ID for any show to a file.
+saveShows.sh -- Add a show to a tconst ID file, offer to update data files.
 
-Search IMDb titles for a match to a tconst or a show name. A tconst should be
+Search IMDb titles for a match to a show name or tconst. A tconst should be
 unique, but a show name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
@@ -23,7 +23,7 @@ If you don't enter a parameter on the command line, you'll be prompted for
 input.
 
 USAGE:
-    ./createTconstFile.sh [-f TCONST_FILE] [TCONST...] [SHOW TITLE...]
+    ./saveShows.sh [-f TCONST_FILE] [TCONST...] [SHOW TITLE...]
 
 OPTIONS:
     -h      Print this message.
@@ -31,11 +31,11 @@ OPTIONS:
     -f      File -- Add to specific file rather than the default $USER.tconst
 
 EXAMPLES:
-    ./createTconstFile.sh
-    ./createTconstFile.sh tt1606375
-    ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"
-    ./createTconstFile.sh "The Crown"
-    ./createTconstFile.sh -f Dramas.tconst tt1606375
+    ./saveShows.sh
+    ./saveShows.sh "The Crown"
+    ./saveShows.sh tt1606375
+    ./saveShows.sh tt1606375 tt1399664 "Broadchurch"
+    ./saveShows.sh -f Dramas.tconst tt1606375
 EOF
 }
 
@@ -72,8 +72,8 @@ function loopOrExitP() {
     if waitUntil "$YN_PREF" -N "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
-        [ -n "$TCONST_FILE" ] && exec ./createTconstFile.sh -f "$TCONST_FILE"
-        exec ./createTconstFile.sh
+        [ -n "$TCONST_FILE" ] && exec ./saveShows.sh -f "$TCONST_FILE"
+        exec ./saveShows.sh
     else
         printf "Quitting...\n"
         exit
@@ -193,7 +193,7 @@ while read -r line; do
     cat <<EOF
 
 Some titles on IMDb occur more than once, e.g. as both a movie and TV show.
-You can track down the correct one by searching for it's tconst ID on IMDb.com.
+You can track down the correct one using these links to imdb.com.
 
 EOF
 
@@ -245,7 +245,7 @@ if [ ! -s "$FINAL_RESULTS" ]; then
 fi
 
 # Found results, check with user before adding to local data
-printf "These are the matches I can add:\n"
+printf "These are the shows I can add:\n"
 if checkForExecutable -q xsv; then
     xsv table -d "\t" "$FINAL_RESULTS"
 else

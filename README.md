@@ -66,7 +66,7 @@ of the data in those files.
 
 Although I wrote **IMDb_xref** mainly to explore favorite shows I manually add to a list,
 I've added the ability to search IMDb for shows by name and add them to the local
-spreadsheets automatically using **createTconstFile.sh** and create filmographies using
+spreadsheets automatically using **saveShows.sh** and create filmographies using
 **createFilmography.sh**.
 
 ## Installation
@@ -439,7 +439,7 @@ selects example.tconst, -d saves the results in test_results.*)
 
 IMDb_xref data is generated from tconst lists. You can create your own or use 
 ones from the [Contrib](Contrib) directory. Or you can do it automatically using 
-**createTconstFile.sh** or **createFilmography.sh**.
+**saveShows.sh** or **createFilmography.sh**.
 
 #### What is a tconst and how do I find one?
 A tconst is a unique ID that IMDb assigns to each movie, TV series or episode, etc.
@@ -543,19 +543,19 @@ commands" directory.
 ### Automate the entire process
 
 Once you've [installed the software](#installation), simply run
-**createTconstFile.sh**. It will guide you through the entire process, including
+**saveShows.sh**. It will guide you through the entire process, including
 automatically downloading the data from IMDb, creating your own tconst file, and
 generating data using the tconst file it creates.
 
 If you don't enter a parameter on the command line, it will prompt you to enter one. If
 you are on a Mac, just double-click on **Add Shows** in the "macOS commands" directory.
 
-Run **createTconstFile.sh -h** for other ideas.
+Run **saveShows.sh -h** for other ideas.
 
 <details><summary><b>Show this help file</b></summary>
 
-    $ ./createTconstFile.sh -h
-    createTconstFile.sh -- Add a tconst ID for any show to a file.
+    $ ./saveShows.sh -h
+    saveShows.sh -- Add a tconst ID for any show to a file.
     
     Search IMDb titles for a match to a tconst or a show name. A tconst should be unique,
     but a show name can have several or even many matches. Allow user to select one match
@@ -564,7 +564,7 @@ Run **createTconstFile.sh -h** for other ideas.
     If you don't enter a parameter on the command line, you'll be prompted for input.
     
     USAGE:
-        ./createTconstFile.sh [-f TCONST_FILE] [TCONST...] [SHOW TITLE...]
+        ./saveShows.sh [-f TCONST_FILE] [TCONST...] [SHOW TITLE...]
     
     OPTIONS:
         -h      Print this message.
@@ -572,16 +572,16 @@ Run **createTconstFile.sh -h** for other ideas.
         -f      File -- Add to specific file rather than the default monty.tconst
     
     EXAMPLES:
-        ./createTconstFile.sh
-        ./createTconstFile.sh tt1606375
-        ./createTconstFile.sh tt1606375 tt1399664 "Broadchurch"
-        ./createTconstFile.sh "The Crown"
-        ./createTconstFile.sh -f Dramas.tconst tt1606375
+        ./saveShows.sh
+        ./saveShows.sh tt1606375
+        ./saveShows.sh tt1606375 tt1399664 "Broadchurch"
+        ./saveShows.sh "The Crown"
+        ./saveShows.sh -f Dramas.tconst tt1606375
 </details>
 
 <details><summary><b>Show output from this command</b></summary>
 
-    $ ./createTconstFile.sh tt1606375 tt1399664 Broadchurch
+    $ ./saveShows.sh tt1606375 tt1399664 Broadchurch
     ==> Adding tconst IDs to: monty.tconst
     
     ==> Searching 7501587 records for:
