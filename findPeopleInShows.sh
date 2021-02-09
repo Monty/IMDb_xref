@@ -266,7 +266,7 @@ printf "\n"
 # Didn't find any results
 if [ ! -s "$ALL_MATCHES" ]; then
     printf "==> Didn't find ${RED}any${NO_COLOR} matching shows.\n"
-    printf "    Check the \"Searching $num_TB records for:\" section above.\n\n"
+    printf "    Check the \"Searching $num_TB records for:\" section above.\n"
     loopOrExitP
 fi
 
@@ -384,4 +384,8 @@ if [ ! -s "$TMPFILE" ]; then
     loopOrExitP
 fi
 
-[ "$numMatches" -ne 1 ] && ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+# Check for mutliples if appropriate
+[ "$numMatches" -ne 1 ] || [ -n "$MULTIPLE_NAMES_ONLY" ] &&
+    ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+
+loopOrExitP
