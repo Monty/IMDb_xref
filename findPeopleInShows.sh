@@ -280,6 +280,9 @@ fi
 ! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
 
+# Remember how many matches there were
+numMatches=$(sed -n '$=' "$ALL_MATCHES")
+
 # Get rid of the URL we added
 sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
 
@@ -381,4 +384,4 @@ if [ ! -s "$TMPFILE" ]; then
     loopOrExitP
 fi
 
-[ -n "$MULTIPLE_NAMES_ONLY" ] && ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+[ "$numMatches" -ne 1 ] && ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
