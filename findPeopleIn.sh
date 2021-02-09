@@ -13,9 +13,9 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findPeopleInShows.sh -- List people in a show on IMDb.
+findPeopleIn.sh -- List people in a show on IMDb.
 
-Search IMDb titles for a match to a tconst or a show name. A tconst should be
+Search IMDb titles for a match to a show name or tconst. A tconst should be
 unique, but a show name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
@@ -26,7 +26,7 @@ If you don't enter a parameter on the command line, you'll be prompted for
 input.
 
 USAGE:
-    ./findPeopleInShows.sh [TCONST...] [SHOW TITLE...]
+    ./findPeopleIn.sh [TCONST...] [SHOW TITLE...]
 
 OPTIONS:
     -h      Print this message.
@@ -34,12 +34,12 @@ OPTIONS:
     -m      Maximum matches for a show title allowed in menu - defaults to 25
 
 EXAMPLES:
-    ./findPeopleInShows.sh
-    ./findPeopleInShows.sh -d
-    ./findPeopleInShows.sh tt1606375
-    ./findPeopleInShows.sh tt1606375 tt1399664 "Broadchurch"
-    ./findPeopleInShows.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
-    ./findPeopleInShows.sh "The Crown"
+    ./findPeopleIn.sh
+    ./findPeopleIn.sh -d
+    ./findPeopleIn.sh "The Crown"
+    ./findPeopleIn.sh tt1606375
+    ./findPeopleIn.sh tt1606375 tt1399664 "Broadchurch"
+    ./findPeopleIn.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
 EOF
 }
 
@@ -98,8 +98,8 @@ function loopOrExitP() {
         "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
-        [ -n "$MULTIPLE_NAMES_ONLY" ] && exec ./findPeopleInShows.sh -d
-        exec ./findPeopleInShows.sh
+        [ -n "$MULTIPLE_NAMES_ONLY" ] && exec ./findPeopleIn.sh -d
+        exec ./findPeopleIn.sh
     else
         printf "Quitting...\n"
         exit
@@ -218,7 +218,7 @@ while read -r line; do
     cat <<EOF
 
 Some titles on IMDb occur more than once, e.g. as both a movie and TV show.
-You can track down the correct one by searching for it's tconst ID on IMDb.com.
+You can track down the correct one using these links to imdb.com.
 
 EOF
 
