@@ -52,6 +52,7 @@ any missing prerequisites and download any necessary IMDb data files.
 
 EOT
         source ./setPreferences.sh
+        source "$configFile"
     fi
 
     # Make sure we can execute rg.
