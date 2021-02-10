@@ -12,8 +12,6 @@
 function printDuration() {
     local OPTIND scriptName
 
-    source functions/define_files
-
     help() {
         cat <<EOF
 printDuration -- Internal function: Print the previous duration of a script.

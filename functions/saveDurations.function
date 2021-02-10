@@ -12,8 +12,6 @@
 function saveDurations() {
     local OPTIND scriptName secs date_fmt date_str timestamp mins duration
 
-    source functions/define_files
-
     help() {
         cat <<EOF
 saveDurations -- Internal function: Save the duration of a script in seconds.

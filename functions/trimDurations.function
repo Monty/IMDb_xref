@@ -12,8 +12,6 @@
 function trimDurations() {
     local OPTIND scriptName maxLines linesFound
 
-    source functions/define_files
-
     help() {
         cat <<EOF
 trimDurations -- Internal function: Limit the number of durations kept.
