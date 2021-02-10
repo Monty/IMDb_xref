@@ -225,78 +225,90 @@ POSSIBLE_DIFFS="diffs$LONGDATE.txt"
         "$POSSIBLE_DIFFS" "$BASE"
 
 # Final output spreadsheets
-CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
+ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
 CREDITS_PERSON="${OUTPUT_DIR}Credits-Person$DATE_ID.csv"
+CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
 KNOWN_PERSONS="${OUTPUT_DIR}Persons-KnownFor$DATE_ID.csv"
-SHOWS="${OUTPUT_DIR}Shows-Episodes$DATE_ID.csv"
 LINKS_TO_PERSONS="${OUTPUT_DIR}LinksToPersons$DATE_ID.csv"
 LINKS_TO_TITLES="${OUTPUT_DIR}LinksToTitles$DATE_ID.csv"
-ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
+SHOWS="${OUTPUT_DIR}Shows-Episodes$DATE_ID.csv"
 
 # Final output lists
 UNIQUE_CHARS="${OUTPUT_DIR}uniqCharacters$DATE_ID.txt"
 UNIQUE_PERSONS="${OUTPUT_DIR}uniqPersons$DATE_ID.txt"
 UNIQUE_TITLES="${OUTPUT_DIR}uniqTitles$DATE_ID.txt"
 
-# Intermediate working files
-DUPES="$WORK/dupes$DATE_ID.txt"
+# Intermediate working temps
+TEMPFILE="$WORK/tempfile$DATE_ID.txt"
 TEMP_AWK="$WORK/conflicts$DATE_ID.awk"
-TCONST_LIST="$WORK/tconst$DATE_ID.txt"
+TEMP_DUPES="$WORK/dupes$DATE_ID.txt"
+TEMP_SKIPS="$WORK/tconst-skip$DATE_ID.txt"
+# Intermediate working txt
 EPISODES_LIST="$WORK/tconst-episodes$DATE_ID.txt"
 KNOWNFOR_LIST="$WORK/tconst_known$DATE_ID.txt"
 NCONST_LIST="$WORK/nconst$DATE_ID.txt"
-TEMP_LIST="$WORK/temp_list$DATE_ID.txt"
-TEMP_SHOWS="$WORK/temp_shows$DATE_ID.csv"
-RAW_SHOWS="$WORK/raw_shows$DATE_ID.csv"
+TCONST_LIST="$WORK/tconst$DATE_ID.txt"
+# Intermediate working csv
 RAW_EPISODES="$WORK/raw_episodes$DATE_ID.csv"
 RAW_PERSONS="$WORK/raw_persons$DATE_ID.csv"
+RAW_SHOWS="$WORK/raw_shows$DATE_ID.csv"
 UNSORTED_CREDITS="$WORK/unsorted_credits$DATE_ID.csv"
 UNSORTED_EPISODES="$WORK/unsorted_episodes$DATE_ID.csv"
-#
-TCONST_SHOWS_PL="$WORK/tconst-shows-pl$DATE_ID.txt"
+# Intermediate working perl
+NCONST_PL="$WORK/nconst-pl$DATE_ID.txt"
 TCONST_EPISODES_PL="$WORK/tconst-episodes-pl$DATE_ID.txt"
 TCONST_EPISODE_NAMES_PL="$WORK/tconst-episode_names-pl$DATE_ID.txt"
 TCONST_KNOWN_PL="$WORK/tconst-known-pl$DATE_ID.txt"
-NCONST_PL="$WORK/nconst-pl$DATE_ID.txt"
+TCONST_SHOWS_PL="$WORK/tconst-shows-pl$DATE_ID.txt"
 XLATE_PL="$WORK/xlate-pl$DATE_ID.txt"
 
 # Manually entered list of tconst ID's that we don't want tvEpisodes for
 # either because they have too many episodes, or episodes don't translate well
 SKIP_EPISODES="skipEpisodes.example"
-SKIP_TCONST="$WORK/tconst-skip$DATE_ID.txt"
 
 # Saved files used for comparison with current files
-PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
-PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
+PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
 PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
+PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
 PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
-PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
+PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
 #
 PUBLISHED_UNIQUE_CHARS="$BASE/uniqCharacters.txt"
 PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
 PUBLISHED_UNIQUE_TITLES="$BASE/uniqTitles.txt"
 #
-PUBLISHED_TCONST_LIST="$BASE/tconst.txt"
 PUBLISHED_EPISODES_LIST="$BASE/tconst-episodes.csv"
 PUBLISHED_KNOWNFOR_LIST="$BASE/tconst_known.txt"
 PUBLISHED_NCONST_LIST="$BASE/nconst.txt"
-PUBLISHED_RAW_SHOWS="$BASE/raw_shows.csv"
 PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
+PUBLISHED_RAW_SHOWS="$BASE/raw_shows.csv"
+PUBLISHED_TCONST_LIST="$BASE/tconst.txt"
 
 # Filename groups used for cleanup
-ALL_TEMPS="$TEMP_AWK $TEMP_SHOWS $TEMP_LIST"
-ALL_WORKING="$DUPES $SKIP_TCONST $TCONST_LIST $NCONST_LIST $EPISODES_LIST "
-ALL_WORKING+="$KNOWNFOR_LIST $XLATE_PL $TCONST_SHOWS_PL $NCONST_PL "
-ALL_WORKING+="$TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL $TCONST_KNOWN_PL"
-ALL_TXT="$UNIQUE_TITLES $UNIQUE_CHARS $UNIQUE_PERSONS"
-ALL_CSV="$RAW_SHOWS $RAW_PERSONS $RAW_EPISODES $UNSORTED_EPISODES $UNSORTED_CREDITS"
-ALL_SPREADSHEETS="$LINKS_TO_TITLES $LINKS_TO_PERSONS $SHOWS $KNOWN_PERSONS "
-ALL_SPREADSHEETS+="$ASSOCIATED_TITLES $CREDITS_SHOW $CREDITS_PERSON "
+# Intermediate working temps
+ALL_TEMPS="$TEMPFILE $TEMP_AWK $TEMP_DUPES $TEMP_SKIPS"
+#
+# Intermediate working csv
+ALL_CSV="$RAW_EPISODES $RAW_PERSONS $RAW_SHOWS "
+ALL_CSV+="$UNSORTED_CREDITS $UNSORTED_EPISODES"
+#
+# Intermediate working txt
+ALL_WORKING="$EPISODES_LIST $KNOWNFOR_LIST $NCONST_LIST $TCONST_LIST "
+# Intermediate working perl
+ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL "
+ALL_WORKING+="$TCONST_KNOWN_PL $TCONST_SHOWS_PL $XLATE_PL"
+#
+# Final output lists
+ALL_TXT="$UNIQUE_CHARS $UNIQUE_PERSONS $UNIQUE_TITLES"
+#
+# Final output spreadsheets
+ALL_SHEETS="$ASSOCIATED_TITLES $CREDITS_PERSON $CREDITS_SHOW "
+ALL_SHEETS+="$KNOWN_PERSONS $LINKS_TO_PERSONS $LINKS_TO_TITLES $SHOWS"
 
 # Cleanup any possible leftover files
 # shellcheck disable=SC2086     # Need globbing here, breaks otherwise
-rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS
+rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SHEETS
 
 # Coalesce a single tconst input list
 rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
@@ -309,15 +321,15 @@ rg -INv "^#|^$" "${XLATE_FILES[@]}" | cut -f 1,2 | sort -fu |
     perl -p -e 's+\t+\\t}\{\\t+; s+^+s{\\t+; s+$+\\t};+' >"$XLATE_PL"
 
 # Check for translation conflicts
-rg -INv "^#|^$" "${XLATE_FILES[@]}" | sort -fu | cut -f 1 | sort -f | uniq -d >"$DUPES"
+rg -INv "^#|^$" "${XLATE_FILES[@]}" | sort -fu | cut -f 1 | sort -f | uniq -d >"$TEMP_DUPES"
 ### Stop here if there are translation conflicts.
-if [ -s "$DUPES" ]; then
+if [ -s "$TEMP_DUPES" ]; then
     # shellcheck disable=SC2059      # variables in printf OK here
     printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "
-    cat "$DUPES"
+    cat "$TEMP_DUPES"
     printf "\n==> These files have different translations for the same show title.\n"
     printf "    Please ensure all translations for a title are the same, then re-run this script\n"
-    rg -p -f "$DUPES" "${XLATE_FILES[@]}" | rg -v ":#"
+    rg -p -f "$TEMP_DUPES" "${XLATE_FILES[@]}" | rg -v ":#"
     exit 1
 fi
 
@@ -327,26 +339,26 @@ rg -wNz -f "$TCONST_LIST" title.basics.tsv.gz | cut -f 1-4,6-9 |
     perl -p -f "$XLATE_PL" | perl -p -e 's+\t+\t\t\t+;' >"$RAW_SHOWS"
 
 ### Check for and repair duplicate titles
-cut -f 6 "$RAW_SHOWS" | sort -f | uniq -d >"$DUPES"
-if [ -s "$DUPES" ]; then
+cut -f 6 "$RAW_SHOWS" | sort -f | uniq -d >"$TEMP_DUPES"
+if [ -s "$TEMP_DUPES" ]; then
     # Create an awk script to add dates to titles on shows with title conflicts
     printf 'BEGIN {OFS = "\\t"}\n' >"$TEMP_AWK"
-    perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' "$DUPES" \
+    perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' "$TEMP_DUPES" \
         >>"$TEMP_AWK"
     printf '{print}\n' >>"$TEMP_AWK"
     # Let the user know what we will change
     printf "\n==> Adding dates to titles to fix these title conflicts.\n" >&2
-    perl -pi -e 's+^+\\t+; s+$+\\t+;' "$DUPES"
+    perl -pi -e 's+^+\\t+; s+$+\\t+;' "$TEMP_DUPES"
     if checkForExecutable -q xsv; then
-        rg -N --color always -f "$DUPES" "$RAW_SHOWS" | cut -f 1,4-7 |
+        rg -N --color always -f "$TEMP_DUPES" "$RAW_SHOWS" | cut -f 1,4-7 |
             sort -f -t$'\t' --key=3 | xsv table -d "\t" >&2
     else
-        rg -N --color always -f "$DUPES" "$RAW_SHOWS" | cut -f 1,4-7 |
+        rg -N --color always -f "$TEMP_DUPES" "$RAW_SHOWS" | cut -f 1,4-7 |
             sort -f -t$'\t' --key=3 >&2
     fi
     # Change the shows by adding (<DATE>) to title
-    cp "$RAW_SHOWS" "$TEMP_SHOWS"
-    awk -F "\t" -f "$TEMP_AWK" "$TEMP_SHOWS" >"$RAW_SHOWS"
+    cp "$RAW_SHOWS" "$TEMPFILE"
+    awk -F "\t" -f "$TEMP_AWK" "$TEMPFILE" >"$RAW_SHOWS"
 fi
 
 # We should now be conflict free
@@ -356,7 +368,7 @@ cut -f 5 "$RAW_SHOWS" | sort -fu >"$UNIQUE_TITLES"
 # tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
 # that can't be "translated" back to the original show. Manually maintain a skip
 # list in $SKIP_EPISODES.
-rg -v -e "^#" -e "^$" "$SKIP_EPISODES" | cut -f 1 >"$SKIP_TCONST"
+rg -v -e "^#" -e "^$" "$SKIP_EPISODES" | cut -f 1 >"$TEMP_SKIPS"
 
 # Let us know shows we're processing. Format for readability, separate with ";"
 num_titles=$(sed -n '$=' "$UNIQUE_TITLES")
@@ -371,7 +383,7 @@ perl -p -e 's+$+;+' "$UNIQUE_TITLES" | fmt -w 80 | perl -p -e 's+^+\t+' |
 # Use the tconst list to lookup episode IDs and generate an episode tconst file
 rg -wNz -f "$TCONST_LIST" title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
     sort -f -t$'\t' --key=2,2 --key=3,3n --key=4,4n |
-    rg -wv -f "$SKIP_TCONST" | tee "$UNSORTED_EPISODES" | cut -f 1 >"$EPISODES_LIST"
+    rg -wv -f "$TEMP_SKIPS" | tee "$UNSORTED_EPISODES" | cut -f 1 >"$EPISODES_LIST"
 
 # Use the episodes list to generate raw episodes
 rg -wNz -f "$EPISODES_LIST" title.basics.tsv.gz | cut -f 1-4,6-9 |
@@ -385,7 +397,7 @@ rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
     perl -p -e 's+\\N++g;' |
     perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
     rg "$ALL_JOBS" | tee "$UNSORTED_CREDITS" | cut -f 1 |
-    sort -u | tee "$TEMP_LIST" >"$NCONST_LIST"
+    sort -u | tee "$TEMPFILE" >"$NCONST_LIST"
 
 # Use episodes list to lookup principal titles & add to tconst/nconst credits csv
 rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
@@ -393,7 +405,7 @@ rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
     perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
     rg "$ALL_JOBS" |
     tee -a "$UNSORTED_CREDITS" | cut -f 1 | sort -u |
-    rg -v -f "$TEMP_LIST" >>"$NCONST_LIST"
+    rg -v -f "$TEMPFILE" >>"$NCONST_LIST"
 
 # Create a perl script to globally convert a show tconst to a show title
 cut -f 1,5 "$RAW_SHOWS" |
@@ -602,7 +614,7 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 EOF
 
 # shellcheck disable=SC2086     # Need globbing here, breaks otherwise
-wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SPREADSHEETS >>"$POSSIBLE_DIFFS"
+wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SHEETS >>"$POSSIBLE_DIFFS"
 
 # Save durations and exit
 processDurations
