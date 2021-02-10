@@ -71,13 +71,12 @@ function terminate() {
         printf "\nTerminating: %s\n" "$(basename "$0")" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
-ALL_TEMPS $ALL_TEMPS
-ALL_WORKING $ALL_WORKING
-ALL_CSV $ALL_CSV
+ALL_TEMPS ${ALL_TEMPS[@]}
+ALL_WORKING ${ALL_WORKING[@]}
+ALL_CSV ${ALL_CSV[@]}
 EOT
     else
-        # shellcheck disable=SC2086     # Need globbing here, breaks otherwise
-        rm -f $ALL_TEMPS $ALL_WORKING $ALL_CSV
+        rm -f "${ALL_TEMPS[@]}" "${ALL_WORKING[@]}" "${ALL_CSV[@]}"
     fi
 }
 
@@ -287,28 +286,27 @@ PUBLISHED_TCONST_LIST="$BASE/tconst.txt"
 
 # Filename groups used for cleanup
 # Intermediate working temps
-ALL_TEMPS="$TEMPFILE $TEMP_AWK $TEMP_DUPES $TEMP_SKIPS"
+ALL_TEMPS=("$TEMPFILE" "$TEMP_AWK" "$TEMP_DUPES" "$TEMP_SKIPS")
 #
 # Intermediate working csv
-ALL_CSV="$RAW_EPISODES $RAW_PERSONS $RAW_SHOWS "
-ALL_CSV+="$UNSORTED_CREDITS $UNSORTED_EPISODES"
+ALL_CSV=("$RAW_EPISODES" "$RAW_PERSONS" "$RAW_SHOWS")
+ALL_CSV+=("$UNSORTED_CREDITS" "$UNSORTED_EPISODES")
 #
 # Intermediate working txt
-ALL_WORKING="$EPISODES_LIST $KNOWNFOR_LIST $NCONST_LIST $TCONST_LIST "
+ALL_WORKING=("$EPISODES_LIST" "$KNOWNFOR_LIST" "$NCONST_LIST" "$TCONST_LIST")
 # Intermediate working perl
-ALL_WORKING+="$NCONST_PL $TCONST_EPISODES_PL $TCONST_EPISODE_NAMES_PL "
-ALL_WORKING+="$TCONST_KNOWN_PL $TCONST_SHOWS_PL $XLATE_PL"
+ALL_WORKING+=("$NCONST_PL" "$TCONST_EPISODES_PL" "$TCONST_EPISODE_NAMES_PL")
+ALL_WORKING+=("$TCONST_KNOWN_PL" "$TCONST_SHOWS_PL" "$XLATE_PL")
 #
 # Final output lists
-ALL_TXT="$UNIQUE_CHARS $UNIQUE_PERSONS $UNIQUE_TITLES"
+ALL_TXT=("$UNIQUE_CHARS" "$UNIQUE_PERSONS" "$UNIQUE_TITLES")
 #
 # Final output spreadsheets
-ALL_SHEETS="$ASSOCIATED_TITLES $CREDITS_PERSON $CREDITS_SHOW "
-ALL_SHEETS+="$KNOWN_PERSONS $LINKS_TO_PERSONS $LINKS_TO_TITLES $SHOWS"
+ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW")
+ALL_SHEETS+=("$KNOWN_PERSONS" "$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS")
 
 # Cleanup any possible leftover files
-# shellcheck disable=SC2086     # Need globbing here, breaks otherwise
-rm -f $ALL_TEMPS $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SHEETS
+rm -f "${ALL_TEMPS[@]}" "${ALL_WORKING[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}"
 
 # Coalesce a single tconst input list
 rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
@@ -433,8 +431,7 @@ rg -wNz -f "$NCONST_LIST" name.basics.tsv.gz | perl -p -e 's+\\N++g;' |
 # Get rid of ugly \N fields, and unneeded characters. Make sure commas are
 # followed by spaces. Separate multiple characters portrayed with semicolons,
 # remove quotes
-# shellcheck disable=SC2086     # Need globbing here, breaks otherwise
-perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' $ALL_CSV
+perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' "${ALL_CSV[@]}"
 
 # Create the KNOWN_PERSONS spreadsheet, ensure always 5 fields
 printf "Person\tKnown For Titles: 1\tKnown For Titles: 2\tKnown For Titles: 3\tKnown For Titles: 4\n" \
@@ -613,8 +610,7 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 EOF
 
-# shellcheck disable=SC2086     # Need globbing here, breaks otherwise
-wc $ALL_WORKING $ALL_TXT $ALL_CSV $ALL_SHEETS >>"$POSSIBLE_DIFFS"
+wc "${ALL_WORKING[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}" >>"$POSSIBLE_DIFFS"
 
 # Save durations and exit
 processDurations
