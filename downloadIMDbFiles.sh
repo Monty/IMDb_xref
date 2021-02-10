@@ -45,7 +45,7 @@ rm -rf "$cacheDirectory"
 mkdir -p "$cacheDirectory"
 
 printf "==> Recording IMDb .gz file sizes.\n"
-rg -cz "^." "${gz_files[*]}" | sort | perl -p -e 's/:/\t/;' >"$numRecordsFile"
+rg -cz "^." "${gz_files[@]}" | sort | perl -p -e 's/:/\t/;' >"$numRecordsFile"
 
 # Save durations and exit
 terminate
