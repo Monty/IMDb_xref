@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Create a filmography for a named person in IMDb
+# List all shows found for a named person in IMDb.
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")

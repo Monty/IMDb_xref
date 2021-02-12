@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Add a tconst to a file
+# Add a show to a tconst ID file
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
