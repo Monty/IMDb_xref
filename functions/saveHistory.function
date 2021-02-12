@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+#
+# Internal function: Save a script's timestamped history file in $histDirectory
+
+function saveHistory() {
+    local OPTIND scriptName histFile date_fmt timestamp savedFile
+
+    help() {
+        cat <<EOF
+saveHistory -- Internal function: Save a script's timestamped history file.
+
+Timestamp and save a file provided by a script. The file can be used to check
+differences from a prior version. The file can contain anything - but file
+sizes or other data that can be compared programmatically are more useful.
+
+USAGE:
+    saveHistory [OPTIONS...] FILE
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    saveHistory "fileSizes.txt"
+    saveHistory "currentData.csv"
+EOF
+    }
+
+    while getopts ":h" opt; do
+        case $opt in
+        h)
+            help
+            waitUntil -k
+            return
+            ;;
+        \?)
+            printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
+            printf "${YELLOW}$0>saveHistory${NO_COLOR}.\n" >&2
+            ;;
+        :)
+            printf "\n==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0>saveHistory${NO_COLOR} requires an argument.\n" >&2
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    scriptName="$(basename "$0")"
+    histFile="$1"
+
+    # The date & time this function ran
+    date_fmt="%y%m%d.%H%M%S"
+    timestamp=$(date +$date_fmt)
+    # shellcheck disable=SC2154      # histDirectory is defined
+    savedFile="$histDirectory/$timestamp-$scriptName"
+    #
+    # Save history for later use
+    # shellcheck disable=SC2154      # histDirectory is defined
+    cp "$histFile" "$savedFile"
+}

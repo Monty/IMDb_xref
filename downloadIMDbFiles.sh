@@ -20,6 +20,10 @@ function terminate() {
     saveDurations "$SECONDS"
     # Only keep 3 duration lines for this script
     trimDurations 3
+    #
+    saveHistory "$numRecordsFile"
+    # Only keep 5 history files for this script
+    trimHistory 5
     exit
 }
 

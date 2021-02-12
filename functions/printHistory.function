@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+#
+# Internal function: Print a script's most recent history file.
+
+function printHistory() {
+    local OPTIND scriptName histFile
+
+    help() {
+        cat <<EOF
+printHistory -- Internal function: Print a script's most recent history file.
+
+Prints the contents of the file to stdout. Can be piped to other commands.
+
+USAGE:
+    printHistory [OPTIONS...]
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    printHistory
+EOF
+    }
+
+    while getopts ":h" opt; do
+        case $opt in
+        h)
+            help
+            waitUntil -k
+            return
+            ;;
+        \?)
+            printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
+            printf "${YELLOW}$0>printHistory${NO_COLOR}.\n" >&2
+            ;;
+        :)
+            printf "\n==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0>printHistory${NO_COLOR} requires an argument.\n" >&2
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    scriptName="$(basename "$0")"
+    # shellcheck disable=SC2012,SC2154      # ls is OK since I control the filenames
+    histFile="$(ls -1 -t "$histDirectory"/*-"$scriptName" 2>/dev/null | head -1)"
+    [ -n "$histFile" ] && cat "$histFile"
+}

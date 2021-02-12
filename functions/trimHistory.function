@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#
+# Internal function: Trim script's history files by only keeping the last maxFiles
+
+function trimHistory() {
+    local OPTIND scriptName maxFiles histFiles numFiles
+
+    help() {
+        cat <<EOF
+trimHistory -- Internal function: Limit the number of history files kept.
+
+Only keep the last maxFiles history files of any script so the number of files
+doesn't grow without bounds -- maxFiles defaults to 10.
+
+USAGE:
+    trimHistory [OPTIONS...] [maxFiles]
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    trimHistory
+    trimHistory 5
+EOF
+    }
+
+    while getopts ":h" opt; do
+        case $opt in
+        h)
+            help
+            waitUntil -k
+            return
+            ;;
+        \?)
+            printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
+            printf "${YELLOW}$0>trimHistory${NO_COLOR}.\n" >&2
+            ;;
+        :)
+            printf "\n==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0>trimHistory${NO_COLOR} requires an argument.\n" >&2
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    scriptName="$(basename "$0")"
+    maxFiles="${1:-10}"
+    histFiles=("$histDirectory"/*-"$scriptName")
+    numFiles=${#histFiles[@]}
+
+    if [[ $numFiles -gt $maxFiles ]]; then
+        rm -f "${histFiles[0]}"
+    fi
+}
