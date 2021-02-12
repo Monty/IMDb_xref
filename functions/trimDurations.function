@@ -54,6 +54,7 @@ EOF
     scriptName="$(basename "$0")"
     maxLines="${1:-10}"
 
+    # shellcheck disable=SC2154      # durationFile is defined
     linesFound=$(rg -c "^$scriptName\t" "$durationFile")
     if [[ $linesFound -gt $maxLines ]]; then
         TMPFILE=$(mktemp)

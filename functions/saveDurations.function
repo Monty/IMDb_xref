@@ -70,6 +70,7 @@ EOF
     fi
     #
     # Save this info for later
+    # shellcheck disable=SC2154      # durationFile is defined
     printf "%s\t%s\t%s\t%s\n" "$scriptName" "$timestamp" "$date_str" \
         "$duration" >>"$durationFile"
 }

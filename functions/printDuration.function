@@ -52,6 +52,7 @@ EOF
 
     scriptName="$(basename "$0")"
 
+    # shellcheck disable=SC2154      # durationFile is defined
     if [ "$(rg -c "^$scriptName\t" "$durationFile")" ]; then
         printf "\n==> Previously, this took "
         rg "^$scriptName\t" "$durationFile" | tail -1 | cut -f 4
