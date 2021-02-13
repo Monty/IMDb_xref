@@ -349,17 +349,20 @@ if [ -z "$FORCE_ALL" ] && [ -n "$useEveryTconst" ]; then
     [[ $lastWritten =~ .*tsv\.gz ]] && FORCE_ALL="yes"
 
     if [ -z "$FORCE_ALL" ]; then
-        # Save tconst IDs from previous run
+        # Get tconst IDs from previous run
         printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$HIST_TCONST"
         #
         if [ -z "$(comm -13 "$HIST_TCONST" "$TCONST_LIST")" ]; then
+            # Nothing new. No processing required. Very fast...
             BYPASS_PROCESSING="yes"
-            [ -z "$QUIET" ] &&
-                printf "==> No changes, no new files generated. Use -f to override.\n\n"
+            printf "\n==> No changes, no new files generated. Use -f to force reload all.\n\n"
         else
-            printf "==> Using merge shortcut to generate files. Use -f to override.\n"
+            # Some new shows. Minimal processing required. Use merge strategy.
+            numNew="$(comm -13 "$HIST_TCONST" "$TCONST_LIST" | tee "$TEMPFILE" |
+                sed -n '$=')"
+            [ "$numNew" -gt 1 ] && plural="s"
+            printf "\n==> Adding $numNew new show$plural. Use -f to force reload all.\n"
             mergeFilesP="yes"
-            comm -13 "$HIST_TCONST" "$TCONST_LIST" >"$TEMPFILE"
             mv "$TEMPFILE" "$TCONST_LIST"
             mv "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "$CACHE"
         fi
