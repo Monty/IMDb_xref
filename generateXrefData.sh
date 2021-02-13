@@ -45,8 +45,8 @@ function help() {
     cat <<EOF
 generateXrefData.sh -- Create lists/spreadsheets of shows, actors, and characters they portray.
 
-This uses downloaded IMDb .gz files. See https://www.imdb.com/interfaces/ for
-details of the data they contain.
+This uses downloaded IMDb .gz files. See https://www.imdb.com/interfaces for details
+of the data they contain.
 
 USAGE:
     ./generateXrefData.sh [-x translation file] [tconst file ...]

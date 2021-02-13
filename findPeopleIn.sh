@@ -13,14 +13,15 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findPeopleIn.sh -- List all people found in a named show on IMDb.
+findPeopleIn.sh -- List principal cast members of shows on IMDb.
 
-Search IMDb titles for a match to a show name or tconst. A tconst should be
-unique, but a show name can have several or even many matches. Allow user to
-select one match or skip if there are too many.
+Search IMDb titles for show names or tconst IDs. A tconst ID should be unique,
+but a show name can have several or even many matches. Allow user to select one
+match or skip if there are too many.
 
-List the principal cast members from that show. If you search for multiple
-shows, also list the names of any cast members that appear in more than one.
+List the principal cast members and the characters they portray. If you search
+for multiple shows, also list the names of any cast members that appear in more
+than one.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.

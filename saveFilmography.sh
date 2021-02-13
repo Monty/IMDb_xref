@@ -15,7 +15,7 @@ function help() {
     cat <<EOF
 saveFilmography.sh -- Save a filmography for a named person in IMDb.
 
-Search IMDb titles for a match to a person name or nconst. An nconst should be
+Search IMDb titles for person names or nconst IDs. An nconst ID should be
 unique, but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 

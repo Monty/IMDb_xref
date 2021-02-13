@@ -15,9 +15,9 @@ function help() {
     cat <<EOF
 saveShows.sh -- Add a show to a tconst ID file, offer to update data files.
 
-Search IMDb titles for a match to a show name or tconst. A tconst should be
-unique, but a show name can have several or even many matches. Allow user to
-select one match or skip if there are too many.
+Search IMDb titles for show names or tconst IDs. A tconst ID should be unique,
+but a show name can have several or even many matches. Allow user to select one
+match or skip if there are too many.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
