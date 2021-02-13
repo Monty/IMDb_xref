@@ -76,10 +76,12 @@ ALL_TEMPS ${ALL_TEMPS[@]}
 ALL_WORK ${ALL_WORK[@]}
 ALL_CSV ${ALL_CSV[@]}
 TCONST_LIST $TCONST_LIST
+EVERY_TCONST $EVERY_TCONST
 CACHE $CACHE
 EOT
     else
-        rm -f "${ALL_TEMPS[@]}" "${ALL_WORK[@]}" "${ALL_CSV[@]}" "$TCONST_LIST"
+        rm -f "${ALL_TEMPS[@]}" "${ALL_WORK[@]}" "${ALL_CSV[@]}"
+        rm -f "$TCONST_LIST" "$EVERY_TCONST"
         rm -rf "$CACHE"
     fi
 }
@@ -98,6 +100,10 @@ function processDurations() {
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations 10
+    # Save for comparison next time...
+    [ -n "$useEveryTconst" ] && saveHistory "$EVERY_TCONST"
+    # Keep 20 history files for this script
+    trimHistory 20
     exit
 }
 
@@ -154,6 +160,109 @@ shift $((OPTIND - 1))
 # Make sure prerequisites are satisfied
 ensurePrerequisites
 
+# Create some timestamps - only use DATE_ID if we're debugging
+[ -n "$DEBUG" ] && DATE_ID="-$(date +%y%m%d)"
+LONGDATE="-$(date +%y%m%d.%H%M%S)"
+
+# Required subdirectories
+WORK="secondary"
+CACHE="${WORK}/cache"
+BASE="baseline"
+[ -n "$TEST_MODE" ] && BASE="test_results"
+[ -n "$OUTPUT_DIR" ] && mkdir -p "$OUTPUT_DIR"
+mkdir -p "$WORK" "$BASE" "$CACHE"
+
+# Error and debugging info (per run)
+POSSIBLE_DIFFS="diffs$LONGDATE.txt"
+[ -n "$CREATE_DIFF" ] &&
+    printf "\n==> %s contains diffs between generated files and files saved in %s\n" \
+        "$POSSIBLE_DIFFS" "$BASE"
+
+# Final output spreadsheets
+ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
+CREDITS_PERSON="${OUTPUT_DIR}Credits-Person$DATE_ID.csv"
+CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
+KNOWN_PERSONS="${OUTPUT_DIR}Persons-KnownFor$DATE_ID.csv"
+LINKS_TO_PERSONS="${OUTPUT_DIR}LinksToPersons$DATE_ID.csv"
+LINKS_TO_TITLES="${OUTPUT_DIR}LinksToTitles$DATE_ID.csv"
+SHOWS="${OUTPUT_DIR}Shows-Episodes$DATE_ID.csv"
+
+# Final output lists
+UNIQUE_CHARS="${OUTPUT_DIR}uniqCharacters$DATE_ID.txt"
+UNIQUE_PERSONS="${OUTPUT_DIR}uniqPersons$DATE_ID.txt"
+UNIQUE_TITLES="${OUTPUT_DIR}uniqTitles$DATE_ID.txt"
+
+# Intermediate working temps
+TEMPFILE="$WORK/tempfile$DATE_ID.txt"
+TEMP_AWK="$WORK/conflicts$DATE_ID.awk"
+TEMP_DUPES="$WORK/dupes$DATE_ID.txt"
+TEMP_SKIPS="$WORK/tconst-skip$DATE_ID.txt"
+# Intermediate working txt
+EPISODES_LIST="$WORK/tconst-episodes$DATE_ID.txt"
+KNOWNFOR_LIST="$WORK/tconst_known$DATE_ID.txt"
+NCONST_LIST="$WORK/nconst$DATE_ID.txt"
+HIST_TCONST="$WORK/hist_tconst$DATE_ID.txt"
+# Intermediate working csv
+RAW_EPISODES="$WORK/raw_episodes$DATE_ID.csv"
+RAW_PERSONS="$WORK/raw_persons$DATE_ID.csv"
+RAW_SHOWS="$WORK/raw_shows$DATE_ID.csv"
+UNSORTED_CREDITS="$WORK/unsorted_credits$DATE_ID.csv"
+UNSORTED_EPISODES="$WORK/unsorted_episodes$DATE_ID.csv"
+# Intermediate working perl
+NCONST_PL="$WORK/nconst-pl$DATE_ID.txt"
+TCONST_EPISODES_PL="$WORK/tconst-episodes-pl$DATE_ID.txt"
+TCONST_EPISODE_NAMES_PL="$WORK/tconst-episode_names-pl$DATE_ID.txt"
+TCONST_KNOWN_PL="$WORK/tconst-known-pl$DATE_ID.txt"
+TCONST_SHOWS_PL="$WORK/tconst-shows-pl$DATE_ID.txt"
+XLATE_PL="$WORK/xlate-pl$DATE_ID.txt"
+# Special files that shouldn't be removed before processing
+TCONST_LIST="$WORK/tconst$DATE_ID.txt"
+EVERY_TCONST="$WORK/every_tconst$DATE_ID.txt"
+
+# Manually entered list of tconst ID's that we don't want tvEpisodes for
+# either because they have too many episodes, or episodes don't translate well
+SKIP_EPISODES="skipEpisodes.example"
+
+# Saved files used for comparison with current files
+PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
+PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
+PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
+PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
+PUBLISHED_SHOWS="$BASE/Shows.csv"
+PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
+#
+PUBLISHED_UNIQUE_CHARS="$BASE/uniqCharacters.txt"
+PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
+PUBLISHED_UNIQUE_TITLES="$BASE/uniqTitles.txt"
+#
+PUBLISHED_EPISODES_LIST="$BASE/tconst-episodes.csv"
+PUBLISHED_KNOWNFOR_LIST="$BASE/tconst_known.txt"
+PUBLISHED_NCONST_LIST="$BASE/nconst.txt"
+PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
+PUBLISHED_RAW_SHOWS="$BASE/raw_shows.csv"
+PUBLISHED_TCONST_LIST="$BASE/tconst.txt"
+
+# Filename groups used for cleanup
+# Intermediate working temps
+ALL_TEMPS=("$TEMPFILE" "$TEMP_AWK" "$TEMP_DUPES" "$TEMP_SKIPS")
+#
+# Intermediate working csv
+ALL_CSV=("$RAW_EPISODES" "$RAW_PERSONS" "$RAW_SHOWS")
+ALL_CSV+=("$UNSORTED_CREDITS" "$UNSORTED_EPISODES")
+#
+# Intermediate working txt
+ALL_WORK=("$EPISODES_LIST" "$KNOWNFOR_LIST" "$NCONST_LIST" "$HIST_TCONST")
+# Intermediate working perl
+ALL_WORK+=("$NCONST_PL" "$TCONST_EPISODES_PL" "$TCONST_EPISODE_NAMES_PL")
+ALL_WORK+=("$TCONST_KNOWN_PL" "$TCONST_SHOWS_PL" "$XLATE_PL")
+#
+# Final output lists
+ALL_TXT=("$UNIQUE_CHARS" "$UNIQUE_PERSONS" "$UNIQUE_TITLES")
+#
+# Final output spreadsheets
+ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW")
+ALL_SHEETS+=("$KNOWN_PERSONS" "$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS")
+
 # If we ALWAYS want QUIET
 [ -n "$(rg -c "QUIET=yes" "$configFile")" ] && QUIET="yes"
 
@@ -200,6 +309,9 @@ else
         TCONST_FILES=(*.tconst)
         [ -z "$QUIET" ] &&
             printf "==> Searching all .tconst files for IMDb title identifiers.\n"
+        # Cache is only enabled if *.tconst is used, which is the usual mode.
+        useEveryTconst="yes"
+        rg -N --heading "^tt" ./*tconst >"$EVERY_TCONST"
     else
         for file in "$@"; do
             if [ ! -e "$file" ]; then
@@ -213,149 +325,44 @@ else
     fi
 fi
 
-# Create some timestamps - only use DATE_ID if we're debugging
-[ -n "$DEBUG" ] && DATE_ID="-$(date +%y%m%d)"
-LONGDATE="-$(date +%y%m%d.%H%M%S)"
-
-# Required subdirectories
-WORK="secondary"
-CACHE="${WORK}/cache"
-BASE="baseline"
-[ -n "$TEST_MODE" ] && BASE="test_results"
-[ -n "$OUTPUT_DIR" ] && mkdir -p "$OUTPUT_DIR"
-mkdir -p "$WORK" "$BASE" "$CACHE"
-
-# Error and debugging info (per run)
-POSSIBLE_DIFFS="diffs$LONGDATE.txt"
-[ -n "$CREATE_DIFF" ] &&
-    printf "\n==> %s contains diffs between generated files and files saved in %s\n" \
-        "$POSSIBLE_DIFFS" "$BASE"
-
-# Final output spreadsheets
-ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
-CREDITS_PERSON="${OUTPUT_DIR}Credits-Person$DATE_ID.csv"
-CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
-KNOWN_PERSONS="${OUTPUT_DIR}Persons-KnownFor$DATE_ID.csv"
-LINKS_TO_PERSONS="${OUTPUT_DIR}LinksToPersons$DATE_ID.csv"
-LINKS_TO_TITLES="${OUTPUT_DIR}LinksToTitles$DATE_ID.csv"
-SHOWS="${OUTPUT_DIR}Shows-Episodes$DATE_ID.csv"
-
-# Final output lists
-UNIQUE_CHARS="${OUTPUT_DIR}uniqCharacters$DATE_ID.txt"
-UNIQUE_PERSONS="${OUTPUT_DIR}uniqPersons$DATE_ID.txt"
-UNIQUE_TITLES="${OUTPUT_DIR}uniqTitles$DATE_ID.txt"
-
-# Intermediate working temps
-TEMPFILE="$WORK/tempfile$DATE_ID.txt"
-TEMP_AWK="$WORK/conflicts$DATE_ID.awk"
-TEMP_DUPES="$WORK/dupes$DATE_ID.txt"
-TEMP_SKIPS="$WORK/tconst-skip$DATE_ID.txt"
-# Intermediate working txt
-EPISODES_LIST="$WORK/tconst-episodes$DATE_ID.txt"
-KNOWNFOR_LIST="$WORK/tconst_known$DATE_ID.txt"
-NCONST_LIST="$WORK/nconst$DATE_ID.txt"
-OLD_TCONST="$WORK/old_tconst$DATE_ID.txt"
-# Intermediate working csv
-RAW_EPISODES="$WORK/raw_episodes$DATE_ID.csv"
-RAW_PERSONS="$WORK/raw_persons$DATE_ID.csv"
-RAW_SHOWS="$WORK/raw_shows$DATE_ID.csv"
-UNSORTED_CREDITS="$WORK/unsorted_credits$DATE_ID.csv"
-UNSORTED_EPISODES="$WORK/unsorted_episodes$DATE_ID.csv"
-# Intermediate working perl
-NCONST_PL="$WORK/nconst-pl$DATE_ID.txt"
-TCONST_EPISODES_PL="$WORK/tconst-episodes-pl$DATE_ID.txt"
-TCONST_EPISODE_NAMES_PL="$WORK/tconst-episode_names-pl$DATE_ID.txt"
-TCONST_KNOWN_PL="$WORK/tconst-known-pl$DATE_ID.txt"
-TCONST_SHOWS_PL="$WORK/tconst-shows-pl$DATE_ID.txt"
-XLATE_PL="$WORK/xlate-pl$DATE_ID.txt"
-# Special files that shouldn't be removed before starting
-TCONST_LIST="$WORK/tconst$DATE_ID.txt"
-
-# Manually entered list of tconst ID's that we don't want tvEpisodes for
-# either because they have too many episodes, or episodes don't translate well
-SKIP_EPISODES="skipEpisodes.example"
-
-# Saved files used for comparison with current files
-PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
-PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
-PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
-PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
-PUBLISHED_SHOWS="$BASE/Shows.csv"
-PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
-#
-PUBLISHED_UNIQUE_CHARS="$BASE/uniqCharacters.txt"
-PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
-PUBLISHED_UNIQUE_TITLES="$BASE/uniqTitles.txt"
-#
-PUBLISHED_EPISODES_LIST="$BASE/tconst-episodes.csv"
-PUBLISHED_KNOWNFOR_LIST="$BASE/tconst_known.txt"
-PUBLISHED_NCONST_LIST="$BASE/nconst.txt"
-PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
-PUBLISHED_RAW_SHOWS="$BASE/raw_shows.csv"
-PUBLISHED_TCONST_LIST="$BASE/tconst.txt"
-
-# Filename groups used for cleanup
-# Intermediate working temps
-ALL_TEMPS=("$TEMPFILE" "$TEMP_AWK" "$TEMP_DUPES" "$TEMP_SKIPS")
-#
-# Intermediate working csv
-ALL_CSV=("$RAW_EPISODES" "$RAW_PERSONS" "$RAW_SHOWS")
-ALL_CSV+=("$UNSORTED_CREDITS" "$UNSORTED_EPISODES")
-#
-# Intermediate working txt
-ALL_WORK=("$EPISODES_LIST" "$KNOWNFOR_LIST" "$NCONST_LIST" "$OLD_TCONST")
-# Intermediate working perl
-ALL_WORK+=("$NCONST_PL" "$TCONST_EPISODES_PL" "$TCONST_EPISODE_NAMES_PL")
-ALL_WORK+=("$TCONST_KNOWN_PL" "$TCONST_SHOWS_PL" "$XLATE_PL")
-#
-# Final output lists
-ALL_TXT=("$UNIQUE_CHARS" "$UNIQUE_PERSONS" "$UNIQUE_TITLES")
-#
-# Final output spreadsheets
-ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW")
-ALL_SHEETS+=("$KNOWN_PERSONS" "$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS")
-
-# Figure out whether we can use previous run as a cache.
-# Must force reload everything if:
-# 1) Missing any gzip or previous generateXrefData files
-#    All gzip files should be here as they are loaded by ensurePrerequisites
-# 2) Any gzip file is newer than any generateXrefData file
-# 3) User requests we force an update
-
-# 1) Missing any gzip or previous generateXrefData files?
-numRequired="$((${#ALL_TXT[@]} + ${#ALL_SHEETS[@]} + ${#gzFiles[@]}))"
-numAvailable="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
-    2>/dev/null | cut -d' ' -f6- | sed -n '$=')"
-# [ "$numRequired" -ne "$numAvailable" ] && printf "Files missing.\n"
-[ "$numRequired" -ne "$numAvailable" ] && FORCE_ALL="yes"
-
-# stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
-#     2>/dev/null | cut -d' ' -f6- | sort -nr
-
-# 2) Is any gzip file newer than any generateXrefData file?
-lastWritten="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
-    2>/dev/null | cut -d' ' -f6- | sort -nr | head -1)"
-# [[ "$lastWritten" =~ .*tsv\.gz ]] && printf "Last written is a tsv.gz.\n"
-[[ $lastWritten =~ .*tsv\.gz ]] && FORCE_ALL="yes"
-
 # Coalesce a single tconst input list
 rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
 
-# If we're not going to force loading everything
-if [ -z "$FORCE_ALL" ]; then
-    # Save tconst IDs from previous run
-    rg "^tt" "$LINKS_TO_TITLES" | cut -f 1 | sort -fu >"$OLD_TCONST"
-    echo ""
-    if [ -z "$(comm -13 "$OLD_TCONST" "$TCONST_LIST")" ]; then
-        BYPASS_PROCESSING="yes"
-        [ -z "$QUIET" ] &&
-            printf "==> No changes, no new files generated. Use -f to override.\n\n"
-    else
-        printf "==> Using merge shortcut to generate files. Use -f to override.\n"
-        mergeFilesP="yes"
-        comm -13 "$OLD_TCONST" "$TCONST_LIST" >"$TEMPFILE"
-        mv "$TEMPFILE" "$TCONST_LIST"
-        mv "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "$CACHE"
+if [ -z "$FORCE_ALL" ] && [ -n "$useEveryTconst" ]; then
+    # Figure out whether we can use previous run as a cache.
+    # Must force reload everything if:
+    # 1) Missing any gzip or previous generateXrefData files
+    #    All gzip files should be here as they are loaded by ensurePrerequisites
+    # 2) Any gzip file is newer than any generateXrefData file
+
+    # 1) Missing any gzip or previous generateXrefData files?
+    numRequired="$((${#ALL_TXT[@]} + ${#ALL_SHEETS[@]} + ${#gzFiles[@]}))"
+    numAvailable="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
+        2>/dev/null | cut -d' ' -f6- | sed -n '$=')"
+    # [ "$numRequired" -ne "$numAvailable" ] && printf "Files missing.\n"
+    [ "$numRequired" -ne "$numAvailable" ] && FORCE_ALL="yes"
+
+    # 2) Is any gzip file newer than any generateXrefData file?
+    lastWritten="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
+        2>/dev/null | cut -d' ' -f6- | sort -nr | head -1)"
+    # [[ "$lastWritten" =~ .*tsv\.gz ]] && printf "Last written is a tsv.gz.\n"
+    [[ $lastWritten =~ .*tsv\.gz ]] && FORCE_ALL="yes"
+
+    if [ -z "$FORCE_ALL" ]; then
+        # Save tconst IDs from previous run
+        printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$HIST_TCONST"
+        #
+        if [ -z "$(comm -13 "$HIST_TCONST" "$TCONST_LIST")" ]; then
+            BYPASS_PROCESSING="yes"
+            [ -z "$QUIET" ] &&
+                printf "==> No changes, no new files generated. Use -f to override.\n\n"
+        else
+            printf "==> Using merge shortcut to generate files. Use -f to override.\n"
+            mergeFilesP="yes"
+            comm -13 "$HIST_TCONST" "$TCONST_LIST" >"$TEMPFILE"
+            mv "$TEMPFILE" "$TCONST_LIST"
+            mv "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "$CACHE"
+        fi
     fi
 fi
 
