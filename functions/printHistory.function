@@ -9,16 +9,18 @@ function printHistory() {
         cat <<EOF
 printHistory -- Internal function: Print a script's most recent history file.
 
-Prints the contents of the file to stdout. Can be piped to other commands.
+Prints the contents of the file to stdout. Can be piped to other commands. If
+there is a scriptName parameter, print that script's most recent history file.
 
 USAGE:
-    printHistory [OPTIONS...]
+    printHistory [OPTIONS...] [scriptName]
 
 OPTIONS:
     -h      Print this message.
 
 EXAMPLES:
     printHistory
+    printHistory generateXrefData.sh
 EOF
     }
 
@@ -42,7 +44,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="$(basename "$0")"
+    scriptName="${1:-$(basename "$0")}"
     # shellcheck disable=SC2012,SC2154      # ls is OK since I control the filenames
     histFile="$(ls -1 -t "$histDirectory"/*-"$scriptName" 2>/dev/null | head -1)"
     [ -n "$histFile" ] && cat "$histFile"
