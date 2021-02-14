@@ -39,7 +39,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -a      All -- Only print 'All cast members' section.
+    -p      Principal -- Only print 'Principal cast members' section.
     -d      Duplicates -- Only print cast members that are in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
@@ -51,7 +51,7 @@ EXAMPLES:
     ./xrefCast.sh "The Crown"
     ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
     ./xrefCast.sh -dn "Elizabeth Debicki"
-    ./xrefCast.sh -af Clooney.csv "Brad Pitt"
+    ./xrefCast.sh -pf Clooney.csv "Brad Pitt"
 EOF
 }
 
@@ -95,14 +95,14 @@ function loopOrExitP() {
     fi
 }
 
-while getopts ":f:hadin" opt; do
+while getopts ":f:hpdin" opt; do
     case $opt in
     h)
         help
         exit
         ;;
-    a)
-        ALL_NAMES_ONLY="yes"
+    p)
+        PRINCIPAL_CAST_ONLY="yes"
         ;;
     d)
         MULTIPLE_NAMES_ONLY="yes"
@@ -212,14 +212,15 @@ if [ ! -s "$TMPFILE" ]; then
     loopOrExitP
 else
     numAll=$(cut -f 1 "$TMPFILE" | sort -fu | sed -n '$=')
-    [ "$numAll" -eq 1 ] && [ -z "$MULTIPLE_NAMES_ONLY" ] && ALL_NAMES_ONLY="yes"
+    [ "$numAll" -eq 1 ] && [ -z "$MULTIPLE_NAMES_ONLY" ] &&
+        PRINCIPAL_CAST_ONLY="yes"
 fi
 
 # Get rid of initial single quote used to force show/episode names in spreadsheet to be strings.
 perl -pi -e "s+\t'+\t+g;" "$TMPFILE"
 
 # Save ALL_NAMES
-printf "\n==> All cast members (Name|Job|Show|Role):\n" >"$ALL_NAMES"
+printf "\n==> Principal cast members (Name|Job|Show|Role):\n" >"$ALL_NAMES"
 if checkForExecutable -q xsv; then
     xsv table -d "\t" "$TMPFILE" >>"$ALL_NAMES"
 else
@@ -250,7 +251,7 @@ fi
 
 # If we're in interactive mode, give user a choice of all or duplicates only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] &&
-    [ -z "$ALL_NAMES_ONLY" ] && [ "$numMultiple" -ne 0 ]; then
+    [ -z "$PRINCIPAL_CAST_ONLY" ] && [ "$numMultiple" -ne 0 ]; then
     printf "\n==> I found $numAll cast members. $numMultiple $_vb in more than one show.\n"
     waitUntil "$YN_PREF" -N "Should I only print $_pron $numMultiple?" &&
         MULTIPLE_NAMES_ONLY="yes"
@@ -259,8 +260,8 @@ fi
 # Unless MULTIPLE_NAMES_ONLY, print all search results
 [ -z "$MULTIPLE_NAMES_ONLY" ] && cat "$ALL_NAMES"
 
-# If ALL_NAMES_ONLY, exit here
-[ -n "$ALL_NAMES_ONLY" ] && loopOrExitP
+# If PRINCIPAL_CAST_ONLY, exit here
+[ -n "$PRINCIPAL_CAST_ONLY" ] && loopOrExitP
 
 # Print multiple search results
 if [ "$numMultiple" -eq 0 ]; then

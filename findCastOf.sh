@@ -373,7 +373,7 @@ while read -r line; do
     fi
     cat "$cacheFile" >>"$TMPFILE"
     if [ -z "$MULTIPLE_NAMES_ONLY" ]; then
-        ./xrefCast.sh -f "$cacheFile" -an "$showName"
+        ./xrefCast.sh -f "$cacheFile" -pn "$showName"
         waitUntil -k
     fi
 done <"$SHOW_NAMES"

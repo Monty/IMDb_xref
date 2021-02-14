@@ -35,11 +35,11 @@ EOF
 waitUntil -k # Default prompt for -k is: "Hit any key to continue, '^C' to quit."
 
 waitUntil -kc 'What actresses played Princess Diana?'
-./xrefCast.sh -an "Princess Diana"
+./xrefCast.sh -pn "Princess Diana"
 waitUntil -k
 
 waitUntil -kc 'What about Queen Elizabeth?'
-./xrefCast.sh -an "Queen Elizabeth II" 'Princess Diana'
+./xrefCast.sh -pn "Queen Elizabeth II" 'Princess Diana'
 waitUntil -k
 
 waitUntil -kc 'What other shows was Olivia Colman in?'
@@ -52,7 +52,7 @@ waitUntil -kc \
 waitUntil -k
 
 waitUntil -kc 'Who was in The Crown?'
-./xrefCast.sh -an "The Crown"
+./xrefCast.sh -pn "The Crown"
 waitUntil -k
 
 clear
