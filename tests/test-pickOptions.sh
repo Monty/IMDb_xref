@@ -30,8 +30,8 @@ while true; do
         ./saveShows.sh Fargo Shaft
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh Fargo Shaft'; then
-        ./findPeopleIn.sh Fargo Shaft
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Fargo Shaft'; then
+        ./findCastOf.sh Fargo Shaft
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "John Wayne" "Robert Downey"'; then

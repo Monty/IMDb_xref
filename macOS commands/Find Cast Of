@@ -14,4 +14,4 @@ clear
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME"/.. || exit
 
-exec ./findPeopleIn.sh
+exec ./findCastOf.sh

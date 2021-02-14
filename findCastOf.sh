@@ -13,7 +13,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findPeopleIn.sh -- List principal cast members of shows on IMDb.
+findCastOf.sh -- List principal cast members of shows on IMDb.
 
 Search IMDb titles for show names or tconst IDs. A tconst ID should be unique,
 but a show name can have several or even many matches. Allow user to select one
@@ -27,7 +27,7 @@ If you don't enter a parameter on the command line, you'll be prompted for
 input.
 
 USAGE:
-    ./findPeopleIn.sh [TCONST...] [SHOW TITLE...]
+    ./findCastOf.sh [TCONST...] [SHOW TITLE...]
 
 OPTIONS:
     -h      Print this message.
@@ -35,12 +35,12 @@ OPTIONS:
     -m      Maximum matches for a show title allowed in menu - defaults to 25
 
 EXAMPLES:
-    ./findPeopleIn.sh
-    ./findPeopleIn.sh -d
-    ./findPeopleIn.sh "The Crown"
-    ./findPeopleIn.sh tt1606375
-    ./findPeopleIn.sh tt1606375 tt1399664 "Broadchurch"
-    ./findPeopleIn.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+    ./findCastOf.sh
+    ./findCastOf.sh -d
+    ./findCastOf.sh "The Crown"
+    ./findCastOf.sh tt1606375
+    ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"
+    ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
 EOF
 }
 
@@ -99,8 +99,8 @@ function loopOrExitP() {
         "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
-        [ -n "$MULTIPLE_NAMES_ONLY" ] && exec ./findPeopleIn.sh -d
-        exec ./findPeopleIn.sh
+        [ -n "$MULTIPLE_NAMES_ONLY" ] && exec ./findCastOf.sh -d
+        exec ./findCastOf.sh
     else
         printf "Quitting...\n"
         exit

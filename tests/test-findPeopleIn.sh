@@ -17,58 +17,58 @@ function cleanup() {
     exit 130
 }
 
-printf "==> Testing ${RED}findPeopleIn.sh${NO_COLOR}.\n\n"
+printf "==> Testing ${RED}findCastOf.sh${NO_COLOR}.\n\n"
 printf "First, print the help file...\n"
-./findPeopleIn.sh -h
+./findCastOf.sh -h
 waitUntil -k
 clear
 
 while true; do
-    if waitUntil "$YN_PREF" -Y 'Run ./findPeopleIn.sh tt1606375'; then
-        ./findPeopleIn.sh tt1606375
+    if waitUntil "$YN_PREF" -Y 'Run ./findCastOf.sh tt1606375'; then
+        ./findCastOf.sh tt1606375
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh -d tt1606375'; then
-        ./findPeopleIn.sh -d tt1606375
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -d tt1606375'; then
+        ./findCastOf.sh -d tt1606375
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh tt1606375 tt1399664 "Broadchurch"'; then
-        ./findPeopleIn.sh tt1606375 tt1399664 "Broadchurch"
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"'; then
+        ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh -d tt1606375 tt1399664 "Broadchurch"'; then
-        ./findPeopleIn.sh -d tt1606375 tt1399664 "Broadchurch"
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -d tt1606375 tt1399664 "Broadchurch"'; then
+        ./findCastOf.sh -d tt1606375 tt1399664 "Broadchurch"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh "The Crown"'; then
-        ./findPeopleIn.sh "The Crown"
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh "The Crown"'; then
+        ./findCastOf.sh "The Crown"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh -d "The Crown"'; then
-        ./findPeopleIn.sh -d "The Crown"
-    fi
-
-    if waitUntil "$YN_PREF" -Y \
-        '\nRun ./findPeopleIn.sh tt1606375 tt1399664 broadchurch "the crown"'; then
-        ./findPeopleIn.sh tt1606375 tt1399664 broadchurch "the crown"
-    fi
-
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh "The Crown" River'; then
-        ./findPeopleIn.sh "The Crown" River
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -d "The Crown"'; then
+        ./findCastOf.sh -d "The Crown"
     fi
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./findPeopleIn.sh "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
-        ./findPeopleIn.sh "The Night Manager" "The Crown" "The Durrells in Corfu"
+        '\nRun ./findCastOf.sh tt1606375 tt1399664 broadchurch "the crown"'; then
+        ./findCastOf.sh tt1606375 tt1399664 broadchurch "the crown"
+    fi
+
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh "The Crown" River'; then
+        ./findCastOf.sh "The Crown" River
     fi
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./findPeopleIn.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
-        ./findPeopleIn.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+        '\nRun ./findCastOf.sh "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
+        ./findCastOf.sh "The Night Manager" "The Crown" "The Durrells in Corfu"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findPeopleIn.sh aaa'; then
-        ./findPeopleIn.sh aaa
+    if waitUntil "$YN_PREF" -Y \
+        '\nRun ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
+        ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+    fi
+
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh aaa'; then
+        ./findCastOf.sh aaa
     fi
 
     ! waitUntil "$YN_PREF" -Y '\nTests completed. Run again?' && break
