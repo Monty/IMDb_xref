@@ -12,24 +12,33 @@ trimHistory -- Internal function: Limit the number of history files kept.
 Only keep the last maxFiles history files of any script so the number of files
 doesn't grow without bounds -- maxFiles defaults to 10.
 
+If there is a scriptName parameter, use it instead of (basename "\$0") as
+the histFile.
+
 USAGE:
-    trimHistory [OPTIONS...] [maxFiles]
+    trimHistory [OPTIONS...] [scriptName]
 
 OPTIONS:
     -h      Print this message.
+    -m      maxFiles -  Maximum number of history files to keep.
 
 EXAMPLES:
     trimHistory
-    trimHistory 5
+    trimHistory savedSearches
+    trimHistory -m 5
+    trimHistory -m 20 savedSearches
 EOF
     }
 
-    while getopts ":h" opt; do
+    while getopts ":hm:" opt; do
         case $opt in
         h)
             help
             waitUntil -k
             return
+            ;;
+        m)
+            maxFiles="$OPTARG"
             ;;
         \?)
             printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
@@ -44,12 +53,13 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="$(basename "$0")"
-    maxFiles="${1:-10}"
+    scriptName="${1:-$(basename "$0")}"
+    maxFiles="${maxFiles:-10}"
     histFiles=("$histDirectory"/*-"$scriptName")
     numFiles=${#histFiles[@]}
 
     if [[ $numFiles -gt $maxFiles ]]; then
-        rm -f "${histFiles[0]}"
+        excess=$((numFiles - maxFiles))
+        rm "${histFiles[@]:0:excess}"
     fi
 }

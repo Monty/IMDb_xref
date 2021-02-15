@@ -20,23 +20,27 @@ Only keep the last maxLines durations of any script so the durations file
 doesn't grow without bounds -- maxLines defaults to 10.
 
 USAGE:
-    trimDurations [OPTIONS...] [maxLines]
+    trimDurations [OPTIONS...]
 
 OPTIONS:
     -h      Print this message.
+    -m      maxLines -  Maximum number of durations to keep.
 
 EXAMPLES:
     trimDurations
-    trimDurations 5
+    trimDurations -m 5
 EOF
     }
 
-    while getopts ":h" opt; do
+    while getopts ":hm:" opt; do
         case $opt in
         h)
             help
             waitUntil -k
             return
+            ;;
+        m)
+            maxLines="$OPTARG"
             ;;
         \?)
             printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
@@ -52,7 +56,7 @@ EOF
     shift $((OPTIND - 1))
 
     scriptName="$(basename "$0")"
-    maxLines="${1:-10}"
+    maxLines="${maxLines:-10}"
 
     # shellcheck disable=SC2154      # durationFile is defined
     linesFound=$(rg -c "^$scriptName\t" "$durationFile")

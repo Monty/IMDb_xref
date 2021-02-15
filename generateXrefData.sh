@@ -99,11 +99,11 @@ function processDurations() {
     [ -n "$OUTPUT_DIR" ] || [ -n "$BYPASS_PROCESSING" ] && exit
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
-    trimDurations 10
+    trimDurations -m 10
     # Save for comparison next time...
     [ -n "$useEveryTconst" ] && saveHistory "$EVERY_TCONST"
     # Keep 20 history files for this script
-    trimHistory 20
+    trimHistory -m 20
     exit
 }
 
