@@ -311,7 +311,7 @@ else
             printf "==> Searching all .tconst files for IMDb title identifiers.\n"
         # Cache is only enabled if *.tconst is used, which is the usual mode.
         useEveryTconst="yes"
-        rg -N --heading "^tt" ./*tconst >"$EVERY_TCONST"
+        head -9999 *tconst | rg -v "^$|#" >"$EVERY_TCONST"
     else
         for file in "$@"; do
             if [ ! -e "$file" ]; then
