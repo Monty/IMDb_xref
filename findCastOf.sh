@@ -95,8 +95,37 @@ function cleanup() {
 }
 
 function loopOrExitP() {
+    if [ "$numMatches" -ne 0 ]; then
+        # Check whether shows searched are already in favorites.tconst
+        rg -IN "^tt" "favorites.tconst" | cut -f 1 | sort -u >"$CACHE_LIST"
+        printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$TMPFILE"
+        comm -13 "$CACHE_LIST" "$TMPFILE" >"$TCONST_LIST"
+        rg -f "$TCONST_LIST" "$ALL_MATCHES" >"$TMPFILE"
+        if [ -s "$TMPFILE" ]; then
+            numNew=$(sed -n '$=' "$TMPFILE")
+            _vb="is"
+            _pron="it"
+            [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
+            printf "\n==> I found %s show%s that %s not in your favorites.\n" \
+                "$numNew" "$plural" "$_vb"
+            if checkForExecutable -q xsv; then
+                sort -f -t$'\t' --key=3 "$TMPFILE" | xsv table -d "\t"
+            else
+                sort -f -t$'\t' --key=3 "$TMPFILE"
+            fi
+            if waitUntil "$YN_PREF" -Y \
+                "\n==> Shall I add $_pron to your favorites/?"; then
+                printHistory >>"favorites.tconst"
+                ./augment_tconstFiles.sh -y "favorites.tconst"
+            fi
+        fi
+    fi
+    # Check if user wants to update data files, even if no new favorites.
+    waitUntil "$YN_PREF" -Y "\n==> Shall I update your data files?" &&
+        ./generateXrefData.sh -q
+
     if waitUntil "$YN_PREF" -N \
-        "\n==> Would you like to search for another show?"; then
+        "==> Would you like to search for another show?"; then
         printf "\n"
         terminate
         [ -n "$MULTIPLE_NAMES_ONLY" ] && exec ./findCastOf.sh -d
@@ -286,6 +315,11 @@ numMatches=$(sed -n '$=' "$ALL_MATCHES")
 
 # Get rid of the URL we added
 sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
+
+# Save search in case we want to redo or add to favorites
+printHistory >"$TMPFILE"
+[ -n "$(diff "$TMPFILE" "$ALL_MATCHES")" ] &&
+    saveHistory "$ALL_MATCHES"
 
 # Figure out which tconst IDs are cached and which aren't
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
