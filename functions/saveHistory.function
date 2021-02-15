@@ -13,8 +13,11 @@ Timestamp and save a file provided by a script. The file can be used to check
 differences from a prior version. The file can contain anything - but file
 sizes or other data that can be compared programmatically are more useful.
 
+If there is a scriptName parameter, use it instead of (basename "$0") as
+the histFile.
+
 USAGE:
-    saveHistory [OPTIONS...] FILE
+    saveHistory [OPTIONS...] FILE [scriptName]
 
 OPTIONS:
     -h      Print this message.
@@ -45,8 +48,14 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="$(basename "$0")"
+    scriptName="${2:-$(basename "$0")}"
     histFile="$1"
+
+    if [ -z "$histFile" ]; then
+        printf "\n==> [${RED}Error${NO_COLOR}] ${RED}$0>saveHistory${NO_COLOR} " >&2
+        printf "requires a filename argument.\n" >&2
+        exit 1
+    fi
 
     # The date & time this function ran
     date_fmt="%y%m%d.%H%M%S"

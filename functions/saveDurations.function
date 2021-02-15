@@ -56,6 +56,12 @@ EOF
     scriptName="$(basename "$0")"
     secs="$1"
 
+    if [ -z "$secs" ]; then
+        printf "\n==> [${RED}Error${NO_COLOR}] ${RED}$0>saveDurations${NO_COLOR} " >&2
+        printf "requires a \"\$SECONDS\" argument.\n" >&2
+        exit 1
+    fi
+
     # The date & time this function ran
     date_fmt="%y%m%d.%H%M%S"
     date_str=$(date)
