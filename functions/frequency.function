@@ -20,13 +20,15 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -w      Set fieldwidth - defaults to 8 if not specified
-    -s      Sort by result value, not frequency
-    -t      Tab - create two tab separated fields. Ignore fieldwidth
+    -w      Set fieldwidth - defaults to 8 if not specified.
+    -s      Sort by result value, not frequency.
+    -t      Tab - create two tab separated fields. Ignore fieldwidth.
 
 EXAMPLES:
     cut -f 1 file | frequency
-    cut -f 3 file | frequency -w 5
+    cut -f 6 file | frequency -w 5
+    cut -f 4 file | frequency -s
+    cut -f 2 file | frequency -t
 
     Given:
        actor

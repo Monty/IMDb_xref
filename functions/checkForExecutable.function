@@ -16,7 +16,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -q      Quiet - don't print fail/retry message. 'return 1' instead of 'exit 1'
+    -q      Quiet - don't print fail/retry message. 'return 1' instead of 'exit 1'.
 
 EXAMPLES:
     checkForExecutable curl
@@ -24,9 +24,9 @@ EXAMPLES:
 
 # If you want to handle failures yourself...
 if checkForExecutable -q curl; then
-    # code to run if the executable is available
+    # code to run if the executable is available.
 else
-    # code to run if the executable is missing
+    # code to run if the executable is missing.
 fi
 EOF
     }

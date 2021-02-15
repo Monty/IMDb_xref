@@ -13,7 +13,7 @@ Timestamp and save a file provided by a script. The file can be used to check
 differences from a prior version. The file can contain anything - but file
 sizes or other data that can be compared programmatically are more useful.
 
-If there is a scriptName parameter, use it instead of (basename "$0") as
+If there is a scriptName parameter, use it instead of (basename "\$0") as
 the histFile.
 
 USAGE:
@@ -25,6 +25,7 @@ OPTIONS:
 EXAMPLES:
     saveHistory "fileSizes.txt"
     saveHistory "currentData.csv"
+    saveHistory "\$ALL_MATCHES" "savedSearches"
 EOF
     }
 

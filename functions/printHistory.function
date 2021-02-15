@@ -11,7 +11,7 @@ printHistory -- Internal function: Print a script's most recent history file.
 
 Prints the contents of the file to stdout. Can be piped to other commands.
 
-If there is a scriptName parameter, use it instead of (basename "$0") as
+If there is a scriptName parameter, use it instead of (basename "\$0") as
 the histFile.
 
 USAGE:
@@ -23,6 +23,7 @@ OPTIONS:
 EXAMPLES:
     printHistory
     printHistory generateXrefData.sh
+    printHistory | rg -IN "^tt" | cut -f 1 | sort -u
 EOF
     }
 
