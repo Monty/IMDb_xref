@@ -272,12 +272,12 @@ ALL_SHEETS+=("$KNOWN_PERSONS" "$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS")
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
 
-if [ -z "$(ls ./*.xlate 2>/dev/null)" ]; then
+if [ -z "$(ls -- *.xlate 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
-if [ -z "$(ls ./*.tconst 2>/dev/null)" ]; then
+if [ -z "$(ls -- *.tconst 2>/dev/null)" ]; then
     [ -z "$QUIET" ] &&
         printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
@@ -311,7 +311,7 @@ else
             printf "==> Searching all .tconst files for IMDb title identifiers.\n"
         # Cache is only enabled if *.tconst is used, which is the usual mode.
         useEveryTconst="yes"
-        head -9999 *tconst | rg -v "^$|#" >"$EVERY_TCONST"
+        head -9999 -- *tconst | rg -v "^$|#" >"$EVERY_TCONST"
     else
         for file in "$@"; do
             if [ ! -e "$file" ]; then
