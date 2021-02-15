@@ -16,7 +16,7 @@ else
 fi
 
 printf "\n==> Should not find an executable for aaa\n"
-if checkForExecutable -q eee; then
+if checkForExecutable -q aaa; then
     printf "Found an executable for aaa\n"
 else
     printf "Didn't find an executable for aaa\n"
