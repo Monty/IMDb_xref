@@ -13,7 +13,7 @@ Ensures that preferences are set, 'rg' is installed, and that IMDb .gz files are
 automatically run before the main part of any script.
 
 USAGE:
-    ensurePrerequisites
+    ensurePrerequisites [OPTIONS...]
 
 OPTIONS:
     -h      Print this message.
