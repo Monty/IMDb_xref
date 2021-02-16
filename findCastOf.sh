@@ -109,10 +109,14 @@ function loopOrExitP() {
             [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
             printf "\n==> I found %s show%s that %s not in your favorites.\n" \
                 "$numNew" "$plural" "$_vb"
+            # Use SEARCH_LIST for highlihting
+            cut -f 3 "$TMPFILE" >"$SEARCH_LIST"
             if checkForExecutable -q xsv; then
-                sort -f -t$'\t' --key=3 "$TMPFILE" | xsv table -d "\t"
+                sort -f -t$'\t' --key=3 "$TMPFILE" |
+                    rg --color always -f "$SEARCH_LIST" | xsv table -d "\t"
             else
-                sort -f -t$'\t' --key=3 "$TMPFILE"
+                sort -f -t$'\t' --key=3 "$TMPFILE" |
+                    rg --color always -f "$SEARCH_LIST"
             fi
             if waitUntil "$YN_PREF" -Y \
                 "\n==> Shall I add $_pron to your favorites?"; then
@@ -303,10 +307,13 @@ fi
 
 # Found results, check with user before adding to local data
 printf "These are the matches I found:\n"
+# Use SEARCH_LIST for highlihting
+cut -f 3 "$ALL_MATCHES" >"$SEARCH_LIST"
 if checkForExecutable -q xsv; then
-    sort -f -t$'\t' --key=3 "$ALL_MATCHES" | xsv table -d "\t"
+    sort -f -t$'\t' --key=3 "$ALL_MATCHES" |
+        rg --color always -f "$SEARCH_LIST" | xsv table -d "\t"
 else
-    sort -f -t$'\t' --key=3 "$ALL_MATCHES"
+    sort -f -t$'\t' --key=3 "$ALL_MATCHES" | rg --color always -f "$SEARCH_LIST"
 fi
 ! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
