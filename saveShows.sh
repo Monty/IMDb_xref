@@ -201,7 +201,6 @@ EOF
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
-    # rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" | xsv table -d "\t"
     pickOptions=()
     while IFS=$'\n' read -r line; do
         pickOptions+=("imdb.com/title/$line")

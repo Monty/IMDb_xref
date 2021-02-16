@@ -187,7 +187,6 @@ EOF
         fi
     fi
     pickOptions=()
-    # rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" | xsv table -d "\t"
     while IFS=$'\n' read -r line; do
         pickOptions+=("imdb.com/name/$line")
     done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
