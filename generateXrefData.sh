@@ -420,18 +420,22 @@ if [ -z "$BYPASS_PROCESSING" ]; then
         awk -F "\t" -f "$TEMP_AWK" "$TEMPFILE" >"$RAW_SHOWS"
     fi
 
-    # We should now be conflict free
-    cut -f 5 "$RAW_SHOWS" | sort -fu >"$UNIQUE_TITLES"
-
     # We don't want to check for episodes in any tvSeries that has hundreds of
     # tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
     # that can't be "translated" back to the original show. Manually maintain a skip
     # list in $SKIP_EPISODES.
     rg -v -e "^#" -e "^$" "$SKIP_EPISODES" | cut -f 1 >"$TEMP_SKIPS"
 
-    # Let us know shows we're processing. Format for readability, separate with ";"
+    # We should now be conflict free
+    cut -f 5 "$RAW_SHOWS" | sort -fu >"$UNIQUE_TITLES"
     num_titles=$(sed -n '$=' "$UNIQUE_TITLES")
-    printf "\n==> Processing %s shows found in %s:\n" "$num_titles" "${TCONST_FILES[*]}"
+
+    # Generate a list of tconst files used, separated by commas.
+    tc_list="$(printf "${TCONST_FILES[*]}" | sed 's+ +, +g')"
+    #
+    # Let us know shows we're processing. Format for readability, separate with ";"
+    printf "\n==> Processing %s shows found in %s:\n\n" "$num_titles" "$tc_list" |
+        fmt -w 80
     perl -p -e 's+$+;+' "$UNIQUE_TITLES" | fmt -w 80 | perl -p -e 's+^+\t+' |
         sed '$ s+.$++'
     [ -n "$OUTPUT_DIR" ] && printf "\n"
