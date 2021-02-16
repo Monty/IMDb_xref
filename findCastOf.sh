@@ -96,8 +96,9 @@ function cleanup() {
 
 function loopOrExitP() {
     if [ "$numMatches" -ne 0 ]; then
-        # Check whether shows searched are already in favorites.tconst
-        rg -IN "^tt" "favorites.tconst" | cut -f 1 | sort -u >"$CACHE_LIST"
+        # Check whether shows searched are already in favoritesFile
+        # shellcheck disable=SC2154      # favoritesFile is defined
+        rg -IN "^tt" "$favoritesFile" | cut -f 1 | sort -u >"$CACHE_LIST"
         printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$TMPFILE"
         comm -13 "$CACHE_LIST" "$TMPFILE" >"$TCONST_LIST"
         rg -f "$TCONST_LIST" "$ALL_MATCHES" >"$TMPFILE"
@@ -114,9 +115,9 @@ function loopOrExitP() {
                 sort -f -t$'\t' --key=3 "$TMPFILE"
             fi
             if waitUntil "$YN_PREF" -Y \
-                "\n==> Shall I add $_pron to your favorites/?"; then
-                printHistory >>"favorites.tconst"
-                ./augment_tconstFiles.sh -y "favorites.tconst"
+                "\n==> Shall I add $_pron to your favorites?"; then
+                printHistory >>"$favoritesFile"
+                ./augment_tconstFiles.sh -y "$favoritesFile"
             fi
         fi
     fi
