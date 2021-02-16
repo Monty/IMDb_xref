@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# Internal function: Print tsv rows with column value highlighting
+
+function printHighlighted() {
+    local OPTIND columnNum tsvFile searchFile
+
+    help() {
+        cat <<EOF
+printHighlighted -- Internal function: Print tsv rows with highlighted column.
+
+Typical tsv rows:
+    tt2802850  tvSeries  Fargo         Fargo         2014
+    tt3747572  tvSeries  Grantchester  Grantchester  2014
+
+To highlight Fargo and Grantchester, save column 3 as a file used by rg -f to
+find every value in column 3.
+
+The tsv file should already be sorted. This function doesn't do any sorting.
+
+USAGE:
+    printHighlighted [OPTIONS...] TSV_FILE
+
+OPTIONS:
+    -h      Print this message.
+    -c      Column - column with values to highlight. Defaults to 3.
+
+EXAMPLES:
+    printHighlighted "$ALL_MATCHES"
+    printHighlighted -c 2 "$FINAL_RESULTS"
+EOF
+    }
+
+    while getopts ":hc:" opt; do
+        case $opt in
+        h)
+            help
+            waitUntil -k
+            return
+            ;;
+        c)
+            columnNum="$OPTARG"
+            ;;
+        \?)
+            printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
+            printf "${YELLOW}$0>printHighlighted${NO_COLOR}.\n" >&2
+            ;;
+        :)
+            printf "\n==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0>printHighlighted${NO_COLOR} requires an argument.\n" >&2
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    columnNum="${columnNum:-3}"
+    tsvFile="$1"
+
+    if [ -z "$tsvFile" ]; then
+        printf "\n==> [${RED}Error${NO_COLOR}] ${RED}$0>printHighlighted${NO_COLOR} " >&2
+        printf "requires a filename argument.\n" >&2
+        exit 1
+    fi
+
+    # Use searchFile for highlighting
+    searchFile=$(mktemp)
+    cut -f "$columnNum" "$tsvFile" >"$searchFile"
+    if checkForExecutable -q xsv; then
+        rg --color always -f "$searchFile" "$tsvFile" | xsv table -d "\t"
+    else
+        rg --color always -f "$searchFile" "$tsvFile"
+    fi
+    rm -rf "$searchFile"
+}

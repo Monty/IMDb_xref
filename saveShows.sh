@@ -246,11 +246,7 @@ fi
 
 # Found results, check with user before adding to local data
 printf "These are the shows I can add:\n"
-if checkForExecutable -q xsv; then
-    xsv table -d "\t" "$FINAL_RESULTS"
-else
-    cat "$FINAL_RESULTS"
-fi
+printHighlighted "$FINAL_RESULTS"
 
 # Get rid of the URL preface we added
 sed -i '' 's+imdb.com/title/++' "$FINAL_RESULTS"
