@@ -325,7 +325,7 @@ if [ ! -s "$ALL_MATCHES" ]; then
 fi
 
 # Found results, check with user before adding to local data
-printf "These are the matches I found:\n"
+printf "These are the shows I found:\n"
 printHighlighted "$ALL_MATCHES"
 ! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
