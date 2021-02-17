@@ -34,7 +34,7 @@ OPTIONS:
     -d      Duplicates -- Only print cast members that are in more than one show
     -m      Maximum matches for a show title allowed in menu - defaults to 25
     -f      File -- Add to specific file rather than the default $favoritesFile
-    -q      Quiet - don't print details, just ask about adding to $favoritesFile
+    -s      Short - don't print details, just ask about adding to $favoritesFile
 
 EXAMPLES:
     ./findCastOf.sh
@@ -42,7 +42,7 @@ EXAMPLES:
     ./findCastOf.sh "The Crown"
     ./findCastOf.sh tt1606375
     ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"
-    ./findCastOf.sh -q tt1606375 tt1399664 "Broadchurch"
+    ./findCastOf.sh -s tt1606375 tt1399664 "Broadchurch"
     ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
 EOF
 }
@@ -115,7 +115,7 @@ function loopOrExitP() {
             _vb="is"
             _pron="it"
             [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
-            [ -z "$QUIET" ] && printf "\n"
+            [ -z "$SHORT" ] && printf "\n"
             printf "==> I found %s show%s that %s not in $favoritesFile\n" \
                 "$numNew" "$plural" "$_vb"
             printHighlighted "$TMPFILE"
@@ -143,17 +143,17 @@ function loopOrExitP() {
         "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
-        [ -n "$QUIET" ] && q_option="-q"
+        [ -n "$SHORT" ] && s_option="-s"
         [ -n "$MULTIPLE_NAMES_ONLY" ] && d_option="-d"
         # shellcheck disable=SC2248      # globbing needed
-        exec ./findCastOf.sh $q_option $d_option
+        exec ./findCastOf.sh $s_option $d_option
     else
         printf "Quitting...\n"
         exit
     fi
 }
 
-while getopts ":hf:dm:q" opt; do
+while getopts ":hf:dm:s" opt; do
     case $opt in
     h)
         help
@@ -168,8 +168,8 @@ while getopts ":hf:dm:q" opt; do
     m)
         maxMenuSize="$OPTARG"
         ;;
-    q)
-        QUIET="yes"
+    s)
+        SHORT="yes"
         ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
@@ -426,7 +426,7 @@ while read -r line; do
         rg "\t$showName\t" "$CAST_CSV" >"$cacheFile"
     fi
     cat "$cacheFile" >>"$TMPFILE"
-    if [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$QUIET" ]; then
+    if [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$SHORT" ]; then
         ./xrefCast.sh -f "$cacheFile" -pn "$showName"
         waitUntil -k
     fi
@@ -441,7 +441,7 @@ fi
 
 # Check for mutliples if appropriate
 [ "$numMatches" -ne 1 ] || [ -n "$MULTIPLE_NAMES_ONLY" ] &&
-    [ -z "$QUIET" ] && ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}" &&
+    [ -z "$SHORT" ] && ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}" &&
     printf "\n"
 
 loopOrExitP

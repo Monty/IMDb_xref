@@ -34,11 +34,11 @@ while true; do
     fi
     printf "\n==> Removing $favoritesFile\n\n"
     rm -f $favoritesFile
-    if waitUntil "$YN_PREF" -Y 'Run ./findCastOf.sh -q tt1606375?'; then
-        ./findCastOf.sh -q tt1606375
+    if waitUntil "$YN_PREF" -Y 'Run ./findCastOf.sh -s tt1606375?'; then
+        ./findCastOf.sh -s tt1606375
     fi
-    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -q tt1606375 again'; then
-        ./findCastOf.sh -q tt1606375
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -s tt1606375 again'; then
+        ./findCastOf.sh -s tt1606375
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"'; then
