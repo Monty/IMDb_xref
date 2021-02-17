@@ -3,7 +3,7 @@
 # Internal function: Print a script's most recent history file.
 
 function printHistory() {
-    local OPTIND scriptName histFile
+    local OPTIND appendName histFile
 
     help() {
         cat <<EOF
@@ -11,11 +11,11 @@ printHistory -- Internal function: Print a script's most recent history file.
 
 Prints the contents of the file to stdout. Can be piped to other commands.
 
-If there is a scriptName parameter, use it instead of (basename "\$0") as
+If there is a appendName parameter, use it instead of (basename "\$0") as
 the histFile.
 
 USAGE:
-    printHistory [OPTIONS...] [scriptName]
+    printHistory [OPTIONS...] [appendName]
 
 OPTIONS:
     -h      Print this message.
@@ -47,8 +47,8 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="${1:-$(basename "$0")}"
+    appendName="${1:-$(basename "$0")}"
     # shellcheck disable=SC2012,SC2154      # ls is OK since I control the filenames
-    histFile="$(ls -1 -t "$histDirectory"/*-"$scriptName" 2>/dev/null | head -1)"
+    histFile="$(ls -1 -t "$histDirectory"/*-"$appendName" 2>/dev/null | head -1)"
     [ -n "$histFile" ] && cat "$histFile"
 }

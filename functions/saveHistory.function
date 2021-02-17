@@ -3,7 +3,7 @@
 # Internal function: Save a script's timestamped history file in $histDirectory
 
 function saveHistory() {
-    local OPTIND scriptName histFile date_fmt timestamp savedFile
+    local OPTIND appendName histFile date_fmt timestamp savedFile
 
     help() {
         cat <<EOF
@@ -13,11 +13,11 @@ Timestamp and save a file provided by a script. The file can be used to check
 differences from a prior version. The file can contain anything - but file
 sizes or other data that can be compared programmatically are more useful.
 
-If there is a scriptName parameter, use it instead of (basename "\$0") as
+If there is a appendName parameter, use it instead of (basename "\$0") as
 the histFile.
 
 USAGE:
-    saveHistory [OPTIONS...] FILE [scriptName]
+    saveHistory [OPTIONS...] FILE [appendName]
 
 OPTIONS:
     -h      Print this message.
@@ -49,7 +49,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="${2:-$(basename "$0")}"
+    appendName="${2:-$(basename "$0")}"
     histFile="$1"
 
     if [ -z "$histFile" ]; then
@@ -62,7 +62,7 @@ EOF
     date_fmt="%y%m%d.%H%M%S"
     timestamp=$(date +$date_fmt)
     # shellcheck disable=SC2154      # histDirectory is defined
-    savedFile="$histDirectory/$timestamp-$scriptName"
+    savedFile="$histDirectory/$timestamp-$appendName"
     #
     # Save history for later use
     # shellcheck disable=SC2154      # histDirectory is defined

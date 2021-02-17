@@ -3,7 +3,7 @@
 # Internal function: Trim script's history files by only keeping the last maxFiles
 
 function trimHistory() {
-    local OPTIND scriptName maxFiles histFiles numFiles
+    local OPTIND appendName maxFiles histFiles numFiles
 
     help() {
         cat <<EOF
@@ -12,11 +12,11 @@ trimHistory -- Internal function: Limit the number of history files kept.
 Only keep the last maxFiles history files of any script so the number of files
 doesn't grow without bounds -- maxFiles defaults to 10.
 
-If there is a scriptName parameter, use it instead of (basename "\$0") as
+If there is a appendName parameter, use it instead of (basename "\$0") as
 the histFile.
 
 USAGE:
-    trimHistory [OPTIONS...] [scriptName]
+    trimHistory [OPTIONS...] [appendName]
 
 OPTIONS:
     -h      Print this message.
@@ -53,9 +53,9 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    scriptName="${1:-$(basename "$0")}"
+    appendName="${1:-$(basename "$0")}"
     maxFiles="${maxFiles:-10}"
-    histFiles=("$histDirectory"/*-"$scriptName")
+    histFiles=("$histDirectory"/*-"$appendName")
     numFiles=${#histFiles[@]}
 
     if [[ $numFiles -gt $maxFiles ]]; then
