@@ -56,8 +56,8 @@ OPTIONS:
     -a      All jobs -- not just actor, actress, writer, director, producer
     -c      Compare -- Create a 'diff' file comparing current against previously saved results.
     -d      Directory -- Create a subdirectory for results. Don't overwrite existing files.
-    -f      Force -- Force all data to be recomputed, even if not necessary.
-    -o      Output -- Save file that can later be used for queries with "xrefCast.sh -f"
+    -f      File -- Save file that can later be used for queries with "xrefCast.sh -f"
+    -r      Reload -- Force all data to be reloaded, even if not necessary.
     -q      Quiet -- Minimize output, print only the list of shows being processed.
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
     -x      Xlate -- Use a specific translation file instead of *xlate.
@@ -116,7 +116,7 @@ function breakpoint() {
     fi
 }
 
-while getopts ":d:o:x:hfacqt" opt; do
+while getopts ":d:f:x:hracqt" opt; do
     case $opt in
     a)
         ALL_JOBS="^"
@@ -128,13 +128,13 @@ while getopts ":d:o:x:hfacqt" opt; do
         help
         exit
         ;;
-    f)
-        FORCE_ALL="yes"
+    r)
+        RELOAD="yes"
         ;;
     d)
         OUTPUT_DIR="./$OPTARG/"
         ;;
-    o)
+    f)
         OUTPUT_FILE="$OPTARG"
         ;;
     q)
@@ -328,7 +328,7 @@ fi
 # Coalesce a single tconst input list
 rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
 
-if [ -z "$FORCE_ALL" ] && [ -n "$useEveryTconst" ]; then
+if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
     # Figure out whether we can use previous run as a cache.
     # Must force reload everything if:
     # 1) Missing any gzip or previous generateXrefData files
@@ -340,15 +340,15 @@ if [ -z "$FORCE_ALL" ] && [ -n "$useEveryTconst" ]; then
     numAvailable="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
         2>/dev/null | cut -d' ' -f6- | sed -n '$=')"
     # [ "$numRequired" -ne "$numAvailable" ] && printf "Files missing.\n"
-    [ "$numRequired" -ne "$numAvailable" ] && FORCE_ALL="yes"
+    [ "$numRequired" -ne "$numAvailable" ] && RELOAD="yes"
 
     # 2) Is any gzip file newer than any generateXrefData file?
     lastWritten="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
         2>/dev/null | cut -d' ' -f6- | sort -nr | head -1)"
     # [[ "$lastWritten" =~ .*tsv\.gz ]] && printf "Last written is a tsv.gz.\n"
-    [[ $lastWritten =~ .*tsv\.gz ]] && FORCE_ALL="yes"
+    [[ $lastWritten =~ .*tsv\.gz ]] && RELOAD="yes"
 
-    if [ -z "$FORCE_ALL" ]; then
+    if [ -z "$RELOAD" ]; then
         # Get tconst IDs from previous run
         printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$HIST_TCONST"
         #

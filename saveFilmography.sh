@@ -148,7 +148,7 @@ function addToFileP() {
         rg -N "^tt" "$FINAL_RESULTS" >>"$TCONST_FILE"
         waitUntil "$YN_PREF" -Y \
             "\n==> Shall I generate ${BLUE}$(basename "$filmographyDB")${NO_COLOR}?" &&
-            ./generateXrefData.sh -q -o "$filmographyDB" -d "$filmographyDir" "$filmographyFile"
+            ./generateXrefData.sh -q -f "$filmographyDB" -d "$filmographyDir" "$filmographyFile"
     else
         printf "Skipping....\n"
     fi

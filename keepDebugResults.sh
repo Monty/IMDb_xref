@@ -41,7 +41,8 @@ BASE="baseline"
 mkdir -p $WORK $BASE
 
 if [ ! -e "$WORK/tconst-$DATE.txt" ]; then
-    printf '==> Missing debug files. Please run "./generateXrefData.sh -v", then re-run this script.\n'
+    printf '==> Missing debug files. Please run "./generateXrefData.sh" with '
+    printf 'DEBUG set, then re-run this script.\n'
     exit 1
 fi
 
