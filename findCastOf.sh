@@ -33,6 +33,7 @@ OPTIONS:
     -h      Print this message.
     -d      Duplicates -- Only print cast members that are in more than one show
     -m      Maximum matches for a show title allowed in menu - defaults to 25
+    -q      Quiet - don't print details, just ask about adding to favorites.
 
 EXAMPLES:
     ./findCastOf.sh
@@ -40,6 +41,7 @@ EXAMPLES:
     ./findCastOf.sh "The Crown"
     ./findCastOf.sh tt1606375
     ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"
+    ./findCastOf.sh -q tt1606375 tt1399664 "Broadchurch"
     ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
 EOF
 }
@@ -95,6 +97,7 @@ function cleanup() {
 }
 
 function loopOrExitP() {
+    [ -z "$numMatches" ] && numMatches=0
     if [ "$numMatches" -ne 0 ]; then
         # Check whether shows searched are already in favoritesFile
         # shellcheck disable=SC2154      # favoritesFile is defined
@@ -107,33 +110,44 @@ function loopOrExitP() {
             _vb="is"
             _pron="it"
             [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
-            printf "\n==> I found %s show%s that %s not in your favorites.\n" \
+            [ -z "$QUIET" ] && printf "\n"
+            printf "==> I found %s show%s that %s not in your favorites.\n" \
                 "$numNew" "$plural" "$_vb"
             printHighlighted "$TMPFILE"
             if waitUntil "$YN_PREF" -Y \
                 "\n==> Shall I add $_pron to your favorites?"; then
                 printHistory >>"$favoritesFile"
                 ./augment_tconstFiles.sh -y "$favoritesFile"
+                printf "\n"
+            else
+                AW=" anyway"
             fi
+        else
+            printf "==> I didn't find any shows that are not alreay in your favorites.\n"
+            AW=" anyway"
         fi
+        # Check if user wants to update data files, even if no new favorites.
+        waitUntil "$YN_PREF" -Y "==> Shall I update your data files$AW?" &&
+            ./generateXrefData.sh -q
+    else
+        printf "\n"
     fi
-    # Check if user wants to update data files, even if no new favorites.
-    waitUntil "$YN_PREF" -Y "\n==> Shall I update your data files?" &&
-        ./generateXrefData.sh -q
 
     if waitUntil "$YN_PREF" -N \
-        "==> Would you like to search for another show?"; then
+        "\n==> Would you like to search for another show?"; then
         printf "\n"
         terminate
-        [ -n "$MULTIPLE_NAMES_ONLY" ] && exec ./findCastOf.sh -d
-        exec ./findCastOf.sh
+        [ -n "$QUIET" ] && q_option="-q"
+        [ -n "$MULTIPLE_NAMES_ONLY" ] && d_option="-d"
+        # shellcheck disable=SC2248      # globbing needed
+        exec ./findCastOf.sh $q_option $d_option
     else
         printf "Quitting...\n"
         exit
     fi
 }
 
-while getopts ":hdm:" opt; do
+while getopts ":hdm:q" opt; do
     case $opt in
     h)
         help
@@ -144,6 +158,9 @@ while getopts ":hdm:" opt; do
         ;;
     m)
         maxMenuSize="$OPTARG"
+        ;;
+    q)
+        QUIET="yes"
         ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
@@ -397,7 +414,7 @@ while read -r line; do
         rg "\t$showName\t" "$CAST_CSV" >"$cacheFile"
     fi
     cat "$cacheFile" >>"$TMPFILE"
-    if [ -z "$MULTIPLE_NAMES_ONLY" ]; then
+    if [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$QUIET" ]; then
         ./xrefCast.sh -f "$cacheFile" -pn "$showName"
         waitUntil -k
     fi
@@ -412,6 +429,7 @@ fi
 
 # Check for mutliples if appropriate
 [ "$numMatches" -ne 1 ] || [ -n "$MULTIPLE_NAMES_ONLY" ] &&
-    ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+    [ -z "$QUIET" ] && ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}" &&
+    printf "\n"
 
 loopOrExitP
