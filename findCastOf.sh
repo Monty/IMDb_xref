@@ -33,7 +33,8 @@ OPTIONS:
     -h      Print this message.
     -d      Duplicates -- Only print cast members that are in more than one show
     -m      Maximum matches for a show title allowed in menu - defaults to 25
-    -q      Quiet - don't print details, just ask about adding to favorites.
+    -f      File -- Add to specific file rather than the default $favoritesFile
+    -q      Quiet - don't print details, just ask about adding to $favoritesFile
 
 EXAMPLES:
     ./findCastOf.sh
@@ -79,12 +80,14 @@ CAST_CSV $CAST_CSV
 
 TMPFILE $TMPFILE
 EOT
+        [ ! -s "$favoritesFile" ] && printf "favoritesFile $favoritesFile\n" >&2
     else
         rm -f "$ALL_TERMS" "$TCONST_TERMS" "$SHOWS_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$ALL_MATCHES" "$CACHE_LIST" "$SEARCH_LIST"
         rm -f "$TCONST_LIST" "$SHOW_NAMES" "$EPISODES_LIST" "$NCONST_LIST"
         rm -f "$SHOWS_PL" "$EPISODES_PL" "$EPISODE_NAMES_PL" "$NAMES_PL"
         rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV" "$TMPFILE"
+        [ ! -s "$favoritesFile" ] && rm -f "$favoritesFile"
     fi
 }
 
@@ -99,10 +102,12 @@ function cleanup() {
 function loopOrExitP() {
     [ -z "$numMatches" ] && numMatches=0
     if [ "$numMatches" -ne 0 ]; then
+        touch "$favoritesFile"
         # Check whether shows searched are already in favoritesFile
         # shellcheck disable=SC2154      # favoritesFile is defined
         rg -IN "^tt" "$favoritesFile" | cut -f 1 | sort -u >"$CACHE_LIST"
-        printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$TMPFILE"
+        printHistory "$favoritesFile" | rg -IN "^tt" | cut -f 1 |
+            sort -u >"$TMPFILE"
         comm -13 "$CACHE_LIST" "$TMPFILE" >"$TCONST_LIST"
         rg -f "$TCONST_LIST" "$ALL_MATCHES" >"$TMPFILE"
         if [ -s "$TMPFILE" ]; then
@@ -111,19 +116,20 @@ function loopOrExitP() {
             _pron="it"
             [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
             [ -z "$QUIET" ] && printf "\n"
-            printf "==> I found %s show%s that %s not in your favorites.\n" \
+            printf "==> I found %s show%s that %s not in $favoritesFile\n" \
                 "$numNew" "$plural" "$_vb"
             printHighlighted "$TMPFILE"
             if waitUntil "$YN_PREF" -Y \
-                "\n==> Shall I add $_pron to your favorites?"; then
-                printHistory >>"$favoritesFile"
+                "\n==> Shall I add $_pron to $favoritesFile?"; then
+                # shellcheck disable=SC2094      # param is a string not a file
+                printHistory "$favoritesFile" >>"$favoritesFile"
                 ./augment_tconstFiles.sh -y "$favoritesFile"
                 printf "\n"
             else
                 AW=" anyway"
             fi
         else
-            printf "==> I didn't find any shows that are not alreay in your favorites.\n"
+            printf "==> I didn't find any shows that are not alreay in $favoritesFile\n"
             AW=" anyway"
         fi
         # Check if user wants to update data files, even if no new favorites.
@@ -147,11 +153,14 @@ function loopOrExitP() {
     fi
 }
 
-while getopts ":hdm:q" opt; do
+while getopts ":hf:dm:q" opt; do
     case $opt in
     h)
         help
         exit
+        ;;
+    f)
+        favoritesFile="$OPTARG"
         ;;
     d)
         MULTIPLE_NAMES_ONLY="yes"
@@ -224,6 +233,9 @@ EOF
     fi
     printf "\n"
 fi
+
+# Let used know what favorites file we're using.
+printf "==> Favorites will be added to: ${BLUE}$favoritesFile\n${NO_COLOR}\n"
 
 # Get title.basics.tsv.gz file size - should already exist but make sure...
 num_TB="$(rg -N title.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
@@ -325,9 +337,9 @@ numMatches=$(sed -n '$=' "$ALL_MATCHES")
 sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
 
 # Save search in case we want to redo or add to favorites
-printHistory >"$TMPFILE"
+printHistory "$favoritesFile" >"$TMPFILE"
 [ -n "$(diff "$TMPFILE" "$ALL_MATCHES")" ] &&
-    saveHistory "$ALL_MATCHES"
+    saveHistory "$ALL_MATCHES" "$favoritesFile"
 
 # Figure out which tconst IDs are cached and which aren't
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"

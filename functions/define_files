@@ -44,8 +44,8 @@ YN_PREF="-s"
 NEED_PREFS="yes"
 EOF
 
+# Don't create this because user can override the name
 favoritesFile="favorites.tconst"
-[ ! -e "$favoritesFile" ] && touch "$favoritesFile"
 
 durationFile=".xref_durations"
 [ ! -e "$durationFile" ] && touch "$durationFile"
