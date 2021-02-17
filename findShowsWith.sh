@@ -230,11 +230,7 @@ fi
 
 # Found results, check with user before adding
 printf "These are the persons I found:\n"
-if checkForExecutable -q xsv; then
-    xsv table -d "\t" "$PERSON_RESULTS"
-else
-    cat "$PERSON_RESULTS"
-fi
+printHighlighted -c 2 "$PERSON_RESULTS"
 
 # Get rid of the URL preface we added
 sed -i '' 's+imdb.com/name/++' "$PERSON_RESULTS"
