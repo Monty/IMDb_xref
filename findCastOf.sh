@@ -123,7 +123,7 @@ function loopOrExitP() {
                 "\n==> Shall I add $_pron to $favoritesFile?"; then
                 # shellcheck disable=SC2094      # param is a string not a file
                 printHistory "$favoritesFile" >>"$favoritesFile"
-                ./augment_tconstFiles.sh -y "$favoritesFile"
+                ./augment_tconstFiles.sh -ay "$favoritesFile"
                 printf "\n"
             else
                 AW=" anyway"
