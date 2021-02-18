@@ -13,7 +13,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-setPreferences.sh -- Set user preferences
+setPreferences.sh -- Set user preferences.
 
 Invoked automatically if preferences have never been set.
 

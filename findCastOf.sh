@@ -31,10 +31,10 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -d      Duplicates -- Only print cast members that are in more than one show
+    -d      Duplicates -- Only list cast members that are in more than one show
     -m      Maximum matches for a show title allowed in menu - defaults to 25
     -f      File -- Add to specific file rather than the default $favoritesFile
-    -s      Short - don't print details, just ask about adding to $favoritesFile
+    -s      Short - don't list details, just ask about adding to $favoritesFile
 
 EXAMPLES:
     ./findCastOf.sh
