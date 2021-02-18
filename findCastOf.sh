@@ -31,10 +31,10 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -d      Duplicates -- Only list cast members that are in more than one show
-    -m      Maximum matches for a show title allowed in menu - defaults to 25
-    -f      File -- Add to specific file rather than the default $favoritesFile
-    -s      Short - don't list details, just ask about adding to $favoritesFile
+    -d      Duplicates -- Only list cast members that are in more than one show.
+    -m      Maximum matches for a show title allowed in menu - defaults to 25.
+    -f      File -- Add to specific file rather than the default $favoritesFile.
+    -s      Short - don't list details, just ask about adding to $favoritesFile.
 
 EXAMPLES:
     ./findCastOf.sh
@@ -129,7 +129,7 @@ function loopOrExitP() {
                 AW=" anyway"
             fi
         else
-            printf "==> I didn't find any shows that are not alreay in $favoritesFile\n"
+            printf "==> I didn't find any shows that are not already in $favoritesFile\n"
             AW=" anyway"
         fi
         # Check if user wants to update data files, even if no new favorites.
@@ -440,8 +440,11 @@ if [ ! -s "$TMPFILE" ]; then
 fi
 
 # Check for mutliples if appropriate
-[ "$numMatches" -ne 1 ] || [ -n "$MULTIPLE_NAMES_ONLY" ] &&
-    [ -z "$SHORT" ] && ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}" &&
-    printf "\n"
+if [ -z "$SHORT" ]; then
+    if [ "$numMatches" -ne 1 ] || [ -n "$MULTIPLE_NAMES_ONLY" ]; then
+        ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+        printf "\n"
+    fi
+fi
 
 loopOrExitP
