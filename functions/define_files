@@ -45,6 +45,7 @@ NEED_PREFS="yes"
 EOF
 
 # Don't create this because user can override the name
+# Each one represents and can be used to reconstruct a single search
 favoritesFile="favorites.tconst"
 
 durationFile=".xref_durations"
@@ -53,6 +54,7 @@ durationFile=".xref_durations"
 numRecordsFile=".xref_numRecords"
 [ ! -e "$numRecordsFile" ] && touch "$numRecordsFile"
 
+# Cleared by downloadIMDbFiles
 cacheDirectory=".xref_cache"
 mkdir -p "$cacheDirectory"
 
