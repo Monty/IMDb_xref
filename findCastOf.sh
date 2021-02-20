@@ -140,7 +140,7 @@ function loopOrExitP() {
     fi
 
     if waitUntil "$YN_PREF" -N \
-        "\n==> Would you like to search for another show?"; then
+        "\n==> Would you like to do another search?"; then
         printf "\n"
         terminate
         [ -n "$SHORT" ] && s_option="-s"
@@ -271,14 +271,16 @@ while read -r line; do
             >>"$ALL_MATCHES"
         continue
     fi
-    cat <<EOF
+    if [ -z "$alreadyPrintedP" ]; then
+        cat <<EOF
 
 Some titles on IMDb occur more than once, e.g. as both a movie and TV show.
-You can track down the correct one using these links to imdb.com.
-
+You can determine which one to select using the provided links to imdb.com.
 EOF
+        alreadyPrintedP="yes"
+    fi
 
-    printf "I found $count shows titled \"$match\"\n"
+    printf "\nI found $count shows titled \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
@@ -296,7 +298,6 @@ EOF
             [ "$REPLY" -le "${#pickOptions[@]}" ]; then
             case "$pickMenu" in
             Skip*)
-                printf "Skipping...\n"
                 break
                 ;;
             Quit)
@@ -304,7 +305,6 @@ EOF
                 exit
                 ;;
             *)
-                printf "Adding: $pickMenu\n"
                 printf "$pickMenu\n" >>"$ALL_MATCHES"
                 break
                 ;;
@@ -315,7 +315,6 @@ EOF
         fi
     done </dev/tty
 done <"$MATCH_COUNTS"
-printf "\n"
 
 # Didn't find any results
 if [ ! -s "$ALL_MATCHES" ]; then
@@ -325,7 +324,7 @@ if [ ! -s "$ALL_MATCHES" ]; then
 fi
 
 # Found results, check with user before adding to local data
-printf "These are the shows I found:\n"
+printf "\nThese are the results I can process:\n"
 printHighlighted "$ALL_MATCHES"
 ! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
