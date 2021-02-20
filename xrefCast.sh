@@ -233,10 +233,12 @@ fi
 if checkForExecutable -q xsv; then
     awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4]);
     printf(PF,$1,$2,$3,$4)} split($0,f)}' "$TMPFILE" | sort -fu |
+        sort -f -t$'\t' -k 2,2 -k 1,1 -k 3,3 |
         xsv table -d "\t" >>"$MULTIPLE_NAMES"
 else
     awk -F "\t" -v PF="$PSPACE" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4]);
-    printf(PF,$1,$2,$3,$4)} split($0,f)}' "$TMPFILE" | sort -fu >>"$MULTIPLE_NAMES"
+    printf(PF,$1,$2,$3,$4)} split($0,f)}' "$TMPFILE" | sort -fu |
+        sort -f -t$'\t' -k 2,2 -k 1,1 -k 3,3 >>"$MULTIPLE_NAMES"
 fi
 
 # Multiple results?
