@@ -85,6 +85,21 @@ while true; do
         ./findCastOf.sh -ds "The Night Manager" "The Crown" "The Durrells in Corfu"
     fi
 
+    printf "==> Verify extra shows processing.\n\n"
+    
+        if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Kasablanca'; then
+        ./findCastOf.sh Kasablanca
+    fi
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Casablanca'; then
+        ./findCastOf.sh Casablanca
+    fi
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Casablanca Broadchurch'; then
+        ./findCastOf.sh Casablanca Broadchurch
+    fi
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Casablanca Grantchester'; then
+        ./findCastOf.sh Casablanca Grantchester
+    fi
+
     if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -f Dramas.tconst tt1606375'; then
         ./findCastOf.sh -f Dramas.tconst tt1606375
     fi
