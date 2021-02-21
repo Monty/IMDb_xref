@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# Internal function: Print tsv rows with optional column value highlighting
+
+function xsvPrint() {
+    local OPTIND tsvFile
+
+    help() {
+        cat <<EOF
+xsvPrint -- Internal function: Print tsv rows with xsv if it exists.
+
+Typical tsv rows printed with xsv:
+    tt2802850  tvSeries  Fargo         Fargo         2014
+    tt3747572  tvSeries  Grantchester  Grantchester  2014
+
+The tsv file should already be sorted. This function doesn't do any sorting.
+
+USAGE:
+    xsvPrint [OPTIONS...] TSV_FILE
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    xsvPrint "$ALL_MATCHES"
+EOF
+    }
+
+    while getopts ":h" opt; do
+        case $opt in
+        h)
+            help
+            waitUntil -k
+            return
+            ;;
+        \?)
+            printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
+            printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
+            printf "${YELLOW}$0>xsvPrint${NO_COLOR}.\n" >&2
+            ;;
+        :)
+            printf "\n==> [${RED}Error${NO_COLOR}] Option ${RED}-$OPTARG${NO_COLOR} " >&2
+            printf "in: ${RED}$0>xsvPrint${NO_COLOR} requires an argument.\n" >&2
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    tsvFile="$1"
+
+    if [ -z "$tsvFile" ]; then
+        printf "\n==> [${RED}Error${NO_COLOR}] ${RED}$0>xsvPrint${NO_COLOR} " >&2
+        printf "requires a filename argument.\n" >&2
+        exit 1
+    fi
+
+    if checkForExecutable -q xsv; then
+        xsv table -d "\t" "$tsvFile"
+    else
+        cat "$tsvFile"
+    fi
+}

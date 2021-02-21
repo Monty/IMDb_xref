@@ -53,10 +53,11 @@ POSSIBLE_MATCHES $POSSIBLE_MATCHES
 MATCH_COUNTS $MATCH_COUNTS
 PERSON_RESULTS $PERSON_RESULTS
 JOB_RESULTS $JOB_RESULTS
+TMPFILE $TMPFILE
 EOT
     else
         rm -f "$ALL_TERMS" "$NCONST_TERMS" "$PERSON_TERMS" "$POSSIBLE_MATCHES"
-        rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS"
+        rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS" "$TMPFILE"
     fi
 }
 
@@ -114,6 +115,7 @@ POSSIBLE_MATCHES=$(mktemp)
 MATCH_COUNTS=$(mktemp)
 PERSON_RESULTS=$(mktemp)
 JOB_RESULTS=$(mktemp)
+TMPFILE=$(mktemp)
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
@@ -227,7 +229,7 @@ fi
 
 # Found results, check with user before adding
 printf "\nThese are the results I can process:\n"
-printHighlighted "$PERSON_RESULTS"
+xsvPrint "$PERSON_RESULTS"
 
 # Get rid of the URL preface we added and any colorization escape sequences
 sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;s+imdb.com/name/++;' "$PERSON_RESULTS"
@@ -251,6 +253,8 @@ while read -r line; do
         printf "\n"
         rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
         ./augment_tconstFiles.sh -y "$JOB_RESULTS"
+        cut -f 2,3,5 "$JOB_RESULTS" |
+            sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 >"$TMPFILE"
         numResults=$(sed -n '$=' "$JOB_RESULTS")
         if [[ $numResults -gt 0 ]]; then
             _title="title"
@@ -259,14 +263,7 @@ while read -r line; do
             printf "==> I found $numResults $_title listing $nconstName as: $match\n"
             if [ -n "$skipPrompts" ] || waitUntil "$YN_PREF" -Y \
                 "==> Shall I list $_pron?"; then
-                if checkForExecutable -q xsv; then
-                    cut -f 2,3,5 "$JOB_RESULTS" |
-                        sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 |
-                        xsv table -d "\t"
-                else
-                    cut -f 2,3,5 "$JOB_RESULTS" |
-                        sort -f -t$'\t' --key=1,2 --key=3,3r --key=2,2
-                fi
+                xsvPrint "$TMPFILE"
             fi
         fi
     done <"$MATCH_COUNTS"

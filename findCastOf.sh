@@ -118,7 +118,7 @@ function loopOrExitP() {
             [ -z "$SHORT" ] && printf "\n"
             printf "==> I found %s show%s that %s not in $favoritesFile\n" \
                 "$numNew" "$plural" "$_vb"
-            printHighlighted "$TMPFILE"
+            xsvPrint "$TMPFILE"
             if waitUntil "$YN_PREF" -Y \
                 "\n==> Shall I add $_pron to $favoritesFile?"; then
                 # shellcheck disable=SC2094      # param is a string not a file
@@ -325,7 +325,7 @@ fi
 
 # Found results, check with user before adding to local data
 printf "\nThese are the results I can process:\n"
-printHighlighted "$ALL_MATCHES"
+xsvPrint "$ALL_MATCHES"
 ! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
 
