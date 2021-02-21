@@ -32,8 +32,8 @@ OPTIONS:
 EXAMPLES:
     ./findShowsWith.sh
     ./findShowsWith.sh -y "Tom Hanks"
-    ./findShowsWith.sh nm0000123
     ./findShowsWith.sh "George Clooney"
+    ./findShowsWith.sh nm0000123
     ./findShowsWith.sh nm0000123 "Quentin Tarantino"
 EOF
 }
@@ -169,8 +169,8 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed 's+^+imdb.com/name/+' \
-            >>"$PERSON_RESULTS"
+        rg --color always "\t$match\t" "$POSSIBLE_MATCHES" |
+            sed 's+^+imdb.com/name/+' >>"$PERSON_RESULTS"
         continue
     fi
     if [ -z "$alreadyPrintedP" ]; then
@@ -184,14 +184,12 @@ EOF
 
     printf "\nI found $count persons named \"$match\"\n"
     if [ "$count" -ge "${maxMenuSize:-10}" ]; then
-        if waitUntil "$YN_PREF" -Y "Should I skip trying to select one?"; then
-            continue
-        fi
+        waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
     pickOptions=()
     while IFS=$'\n' read -r line; do
         pickOptions+=("imdb.com/name/$line")
-    done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
+    done < <(rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=3,3r --key=5)
     pickOptions+=("Skip \"$match\"" "Quit")
 
@@ -229,10 +227,10 @@ fi
 
 # Found results, check with user before adding
 printf "\nThese are the results I can process:\n"
-printHighlighted -c 2 "$PERSON_RESULTS"
+printHighlighted "$PERSON_RESULTS"
 
-# Get rid of the URL preface we added
-sed -i '' 's+imdb.com/name/++' "$PERSON_RESULTS"
+# Get rid of the URL preface we added and any colorization escape sequences
+sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;s+imdb.com/name/++;' "$PERSON_RESULTS"
 
 if ! waitUntil "$YN_PREF" -Y; then
     loopOrExitP

@@ -267,8 +267,8 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg "\t$match\t" "$POSSIBLE_MATCHES" | sed 's+^+imdb.com/title/+' \
-            >>"$ALL_MATCHES"
+        rg --color always "\t$match\t" "$POSSIBLE_MATCHES" |
+            sed 's+^+imdb.com/title/+' >>"$ALL_MATCHES"
         continue
     fi
     if [ -z "$alreadyPrintedP" ]; then
@@ -287,7 +287,7 @@ EOF
     pickOptions=()
     while IFS=$'\n' read -r line; do
         pickOptions+=("imdb.com/title/$line")
-    done < <(rg -N "\t$match\t" "$POSSIBLE_MATCHES" |
+    done < <(rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=2,2 --key=5,5r)
     pickOptions+=("Skip \"$match\"" "Quit")
 
@@ -333,7 +333,7 @@ printf "\n"
 numMatches=$(sed -n '$=' "$ALL_MATCHES")
 
 # Get rid of the URL we added
-sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
+sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;s+imdb.com/title/++' "$ALL_MATCHES"
 
 # Save search in case we want to redo or add to favorites
 printHistory "$favoritesFile" >"$TMPFILE"

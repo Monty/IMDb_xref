@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# Internal function: Print tsv rows with column value highlighting
+# Internal function: Print tsv rows with optional column value highlighting
 
 function printHighlighted() {
     local OPTIND columnNum tsvFile searchFile
 
     help() {
         cat <<EOF
-printHighlighted -- Internal function: Print tsv rows with highlighted column.
+printHighlighted -- Internal function: Print tsv rows with optional highlighted column.
 
 Typical tsv rows:
     tt2802850  tvSeries  Fargo         Fargo         2014
@@ -23,7 +23,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -c      Column - column with values to highlight. Defaults to 3.
+    -c      Column - column with values to highlight. Defaults to no highighting.
 
 EXAMPLES:
     printHighlighted "$ALL_MATCHES"
@@ -54,7 +54,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    columnNum="${columnNum:-3}"
+    columnNum="${columnNum}"
     tsvFile="$1"
 
     if [ -z "$tsvFile" ]; then
@@ -65,11 +65,19 @@ EOF
 
     # Use searchFile for highlighting
     searchFile=$(mktemp)
-    cut -f "$columnNum" "$tsvFile" >"$searchFile"
+    [ -n "$columnNum" ] && cut -f "$columnNum" "$tsvFile" >"$searchFile"
     if checkForExecutable -q xsv; then
-        rg --color always -f "$searchFile" "$tsvFile" | xsv table -d "\t"
+        if [ -n "$columnNum" ]; then
+            rg --color always -f "$searchFile" "$tsvFile" | xsv table -d "\t"
+        else
+            xsv table -d "\t" "$tsvFile"
+        fi
     else
-        rg --color always -f "$searchFile" "$tsvFile"
+        if [ -n "$columnNum" ]; then
+            rg --color always -f "$searchFile" "$tsvFile"
+        else
+            cat "$tsvFile"
+        fi
     fi
     rm -rf "$searchFile"
 }

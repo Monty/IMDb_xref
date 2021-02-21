@@ -86,8 +86,8 @@ while true; do
     fi
 
     printf "==> Verify extra shows processing.\n\n"
-    
-        if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Kasablanca'; then
+
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Kasablanca'; then
         ./findCastOf.sh Kasablanca
     fi
     if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Casablanca'; then
