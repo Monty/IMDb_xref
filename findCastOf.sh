@@ -118,6 +118,11 @@ function loopOrExitP() {
             [ -z "$SHORT" ] && printf "\n"
             printf "==> I found %s show%s that %s not in $favoritesFile\n" \
                 "$numNew" "$plural" "$_vb"
+            # Add color to show names
+            cut -f 3 "$TMPFILE" >"$ALL_TERMS"
+            printHistory "$favoritesFile" |
+                rg --color always -f "$ALL_TERMS" >"$TMPFILE"
+            #
             xsvPrint "$TMPFILE"
             if waitUntil "$YN_PREF" -Y \
                 "\n==> Shall I add $_pron to $favoritesFile?"; then
@@ -379,7 +384,10 @@ done
 # Found results, check with user before adding to local data
 printf "\nThese are the results I can process:\n"
 xsvPrint "$ALL_MATCHES"
-! waitUntil "$YN_PREF" -Y && loopOrExitP
+if ! waitUntil "$YN_PREF" -Y; then
+    numMatches=0
+    loopOrExitP
+fi
 printf "\n"
 
 # Remember how many matches there were
