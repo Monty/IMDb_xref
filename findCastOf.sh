@@ -123,7 +123,7 @@ function loopOrExitP() {
             printHistory "$favoritesFile" |
                 rg --color always -f "$ALL_TERMS" >"$TMPFILE"
             #
-            xsvPrint "$TMPFILE"
+            tsvPrint "$TMPFILE"
             if waitUntil "$YN_PREF" -Y \
                 "\n==> Shall I add $_pron to $favoritesFile?"; then
                 # shellcheck disable=SC2094      # param is a string not a file
@@ -383,7 +383,7 @@ done
 
 # Found results, check with user before adding to local data
 printf "\nThese are the results I can process:\n"
-xsvPrint "$ALL_MATCHES"
+tsvPrint "$ALL_MATCHES"
 if ! waitUntil "$YN_PREF" -Y; then
     numMatches=0
     loopOrExitP

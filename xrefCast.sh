@@ -221,7 +221,7 @@ perl -pi -e "s+\t'+\t+g;" "$TMPFILE"
 
 # Save ALL_NAMES
 printf "\n==> Principal cast members (Name|Job|Show|Role):\n" >"$ALL_NAMES"
-# Can't use xsvPrint because we want better alignment than bare tabs
+# Can't use tsvPrint because we want better alignment than bare tabs
 if checkForExecutable -q xsv; then
     xsv table -d "\t" "$TMPFILE" >>"$ALL_NAMES"
 else

@@ -229,7 +229,7 @@ fi
 
 # Found results, check with user before adding
 printf "\nThese are the results I can process:\n"
-xsvPrint "$PERSON_RESULTS"
+tsvPrint "$PERSON_RESULTS"
 
 # Get rid of the URL preface we added and any colorization escape sequences
 sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;s+imdb.com/name/++;' "$PERSON_RESULTS"
@@ -263,7 +263,7 @@ while read -r line; do
             printf "==> I found $numResults $_title listing $nconstName as: $match\n"
             if [ -n "$skipPrompts" ] || waitUntil "$YN_PREF" -Y \
                 "==> Shall I list $_pron?"; then
-                xsvPrint "$TMPFILE"
+                tsvPrint "$TMPFILE"
             fi
         fi
     done <"$MATCH_COUNTS"
