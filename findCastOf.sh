@@ -254,6 +254,7 @@ cat "$TCONST_TERMS" "$SHOWS_TERMS"
 # Reconstitute ALL_TERMS with column guards
 perl -p -e 's/^/^/; s/$/\\t/;' "$TCONST_TERMS" >"$ALL_TERMS"
 perl -p -e 's/^/\\t/; s/$/\\t/;' "$SHOWS_TERMS" >>"$ALL_TERMS"
+numTerms="$(sed -n '$=' "$ALL_TERMS")"
 
 # Get all possible matches at once
 rg -NzSI -f "$ALL_TERMS" title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4,6 |
@@ -322,6 +323,58 @@ if [ ! -s "$ALL_MATCHES" ]; then
     printf "    Check the \"Searching $num_TB records for:\" section above.\n"
     loopOrExitP
 fi
+
+# Remember how many matches there were
+numMatches=$(sed -n '$=' "$ALL_MATCHES")
+
+# Did we find more than requested?
+while [ "$numMatches" -gt "$numTerms" ]; do
+    # Remove any duplicates
+    sort -f "$ALL_MATCHES" | uniq -d >"$TMPFILE"
+    if [ -s "$TMPFILE" ]; then
+        sort -fu "$ALL_MATCHES" >"$TMPFILE"
+        sort -f -t$'\t' --key=2,2 --key=5,5r "$TMPFILE" >"$ALL_MATCHES"
+        numMatches=$(sed -n '$=' "$ALL_MATCHES")
+        continue
+    fi
+    printf "\n==> I found more results than expected. What would you like to do?\n"
+    pickOptions=()
+    while IFS=$'\n' read -r line; do
+        pickOptions+=("Remove $line")
+    done <"$ALL_MATCHES"
+    pickOptions+=("Keep all" "Quit")
+    #
+    PS3="Select a number from 1-${#pickOptions[@]}: "
+    COLUMNS=40
+    select pickMenu in "${pickOptions[@]}"; do
+        if [ "$REPLY" -ge 1 ] 2>/dev/null &&
+            [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+            case "$pickMenu" in
+            Skip*)
+                printf "Skipping...\n"
+                break
+                ;;
+            Quit)
+                printf "Quitting...\n"
+                exit
+                ;;
+            *)
+                removeItem=${pickMenu##*/}
+                printf "Removing ${removeItem}\n"
+                rg -v -F "$removeItem" "$ALL_MATCHES" >"$TMPFILE"
+                cp "$TMPFILE" "$ALL_MATCHES"
+                break
+                ;;
+            esac
+            break
+        else
+            printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
+        fi
+    done </dev/tty
+    # count new number?
+    # problem resolved?
+    numMatches=$(sed -n '$=' "$ALL_MATCHES")
+done
 
 # Found results, check with user before adding to local data
 printf "\nThese are the results I can process:\n"
