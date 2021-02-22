@@ -100,50 +100,6 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    [ -z "$numMatches" ] && numMatches=0
-    if [ "$numMatches" -ne 0 ]; then
-        touch "$favoritesFile"
-        # Check whether shows searched are already in favoritesFile
-        # shellcheck disable=SC2154      # favoritesFile is defined
-        rg -IN "^tt" "$favoritesFile" | cut -f 1 | sort -u >"$CACHE_LIST"
-        printHistory "$favoritesFile" | rg -IN "^tt" | cut -f 1 |
-            sort -u >"$TMPFILE"
-        comm -13 "$CACHE_LIST" "$TMPFILE" >"$TCONST_LIST"
-        rg -f "$TCONST_LIST" "$ALL_MATCHES" >"$TMPFILE"
-        if [ -s "$TMPFILE" ]; then
-            numNew=$(sed -n '$=' "$TMPFILE")
-            _vb="is"
-            _pron="it"
-            [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
-            [ -z "$SHORT" ] && printf "\n"
-            printf "==> I found %s show%s that %s not in $favoritesFile\n" \
-                "$numNew" "$plural" "$_vb"
-            # Add color to show names
-            cut -f 3 "$TMPFILE" >"$ALL_TERMS"
-            printHistory "$favoritesFile" |
-                rg --color always -f "$ALL_TERMS" >"$TMPFILE"
-            #
-            tsvPrint "$TMPFILE"
-            if waitUntil "$YN_PREF" -Y \
-                "\n==> Shall I add $_pron to $favoritesFile?"; then
-                # shellcheck disable=SC2094      # param is a string not a file
-                printHistory "$favoritesFile" >>"$favoritesFile"
-                ./augment_tconstFiles.sh -ay "$favoritesFile"
-                printf "\n"
-            else
-                AW=" anyway"
-            fi
-        else
-            printf "==> I didn't find any shows that are not already in $favoritesFile\n"
-            AW=" anyway"
-        fi
-        # Check if user wants to update data files, even if no new favorites.
-        waitUntil "$YN_PREF" -Y "==> Shall I update your data files$AW?" &&
-            ./generateXrefData.sh -q
-    else
-        printf "\n"
-    fi
-
     if waitUntil "$YN_PREF" -N \
         "\n==> Would you like to do another search?"; then
         printf "\n"
@@ -384,10 +340,7 @@ done
 # Found results, check with user before adding to local data
 printf "\nThese are the results I can process:\n"
 tsvPrint "$ALL_MATCHES"
-if ! waitUntil "$YN_PREF" -Y; then
-    numMatches=0
-    loopOrExitP
-fi
+! waitUntil "$YN_PREF" -Y && loopOrExitP
 printf "\n"
 
 # Remember how many matches there were
@@ -506,5 +459,44 @@ if [ -z "$SHORT" ]; then
         printf "\n"
     fi
 fi
+
+touch "$favoritesFile"
+# Check whether shows searched are already in favoritesFile
+# shellcheck disable=SC2154      # favoritesFile is defined
+rg -IN "^tt" "$favoritesFile" | cut -f 1 | sort -u >"$CACHE_LIST"
+printHistory "$favoritesFile" | rg -IN "^tt" | cut -f 1 |
+    sort -u >"$TMPFILE"
+comm -13 "$CACHE_LIST" "$TMPFILE" >"$TCONST_LIST"
+rg -f "$TCONST_LIST" "$ALL_MATCHES" >"$TMPFILE"
+if [ -s "$TMPFILE" ]; then
+    numNew=$(sed -n '$=' "$TMPFILE")
+    _vb="is"
+    _pron="it"
+    [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
+    [ -z "$SHORT" ] && printf "\n"
+    printf "==> I found %s show%s that %s not in $favoritesFile\n" \
+        "$numNew" "$plural" "$_vb"
+    # Add color to show names
+    cut -f 3 "$TMPFILE" >"$ALL_TERMS"
+    printHistory "$favoritesFile" |
+        rg --color always -f "$ALL_TERMS" >"$TMPFILE"
+    #
+    tsvPrint "$TMPFILE"
+    if waitUntil "$YN_PREF" -Y \
+        "\n==> Shall I add $_pron to $favoritesFile?"; then
+        # shellcheck disable=SC2094      # param is a string not a file
+        printHistory "$favoritesFile" >>"$favoritesFile"
+        ./augment_tconstFiles.sh -ay "$favoritesFile"
+        printf "\n"
+    else
+        AW=" anyway"
+    fi
+else
+    printf "==> I didn't find any shows that are not already in $favoritesFile\n"
+    AW=" anyway"
+fi
+# Check if user wants to update data files, even if no new favorites.
+waitUntil "$YN_PREF" -Y "==> Shall I update your data files$AW?" &&
+    ./generateXrefData.sh -q
 
 loopOrExitP
