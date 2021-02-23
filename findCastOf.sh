@@ -285,19 +285,23 @@ if [ ! -s "$ALL_MATCHES" ]; then
     loopOrExitP
 fi
 
+# Remove any duplicates - need to remove colors first
+sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;' "$ALL_MATCHES"
+sort -f "$ALL_MATCHES" | uniq -d >"$TMPFILE"
+if [ -s "$TMPFILE" ]; then
+    sort -fu "$ALL_MATCHES" >"$TMPFILE"
+    sort -f -t$'\t' --key=2,2 --key=5,5r "$TMPFILE" >"$ALL_MATCHES"
+fi
+# $ALL_MATCHES now has no dupes, but also no colors - restore colors
+cp "$ALL_MATCHES" "$TMPFILE"
+cut -f 3 "$TMPFILE" >"$ALL_TERMS"
+rg --color always -f "$ALL_TERMS" "$TMPFILE" >"$ALL_MATCHES"
+
 # Remember how many matches there were
 numMatches=$(sed -n '$=' "$ALL_MATCHES")
 
 # Did we find more than requested?
 while [ "$numMatches" -gt "$numTerms" ]; do
-    # Remove any duplicates
-    sort -f "$ALL_MATCHES" | uniq -d >"$TMPFILE"
-    if [ -s "$TMPFILE" ]; then
-        sort -fu "$ALL_MATCHES" >"$TMPFILE"
-        sort -f -t$'\t' --key=2,2 --key=5,5r "$TMPFILE" >"$ALL_MATCHES"
-        numMatches=$(sed -n '$=' "$ALL_MATCHES")
-        continue
-    fi
     printf "\n==> I found more results than expected. What would you like to do?\n"
     pickOptions=()
     while IFS=$'\n' read -r line; do
@@ -320,8 +324,8 @@ while [ "$numMatches" -gt "$numTerms" ]; do
                 exit
                 ;;
             *)
-                removeItem=${pickMenu##*/}
-                printf "Removing ${removeItem}\n"
+                removeItem=${pickMenu#* }
+                # printf "Removing ${removeItem}\n"
                 rg -v -F "$removeItem" "$ALL_MATCHES" >"$TMPFILE"
                 cp "$TMPFILE" "$ALL_MATCHES"
                 break
@@ -332,8 +336,6 @@ while [ "$numMatches" -gt "$numTerms" ]; do
             printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
         fi
     done </dev/tty
-    # count new number?
-    # problem resolved?
     numMatches=$(sed -n '$=' "$ALL_MATCHES")
 done
 
