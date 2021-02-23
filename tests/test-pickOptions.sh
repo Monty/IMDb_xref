@@ -26,10 +26,6 @@ cat <<EOF
 EOF
 
 while true; do
-    if waitUntil "$YN_PREF" -Y 'Run ./saveShows.sh Fargo Shaft'; then
-        ./saveShows.sh Fargo Shaft
-    fi
-
     if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Fargo Shaft'; then
         ./findCastOf.sh Fargo Shaft
     fi
