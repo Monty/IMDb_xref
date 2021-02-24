@@ -53,6 +53,10 @@ while true; do
         ./findShowsWith.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"
     fi
 
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "Robert Downey"'; then
+        ./findShowsWith.sh "Robert Downey"
+    fi
+
     if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh'; then
         ./findShowsWith.sh
     fi

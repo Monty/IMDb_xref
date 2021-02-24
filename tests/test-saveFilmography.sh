@@ -49,6 +49,10 @@ while true; do
         ./saveFilmography.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"
     fi
 
+    if waitUntil "$YN_PREF" -Y '\nRun ./saveFilmography.sh "Robert Downey"'; then
+        ./saveFilmography.sh "Robert Downey"
+    fi
+
     if waitUntil "$YN_PREF" -Y '\nRun ./saveFilmography.sh'; then
         ./saveFilmography.sh
     fi
