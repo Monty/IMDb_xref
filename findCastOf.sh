@@ -431,7 +431,6 @@ fi
 # Make sure we have an empty file
 true >"$TMPFILE"
 
-[ -n "$DEBUG" ] && set -v
 while read -r line; do
     cacheName=$(cut -f 1 <<<"$line")
     cacheFile="$cacheDirectory/$cacheName"
