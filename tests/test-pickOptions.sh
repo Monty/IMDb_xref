@@ -26,16 +26,22 @@ cat <<EOF
 EOF
 
 while true; do
-    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Fargo Shaft'; then
-        ./findCastOf.sh Fargo Shaft
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -d Fargo Shaft'; then
+        ./findCastOf.sh -d Fargo Shaft
     fi
 
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "John Wayne" "Alfred Hitchcock"'; then
+        ./findShowsWith.sh "John Wayne" "Alfred Hitchcock"
+    fi
+
+    if waitUntil "$YN_PREF" -Y '\nRun ./saveFilmography.sh "John Wayne" "Alfred Hitchcock"'; then
+        ./saveFilmography.sh "John Wayne" "Alfred Hitchcock"
+    fi
+
+    printf "==> Robert Downey has no data\n"
     if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "John Wayne" "Robert Downey"'; then
+        printf "==> Robert Downey has no data.\n"
         ./findShowsWith.sh "John Wayne" "Robert Downey"
-    fi
-
-    if waitUntil "$YN_PREF" -Y '\nRun ./saveFilmography.sh "John Wayne" "Robert Downey"'; then
-        ./saveFilmography.sh "John Wayne" "Robert Downey"
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./iQuery.sh'; then
