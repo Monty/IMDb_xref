@@ -275,7 +275,7 @@ while read -r line; do
     nconstID="$line"
     nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
     rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
-        if [ ! -s "$MATCH_COUNTS" ]; then
+    if [ ! -s "$MATCH_COUNTS" ]; then
         printf "\n==> I didn't find any principal cast member records for "
         printf "${RED}$nconstName${NO_COLOR}.\n"
         printf "    Check ${RED}imdb.com/name/$nconstID${NO_COLOR} to get more details.\n"
