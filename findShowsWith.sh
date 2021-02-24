@@ -164,7 +164,7 @@ rg -NzSI -f "$ALL_TERMS" name.basics.tsv.gz | rg -wN "tt[0-9]{7,8}" | cut -f 1-5
 perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' "$POSSIBLE_MATCHES"
 
 # Figure how many matches for each possible match
-cut -f 2 "$POSSIBLE_MATCHES" | frequency -t >"$MATCH_COUNTS"
+cut -f 2 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 
 # Add possible matches one at a time
 while read -r line; do
