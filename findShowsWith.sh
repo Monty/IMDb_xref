@@ -166,12 +166,12 @@ perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' "$POSSIBLE_MATCHES"
 # Figure how many matches for each possible match
 cut -f 2 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 
-# Add possible matches one at a time
+# Add possible matches one at a time, preceded by URL
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg --color always "\t$match\t" "$POSSIBLE_MATCHES" |
+        rg --color always "$match" "$POSSIBLE_MATCHES" |
             sed 's+^+imdb.com/name/+' >>"$PERSON_RESULTS"
         continue
     fi
@@ -188,11 +188,20 @@ EOF
     if [ "$count" -ge "${maxMenuSize:-10}" ]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
+
+    # Create parallel tabbed array
+    rg --color always "$match" "$POSSIBLE_MATCHES" |
+        sort -f -t$'\t' --key=3,3r --key=5 | sed 's+^+imdb.com/name/+' >"$TMPFILE"
+    #
+    tabbedOptions=()
+    while IFS='' read -r line; do tabbedOptions+=("$line"); done <"$TMPFILE"
+
+    # Create tsvPrinted select array
+    rg --color always "$match" "$POSSIBLE_MATCHES" |
+        sort -f -t$'\t' --key=3,3r --key=5 | sed 's+^+imdb.com/name/+' >"$TMPFILE"
+    #
     pickOptions=()
-    while IFS=$'\n' read -r line; do
-        pickOptions+=("imdb.com/name/$line")
-    done < <(rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=3,3r --key=5)
+    while IFS='' read -r line; do pickOptions+=("$line"); done < <(tsvPrint "$TMPFILE")
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -209,7 +218,7 @@ EOF
                 exit
                 ;;
             *)
-                printf "$pickMenu\n" >>"$PERSON_RESULTS"
+                printf "${tabbedOptions[REPLY - 1]}\n" >>"$PERSON_RESULTS"
                 break
                 ;;
             esac
