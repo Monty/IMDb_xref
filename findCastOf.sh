@@ -280,7 +280,7 @@ done <"$MATCH_COUNTS"
 
 # Didn't find any results
 if [ ! -s "$ALL_MATCHES" ]; then
-    printf "==> Didn't find ${RED}any${NO_COLOR} matching shows.\n"
+    printf "==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
     printf "    Check the \"Searching $num_TB records for:\" section above.\n"
     loopOrExitP
 fi
@@ -448,7 +448,7 @@ done <"$SHOW_NAMES"
 
 # Any results? If not, don't continue.
 if [ ! -s "$TMPFILE" ]; then
-    printf "==> Didn't find ${RED}any${NO_COLOR} matching records.\n"
+    printf "==> I didn't find ${RED}any${NO_COLOR} matching records.\n"
     printf "    Check the \"Searching for:\" section above.\n"
     loopOrExitP
 fi

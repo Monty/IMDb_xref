@@ -207,7 +207,7 @@ fi
 
 # Any results? If not, don't continue.
 if [ ! -s "$TMPFILE" ]; then
-    printf "==> Didn't find ${RED}any${NO_COLOR} matching records.\n"
+    printf "==> I didn't find ${RED}any${NO_COLOR} matching records.\n"
     printf "    Check the \"Searching for:\" section above.\n"
     loopOrExitP
 else
@@ -269,7 +269,7 @@ fi
 # Print multiple search results
 if [ "$numMultiple" -eq 0 ]; then
     [ -n "$MULTIPLE_NAMES_ONLY" ] &&
-        printf "\n==> Didn't find ${RED}any${NO_COLOR} cast members who appear in more than one show.\n"
+        printf "\n==> I didn't find ${RED}any${NO_COLOR} cast members who appear in more than one show.\n"
 else
     printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Role):\n"
     cat "$MULTIPLE_NAMES"

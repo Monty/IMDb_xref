@@ -231,7 +231,7 @@ done <"$MATCH_COUNTS"
 
 # Didn't find any results
 if [ ! -s "$PERSON_RESULTS" ]; then
-    printf "==> Didn't find ${RED}any${NO_COLOR} matching persons.\n"
+    printf "==> I didn't find ${RED}any${NO_COLOR} matching persons.\n"
     printf "    Check the \"Searching $numRecords records for:\" section above.\n"
     loopOrExitP
 fi
@@ -256,6 +256,12 @@ while read -r line; do
     nconstID="$line"
     nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
     rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
+    if [ ! -s "$MATCH_COUNTS" ]; then
+        printf "\n==> I didn't find any principal cast member records for "
+        printf "${RED}$nconstName${NO_COLOR}.\n"
+        printf "    Check ${RED}imdb.com/name/$nconstID${NO_COLOR} to get more details.\n"
+        continue
+    fi
     while read -r job; do
         count=$(cut -f 1 <<<"$job")
         match=$(cut -f 2 <<<"$job")

@@ -12,14 +12,14 @@ printf "==> Should find an executable for cat\n"
 if checkForExecutable -q cat; then
     printf "Found an executable for cat\n"
 else
-    printf "Didn't find an executable for cat\n"
+    printf "I didn't find an executable for cat\n"
 fi
 
 printf "\n==> Should not find an executable for aaa\n"
 if checkForExecutable -q aaa; then
     printf "Found an executable for aaa\n"
 else
-    printf "Didn't find an executable for aaa\n"
+    printf "I didn't find an executable for aaa\n"
 fi
 
 printf "\n==> If there is no executable for bbb, print an error and exit.\n"
