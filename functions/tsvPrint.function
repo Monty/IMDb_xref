@@ -1,37 +1,50 @@
 #!/usr/bin/env bash
 #
-# Internal function: Print tsv rows with xsv if it exists.
+# Internal function: Print tsv rows with optional column value highlighting
 
 function tsvPrint() {
-    local OPTIND tsvFile
+    local OPTIND columnNum noHighlighting tsvFile searchFile
 
     help() {
         cat <<EOF
-tsvPrint -- Internal function: Print tsv rows with xsv if it exists.
+tsvPrint -- Internal function: Print tsv rows with optional highlighted column.
+
+The tsv file should already be sorted. This function doesn't do any sorting.
 
 Typical tsv rows printed with xsv:
     tt2802850  tvSeries  Fargo         Fargo         2014
     tt3747572  tvSeries  Grantchester  Grantchester  2014
 
-The tsv file should already be sorted. This function doesn't do any sorting.
+To highlight Fargo and Grantchester, save column 3 as a file used by rg -f to
+find every value in column 3.
 
 USAGE:
     tsvPrint [OPTIONS...] TSV_FILE
 
 OPTIONS:
     -h      Print this message.
+    -c      Column - column with values to highlight. Defaults to column 3.
+    -n      No highlighting
 
 EXAMPLES:
     tsvPrint "$ALL_MATCHES"
+    tsvPrint -c 2 "$FINAL_RESULTS"
+    tsvPrint -n "$POSSIBLE_MATCHES"
 EOF
     }
 
-    while getopts ":h" opt; do
+    while getopts ":hc:n" opt; do
         case $opt in
         h)
             help
             waitUntil -k
             return
+            ;;
+        c)
+            columnNum="$OPTARG"
+            ;;
+        n)
+            noHighlighting="yes"
             ;;
         \?)
             printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
@@ -46,6 +59,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
+    columnNum="${columnNum}"
     tsvFile="$1"
 
     if [ -z "$tsvFile" ]; then
@@ -54,9 +68,22 @@ EOF
         exit 1
     fi
 
-    if checkForExecutable -q xsv; then
-        xsv table -d "\t" "$tsvFile"
+    if [ -n "$noHighlighting" ]; then
+        # No highlighting
+        if checkForExecutable -q xsv; then
+            xsv table -d "\t" "$tsvFile"
+        else
+            cat "$tsvFile"
+        fi
     else
-        cat "$tsvFile"
+        # Use searchFile for highlighting
+        searchFile=$(mktemp)
+        cut -f "$columnNum" "$tsvFile" >"$searchFile"
+        if checkForExecutable -q xsv; then
+            xsv table -d "\t" "$tsvFile" | rg --color always -f "$searchFile"
+        else
+            rg --color always -f "$searchFile" "$tsvFile"
+        fi
+        rm -f "$searchFile"
     fi
 }
