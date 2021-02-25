@@ -96,8 +96,8 @@ while true; do
     if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Casablanca Broadchurch'; then
         ./findCastOf.sh Casablanca Broadchurch
     fi
-    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh Casablanca Grantchester'; then
-        ./findCastOf.sh Casablanca Grantchester
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh "The Bletchley Circle" "Ocean''s Eleven"'; then
+        ./findCastOf.sh "The Bletchley Circle" "Ocean's Eleven"
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -f Dramas.tconst tt1606375'; then

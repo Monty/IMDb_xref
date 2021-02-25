@@ -224,12 +224,12 @@ rg -NzSI -f "$ALL_TERMS" title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4,6 
 # Figure how many matches for each possible match
 cut -f 3 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 
-# Add possible matches one at a time
+# Add possible matches one at a time, preceded by URL
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg --color always "\t$match\t" "$POSSIBLE_MATCHES" |
+        rg --color always "$match" "$POSSIBLE_MATCHES" |
             sed 's+^+imdb.com/title/+' >>"$ALL_MATCHES"
         continue
     fi
@@ -246,11 +246,22 @@ EOF
     if [ "$count" -ge "${maxMenuSize:-25}" ]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
+
+    # Create parallel tabbed array
+    rg --color always "$match" "$POSSIBLE_MATCHES" |
+        sort -f -t$'\t' --key=2,2 --key=5,5r |
+        sed 's+^+imdb.com/title/+' >"$TMPFILE"
+    #
+    tabbedOptions=()
+    while IFS='' read -r line; do tabbedOptions+=("$line"); done <"$TMPFILE"
+
+    # Create tsvPrinted select array
+    rg --color always "$match" "$POSSIBLE_MATCHES" |
+        sort -f -t$'\t' --key=2,2 --key=5,5r |
+        sed 's+^+imdb.com/title/+' >"$TMPFILE"
+    #
     pickOptions=()
-    while IFS=$'\n' read -r line; do
-        pickOptions+=("imdb.com/title/$line")
-    done < <(rg --color always -N "\t$match\t" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=2,2 --key=5,5r)
+    while IFS='' read -r line; do pickOptions+=("$line"); done < <(tsvPrint "$TMPFILE")
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -267,7 +278,7 @@ EOF
                 exit
                 ;;
             *)
-                printf "$pickMenu\n" >>"$ALL_MATCHES"
+                printf "${tabbedOptions[REPLY - 1]}\n" >>"$ALL_MATCHES"
                 break
                 ;;
             esac
@@ -287,6 +298,7 @@ fi
 
 # Remove any duplicates - need to remove colors first
 sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;' "$ALL_MATCHES"
+
 sort -f "$ALL_MATCHES" | uniq -d >"$TMPFILE"
 if [ -s "$TMPFILE" ]; then
     sort -fu "$ALL_MATCHES" >"$TMPFILE"
@@ -303,10 +315,14 @@ numMatches=$(sed -n '$=' "$ALL_MATCHES")
 # Did we find more than requested?
 while [ "$numMatches" -gt "$numTerms" ]; do
     printf "\n==> I found more results than expected. What would you like to do?\n"
+
+    # Create parallel tabbed array
+    tabbedOptions=()
+    while IFS='' read -r line; do tabbedOptions+=("$line"); done <"$ALL_MATCHES"
+
+    # Create tsvPrinted select array
     pickOptions=()
-    while IFS=$'\n' read -r line; do
-        pickOptions+=("Remove $line")
-    done <"$ALL_MATCHES"
+    while IFS='' read -r line; do pickOptions+=("Remove $line"); done < <(tsvPrint "$ALL_MATCHES")
     pickOptions+=("Keep all" "Quit")
     #
     PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -324,8 +340,7 @@ while [ "$numMatches" -gt "$numTerms" ]; do
                 exit
                 ;;
             *)
-                removeItem=${pickMenu#* }
-                # printf "Removing ${removeItem}\n"
+                removeItem="${tabbedOptions[REPLY - 1]}"
                 rg -v -F "$removeItem" "$ALL_MATCHES" >"$TMPFILE"
                 cp "$TMPFILE" "$ALL_MATCHES"
                 break
