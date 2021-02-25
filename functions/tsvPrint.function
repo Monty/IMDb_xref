@@ -82,7 +82,7 @@ EOF
         if checkForExecutable -q xsv; then
             xsv table -d "\t" "$tsvFile" | rg --color always -f "$searchFile"
         else
-            rg --color always -f "$searchFile" "$tsvFile"
+            rg -N --color always -f "$searchFile" "$tsvFile"
         fi
         rm -f "$searchFile"
     fi
