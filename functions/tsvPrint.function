@@ -78,7 +78,7 @@ EOF
     else
         # Use searchFile for highlighting
         searchFile=$(mktemp)
-        cut -f "$columnNum" "$tsvFile" >"$searchFile"
+        cut -f "${columnNum:-3}" "$tsvFile" >"$searchFile"
         if checkForExecutable -q xsv; then
             xsv table -d "\t" "$tsvFile" | rg --color always -f "$searchFile"
         else

@@ -229,7 +229,7 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg --color always "$match" "$POSSIBLE_MATCHES" |
+        rg "\t$match\t" "$POSSIBLE_MATCHES" |
             sed 's+^+imdb.com/title/+' >>"$ALL_MATCHES"
         continue
     fi
@@ -248,20 +248,20 @@ EOF
     fi
 
     # Create parallel tabbed array
-    rg --color always "$match" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=2,2 --key=5,5r |
+    rg "\t$match\t" "$POSSIBLE_MATCHES" | sort -f -t$'\t' --key=2,2 --key=5,5r |
         sed 's+^+imdb.com/title/+' >"$TMPFILE"
     #
     tabbedOptions=()
     while IFS='' read -r line; do tabbedOptions+=("$line"); done <"$TMPFILE"
 
     # Create tsvPrinted select array
-    rg --color always "$match" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=2,2 --key=5,5r |
+    rg "\t$match\t" "$POSSIBLE_MATCHES" | sort -f -t$'\t' --key=2,2 --key=5,5r |
         sed 's+^+imdb.com/title/+' >"$TMPFILE"
     #
     pickOptions=()
-    while IFS='' read -r line; do pickOptions+=("$line"); done < <(tsvPrint "$TMPFILE")
+    while IFS='' read -r line; do
+        pickOptions+=("$line")
+    done < <(tsvPrint "$TMPFILE")
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -296,7 +296,7 @@ if [ ! -s "$ALL_MATCHES" ]; then
     loopOrExitP
 fi
 
-# Remove any duplicates - need to remove colors first
+# Remove any duplicates
 sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;' "$ALL_MATCHES"
 
 sort -f "$ALL_MATCHES" | uniq -d >"$TMPFILE"
@@ -304,10 +304,6 @@ if [ -s "$TMPFILE" ]; then
     sort -fu "$ALL_MATCHES" >"$TMPFILE"
     sort -f -t$'\t' --key=2,2 --key=5,5r "$TMPFILE" >"$ALL_MATCHES"
 fi
-# $ALL_MATCHES now has no dupes, but also no colors - restore colors
-cp "$ALL_MATCHES" "$TMPFILE"
-cut -f 3 "$TMPFILE" >"$ALL_TERMS"
-rg --color always -f "$ALL_TERMS" "$TMPFILE" >"$ALL_MATCHES"
 
 # Remember how many matches there were
 numMatches=$(sed -n '$=' "$ALL_MATCHES")
@@ -322,7 +318,9 @@ while [ "$numMatches" -gt "$numTerms" ]; do
 
     # Create tsvPrinted select array
     pickOptions=()
-    while IFS='' read -r line; do pickOptions+=("Remove $line"); done < <(tsvPrint "$ALL_MATCHES")
+    while IFS='' read -r line; do
+        pickOptions+=("Remove $line")
+    done < <(tsvPrint "$ALL_MATCHES")
     pickOptions+=("Keep all" "Quit")
     #
     PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -364,7 +362,7 @@ printf "\n"
 numMatches=$(sed -n '$=' "$ALL_MATCHES")
 
 # Get rid of the URL we added
-sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;s+imdb.com/title/++' "$ALL_MATCHES"
+sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
 
 # Save search in case we want to redo or add to favorites
 printHistory "$favoritesFile" >"$TMPFILE"
@@ -492,11 +490,6 @@ if [ -s "$TMPFILE" ]; then
     [ -z "$SHORT" ] && printf "\n"
     printf "==> I found %s show%s that %s not in $favoritesFile\n" \
         "$numNew" "$plural" "$_vb"
-    # Add color to show names
-    cut -f 3 "$TMPFILE" >"$ALL_TERMS"
-    printHistory "$favoritesFile" |
-        rg --color always -f "$ALL_TERMS" >"$TMPFILE"
-    #
     tsvPrint "$TMPFILE"
     if waitUntil "$YN_PREF" -Y \
         "\n==> Shall I add $_pron to $favoritesFile?"; then

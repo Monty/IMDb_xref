@@ -188,7 +188,7 @@ while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
     if [ "$count" -eq 1 ]; then
-        rg --color always "$match" "$POSSIBLE_MATCHES" |
+        rg "\t$match\t" "$POSSIBLE_MATCHES" |
             sed 's+^+imdb.com/name/+' >>"$PERSON_RESULTS"
         continue
     fi
@@ -206,19 +206,21 @@ EOF
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
 
-    # Create parallel tabbed array
-    rg --color always "$match" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=3,3r --key=5 | sed 's+^+imdb.com/name/+' >"$TMPFILE"
+    # Create parallel tabbed and sorted array
+    rg "\t$match\t" "$POSSIBLE_MATCHES" | sort -f -t$'\t' --key=3,3r --key=5 |
+        sed 's+^+imdb.com/name/+' >"$TMPFILE"
     #
     tabbedOptions=()
     while IFS='' read -r line; do tabbedOptions+=("$line"); done <"$TMPFILE"
 
     # Create tsvPrinted select array
-    rg --color always "$match" "$POSSIBLE_MATCHES" |
-        sort -f -t$'\t' --key=3,3r --key=5 | sed 's+^+imdb.com/name/+' >"$TMPFILE"
+    rg "\t$match\t" "$POSSIBLE_MATCHES" | sort -f -t$'\t' --key=3,3r --key=5 |
+        sed 's+^+imdb.com/name/+' >"$TMPFILE"
     #
     pickOptions=()
-    while IFS='' read -r line; do pickOptions+=("$line"); done < <(tsvPrint "$TMPFILE")
+    while IFS='' read -r line; do
+        pickOptions+=("$line")
+    done < <(tsvPrint -c 2 "$TMPFILE")
     pickOptions+=("Skip \"$match\"" "Quit")
 
     PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -255,10 +257,10 @@ fi
 
 # Found results, check with user before adding
 printf "\nThese are the results I can process:\n"
-tsvPrint "$PERSON_RESULTS"
+tsvPrint "-c 2 $PERSON_RESULTS"
 
-# Get rid of the URL preface we added and any colorization escape sequences
-sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;s+imdb.com/name/++;' "$PERSON_RESULTS"
+# Get rid of the URL preface we added
+sed -i '' 's+imdb.com/name/++;' "$PERSON_RESULTS"
 
 if ! waitUntil "$YN_PREF" -Y; then
     loopOrExitP
@@ -298,7 +300,7 @@ while read -r line; do
             printf "I found $numResults titles listing $nconstName as: $match\n"
             if waitUntil "$YN_PREF" -Y \
                 "==> Do you want to review them before adding them?"; then
-                tsvPrint "$TMPFILE"
+                tsvPrint -n "$TMPFILE"
             fi
             if waitUntil "$YN_PREF" -Y "==> Shall I add them?"; then
                 filmographyFile+="-$match"
