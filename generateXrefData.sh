@@ -408,13 +408,9 @@ if [ -z "$BYPASS_PROCESSING" ]; then
         # Let the user know what we will change
         printf "\n==> Adding dates to titles to fix these title conflicts.\n" >&2
         perl -pi -e 's+^+\\t+; s+$+\\t+;' "$TEMP_DUPES"
-        if checkForExecutable -q xsv; then
-            rg -N --color always -f "$TEMP_DUPES" "$RAW_SHOWS" | cut -f 1,4-7 |
-                sort -f -t$'\t' --key=3 | xsv table -d "\t" >&2
-        else
-            rg -N --color always -f "$TEMP_DUPES" "$RAW_SHOWS" | cut -f 1,4-7 |
-                sort -f -t$'\t' --key=3 >&2
-        fi
+        rg -N -f "$TEMP_DUPES" "$RAW_SHOWS" | cut -f 1,4-7 |
+            sort -f -t$'\t' --key=3 >"$TEMPFILE"
+        tsvPrint "$TEMPFILE" >&2
         # Change the shows by adding (<DATE>) to title
         cp "$RAW_SHOWS" "$TEMPFILE"
         awk -F "\t" -f "$TEMP_AWK" "$TEMPFILE" >"$RAW_SHOWS"
