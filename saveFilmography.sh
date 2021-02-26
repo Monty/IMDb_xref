@@ -257,7 +257,7 @@ fi
 
 # Found results, check with user before adding
 printf "\nThese are the results I can process:\n"
-tsvPrint "-c 2 $PERSON_RESULTS"
+tsvPrint -c 2 "$PERSON_RESULTS"
 
 # Get rid of the URL preface we added
 sed -i '' 's+imdb.com/name/++;' "$PERSON_RESULTS"
