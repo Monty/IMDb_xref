@@ -14,6 +14,14 @@ printf '\e[9;2t'
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
+# trap ctrl-c and call cleanup
+trap cleanup INT
+#
+function cleanup() {
+    printf "\nCtrl-C detected. Exiting.\n" >&2
+    exit 130
+}
+
 printf "==> What would you like to do next?\n"
 
 # 1
