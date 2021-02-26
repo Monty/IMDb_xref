@@ -179,7 +179,7 @@ while true; do
                     # printf "i = $i, REPLY = $REPLY\n"
                     if [ "$i" -ne "$REPLY" ]; then
                         searchArray+=("${tempArray[$i]}")
-                        searchString+="\"${tempArray[$i]}\" "
+                        searchString+="\"${RED}${tempArray[$i]}${NO_COLOR}\" "
                     fi
                 done
                 printf "\nSearch terms: $searchString\n"
@@ -236,7 +236,7 @@ while true; do
             for term in "${searchArray[@]}"; do
                 [ "$result" == "$term" ] && break 2
             done
-            searchString+="\"$result\" "
+            searchString+="\"${RED}${result}${NO_COLOR}\" "
             searchArray+=("$result")
             break
         elif [ "$hitCount" -le "${maxHits:-10}" ]; then
@@ -255,7 +255,7 @@ while true; do
                     for term in "${searchArray[@]}"; do
                         [ "$pickMenu" == "$term" ] && break 2
                     done
-                    searchString+="\"$pickMenu\" "
+                    searchString+="\"${RED}${pickMenu}${NO_COLOR}\" "
                     searchArray+=("$pickMenu")
                     break
                 else
