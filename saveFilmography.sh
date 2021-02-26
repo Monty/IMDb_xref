@@ -75,15 +75,9 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil "$YN_PREF" -N \
-        "\n==> Would you like to do another search?"; then
-        printf "\n"
-        terminate
-        exec ./saveFilmography.sh
-    else
-        printf "Quitting...\n"
-        exit
-    fi
+    printf "\n"
+    terminate
+    exec ./startUp.sh
 }
 
 while getopts ":hm:" opt; do
@@ -123,7 +117,7 @@ TMPFILE=$(mktemp)
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
     cat <<EOF
-==> I can generate a filmography based on person names or nconst IDs,
+==> I can generate a filmography based on a person's name or nconst ID.
     such as nm0000123 -- which is the nconst for George Clooney.
 
 Only one search term per line. Enter a blank line to finish.
@@ -134,7 +128,7 @@ EOF
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
         if waitUntil "$YN_PREF" -N \
-            "Would you like me to add the George Clooney nconst for you?"; then
+            "Would you like me to generate a George Clooney filmography for example?"; then
             printf "nm0000123\n" >>"$ALL_TERMS"
         else
             loopOrExitP
@@ -257,7 +251,7 @@ fi
 
 # Found results, check with user before adding
 printf "\nThese are the results I can process:\n"
-tsvPrint "-c 2 $PERSON_RESULTS"
+tsvPrint -c 2 "$PERSON_RESULTS"
 
 # Get rid of the URL preface we added
 sed -i '' 's+imdb.com/name/++;' "$PERSON_RESULTS"

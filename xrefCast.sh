@@ -84,15 +84,9 @@ function cleanup() {
 # Should we loop or not? Loop unless we were called with -n
 function loopOrExitP() {
     [ -n "$noLoop" ] && exit
-    if waitUntil "$YN_PREF" -N "\n==> Would you like to do another search?"; then
-        printf "\n"
-        terminate
-        [ -n "$SEARCH_FILE" ] && exec ./xrefCast.sh -f "$SEARCH_FILE"
-        exec ./xrefCast.sh
-    else
-        printf "Quitting...\n"
-        exit
-    fi
+    printf "\n"
+    terminate
+    exec ./startUp.sh
 }
 
 while getopts ":f:hpdin" opt; do
