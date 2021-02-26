@@ -192,9 +192,8 @@ true >"$TMPFILE"
 # Escape metacharacters known to appear in titles, persons, characters
 sed -i '' 's+[()?]+\\&+g' "$SEARCH_TERMS"
 
-# Setup awk printf formats with spaces or tabs
+# Setup awk printf formats with tabs
 # Name|Job|Show|Role
-PSPACE='%-20s  %-10s  %-40s  %s\n'
 PTAB='%s\t%s\t%s\t%s\n'
 
 # If we find anything, rearrange it and put it in TMPFILE
@@ -220,27 +219,14 @@ fi
 perl -pi -e "s+\t'+\t+g;" "$TMPFILE"
 
 # Save ALL_NAMES
-printf "\n==> Principal cast members (Name|Job|Show|Role):\n" >"$ALL_NAMES"
-# Can't use tsvPrint because we want better alignment than bare tabs
-if checkForExecutable -q xsv; then
-    xsv table -d "\t" "$TMPFILE" >>"$ALL_NAMES"
-else
-    awk -F "\t" -v PF="$PSPACE" '{printf(PF,$1,$2,$3,$4)}' "$TMPFILE" >>"$ALL_NAMES"
-fi
+cp "$TMPFILE" "$ALL_NAMES"
 
 # Save MULTIPLE_NAMES
 # Print names that occur more than once, i.e. where field 1 is repeated in
 # successive lines, but field 3 is different
-if checkForExecutable -q xsv; then
-    awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4]);
+awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4]);
     printf(PF,$1,$2,$3,$4)} split($0,f)}' "$TMPFILE" | sort -fu |
-        sort -f -t$'\t' -k 2,2 -k 1,1 -k 3,3 |
-        xsv table -d "\t" >>"$MULTIPLE_NAMES"
-else
-    awk -F "\t" -v PF="$PSPACE" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4]);
-    printf(PF,$1,$2,$3,$4)} split($0,f)}' "$TMPFILE" | sort -fu |
-        sort -f -t$'\t' -k 2,2 -k 1,1 -k 3,3 >>"$MULTIPLE_NAMES"
-fi
+    sort -f -t$'\t' -k 2,2 -k 1,1 -k 3,3 >"$MULTIPLE_NAMES"
 
 # Multiple results?
 if [ ! -s "$MULTIPLE_NAMES" ]; then
@@ -261,7 +247,10 @@ if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] &&
 fi
 
 # Unless MULTIPLE_NAMES_ONLY, print all search results
-[ -z "$MULTIPLE_NAMES_ONLY" ] && cat "$ALL_NAMES"
+if [ -z "$MULTIPLE_NAMES_ONLY" ]; then
+    printf "\n==> Principal cast members (Name|Job|Show|Role):\n"
+    tsvPrint -n "$ALL_NAMES"
+fi
 
 # If PRINCIPAL_CAST_ONLY, exit here
 [ -n "$PRINCIPAL_CAST_ONLY" ] && loopOrExitP
@@ -272,7 +261,7 @@ if [ "$numMultiple" -eq 0 ]; then
         printf "\n==> I didn't find ${RED}any${NO_COLOR} cast members who appear in more than one show.\n"
 else
     printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Role):\n"
-    cat "$MULTIPLE_NAMES"
+    tsvPrint -n "$MULTIPLE_NAMES"
 fi
 
 # Do we really want to quit?
