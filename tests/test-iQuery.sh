@@ -13,8 +13,11 @@ source functions/load_functions
 trap cleanup INT
 #
 function cleanup() {
+    unset TESTING
     exit 130
 }
+
+export TESTING="yes"
 
 printf "==> Testing ${RED}iQuery.sh${NO_COLOR}.\n\n"
 printf "First, print the help file...\n"

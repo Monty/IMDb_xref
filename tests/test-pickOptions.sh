@@ -14,8 +14,11 @@ ensurePrerequisites
 trap cleanup INT
 #
 function cleanup() {
+    unset TESTING
     exit 130
 }
+
+export TESTING="yes"
 
 printf "==> Testing ${RED}pickOptions${NO_COLOR}.\n"
 cat <<EOF
@@ -38,7 +41,6 @@ while true; do
         ./saveFilmography.sh "John Wayne" "Alfred Hitchcock"
     fi
 
-    printf "==> Robert Downey has no data\n"
     if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "John Wayne" "Robert Downey"'; then
         printf "==> Robert Downey has no data.\n"
         ./findShowsWith.sh "John Wayne" "Robert Downey"
@@ -52,3 +54,5 @@ while true; do
     printf "\n"
 
 done
+
+unset TESTING
