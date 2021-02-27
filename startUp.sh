@@ -25,11 +25,11 @@ function cleanup() {
 printf "==> What would you like to do next?\n"
 
 # 1
-pickOptions=("Find the principal cast members of one or more shows")
+pickOptions=("Find the principal cast & crew members of one or more shows")
 # 2
-pickOptions+=("See if multiple shows share principal cast members")
+pickOptions+=("Find any principal cast & crew members listed in more than one show")
 # 3
-pickOptions+=("Find all shows listing a person as a cast/crew member")
+pickOptions+=("Find all shows listing a person as a cast or crew member")
 # 4
 pickOptions+=("Save a filmography for a person")
 # 5

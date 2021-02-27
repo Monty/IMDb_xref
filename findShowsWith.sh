@@ -115,8 +115,9 @@ TMPFILE=$(mktemp)
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
     cat <<EOF
-==> I can find all shows listing a person as cast/crew based on their name or nconst ID,
-    such as nm0000123 -- which is the nconst for George Clooney.
+
+==> I can find all shows listing a person as a cast or crew member based on their
+    name or nconst ID, such as nm0000123 -- which is the nconst for George Clooney.
 
 Only one search term per line. Enter a blank line to finish.
 EOF

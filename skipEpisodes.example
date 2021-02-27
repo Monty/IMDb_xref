@@ -3,7 +3,7 @@
 
 # When a tvSeries is processed, all its tvEpisodes are automatically looked up,
 # processed, and added. If a tvSeries has hundreds of tvEpisodes or its
-# cast/crew aren't relevant, add the tvSeries tconst below and its tvEpisodes
+# cast & crew aren't relevant, add the tvSeries tconst below and its tvEpisodes
 # will not be processed.
 
 # Only the tconst field is used. Additional fields are not needed, but useful

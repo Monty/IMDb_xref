@@ -76,7 +76,7 @@ while true; do
         ./findCastOf.sh "The Night Manager" "The Crown" "The Durrells in Corfu"
     fi
 
-    printf "==> Verify -d only lists cast members that are in more than one show.\n\n"
+    printf "==> Verify -d only lists cast members who are in more than one show.\n"
 
     if waitUntil "$YN_PREF" -Y \
         '\nRun ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"'; then

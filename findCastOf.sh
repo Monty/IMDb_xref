@@ -13,15 +13,14 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findCastOf.sh -- List principal cast members of shows on IMDb.
+findCastOf.sh -- List principal cast & crew members of shows on IMDb.
 
 Search IMDb titles for show names or tconst IDs. A tconst ID should be unique,
 but a show name can have several or even many matches. Allow user to select one
 match or skip if there are too many.
 
-List the principal cast members and the characters they portray. If you search
-for multiple shows, also list the names of any cast members that appear in more
-than one.
+List principal cast & crew members and any characters portrayed. If you search for
+multiple shows, also list cast & crew members who are listed in more than one.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -31,7 +30,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -d      Duplicates -- Only list cast members that are in more than one show.
+    -d      Duplicates -- Only list cast & crew members listed in more than one show.
     -m      Maximum matches for a show title allowed in menu - defaults to 25.
     -f      File -- Add to specific file rather than the default $favoritesFile.
     -s      Short - don't list details, just ask about adding to $favoritesFile.
@@ -167,11 +166,11 @@ TMPFILE=$(mktemp)
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
     cat <<EOF
-==> I can find cast members based on show names or tconst IDs,
+==> I can find cast & crew members based on show names or tconst IDs,
     such as tt1606375 -- which is the tconst for Downton Abbey.
 
 Only one search term per line. Enter a blank line to finish.
-Enter two or more shows to see cast members they have in common.
+Enter two or more shows to see cast & crew members they have in common.
 EOF
     while read -r -p "Enter a show name or tconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
@@ -179,7 +178,7 @@ EOF
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
         if waitUntil "$YN_PREF" -N \
-            "Would you like to see the cast of Downton Abbey as an example?"; then
+            "Would you like to see the cast & crew of Downton Abbey as an example?"; then
             printf "tt1606375\n" >>"$ALL_TERMS"
         else
             loopOrExitP
@@ -397,7 +396,7 @@ if [ -n "$(rg -c "^tt" "$TCONST_LIST")" ]; then
     # Use tconst list to lookup principal titles and generate credits csv
     # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
     # Leave the episode title field blank!
-    printf "==> Searching $num_TP records for principal cast members.\n\n"
+    printf "==> Searching $num_TP records for principal cast & crew members.\n\n"
     rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
         perl -p -e 's+nm0745728+nm0745694+' |
         perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
