@@ -14,9 +14,12 @@ ensurePrerequisites
 trap cleanup INT
 #
 function cleanup() {
+    unset TESTING
     mkdir -p "$cacheDirectory"
     exit 130
 }
+
+export TESTING="yes"
 
 function cacheSize() {
     numFiles="$(find "$cacheDirectory" -maxdepth 1 -mindepth 1 | sed -n '$=')"
@@ -62,3 +65,5 @@ time ./findCastOf.sh "The Durrells in Corfu" tt1399664 >/dev/null
 cacheSize
 
 printf "\n==> End of test.\n\n"
+
+unset TESTING

@@ -100,18 +100,10 @@ function cleanup() {
 }
 
 function loopOrExitP() {
-    if waitUntil "$YN_PREF" -N \
-        "\n==> Would you like to do another search?"; then
-        printf "\n"
-        terminate
-        [ -n "$SHORT" ] && s_option="-s"
-        [ -n "$MULTIPLE_NAMES_ONLY" ] && d_option="-d"
-        # shellcheck disable=SC2248      # globbing needed
-        exec ./findCastOf.sh $s_option $d_option
-    else
-        printf "Quitting...\n"
-        exit
-    fi
+    printf "\n"
+    terminate
+    [ -n "$TESTING" ] && exit
+    exec ./startUp.sh
 }
 
 while getopts ":hf:dm:s" opt; do
@@ -179,6 +171,7 @@ if [ $# -eq 0 ]; then
     such as tt1606375 -- which is the tconst for Downton Abbey.
 
 Only one search term per line. Enter a blank line to finish.
+Enter two or more shows to see cast members they have in common.
 EOF
     while read -r -p "Enter a show name or tconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
@@ -186,7 +179,7 @@ EOF
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
         if waitUntil "$YN_PREF" -N \
-            "Would you like to see the cast of Downton Abbey?"; then
+            "Would you like to see the cast of Downton Abbey as an example?"; then
             printf "tt1606375\n" >>"$ALL_TERMS"
         else
             loopOrExitP
@@ -196,7 +189,7 @@ EOF
 fi
 
 # Let used know what favorites file we're using.
-printf "==> Favorites will be added to: ${BLUE}$favoritesFile\n${NO_COLOR}\n"
+printf "==> Any favorites you save will be added to: ${BLUE}$favoritesFile\n${NO_COLOR}\n"
 
 # Get title.basics.tsv.gz file size - should already exist but make sure...
 num_TB="$(rg -N title.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
@@ -291,7 +284,7 @@ done <"$MATCH_COUNTS"
 
 # Didn't find any results
 if [ ! -s "$ALL_MATCHES" ]; then
-    printf "==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
+    printf "\n==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
     printf "    Check the \"Searching $num_TB records for:\" section above.\n"
     loopOrExitP
 fi
@@ -470,6 +463,7 @@ fi
 if [ -z "$SHORT" ]; then
     if [ "$numMatches" -ne 1 ] || [ -n "$MULTIPLE_NAMES_ONLY" ]; then
         ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+    else
         printf "\n"
     fi
 fi
@@ -487,7 +481,6 @@ if [ -s "$TMPFILE" ]; then
     _vb="is"
     _pron="it"
     [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
-    [ -z "$SHORT" ] && printf "\n"
     printf "==> I found %s show%s that %s not in $favoritesFile\n" \
         "$numNew" "$plural" "$_vb"
     tsvPrint "$TMPFILE"

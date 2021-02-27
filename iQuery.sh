@@ -210,8 +210,8 @@ while true; do
             continue 2
             ;;
         Quit)
-            printf "Quitting...\n"
-            exit
+            [ -n "$TESTING" ] && exit
+            exec ./startUp.sh
             ;;
         *)
             printf "Your selection must be a number from 1-${#actionOptions[@]}\n"

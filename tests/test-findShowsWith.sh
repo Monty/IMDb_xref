@@ -14,8 +14,11 @@ ensurePrerequisites
 trap cleanup INT
 #
 function cleanup() {
+    unset TESTING
     exit 130
 }
+
+export TESTING="yes"
 
 printf "==> Testing ${RED}findShowsWith.sh${NO_COLOR}.\n\n"
 printf "First, print the help file...\n"
@@ -69,3 +72,5 @@ while true; do
     printf "\n"
 
 done
+
+unset TESTING
