@@ -49,31 +49,24 @@ select pickMenu in "${pickOptions[@]}"; do
         case "$REPLY" in
         1)
             exec ./findCastOf.sh
-            break
             ;;
         2)
             exec ./findCastOf.sh -d
-            break
             ;;
         3)
             exec ./findShowsWith.sh
-            break
             ;;
         4)
             exec ./saveFilmography.sh
-            break
             ;;
         5)
             exec ./xrefCast.sh
-            break
             ;;
         6)
             exec ./iQuery.sh
-            break
             ;;
         7)
             exec ./explain_scripts.sh
-            break
             ;;
         8)
             printf "Quitting...\n"
