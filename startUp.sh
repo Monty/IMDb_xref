@@ -37,8 +37,10 @@ pickOptions+=("Run a cross reference of your saved shows")
 # 6
 pickOptions+=("Run a guided cross reference of your saved shows")
 # 7
-pickOptions+=("Help")
+pickOptions+=("Show me a list of my saved shows")
 # 8
+pickOptions+=("Help")
+# 9
 pickOptions+=("Quit")
 
 PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -66,9 +68,15 @@ select pickMenu in "${pickOptions[@]}"; do
             exec ./iQuery.sh
             ;;
         7)
-            exec ./explain_scripts.sh
+            printf "\n"
+            cat uniqTitles.txt
+            printf "\n"
+            exec ./startUp.sh
             ;;
         8)
+            exec ./explain_scripts.sh
+            ;;
+        9)
             printf "Quitting...\n"
             exit
             ;;
