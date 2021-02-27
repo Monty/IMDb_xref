@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# Find common cast members between multiple shows
+# Find common cast & crew members between multiple shows
 #
 # NOTES:
 #   Requires cast member files produced by generateXrefData.sh
-#   Note: Cast member data from IMDb sometimes has errors or omissions
+#   Note: Cast & crew member data from IMDb sometimes has errors or omissions
 #
 #   To help refine searches, the output is rather wordy (unless -d is used).
 #   The final section (Names that occur more than once) is of highest interest.
@@ -13,7 +13,7 @@
 #       ./xrefCast.sh 'Olivia Colman'
 #       ./xrefCast.sh 'Queen Elizabeth II' 'Princess Diana'
 #
-#   Then move to more complex queries that expose other common cast members
+#   Then move to more complex queries that expose other common cast & crew members
 #       ./xrefCast.sh 'The Crown'
 #       ./xrefCast.sh -d 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
 #
@@ -39,8 +39,8 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -p      Principal -- Only print 'Principal cast members' section.
-    -d      Duplicates -- Only print cast members that are in more than one show
+    -p      Principal -- Only print 'Principal cast & crew members' section.
+    -d      Duplicates -- Only print cast & crew who are listed in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
     -n      No loop - don't offer to do another search upon exit
@@ -170,7 +170,7 @@ fi
 # Let us know how many records we're searching
 numRecords=$(sed -n '$=' "$SEARCH_FILE")
 [ "$INFO" == "yes" ] &&
-    printf "==> Searching $numRecords records in $SEARCH_FILE for cast data.\n\n"
+    printf "==> Searching $numRecords records in $SEARCH_FILE for cast & crew data.\n\n"
 
 # Setup TMPFILE with one search term per line, let us know what's in it.
 printf "==> Searching for:\n"
@@ -226,16 +226,16 @@ awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4
 if [ ! -s "$MULTIPLE_NAMES" ]; then
     numMultiple="0"
 else
-    _vb="appears"
+    _vb="is"
     _pron="that"
     numMultiple=$(cut -f 1 "$TMPFILE" | sort -f | uniq -d | sed -n '$=')
-    [ "$numMultiple" -gt 1 ] && _vb="appear" && _pron="those"
+    [ "$numMultiple" -gt 1 ] && _vb="are" && _pron="those"
 fi
 
 # If we're in interactive mode, give user a choice of all or duplicates only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] &&
     [ -z "$PRINCIPAL_CAST_ONLY" ] && [ "$numMultiple" -ne 0 ]; then
-    printf "\n==> I found $numAll cast members. $numMultiple $_vb in more than one show.\n"
+    printf "\n==> I found $numAll cast & crew members. $numMultiple $_vb listed in more than one show.\n"
     waitUntil "$YN_PREF" -N "Should I only print $_pron $numMultiple?" &&
         MULTIPLE_NAMES_ONLY="yes"
 fi
@@ -252,9 +252,10 @@ fi
 # Print multiple search results
 if [ "$numMultiple" -eq 0 ]; then
     [ -n "$MULTIPLE_NAMES_ONLY" ] &&
-        printf "\n==> I didn't find ${RED}any${NO_COLOR} cast members who appear in more than one show.\n"
+        printf "\n==> I didn't find ${RED}any${NO_COLOR} cast or crew members "
+    printf "who are listed in more than one show.\n"
 else
-    printf "\n==> Cast members who appear in more than one show (Name|Job|Show|Role):\n"
+    printf "\n==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):\n"
     tsvPrint -n "$MULTIPLE_NAMES"
 fi
 

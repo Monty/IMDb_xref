@@ -25,11 +25,11 @@ function cleanup() {
 printf "==> What would you like to do next?\n"
 
 # 1
-pickOptions=("Find the principal cast members of one or more shows")
+pickOptions=("Find the principal cast & crew members of one or more shows")
 # 2
-pickOptions+=("See if multiple shows share principal cast members")
+pickOptions+=("Find any principal cast & crew members listed in more than one show")
 # 3
-pickOptions+=("Find all shows listing a person as a cast/crew member")
+pickOptions+=("Find all shows listing a person as a cast or crew member")
 # 4
 pickOptions+=("Save a filmography for a person")
 # 5
@@ -37,8 +37,10 @@ pickOptions+=("Run a cross reference of your saved shows")
 # 6
 pickOptions+=("Run a guided cross reference of your saved shows")
 # 7
-pickOptions+=("Help")
+pickOptions+=("Show me a list of my saved shows")
 # 8
+pickOptions+=("Help")
+# 9
 pickOptions+=("Quit")
 
 PS3="Select a number from 1-${#pickOptions[@]}: "
@@ -66,9 +68,15 @@ select pickMenu in "${pickOptions[@]}"; do
             exec ./iQuery.sh
             ;;
         7)
-            exec ./explain_scripts.sh
+            printf "\n"
+            cat uniqTitles.txt
+            printf "\n"
+            exec ./startUp.sh
             ;;
         8)
+            exec ./explain_scripts.sh
+            ;;
+        9)
             printf "Quitting...\n"
             exit
             ;;
