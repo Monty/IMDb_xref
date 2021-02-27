@@ -33,9 +33,9 @@ pickOptions+=("Find all shows listing a person as a cast/crew member")
 # 4
 pickOptions+=("Save a filmography for a person")
 # 5
-pickOptions+=("Run a cross reference of your favorite shows")
+pickOptions+=("Run a cross reference of your saved shows")
 # 6
-pickOptions+=("Run a guided cross reference of your favorite shows")
+pickOptions+=("Run a guided cross reference of your saved shows")
 # 7
 pickOptions+=("Help")
 # 8
