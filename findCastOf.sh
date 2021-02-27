@@ -284,7 +284,7 @@ done <"$MATCH_COUNTS"
 
 # Didn't find any results
 if [ ! -s "$ALL_MATCHES" ]; then
-    printf "==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
+    printf "\n==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
     printf "    Check the \"Searching $num_TB records for:\" section above.\n"
     loopOrExitP
 fi
@@ -463,6 +463,7 @@ fi
 if [ -z "$SHORT" ]; then
     if [ "$numMatches" -ne 1 ] || [ -n "$MULTIPLE_NAMES_ONLY" ]; then
         ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+    else
         printf "\n"
     fi
 fi
@@ -480,7 +481,6 @@ if [ -s "$TMPFILE" ]; then
     _vb="is"
     _pron="it"
     [ "$numNew" -gt 1 ] && plural="s" && _vb="are" && _pron="them"
-    [ -z "$SHORT" ] && printf "\n"
     printf "==> I found %s show%s that %s not in $favoritesFile\n" \
         "$numNew" "$plural" "$_vb"
     tsvPrint "$TMPFILE"
