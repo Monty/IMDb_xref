@@ -61,6 +61,14 @@ OPTIONS:
     -q      Quiet -- Minimize output, print only the list of shows being processed.
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
     -x      Xlate -- Use a specific translation file instead of *xlate.
+
+EXAMPLES:
+    ./generateXrefData.sh
+    ./generateXrefData.sh -a -x Contrib/Others.xlate Contrib/OPB.tconst
+    ./generateXrefData.sh -d Comedies
+    ./generateXrefData.sh -arq
+    ./generateXrefData.sh -t
+
 EOF
 }
 
