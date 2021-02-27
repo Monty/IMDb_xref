@@ -72,6 +72,7 @@ function cleanup() {
 function loopOrExitP() {
     printf "\n"
     terminate
+    [ -n "$TESTING" ] && exit
     exec ./startUp.sh
 }
 

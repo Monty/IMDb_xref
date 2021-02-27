@@ -210,6 +210,7 @@ while true; do
             continue 2
             ;;
         Quit)
+            [ -n "$TESTING" ] && exit
             exec ./startUp.sh
             ;;
         *)

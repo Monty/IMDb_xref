@@ -83,9 +83,9 @@ function cleanup() {
 
 # Should we loop or not? Loop unless we were called with -n
 function loopOrExitP() {
-    [ -n "$noLoop" ] && exit
     printf "\n"
     terminate
+    [ -n "$noLoop" ] || [ -n "$TESTING" ] && exit
     exec ./startUp.sh
 }
 
