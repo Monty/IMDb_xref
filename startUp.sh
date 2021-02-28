@@ -14,6 +14,114 @@ printf '\e[9;2t'
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
+export LC_COLLATE="C"
+source functions/define_colors
+source functions/define_files
+source functions/load_functions
+
+function help() {
+    cat <<EOF
+
+1) Find the principal cast members of one or more shows
+
+        Search IMDb titles for show names or tconst IDs such as tt1606375 --
+        which is the tconst for Downton Abbey.
+
+        List principal cast & crew members and any characters portrayed. If you
+        search for multiple shows, also list cast & crew members who are listed
+        in more than one.
+
+        An excerpt from searching for The Crown:
+
+        ==> Principal cast & crew members (Name|Job|Show|Role):
+        Ben Daniels        actor     The Crown  Lord Snowdon
+        Josh O'Connor      actor     The Crown  Prince Charles
+        Elizabeth Debicki  actress   The Crown  Princess Diana
+        Gillian Anderson   actress   The Crown  Margaret Thatcher
+        Olivia Colman      actress   The Crown  Queen Elizabeth II
+        Jessica Hobbs      director  The Crown
+        Jonathan Wilson    writer    The Crown
+EOF
+    waitUntil -k
+    cat <<EOF
+
+2) See if multiple shows share principal cast members
+
+        Search IMDb titles for show names or tconst IDs such as tt4786824 --
+        which is the tconst for The Crown.
+
+        List principal cast & crew members and any characters portrayed, but
+        only if they are listed in more than one show.
+
+        The result from searching for The Crown and The Night Manager:
+
+        ==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):
+        Tobias Menzies     actor    The Crown          Prince Philip, Duke of Edinburgh
+        Tobias Menzies     actor    The Night Manager  Geoffrey Dromgoole
+        Elizabeth Debicki  actress  The Crown          Princess Diana
+        Elizabeth Debicki  actress  The Night Manager  Jed Marshall
+        Olivia Colman      actress  The Crown          Queen Elizabeth II
+        Olivia Colman      actress  The Night Manager  Angela Burr
+EOF
+    waitUntil -k
+    cat <<EOF
+
+3) Find all shows listing a person as a cast/crew member
+
+        Find all shows listing a person as a cast or crew member based on their
+        name or nconst ID, such as nm0000233 -- which is the nconst for Quentin
+        Tarantino
+
+        An excerpt from searching for Quentin Tarantino:
+
+        ==> I found 9 titles listing Quentin Tarantino as: writer
+        movie  Natural Born Killers  1994
+
+        ==> I found 15 titles listing Quentin Tarantino as: director
+        movie  The Hateful Eight     2015
+        movie  Django Unchained      2012
+EOF
+    waitUntil -k
+    cat <<EOF
+
+4) Save a filmography for a person
+
+        Generate a filmography based on a person's name or nconst ID.  such as
+        nm0000123 -- which is the nconst for George Clooney.
+
+        Basically the same as 3), but more useful for detailed research as it
+        will offer to save any sections and create related lists and
+        spreadsheets.
+EOF
+    waitUntil -k
+    cat <<EOF
+
+5) Run a cross reference of your saved shows
+
+        Run detailed queries of any shows you saved as favorites in 1) or 2).
+
+        Search saved shows for any mix of shows, cast or crew, and characters
+        portrayed, such as The Crown, Olivia Colman, or Queen Elizabeth.
+
+        1) and 2) search all records for shows. 3) searches all records for cast
+        or crew names. This script only searches saved shows, but adds searching
+        for characters, and mixing all three types.
+EOF
+    waitUntil -k
+    cat <<EOF
+
+6) Run a guided cross reference of your saved shows
+
+        Runs the same types of queries as 5), but is menu and prompt driven.
+
+        Instead of entering a full show name like The Night Manager, you only
+        need to enter enough characters to ensure a unique match.
+
+        For example, 'Hi' returns 'Tom Hiddleston' in the example data set.
+
+EOF
+}
+
 # trap ctrl-c and call cleanup
 trap cleanup INT
 #
@@ -74,7 +182,8 @@ select pickMenu in "${pickOptions[@]}"; do
             exec ./startUp.sh
             ;;
         8)
-            exec ./explain_scripts.sh
+            help
+            exec ./startUp.sh
             ;;
         9)
             printf "Quitting...\n"
