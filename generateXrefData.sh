@@ -64,7 +64,7 @@ OPTIONS:
 
 EXAMPLES:
     ./generateXrefData.sh
-    ./generateXrefData.sh -a -x Contrib/Others.xlate Contrib/OPB.tconst
+    ./generateXrefData.sh -x Contrib/Others.xlate Contrib/OPB.tconst
     ./generateXrefData.sh -d Comedies
     ./generateXrefData.sh -arq
     ./generateXrefData.sh -t
