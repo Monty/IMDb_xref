@@ -14,11 +14,11 @@ ensurePrerequisites
 trap cleanup INT
 #
 function cleanup() {
-    unset TESTING
+    unset NO_MENUS
     exit 130
 }
 
-export TESTING="yes"
+export NO_MENUS="yes"
 
 printf "==> Testing ${RED}pickOptions${NO_COLOR}.\n"
 cat <<EOF
@@ -55,4 +55,4 @@ while true; do
 
 done
 
-unset TESTING
+unset NO_MENUS

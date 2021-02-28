@@ -14,12 +14,12 @@ ensurePrerequisites
 trap cleanup INT
 #
 function cleanup() {
-    unset TESTING
+    unset NO_MENUS
     mkdir -p "$cacheDirectory"
     exit 130
 }
 
-export TESTING="yes"
+export NO_MENUS="yes"
 
 function cacheSize() {
     numFiles="$(find "$cacheDirectory" -maxdepth 1 -mindepth 1 | sed -n '$=')"
@@ -66,4 +66,4 @@ cacheSize
 
 printf "\n==> End of test.\n\n"
 
-unset TESTING
+unset NO_MENUS

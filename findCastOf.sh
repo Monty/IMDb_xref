@@ -101,7 +101,7 @@ function cleanup() {
 function loopOrExitP() {
     printf "\n"
     terminate
-    [ -n "$TESTING" ] && exit
+    [ -n "$NO_MENUS" ] && exit
     exec ./startUp.sh
 }
 

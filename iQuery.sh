@@ -210,7 +210,7 @@ while true; do
             continue 2
             ;;
         Quit)
-            [ -n "$TESTING" ] && exit
+            [ -n "$NO_MENUS" ] && exit
             exec ./startUp.sh
             ;;
         *)
