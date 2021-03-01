@@ -11,7 +11,7 @@ tsvPrint -- Internal function: Print tsv rows with optional highlighted column.
 
 The tsv file should already be sorted. This function doesn't do any sorting.
 
-Typical tsv rows printed with xsv:
+Typical tsv rows printed with tsvPrint:
     tt2802850  tvSeries  Fargo         Fargo         2014
     tt3747572  tvSeries  Grantchester  Grantchester  2014
 
@@ -69,20 +69,24 @@ EOF
     fi
 
     if [ -n "$noHighlighting" ]; then
-        # No highlighting
-        if checkForExecutable -q xsv; then
+        if checkForExecutable -q xsv && [ -z "$NO_XSV" ]; then
             xsv table -d "\t" "$tsvFile"
         else
-            cat "$tsvFile"
+            PFMT="$(awk -F "\t" -f elastic_tabs.awk "$tsvFile")"
+            # Works for up to 9 fields. Unicode chars can throw off column width
+            awk -F '\t' -v PF="$PFMT" '{printf(PF,$1,$2,$3,$4,$5,$6,$7,$8,$9)}' "$tsvFile"
         fi
     else
         # Use searchFile for highlighting
         searchFile=$(mktemp)
         cut -f "${columnNum:-3}" "$tsvFile" >"$searchFile"
-        if checkForExecutable -q xsv; then
+        if checkForExecutable -q xsv && [ -z "$NO_XSV" ]; then
             xsv table -d "\t" "$tsvFile" | rg --color always -f "$searchFile"
         else
-            rg -N --color always -f "$searchFile" "$tsvFile"
+            PFMT="$(awk -F "\t" -f elastic_tabs.awk "$tsvFile")"
+            # Works for up to 9 fields. Unicode chars can throw off column width
+            awk -F '\t' -v PF="$PFMT" '{printf(PF,$1,$2,$3,$4,$5,$6,$7,$8,$9)}' "$tsvFile" |
+                rg --color always -f "$searchFile"
         fi
         rm -f "$searchFile"
     fi
