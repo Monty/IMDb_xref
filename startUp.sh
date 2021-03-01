@@ -22,7 +22,7 @@ source functions/load_functions
 function help() {
     cat <<EOF
 
-1) Find the principal cast members of one or more shows
+1) Find the principal cast and crew members of one or more shows
 
         Search IMDb titles for show names or tconst IDs such as tt1606375 --
         which is the tconst for Downton Abbey.
@@ -45,7 +45,7 @@ EOF
     waitUntil -k
     cat <<EOF
 
-2) See if multiple shows share principal cast members
+2) Find any principal cast & crew members listed in more than one show
 
         Search IMDb titles for show names or tconst IDs such as tt4786824 --
         which is the tconst for The Crown.
@@ -66,7 +66,7 @@ EOF
     waitUntil -k
     cat <<EOF
 
-3) Find all shows listing a person as a cast/crew member
+3) Find all shows listing a person as a cast or crew member
 
         Find all shows listing a person as a cast or crew member based on their
         name or nconst ID, such as nm0000233 -- which is the nconst for Quentin
@@ -84,7 +84,7 @@ EOF
     waitUntil -k
     cat <<EOF
 
-4) Save a filmography for a person
+4) Save a filmography for a cast or crew member
 
         Generate a filmography based on a person's name or nconst ID.  such as
         nm0000123 -- which is the nconst for George Clooney.
@@ -100,8 +100,8 @@ EOF
 
         Run detailed queries of any shows you saved as favorites in 1) or 2).
 
-        Search saved shows for any mix of shows, cast or crew, and characters
-        portrayed, such as The Crown, Olivia Colman, or Queen Elizabeth.
+        Search saved shows for any mix of shows, cast or crew members, and
+        characters portrayed, e.g. The Crown, Olivia Colman, or Queen Elizabeth.
 
         1) and 2) search all records for shows. 3) searches all records for cast
         or crew names. This script only searches saved shows, but adds searching
@@ -139,7 +139,7 @@ pickOptions+=("Find any principal cast & crew members listed in more than one sh
 # 3
 pickOptions+=("Find all shows listing a person as a cast or crew member")
 # 4
-pickOptions+=("Save a filmography for a person")
+pickOptions+=("Save a filmography for a cast or crew member")
 # 5
 pickOptions+=("Run a cross reference of your saved shows")
 # 6
