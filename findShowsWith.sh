@@ -212,8 +212,7 @@ EOF
                 break
                 ;;
             Quit)
-                printf "Quitting...\n"
-                exit
+                loopOrExitP
                 ;;
             *)
                 printf "${tabbedOptions[REPLY - 1]}\n" >>"$PERSON_RESULTS"

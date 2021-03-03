@@ -266,8 +266,7 @@ EOF
                 break
                 ;;
             Quit)
-                printf "Quitting...\n"
-                exit
+                loopOrExitP
                 ;;
             *)
                 printf "${tabbedOptions[REPLY - 1]}\n" >>"$ALL_MATCHES"
@@ -321,18 +320,18 @@ while [ "$numMatches" -gt "$numTerms" ]; do
         if [ "$REPLY" -ge 1 ] 2>/dev/null &&
             [ "$REPLY" -le "${#pickOptions[@]}" ]; then
             case "$pickMenu" in
-            Skip*)
-                printf "Skipping...\n"
+            Keep*)
+                numMatches="$numTerms"
                 break
                 ;;
             Quit)
-                printf "Quitting...\n"
-                exit
+                loopOrExitP
                 ;;
             *)
                 removeItem="${tabbedOptions[REPLY - 1]}"
                 rg -v -F "$removeItem" "$ALL_MATCHES" >"$TMPFILE"
                 cp "$TMPFILE" "$ALL_MATCHES"
+                numMatches=$(sed -n '$=' "$ALL_MATCHES")
                 break
                 ;;
             esac
@@ -341,7 +340,6 @@ while [ "$numMatches" -gt "$numTerms" ]; do
             printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
         fi
     done </dev/tty
-    numMatches=$(sed -n '$=' "$ALL_MATCHES")
 done
 
 # Found results, check with user before adding to local data
