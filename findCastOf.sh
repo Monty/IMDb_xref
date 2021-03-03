@@ -102,7 +102,7 @@ function loopOrExitP() {
     printf "\n"
     terminate
     [ -n "$NO_MENUS" ] && exit
-    exec ./startUp.sh
+    exec ./start.command
 }
 
 while getopts ":hf:dm:s" opt; do

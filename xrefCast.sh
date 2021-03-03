@@ -43,7 +43,7 @@ OPTIONS:
     -d      Duplicates -- Only print cast & crew who are listed in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
-    -n      No loop - don't offer to do another search upon exit
+    -n      No menu - don't bring up the top-level menu upon exiting.
 
 EXAMPLES:
     ./xrefCast.sh "Olivia Colman"
@@ -86,7 +86,7 @@ function loopOrExitP() {
     printf "\n"
     terminate
     [ -n "$noLoop" ] || [ -n "$NO_MENUS" ] && exit
-    exec ./startUp.sh
+    exec ./start.command
 }
 
 while getopts ":f:hpdin" opt; do

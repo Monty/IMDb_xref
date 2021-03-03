@@ -211,7 +211,7 @@ while true; do
             ;;
         Quit)
             [ -n "$NO_MENUS" ] && exit
-            exec ./startUp.sh
+            exec ./start.command
             ;;
         *)
             printf "Your selection must be a number from 1-${#actionOptions[@]}\n"
