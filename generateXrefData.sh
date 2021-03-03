@@ -54,13 +54,12 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -a      All jobs -- not just actor, actress, writer, director, producer
-    -c      Compare -- Create a 'diff' file comparing current against previously saved results.
     -d      Directory -- Create a subdirectory for results. Don't overwrite existing files.
     -f      File -- Save file that can later be used for queries with "xrefCast.sh -f"
-    -r      Reload -- Force all data to be reloaded, even if not necessary.
-    -q      Quiet -- Minimize output, print only the list of shows being processed.
-    -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
     -x      Xlate -- Use a specific translation file instead of *xlate.
+    -q      Quiet -- Minimize output, print only the list of shows being processed.
+    -r      Reload -- Force all data to be reloaded, even if not necessary.
+    -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
 
 EXAMPLES:
     ./generateXrefData.sh
@@ -108,7 +107,7 @@ function processDurations() {
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations -m 10
-    # Save for comparison next time...
+    # Save the contents of every tconst to use for manual comparison next time
     [ -n "$useEveryTconst" ] && saveHistory "$EVERY_TCONST"
     # Keep 20 history files for this script
     trimHistory -m 20
@@ -124,13 +123,10 @@ function breakpoint() {
     fi
 }
 
-while getopts ":d:f:x:hracqt" opt; do
+while getopts ":d:f:x:hraqt" opt; do
     case $opt in
     a)
         ALL_JOBS="^"
-        ;;
-    c)
-        CREATE_DIFF="yes"
         ;;
     h)
         help
@@ -150,6 +146,7 @@ while getopts ":d:f:x:hracqt" opt; do
         ;;
     t)
         TEST_MODE="yes"
+        CREATE_DIFF="yes"
         ;;
     x)
         XLATE_FILES=("$OPTARG")
@@ -175,8 +172,7 @@ LONGDATE="-$(date +%y%m%d.%H%M%S)"
 # Required subdirectories
 WORK="secondary"
 CACHE="${WORK}/cache"
-BASE="baseline"
-[ -n "$TEST_MODE" ] && BASE="test_results"
+BASE="test_results"
 [ -n "$OUTPUT_DIR" ] && mkdir -p "$OUTPUT_DIR"
 mkdir -p "$WORK" "$BASE" "$CACHE"
 
@@ -319,6 +315,7 @@ else
             printf "==> Searching all .tconst files for IMDb title identifiers.\n"
         # Cache is only enabled if *.tconst is used, which is the usual mode.
         useEveryTconst="yes"
+        # The history file should contain the contents of every tconst file used
         head -9999 -- *tconst | rg -v "^$|#" >"$EVERY_TCONST"
     else
         for file in "$@"; do
@@ -649,7 +646,7 @@ if [ -z "$QUIET" ]; then
     printAdjustedFileInfo "$ASSOCIATED_TITLES" 1
     printAdjustedFileInfo "$CREDITS_SHOW" 1
     printAdjustedFileInfo "$CREDITS_PERSON" 1
-# printAdjustedFileInfo $KNOWNFOR_LIST 0
+    # printAdjustedFileInfo $KNOWNFOR_LIST 0
 fi
 
 # Skip diff output if requested. Save durations and exit
@@ -713,7 +710,9 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 EOF
 
-wc "${ALL_WORK[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}" >>"$POSSIBLE_DIFFS"
+touch $HIST_TCONST # In case we've not run printHistory
+wc "${ALL_WORK[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}" \
+    >>"$POSSIBLE_DIFFS"
 
 # Save durations and exit
 processDurations
