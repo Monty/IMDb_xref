@@ -70,6 +70,7 @@ EOF
 
     # Explain what we're planning
     cat <<EOT-1
+
 This script uses the program rg (ripgrep) to quickly search compressed files. It
 will optionally use the program xsv to improve table column layout, especially
 for non-English names by using "elastic tabs".
