@@ -19,7 +19,7 @@ source functions/define_colors
 source functions/define_files
 source functions/load_functions
 
-function help() {
+function start_help() {
     cat <<EOF
 
 1) Find the principal cast and crew members of one or more shows
@@ -130,6 +130,9 @@ function cleanup() {
     exit 130
 }
 
+# Make sure prerequisites are satisfied
+ensurePrerequisites
+
 printf "==> What would you like to do next?\n"
 
 # 1
@@ -179,11 +182,11 @@ select pickMenu in "${pickOptions[@]}"; do
             printf "\n"
             cat uniqTitles.txt
             printf "\n"
-            exec ./startUp.sh
+            exec ./start.command
             ;;
         8)
-            help
-            exec ./startUp.sh
+            start_help
+            exec ./start.command
             ;;
         9)
             printf "Quitting...\n"
