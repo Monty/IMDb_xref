@@ -24,8 +24,9 @@ function start_help() {
 
 1) Find the principal cast and crew members of one or more shows
 
-        Search IMDb titles for show names or tconst IDs such as tt1606375 --
-        which is the tconst for Downton Abbey.
+        Search IMDb titles for show names or tconst IDs such as tt1606375,
+        which is the tconst for Downton Abbey -- taken from this URL:
+        https://www.imdb.com/title/tt1606375/
 
         List principal cast & crew members and any characters portrayed. If you
         search for multiple shows, also list cast & crew members who are listed
@@ -47,7 +48,7 @@ EOF
 
 2) Find any principal cast & crew members listed in more than one show
 
-        Search IMDb titles for show names or tconst IDs such as tt4786824 --
+        Search IMDb titles for show names or tconst IDs such as tt4786824,
         which is the tconst for The Crown.
 
         List principal cast & crew members and any characters portrayed, but
@@ -70,7 +71,7 @@ EOF
 
         Find all shows listing a person as a cast or crew member based on their
         name or nconst ID, such as nm0000233 -- which is the nconst for Quentin
-        Tarantino
+        Tarantino -- taken from this URL: https://www.imdb.com/name/nm0000233/
 
         An excerpt from searching for Quentin Tarantino:
 
@@ -96,7 +97,7 @@ EOF
     waitUntil -k
     cat <<EOF
 
-5) Run a cross reference of your saved shows
+5) Run a cross-reference of your saved shows
 
         Run detailed queries of any shows you saved as favorites in 1) or 2).
 
@@ -105,12 +106,12 @@ EOF
 
         1) and 2) search all records for shows. 3) searches all records for cast
         or crew names. This script only searches saved shows, but adds searching
-        for characters, and mixing all three types.
+        for characters and mixing all three types.
 EOF
     waitUntil -k
     cat <<EOF
 
-6) Run a guided cross reference of your saved shows
+6) Run a guided cross-reference of your saved shows
 
         Runs the same types of queries as 5), but is menu and prompt driven.
 
@@ -144,9 +145,9 @@ pickOptions+=("Find all shows listing a person as a cast or crew member")
 # 4
 pickOptions+=("Save a filmography for a cast or crew member")
 # 5
-pickOptions+=("Run a cross reference of your saved shows")
+pickOptions+=("Run a cross-reference of your saved shows")
 # 6
-pickOptions+=("Run a guided cross reference of your saved shows")
+pickOptions+=("Run a guided cross-reference of your saved shows")
 # 7
 pickOptions+=("Show me a list of my saved shows")
 # 8

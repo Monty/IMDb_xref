@@ -166,8 +166,9 @@ TMPFILE=$(mktemp)
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
     cat <<EOF
-==> I can find cast & crew members based on show names or tconst IDs,
-    such as tt1606375 -- which is the tconst for Downton Abbey.
+==> I can find cast & crew members based on show names or tconst IDs, such as
+    tt1606375 -- which is the tconst for Downton Abbey taken from this URL:
+    https://www.imdb.com/title/tt1606375/
 
 Only one search term per line. Enter a blank line to finish.
 Enter two or more shows to see cast & crew members they have in common.
