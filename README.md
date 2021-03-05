@@ -18,11 +18,13 @@ example, [shows with episode titles](docs/OutputFiles/Shows-Episodes.tsv),
 - [Automated quickstart](#automated-quickstart)
   - [Understanding query results](#understanding-query-results)
   - [Cross-reference saved shows](#cross-reference-saved-shows)
+  - [Search term hints](#search-term-hints)
 - [Manual installation](#manual-installation)
   - [Install prerequisites](#install-prerequisites)
   - [Generate sample data](#generate-sample-data)
   - [Run sample queries](#run-sample-queries)
   - [Generate additional data](#generate-additional-data)
+  - [Explore other commands](#explore-other-commands)
 - [Limitations](#limitations)
 - [Compatibility](#compatibility)
 - [Suggestions](#suggestions)
@@ -140,8 +142,9 @@ the necessary shows before cross-referencing.
 
 ### Search term hints
 
-You don't need to quote a search term or escape spaces and special characters.
-**`The Crown`** or **`Schitt's Creek`** will both be handled correctly.
+You don't need to quote a search term or escape spaces and other special
+characters. **`The Crown`** or **`Schitt's Creek`** will both be handled
+correctly.
 
 Shows with non-English titles such as **`Jo Nesbø's Headhunters`** or cast
 member names like **`Rolf Lassgård`** must be entered exactly. You can
@@ -204,6 +207,20 @@ seconds. However, queries should still take less than one second.
 You can clean up any data you don't want by running `cleanupEverything.sh`. I
 suggest you don't delete anything until you've run through the entire list of
 choices it offers.
+
+### Explore other commands
+
+All the commands in the top-level menu invoke shell scripts that can be run in a
+terminal window, supplying options and parameters on the command line.
+
+To learn more run `./explain_scripts.sh` or examine the included shell scripts.
+
+If you run commands as shell scripts, you'll need to be careful to quote and
+escape spaces and other special characters.
+
+If you run one of the commands in the top-level menu as a shell script, it will
+still open the top-level menu when it exits. I find this convenient, but if you
+would prefer that it exit, simply set a NO_MENUS environment variable.
 
 ## Limitations
 
