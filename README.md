@@ -51,8 +51,8 @@ Night Manager". You recognize the actress who played Princess Diana in "The
 Crown" but aren't sure of her name.
 
 Run `start.command`, select `Find the principal cast & crew members of one or
-more shows`. Enter `The Crown`, enter `The Night Manager`, enter a blank line.
-*It will find 4 shows titled The Crown - select #4, the tvSeries.* It will
+more shows`. Enter **`The Crown`**, enter **`The Night Manager`**, enter a blank
+line. *It will find 4 shows titled The Crown - select #4, the tvSeries.* It will
 display the cast of "The Crown", the cast of "The Night Manager", and finally,
 the cast members who appear in more than one show. You can easily see that the
 actress you were looking for is Elizabeth Debicki.
@@ -63,7 +63,7 @@ If you like these shows, save them to your favorites. It will enable some
 advanced features we'll cover later.
 
 Then select `Find all shows listing a person as a cast or crew member`. Enter
-`Elizabeth Debicki`. It will find 17 titles listing Elizabeth Debicki as:
+**`Elizabeth Debicki`**. It will find 17 titles listing Elizabeth Debicki as:
 actress.
 
 ![Debicki as actress](docs/Screenshots/Debicki.png?raw=true)
@@ -107,8 +107,7 @@ of the same actors, enter that on the next line. Then enter a blank line.
 
 The "Searching for" section lists the search terms used, one per line. If you
 get unexpected results in a complex query, check it to see if you mistyped a
-search term. Search terms that have more than one word need to be quoted, *e.g.*
-either 'Princess Diana' or "Princess Diana".
+search term.
 
 The "Principal cast & crew" section contains all rows with a match for **any**
 term. It can be quite long for complex queries.
@@ -116,22 +115,42 @@ term. It can be quite long for complex queries.
 The "... listed more than once" section contains only rows with names found in
 more than one show. It can be empty.
 
-The "-d" (duplicates) switch hides the "Principal cast & crew" section. The "-p"
-(principal) switch hides the "... listed more than once" section. Running the
-example queries with and without those two switches will give you an
-understanding of when they are useful.
+Selecting #2 `Find any principal cast & crew members listed in more than one
+show` will hide the "Principal cast & crew" section. Running identical queries
+using #1 and #2 will give you an understanding of when each is useful.
+
+Menu selections #3 and #4 search for cast and crew members instead of show
+titles. Results should be self-explanatory.
 
 ### Cross-reference saved shows
 
-When prompted, add some shows to your favorites, and update your data files.
-That will create lists and spreadsheets that combine data for cross-referencing.
-Those files are much smaller, enabling faster queries.
+When prompted in #1 or #2, add some shows to your favorites, and update your
+data files. That will create lists and spreadsheets that combine data for
+cross-referencing. Those files are much smaller, enabling faster queries.
+
+Select #5 `Run a cross-reference of your saved shows` to enter search terms a
+line at a time, or select #6 `Run a guided cross-reference of your saved shows`
+to predict search terms with minimal typing.
 
 You can mix and match shows, cast or crew members, and characters portrayed in a
 single search, e.g. The Crown, Olivia Colman, and Queen Elizabeth.
 
 You can use #7, `Show me a list of my saved shows` to make sure you have saved
 the necessary shows before cross-referencing.
+
+### Search term hints
+
+You don't need to quote a search term or escape spaces and special characters.
+**`The Crown`** or **`Schitt's Creek`** will both be handled correctly.
+
+Shows with non-English titles such as **`Jo Nesbø's Headhunters`** or cast
+member names like **`Rolf Lassgård`** must be entered exactly. You can
+copy/paste such search terms, or use a tconst/nconst found in their IMDb URL,
+e.g. https://imdb.com/title/tt1614989/ and https://www.imdb.com/name/nm0489858/
+
+Searches use "smart case". If there are no uppercase letters in **any** search
+term, searches will match both uppercase and lowercase letters. However, you may
+get more results than if your search terms were exact.
 
 ## Manual installation
 
@@ -174,10 +193,11 @@ and more.
 Since `./generateXrefData.sh` displays statistics as it runs, you probably
 noticed that it only produced data on 3 shows with 92 episodes -- crediting 87
 people with 758 lines of credits. It did so by selecting three PBS shows from
-`example.tconst` and creating the example files `PBS.tconst` and `PBS.xlate`.
+**`example.tconst`** and creating the example files **`PBS.tconst`** and
+**`PBS.xlate`**.
 
 If you run `./generateXrefData.sh -t`, it will load all the shows in
-`tconst.example`. You'll now have data on 98 shows with 2205 episodes --
+**`tconst.example`**. You'll now have data on 98 shows with 2205 episodes --
 crediting 3769 people with 19002 lines of credits. Running this takes about 45
 seconds. However, queries should still take less than one second.
 
@@ -198,7 +218,7 @@ Data provided by IMDb on shows is for "**Principal** cast & crew members", which
 is limited to 10 persons per show. Queries for movies only list these 10, but
 you can use the imdb.com link we provide to access the "Full Cast & Crew" data
 online. Queries for TV shows can list more than 10 because each episode has its
-own credits --which is why you can see 56 "Principal cast & crew members" for
+own credits -- which is why you can see 56 "Principal cast & crew members" for
 "The Crown".
 
 Queries for persons list every show they are credited in, not just the ones in
