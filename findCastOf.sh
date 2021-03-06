@@ -289,8 +289,6 @@ if [ ! -s "$ALL_MATCHES" ]; then
 fi
 
 # Remove any duplicates
-sed -i '' $'s+\x1b\\[[0-3;]*[a-zA-Z]++g;' "$ALL_MATCHES"
-
 sort -f "$ALL_MATCHES" | uniq -d >"$TMPFILE"
 if [ -s "$TMPFILE" ]; then
     sort -fu "$ALL_MATCHES" >"$TMPFILE"
@@ -353,7 +351,8 @@ printf "\n"
 numMatches=$(sed -n '$=' "$ALL_MATCHES")
 
 # Get rid of the URL we added
-sed -i '' 's+imdb.com/title/++' "$ALL_MATCHES"
+cp "$ALL_MATCHES" "$TMPFILE"
+sed 's+imdb.com/title/++' "$TMPFILE" >"$ALL_MATCHES"
 
 # Save search in case we want to redo or add to favorites
 printHistory "$favoritesFile" >"$TMPFILE"

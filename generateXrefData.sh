@@ -360,13 +360,15 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
         if [ -z "$(comm -13 "$HIST_TCONST" "$TCONST_LIST")" ]; then
             # Nothing new. No processing required. Very fast...
             BYPASS_PROCESSING="yes"
-            printf "\n==> No changes, no new files generated. Use -r to force reload all.\n\n"
+            printf "\n==> No changes, no new files generated. Use -r to "
+            printf "force reload all shows.\n\n"
         else
             # Some new shows. Minimal processing required. Use merge strategy.
             numNew="$(comm -13 "$HIST_TCONST" "$TCONST_LIST" | tee "$TEMPFILE" |
                 sed -n '$=')"
             [ "$numNew" -gt 1 ] && plural="s"
-            printf "\n==> Adding $numNew new show$plural. Use -r to force reload all.\n"
+            printf "\n==> Adding $numNew new show$plural. Use -r to "
+            printf "force reload all shows.\n\n"
             mergeFilesP="yes"
             mv "$TEMPFILE" "$TCONST_LIST"
             mv "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "$CACHE"

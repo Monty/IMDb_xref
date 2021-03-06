@@ -101,14 +101,14 @@ while getopts ":f:hpdin" opt; do
     d)
         MULTIPLE_NAMES_ONLY="yes"
         ;;
+    f)
+        SEARCH_FILE="$OPTARG"
+        ;;
     i)
         INFO="yes"
         ;;
     n)
         noLoop="yes"
-        ;;
-    f)
-        SEARCH_FILE="$OPTARG"
         ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
@@ -145,6 +145,7 @@ fi
 
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
+    # No search terms on command line, read them from user into TMPFILE
     cat <<EOF
 ==> I can cross-reference shows, actors, and the characters they portray,
     such as The Crown, Olivia Colman, and Queen Elizabeth -- as long as
@@ -158,37 +159,41 @@ EOF
     done </dev/tty
     if [ ! -s "$TMPFILE" ]; then
         if waitUntil "$YN_PREF" -N \
-            "Would you like to see who played Queen Elizabeth II?"; then
+            "Would you like to see who played Queen Elizabeth II as an example?"; then
             printf "Queen Elizabeth II\n" >>"$TMPFILE"
             printf "\n"
         else
             loopOrExitP
         fi
     fi
+else
+    # Put any search terms from the command line into TMPFILE
+    for a in "$@"; do
+        printf "$a\n" >>"$TMPFILE"
+    done
 fi
+# Ensure SEARCH_TERMS has one unique search term per line
+sort -fu "$TMPFILE" >"$SEARCH_TERMS"
 
 # Let us know how many records we're searching
 numRecords=$(sed -n '$=' "$SEARCH_FILE")
 [ "$INFO" == "yes" ] &&
     printf "==> Searching $numRecords records in $SEARCH_FILE for cast & crew data.\n\n"
 
-# Setup TMPFILE with one search term per line, let us know what's in it.
+# Let us know what we're searching for
 printf "==> Searching for:\n"
-for a in "$@"; do
-    printf "$a\n" >>"$TMPFILE"
-done
-sort -fu "$TMPFILE" >"$SEARCH_TERMS"
 cat "$SEARCH_TERMS"
 
-# Make sure TMPFILE is empty
-true >"$TMPFILE"
-
 # Escape metacharacters known to appear in titles, persons, characters
-sed -i '' 's+[()?]+\\&+g' "$SEARCH_TERMS"
+cp "$SEARCH_TERMS" "$TMPFILE"
+sed 's+[()?]+\\&+g' "$TMPFILE" >"$SEARCH_TERMS"
 
 # Setup awk printf formats with tabs
 # Name|Job|Show|Role
 PTAB='%s\t%s\t%s\t%s\n'
+
+# Make sure TMPFILE is empty in case we don't find anything
+true >"$TMPFILE"
 
 # If we find anything, rearrange it and put it in TMPFILE
 # Sort by Job (2), Person (1), Show Title (3)
@@ -232,7 +237,7 @@ else
     [ "$numMultiple" -gt 1 ] && _vb="are" && _pron="those"
 fi
 
-# If we're in interactive mode, give user a choice of all or duplicates only
+# If in interactive mode, give user a choice of all or duplicates only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] &&
     [ -z "$PRINCIPAL_CAST_ONLY" ] && [ "$numMultiple" -ne 0 ]; then
     printf "\n==> I found $numAll cast & crew members. $numMultiple $_vb listed in more than one show.\n"
@@ -252,8 +257,7 @@ fi
 # Print multiple search results
 if [ "$numMultiple" -eq 0 ]; then
     [ -n "$MULTIPLE_NAMES_ONLY" ] &&
-        printf "\n==> I didn't find ${RED}any${NO_COLOR} cast or crew members "
-    printf "who are listed in more than one show.\n"
+        printf "\n==> I didn't find any cast or crew members who are listed in more than one show.\n"
 else
     printf "\n==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):\n"
     tsvPrint -n "$MULTIPLE_NAMES"

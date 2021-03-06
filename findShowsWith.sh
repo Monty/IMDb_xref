@@ -127,7 +127,7 @@ EOF
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
         if waitUntil "$YN_PREF" -N \
-            "Would you like to see all shows listing George Clooney for example?"; then
+            "Would you like to see all shows listing George Clooney as an example?"; then
             printf "nm0000123\n" >>"$ALL_TERMS"
         else
             loopOrExitP
@@ -238,7 +238,8 @@ printf "\nThese are the results I can process:\n"
 tsvPrint -c 2 "$PERSON_RESULTS"
 
 # Get rid of the URL preface we added
-sed -i '' 's+imdb.com/name/++;' "$PERSON_RESULTS"
+cp "$PERSON_RESULTS" "$TMPFILE"
+sed 's+imdb.com/name/++;' "$TMPFILE" >"$PERSON_RESULTS"
 
 if ! waitUntil "$YN_PREF" -Y; then
     loopOrExitP
