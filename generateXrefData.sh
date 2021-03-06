@@ -342,14 +342,14 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
 
     # 1) Missing any gzip or previous generateXrefData files?
     numRequired="$((${#ALL_TXT[@]} + ${#ALL_SHEETS[@]} + ${#gzFiles[@]}))"
-    numAvailable="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
-        2>/dev/null | cut -d' ' -f6- | sed -n '$=')"
+    numAvailable="$(ls -1 "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
+        2>/dev/null | sed -n '$=')"
     # [ "$numRequired" -ne "$numAvailable" ] && printf "Files missing.\n"
     [ "$numRequired" -ne "$numAvailable" ] && RELOAD="yes"
 
     # 2) Is any gzip file newer than any generateXrefData file?
-    lastWritten="$(stat -lt "%y%m%d.%H%M%S" "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
-        2>/dev/null | cut -d' ' -f6- | sort -nr | head -1)"
+    lastWritten="$(ls -1t "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
+        2>/dev/null | head -1)"
     # [[ "$lastWritten" =~ .*tsv\.gz ]] && printf "Last written is a tsv.gz.\n"
     [[ $lastWritten =~ .*tsv\.gz ]] && RELOAD="yes"
 
