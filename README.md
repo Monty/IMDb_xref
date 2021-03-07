@@ -10,6 +10,13 @@ example, [shows with episode titles](docs/OutputFiles/Shows-Episodes.tsv),
 [credits sorted by show/episode](docs/OutputFiles/Credits-Show.tsv), and
 [credits sorted by cast member](docs/OutputFiles/Credits-Person.tsv).
 
+[![MIT License](https://img.shields.io/github/license/Monty/IMDb_xref)](LICENSE)
+[![Code](https://tokei.rs/b1/github/Monty/IMDb_xref?category=code)](https://github.com/Monty/IMDb_xref)
+[![Lines](https://tokei.rs/b1/github/Monty/IMDb_xref?category=lines)](https://github.com/Monty/IMDb_xref)
+[![Files](https://tokei.rs/b1/github/Monty/IMDb_xref?category=files)](https://github.com/Monty/IMDb_xref)
+[![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main/)](https://github.com/Monty/IMDb_xref)
+[![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/         IMDb_xref)
+
 **Table of Contents**
 
 - [Motivation](#motivation)
