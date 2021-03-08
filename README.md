@@ -68,7 +68,7 @@ that the actress you were looking for is Elizabeth Debicki.
 
 ![Finding duplicates](docs/Screenshots/duplicates.png?raw=true)
 
-If you like these shows, save them to your favorites. It will enable some
+If you like those shows, save them to your favorites. It will enable some
 advanced features we'll cover later.
 
 Then select `Find all shows listing a person as a cast or crew member`. Enter
@@ -88,7 +88,7 @@ search tool.
 ## Download IMDb_xref
 
 Either **[download an IMDb_xref
-release](https://github.com/Monty/IMDb_xref/releases)** or type these commands
+release](https://github.com/Monty/IMDb_xref/releases)** or type those commands
 into a terminal window:
 
 ```sh
@@ -99,8 +99,8 @@ cd IMDb_xref
 ## Automated quickstart
 
 In a terminal window, type `./start.command`. In macOS, you can simply
-double-click the `start.command` icon. (*The first time, control-click or right*
-*click instead. Then select `Open` from the pop-up menu and click* *`Open` in
+double-click the `start.command` icon. (*The first time, control-click or
+right-click instead. Then select `Open` from the pop-up menu and click `Open` in
 the dialog box.*)
 
 This will set up your preferences, install prerequisites, download the
@@ -195,7 +195,7 @@ unless run in debug mode.
 Run `./xrefCast.sh -h` (help) to see some example queries that can be typed
 into a terminal window.
 
-Run `./demo.command` to see the types of information returned from these queries
+Run `./demo.command` to see the types of information returned from those queries
 and more.
 
 ### Generate additional data
@@ -231,17 +231,15 @@ would prefer that it exit, simply set a NO_MENUS environment variable.
 
 ## Limitations
 
-Data provided by IMDb sometimes has errors or omissions. There is less
-information on cast and crew in the downloaded data than is available on the
-IMDb website.
+Data downloaded from IMDb often has errors or omissions. It has less information
+on cast and crew than is available on the IMDb website.
 
-Data provided by IMDb on shows is for "**Principal** cast & crew members", which
-is limited to 10 persons per show. Queries for movies only list these 10.
-Queries for TV shows can list more than 10 because each episode has its own
-credits -- which is why you can see 56 "Principal cast & crew members" for "The
-Crown".
+Data on shows only includes "**Principal** cast & crew members", which is
+limited to 10 persons per show. Queries for movies only return those 10. Queries
+for TV shows can return more than 10 because each episode has its own credits --
+which is why you can see 56 "Principal cast & crew members" for "The Crown".
 
-IMDb prohibits scraping their website, but you can use the imdb.com link we
+IMDb prohibits scraping their website, but you can use the imdb.com links we
 provide to access the "Full Cast & Crew" data online. 
 
 Downloading IMDb data frequently is not as beneficial as you might think. While
@@ -249,17 +247,19 @@ the data is updated daily, those updates are usually minor changes, like
 changing the type of a show from tvSeries to tvEpisode, or changing the titles a
 person is most known for.
 
-In the menu driven system, data saved on cast and crew members is limited to
-actor, actress, writer, director, or producer. You can save others such as
-cinematographer, editor, etc., by running `generateXrefData.sh -a`. 
+Queries for principal cast & crew members can include results you might not
+expect, e.g. cinematographers and editors. However, updating your data files
+only saves actors, actresses, writers, directors, and producers. To save all
+types run `generateXrefData.sh -a` at any time. You may want to also use the
+`-d` or `-f` options to prevent the larger results from being overwritten.
 
-Menu driven queries for persons return all job types, then ask which ones you
-want to display. So queries for shows and queries for persons may list different
-information.
+Queries for all shows listing a person as a cast or crew member can include
+results you might not expect, e.g. videoGame or radioSeries. For each type, you
+will be asked if you want to display those results.
 
 ## Compatibility
 
-Tested on macOS and Linux. May work in Windows 10 if [Windows Subsystem for
+Tested on macOS and Linux. It may work in Windows 10 if [Windows Subsystem for
 Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) is installed.
 
 ## Suggestions
@@ -330,3 +330,4 @@ submit PRs.
 ## License
 
 [MIT](LICENSE) © Monty Williams
+G
