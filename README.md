@@ -2,7 +2,7 @@
 
 Quickly search IMDb for principal cast members of TV shows or movies, characters
 they portray, other shows they are in, and whether multiple shows have cast
-members in common.·
+members in common.
 
 Create comprehensive lists and spreadsheets about your favorite shows. They're
 useful as an overview or for researching details on shows and cast members. For
@@ -63,8 +63,8 @@ Run `start.command`, select `Find the principal cast & crew members of one or
 more shows`. Enter **`The Crown`**, enter **`The Night Manager`**, enter a blank
 line. *It will find 4 shows titled The Crown - select #4, the tvSeries.* It will
 display the cast of "The Crown", the cast of "The Night Manager", and finally,
-the cast members who appear in more than one show. You can easily see that the
-actress you were looking for is Elizabeth Debicki.
+the principal cast members who appear in more than one show. You can easily see
+that the actress you were looking for is Elizabeth Debicki.
 
 ![Finding duplicates](docs/Screenshots/duplicates.png?raw=true)
 
@@ -128,8 +128,8 @@ Selecting #2 `Find any principal cast & crew members listed in more than one
 show` will hide the "Principal cast & crew" section. Running identical queries
 using #1 and #2 will give you an understanding of when each is useful.
 
-Menu selections #3 and #4 search for cast and crew members instead of show
-titles. Results should be self-explanatory.
+Menu selections #3 and #4 search for principal cast and crew members instead of
+show titles. Results should be self-explanatory.
 
 ### Cross-reference saved shows
 
@@ -182,9 +182,9 @@ non-English names, by using "elastic tabs". See
 ### Generate sample data
 
 Run `./generateXrefData.sh` to download the IMDb data files and generate lists
-and spreadsheets containing cast members, characters portrayed, alternate
-titles, and other details from IMDb. This takes 40 seconds on my 2014 iMac.
-(*Note: Longer if you have a slow internet connection.*)
+and spreadsheets containing principal cast members, characters portrayed,
+alternate titles, and other details from IMDb. This takes 40 seconds on my 2014
+iMac. (*Note: Longer if you have a slow internet connection.*)
 
 Re-running `./generateXrefData.sh` doesn't download the IMDb data files again.
 This reduces the run time to 20 seconds. It will overwrite any previous files
@@ -231,23 +231,30 @@ would prefer that it exit, simply set a NO_MENUS environment variable.
 
 ## Limitations
 
-Data provided by IMDb sometimes has errors or omissions.
+Data provided by IMDb sometimes has errors or omissions. There is less
+information on cast and crew in the downloaded data than is available on the
+IMDb website.
+
+Data provided by IMDb on shows is for "**Principal** cast & crew members", which
+is limited to 10 persons per show. Queries for movies only list these 10.
+Queries for TV shows can list more than 10 because each episode has its own
+credits -- which is why you can see 56 "Principal cast & crew members" for "The
+Crown".
+
+IMDb prohibits scraping their website, but you can use the imdb.com link we
+provide to access the "Full Cast & Crew" data online. 
 
 Downloading IMDb data frequently is not as beneficial as you might think. While
 the data is updated daily, those updates are usually minor changes, like
 changing the type of a show from tvSeries to tvEpisode, or changing the titles a
 person is most known for.
 
-Data provided by IMDb on shows is for "**Principal** cast & crew members", which
-is limited to 10 persons per show. Queries for movies only list these 10, but
-you can use the imdb.com link we provide to access the "Full Cast & Crew" data
-online. Queries for TV shows can list more than 10 because each episode has its
-own credits -- which is why you can see 56 "Principal cast & crew members" for
-"The Crown".
+In the menu driven system, data saved on cast and crew members is limited to
+actor, actress, writer, director, or producer. You can save others such as
+cinematographer, editor, etc., by running `generateXrefData.sh -a`. 
 
-Queries for persons list every show they are credited in, not just the ones in
-which they get top billing. They even list minor types like videoGame and
-radioSeries. So queries for shows and queries for persons list different
+Menu driven queries for persons return all job types, then ask which ones you
+want to display. So queries for shows and queries for persons may list different
 information.
 
 ## Compatibility
@@ -268,9 +275,9 @@ files.
 
 ## Performance
 
-Even complex queries on 14MB of saved shows run in less than 100ms on
-my 2014 iMac, 25ms on my 2019 MacBook Pro with an internal SSD.  There is almost
-no difference between using gzipped data and non-gzipped data.
+Even complex queries on 14MB of saved shows run in less than 100ms on my 2014
+iMac, 25ms on my 2019 MacBook Pro with an internal SSD.  There is almost no
+difference between using gzipped data and non-gzipped data.
 
 <details><summary><b>Show comparative benchmarks</b></summary>
 
