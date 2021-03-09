@@ -40,7 +40,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -p      Principal -- Only print 'Principal cast & crew members' section.
-    -d      Duplicates -- Only print cast & crew who are listed in more than one show
+    -d      Duplicates -- Only list cast & crew who are found in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
     -n      No menu - don't bring up the top-level menu upon exiting.
@@ -240,7 +240,8 @@ fi
 # If in interactive mode, give user a choice of all or duplicates only
 if [ -z "$noLoop" ] && [ -z "$MULTIPLE_NAMES_ONLY" ] &&
     [ -z "$PRINCIPAL_CAST_ONLY" ] && [ "$numMultiple" -ne 0 ]; then
-    printf "\n==> I found $numAll cast & crew members. $numMultiple $_vb listed in more than one show.\n"
+    printf "\n==> I found $numAll principal cast & crew members. "
+    printf "$numMultiple $_vb listed in more than one show.\n"
     waitUntil "$YN_PREF" -N "Should I only print $_pron $numMultiple?" &&
         MULTIPLE_NAMES_ONLY="yes"
 fi

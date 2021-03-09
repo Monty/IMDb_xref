@@ -20,7 +20,7 @@ but a show name can have several or even many matches. Allow user to select one
 match or skip if there are too many.
 
 List principal cast & crew members and any characters portrayed. If you search for
-multiple shows, also list cast & crew members who are listed in more than one.
+multiple shows, also list cast & crew members who are found in more than one.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -30,7 +30,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -d      Duplicates -- Only list cast & crew members listed in more than one show.
+    -d      Duplicates -- Only list cast & crew members found in more than one show.
     -m      Maximum matches for a show title allowed in menu - defaults to 25.
     -f      File -- Add to specific file rather than the default $favoritesFile.
     -s      Short - don't list details, just ask about adding to $favoritesFile.
@@ -166,12 +166,13 @@ TMPFILE=$(mktemp)
 # Make sure a search term is supplied
 if [ $# -eq 0 ]; then
     cat <<EOF
-==> I can find cast & crew members based on show names or tconst IDs, such as
-    tt1606375 -- which is the tconst for Downton Abbey taken from this URL:
+
+==> I can find principal cast & crew members based on show names or tconst IDs,
+    such as tt1606375 -- which is the tconst for Downton Abbey taken from this URL:
     https://www.imdb.com/title/tt1606375/
 
-Only one search term per line. Enter a blank line to finish.
-Enter two or more shows to see cast & crew members they have in common.
+Only one search term per line. Enter a blank line to finish. Enter two or
+more shows to see any principal cast & crew members they have in common.
 EOF
     while read -r -p "Enter a show name or tconst ID: " searchTerm; do
         [ -z "$searchTerm" ] && break
@@ -179,7 +180,7 @@ EOF
     done </dev/tty
     if [ ! -s "$ALL_TERMS" ]; then
         if waitUntil "$YN_PREF" -N \
-            "Would you like to see the cast & crew of Downton Abbey as an example?"; then
+            "Would you like to see the principal cast & crew of Downton Abbey as an example?"; then
             printf "tt1606375\n" >>"$ALL_TERMS"
         else
             loopOrExitP

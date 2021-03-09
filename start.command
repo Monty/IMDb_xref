@@ -29,8 +29,8 @@ function start_help() {
         https://www.imdb.com/title/tt1606375/
 
         List principal cast & crew members and any characters portrayed. If you
-        search for multiple shows, also list cast & crew members who are listed
-        in more than one.
+        search for multiple shows, also list principal cast & crew members who
+        are found in more than one show.
 
         An excerpt from searching for The Crown:
 
@@ -52,7 +52,7 @@ EOF
         which is the tconst for The Crown.
 
         List principal cast & crew members and any characters portrayed, but
-        only if they are listed in more than one show.
+        only if they are found in more than one show.
 
         The result from searching for The Crown and The Night Manager:
 
@@ -67,11 +67,11 @@ EOF
     waitUntil -k
     cat <<EOF
 
-3) Find all shows listing a person as a cast or crew member
+3) Find all shows listing a person as a principal cast or crew member
 
-        Find all shows listing a person as a cast or crew member based on their
-        name or nconst ID, such as nm0000233 -- which is the nconst for Quentin
-        Tarantino -- taken from this URL: https://www.imdb.com/name/nm0000233/
+        Find all shows listing a person as a principal cast or crew member based
+        on their name or nconst ID, such as nm0000233 -- which is the nconst for
+        Quentin Tarantino -- taken from this URL: https://www.imdb.com/name/nm0000233/
 
         An excerpt from searching for Quentin Tarantino:
 
@@ -85,7 +85,7 @@ EOF
     waitUntil -k
     cat <<EOF
 
-4) Save a filmography for a cast or crew member
+4) Save a filmography for a principal cast or crew member
 
         Generate a filmography based on a person's name or nconst ID.  such as
         nm0000123 -- which is the nconst for George Clooney.
@@ -141,9 +141,9 @@ pickOptions=("Find the principal cast & crew members of one or more shows")
 # 2
 pickOptions+=("Find any principal cast & crew members listed in more than one show")
 # 3
-pickOptions+=("Find all shows listing a person as a cast or crew member")
+pickOptions+=("Find all shows listing a person as a principal cast or crew member")
 # 4
-pickOptions+=("Save a filmography for a cast or crew member")
+pickOptions+=("Save a filmography for a principal cast or crew member")
 # 5
 pickOptions+=("Run a cross-reference of your saved shows")
 # 6

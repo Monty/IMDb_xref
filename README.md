@@ -71,9 +71,9 @@ that the actress you were looking for is Elizabeth Debicki.
 If you like those shows, save them to your favorites. It will enable some
 advanced features we'll cover later.
 
-Then select `Find all shows listing a person as a cast or crew member`. Enter
-**`Elizabeth Debicki`**. It will find 17 titles listing Elizabeth Debicki as:
-actress.
+Then select `Find all shows listing a person as a principal cast or crew
+member`. Enter **`Elizabeth Debicki`**. It will find 17 titles listing Elizabeth
+Debicki as: actress.
 
 ![Debicki as actress](docs/Screenshots/Debicki.png?raw=true)
 
@@ -121,8 +121,8 @@ search term.
 The "Principal cast & crew" section contains all rows with a match for **any**
 term. It can be quite long for complex queries.
 
-The "... listed more than once" section contains only rows with names found in
-more than one show. It can be empty.
+The "... listed in more than one" section contains only rows with names
+found in more than one show. It can be empty.
 
 Selecting #2 `Find any principal cast & crew members listed in more than one
 show` will hide the "Principal cast & crew" section. Running identical queries
@@ -253,9 +253,9 @@ only saves actors, actresses, writers, directors, and producers. To save all
 types run `generateXrefData.sh -a` at any time. You may want to also use the
 `-d` or `-f` options to prevent the larger results from being overwritten.
 
-Queries for all shows listing a person as a cast or crew member can include
-results you might not expect, e.g. videoGame or radioSeries. For each type, you
-will be asked if you want to display those results.
+Queries for all shows listing a person as a principal cast or crew member can
+include results you might not expect, e.g. videoGame or radioSeries. For each
+type, you will be asked if you want to display those results.
 
 ## Compatibility
 
