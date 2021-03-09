@@ -96,6 +96,11 @@ git clone https://github.com/Monty/IMDb_xref.git
 cd IMDb_xref
 ```
 
+If you get a pop-up saying: 'The "git" command requires the command line
+developer tools. Would you like to install the tools now?', click the
+"[Install](docs/Screenshots/Install_Dev-Tools.png?raw=true)" button, not the
+"Get Xcode" button.
+
 ## Automated quickstart
 
 In a terminal window, type `./start.command`. In macOS, you can simply
