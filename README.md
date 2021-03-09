@@ -192,8 +192,8 @@ alternate titles, and other details from IMDb. This takes 40 seconds on my 2014
 iMac. (*Note: Longer if you have a slow internet connection.*)
 
 Re-running `./generateXrefData.sh` doesn't download the IMDb data files again.
-This reduces the run time to 20 seconds. It will overwrite any previous files
-unless run in debug mode.
+This reduces the run time to 20 seconds. It will overwrite any previously
+generated files.
 
 ### Run sample queries
 
@@ -232,7 +232,8 @@ escape spaces and other special characters.
 
 If you run one of the commands in the top-level menu as a shell script, it will
 still open the top-level menu when it exits. I find this convenient, but if you
-would prefer that it exit, simply set a NO_MENUS environment variable.
+would prefer that it exit, simply set a NO_MENUS environment variable, i.e.
+`export NO_MENUS="yes"`.
 
 ## Limitations
 
