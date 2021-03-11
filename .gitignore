@@ -17,6 +17,7 @@
 
 # Hide temporary versions of files from git by numbering them
 # or put them in a "Hidden" directory
+*[0-9].awk
 *[0-9].sh
 /Hidden/
 
