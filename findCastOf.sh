@@ -354,6 +354,9 @@ numMatches=$(sed -n '$=' "$ALL_MATCHES")
 # Get rid of the URL we added
 cp "$ALL_MATCHES" "$TMPFILE"
 sed 's+imdb.com/title/++' "$TMPFILE" >"$ALL_MATCHES"
+# Build the lists we need, sort alphabetically
+cut -f 1,3 "$ALL_MATCHES" | sort -f -t$'\t' --key=2 >"$SHOW_NAMES"
+cut -f 1 "$SHOW_NAMES" | sort >"$SEARCH_LIST"
 
 # Save search in case we want to redo or add to favorites
 printHistory "$favoritesFile" >"$TMPFILE"
@@ -362,11 +365,21 @@ printHistory "$favoritesFile" >"$TMPFILE"
 
 # Figure out which tconst IDs are cached and which aren't
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
-cut -f 1 "$ALL_MATCHES" | sort >"$SEARCH_LIST"
-
-# Build the lists we need, sort SHOW_NAMES alphabetically
 comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
-cut -f 1,3 "$ALL_MATCHES" | sort -f -t$'\t' --key=2 >"$SHOW_NAMES"
+
+if [ -n "$FULLCAST" ]; then
+    # Cache the TCONST_LIST from the "Full Cast & Crew" page
+    while IFS='' read -r line; do
+        source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
+        printf "Reading https://www.imdb.com/title/$line\n"
+        curl -s "$source" -o "$TMPFILE"
+        awk -f getFullcredits.awk "$TMPFILE" >"$cacheDirectory/$line"
+    done <"$TCONST_LIST"
+    printf "\n"
+    # Recompute which tconst IDs are cached and which aren't
+    ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
+    comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
+fi
 
 # If everything is cached, skip searching entirely
 if [ -n "$(rg -c "^tt" "$TCONST_LIST")" ]; then
