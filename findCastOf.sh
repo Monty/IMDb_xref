@@ -437,6 +437,9 @@ if [ -n "$(rg -c "^tt" "$TCONST_LIST")" ]; then
     perl -pi -f "$EPISODE_NAMES_PL" "$CREDITS_CSV"
     perl -pi -f "$NAMES_PL" "$CREDITS_CSV"
 
+    # Switch from actor|actress to actor only to be compatible with web
+    perl -pi -e 's+\tactress\t+\tactor\t+;' "$CREDITS_CSV"
+
     # Create the sorted RESULTS
     printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
         >"$CAST_CSV"
