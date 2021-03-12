@@ -1,8 +1,10 @@
 # Get credits data from the "Full Cast & Crew" page
 #
+# Used to debug possibly missing data from the .tsv.gz files
+#
 # Grab title, grab people by category, add characters for actors
 # Process director, writer, actor, producer
-# Exit when composer is encountered to cut ~50% of file.
+# Exit when composer is encountered to cut reading ~50% of file.
 
 /<meta name="title" content=/ {
     split ($0,fld,"\"")

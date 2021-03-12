@@ -368,6 +368,8 @@ ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
 comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 
 if [ -n "$FULLCAST" ]; then
+    # Used to debug possibly missing data from the .tsv.gz files
+    #
     # Cache the TCONST_LIST from the "Full Cast & Crew" page
     while IFS='' read -r line; do
         source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
