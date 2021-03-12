@@ -375,7 +375,9 @@ if [ -n "$FULLCAST" ]; then
         source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
         printf "Reading https://www.imdb.com/title/$line\n"
         curl -s "$source" -o "$TMPFILE"
-        awk -f getFullcredits.awk "$TMPFILE" >"$cacheDirectory/$line"
+        awk -f getFullcredits.awk "$TMPFILE" |
+            sort -f -t$'\t' --key=5,5 --key=4,4 --key=1,1 \
+            >"$cacheDirectory/$line"
     done <"$TCONST_LIST"
     printf "\n"
     # Recompute which tconst IDs are cached and which aren't
