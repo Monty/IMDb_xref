@@ -372,12 +372,14 @@ if [ -n "$FULLCAST" ]; then
     #
     # Cache the TCONST_LIST from the "Full Cast & Crew" page
     while IFS='' read -r line; do
+        printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
+            >"$cacheDirectory/$line"
         source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
         printf "Reading https://www.imdb.com/title/$line\n"
         curl -s "$source" -o "$TMPFILE"
         awk -f getFullcredits.awk "$TMPFILE" |
             sort -f -t$'\t' --key=5,5 --key=4,4 --key=1,1 \
-            >"$cacheDirectory/$line"
+                >>"$cacheDirectory/$line"
     done <"$TCONST_LIST"
     printf "\n"
     # Recompute which tconst IDs are cached and which aren't
@@ -465,7 +467,14 @@ while read -r line; do
     fi
     cat "$cacheFile" >>"$TMPFILE"
     if [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$SHORT" ]; then
-        ./xrefCast.sh -f "$cacheFile" -pn "$showName"
+        if [ "$(rg -c "Person\tShow Title\tEpisode " "$cacheFile")" ]; then
+            awk -F "\t" '{printf("%s\t%s\t%s\t%s\n",$1,$5,$2,$6)}' "$cacheFile" |
+                rg "$showName" >"$CAST_CSV"
+            printf "==> All cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
+            tsvPrint "$CAST_CSV"
+        else
+            ./xrefCast.sh -f "$cacheFile" -pn "$showName"
+        fi
         waitUntil -k
     fi
 done <"$SHOW_NAMES"

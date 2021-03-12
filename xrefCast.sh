@@ -248,7 +248,7 @@ fi
 
 # Unless MULTIPLE_NAMES_ONLY, print all search results
 if [ -z "$MULTIPLE_NAMES_ONLY" ]; then
-    printf "\n==> Principal cast & crew members (Name|Job|Show|Role):\n"
+    printf "\n==> Principal cast & crew members in alphabetical order (Name|Job|Show|Role):\n"
     tsvPrint -n "$ALL_NAMES"
 fi
 
