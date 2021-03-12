@@ -15,21 +15,25 @@
 
 /name="director" id="director"/ {
     category = "director"
+    rank=0
     next
 }
 
 /name="writer" id="writer"/ {
     category = "writer"
+    rank=0
     next
 }
 
 /name="cast" id="cast"/ {
     category = "actor"
+    rank=0
     next
 }
 
 /name="producer" id="producer"/ {
     category = "producer"
+    rank=0
     next
 }
 
@@ -39,9 +43,11 @@
         next
     sub (/> /,"")
     name = $0
-    if (category != "actor") {
-        printf ("%s\t%s\t\t\t%s\t\n",name,showTitle,category)
+    if (category != "actor" && name != previousName) {
+        rank += 1
+        printf ("%s\t%s\t\t%02d\t%s\t\n",name,showTitle,rank,category)
     }
+    previousName = name
     next
 }
 
