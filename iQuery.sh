@@ -145,7 +145,7 @@ while true; do
     actionOptions+=("Quit")
 
     printf "What would you like to do?\n"
-    PS3="Select a number from 1-${#actionOptions[@]}: "
+    PS3="Select a number from 1-${#actionOptions[@]}, or type 'q(uit)': "
     COLUMNS=80
     select actionMenu in "${actionOptions[@]}"; do
         printf "\n"
@@ -213,8 +213,11 @@ while true; do
             [ -n "$NO_MENUS" ] && exit
             exec ./start.command
             ;;
-        *)
-            printf "Your selection must be a number from 1-${#actionOptions[@]}\n"
+        esac
+        case "$REPLY" in
+        [Qq]*)
+            [ -n "$NO_MENUS" ] && exit
+            exec ./start.command
             ;;
         esac
     done

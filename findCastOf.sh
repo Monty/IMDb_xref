@@ -258,7 +258,7 @@ EOF
     done < <(tsvPrint "$TMPFILE")
     pickOptions+=("Skip \"$match\"" "Quit")
 
-    PS3="Select a number from 1-${#pickOptions[@]}: "
+    PS3="Select a number from 1-${#pickOptions[@]}, or type 's(kip)' or 'q(uit)': "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
         if [ "$REPLY" -ge 1 ] 2>/dev/null &&
@@ -275,9 +275,15 @@ EOF
                 break
                 ;;
             esac
-            break
         else
-            printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
+            case "$REPLY" in
+            [Ss]*)
+                break
+                ;;
+            [Qq]*)
+                loopOrExitP
+                ;;
+            esac
         fi
     done </dev/tty
 done <"$MATCH_COUNTS"
@@ -314,7 +320,7 @@ while [ "$numMatches" -gt "$numTerms" ]; do
     done < <(tsvPrint "$ALL_MATCHES")
     pickOptions+=("Keep all" "Quit")
     #
-    PS3="Select a number from 1-${#pickOptions[@]}: "
+    PS3="Select a number from 1-${#pickOptions[@]}, or type 'k(eep)' or 'q(uit)': "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
         if [ "$REPLY" -ge 1 ] 2>/dev/null &&
@@ -337,7 +343,15 @@ while [ "$numMatches" -gt "$numTerms" ]; do
             esac
             break
         else
-            printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
+            case "$REPLY" in
+            [Kk]*)
+                numMatches="$numTerms"
+                break
+                ;;
+            [Qq]*)
+                loopOrExitP
+                ;;
+            esac
         fi
     done </dev/tty
 done
