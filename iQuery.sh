@@ -167,21 +167,24 @@ while true; do
             ;;
         *one*)
             # Remove one of the search term
-            PS3="Select a number from 1-$searchArraySize: "
+            PS3="Select a number from 1-$searchArraySize, or type 's(kip)': "
             select deleteMenu in "${searchArray[@]}"; do
-                printf "Removing: \"$deleteMenu\"\n"
-                # Arrays are zero based
-                ((REPLY--)) || true
-                tempArray=("${searchArray[@]}")
-                searchArray=()
-                searchString=""
-                for i in "${!tempArray[@]}"; do
-                    # printf "i = $i, REPLY = $REPLY\n"
-                    if [ "$i" -ne "$REPLY" ]; then
-                        searchArray+=("${tempArray[$i]}")
-                        searchString+="\"${RED}${tempArray[$i]}${NO_COLOR}\" "
-                    fi
-                done
+                if [ "$REPLY" -ge 1 ] 2>/dev/null &&
+                    [ "$REPLY" -le "${#searchArray[@]}" ]; then
+                    printf "Removing: \"$deleteMenu\"\n"
+                    # Arrays are zero based
+                    ((REPLY--)) || true
+                    tempArray=("${searchArray[@]}")
+                    searchArray=()
+                    searchString=""
+                    for i in "${!tempArray[@]}"; do
+                        # printf "i = $i, REPLY = $REPLY\n"
+                        if [ "$i" -ne "$REPLY" ]; then
+                            searchArray+=("${tempArray[$i]}")
+                            searchString+="\"${RED}${tempArray[$i]}${NO_COLOR}\" "
+                        fi
+                    done
+                fi
                 printf "\nSearch terms: $searchString\n"
                 break
             done
