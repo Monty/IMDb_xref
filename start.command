@@ -198,7 +198,6 @@ select pickMenu in "${pickOptions[@]}"; do
             break
             ;;
         esac
-        break
     else
         case "$REPLY" in
         [Hh]*)

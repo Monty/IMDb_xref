@@ -341,7 +341,6 @@ while [ "$numMatches" -gt "$numTerms" ]; do
                 break
                 ;;
             esac
-            break
         else
             case "$REPLY" in
             [Kk]*)
