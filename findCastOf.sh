@@ -367,9 +367,17 @@ printHistory "$favoritesFile" >"$TMPFILE"
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
 comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 
+# Use maxCast to limit size of result, but only if -ge 10
+maxCast=0
+
 if [ -n "$FULLCAST" ]; then
     # Used to debug possibly missing data from the .tsv.gz files
-    #
+
+    # Is FULLCAST an integer?
+    if [ "$FULLCAST" -eq "$FULLCAST" ] 2>/dev/null; then
+        maxCast="$FULLCAST"
+    fi
+
     # Cache the TCONST_LIST from the "Full Cast & Crew" page
     while IFS='' read -r line; do
         printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
@@ -468,10 +476,16 @@ while read -r line; do
     cat "$cacheFile" >>"$TMPFILE"
     if [ -z "$MULTIPLE_NAMES_ONLY" ] && [ -z "$SHORT" ]; then
         if [ "$(rg -c "Person\tShow Title\tEpisode " "$cacheFile")" ]; then
+            showName="$(tail -1 "$cacheFile" | cut -f 2)"
             awk -F "\t" '{printf("%s\t%s\t%s\t%s\n",$1,$5,$2,$6)}' "$cacheFile" |
                 rg "$showName" >"$CAST_CSV"
-            printf "==> All cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
-            tsvPrint "$CAST_CSV"
+            if [ "$maxCast" -ge 10 ]; then
+                printf "==> Top $maxCast cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
+                tsvPrint "$CAST_CSV" | head -"$maxCast"
+            else
+                printf "==> All cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
+                tsvPrint "$CAST_CSV"
+            fi
         else
             ./xrefCast.sh -f "$cacheFile" -pn "$showName"
         fi
