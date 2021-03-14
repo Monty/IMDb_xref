@@ -155,7 +155,7 @@ pickOptions+=("Help")
 # 9
 pickOptions+=("Quit")
 
-PS3="Select a number from 1-${#pickOptions[@]}, or type 'h(elp)' or 'q(uit)': "
+PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
 COLUMNS=40
 select pickMenu in "${pickOptions[@]}"; do
     if [ "$REPLY" -ge 1 ] 2>/dev/null &&
@@ -200,10 +200,6 @@ select pickMenu in "${pickOptions[@]}"; do
         esac
     else
         case "$REPLY" in
-        [Hh]*)
-            start_help
-            exec ./start.command
-            ;;
         [Qq]*)
             printf "Quitting...\n"
             exit

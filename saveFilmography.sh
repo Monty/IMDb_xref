@@ -219,7 +219,7 @@ EOF
     done < <(tsvPrint -c 2 "$TMPFILE")
     pickOptions+=("Skip \"$match\"" "Quit")
 
-    PS3="Select a number from 1-${#pickOptions[@]}, or type 's(kip)' or 'q(uit)': "
+    PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
         if [ "$REPLY" -ge 1 ] 2>/dev/null &&
@@ -238,9 +238,6 @@ EOF
             esac
         else
             case "$REPLY" in
-            [Ss]*)
-                break
-                ;;
             [Qq]*)
                 loopOrExitP
                 ;;
