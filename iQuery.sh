@@ -184,10 +184,16 @@ while true; do
                             searchString+="\"${RED}${tempArray[$i]}${NO_COLOR}\" "
                         fi
                     done
+                    break
+                else
+                    case "$REPLY" in
+                    [Ss]*)
+                        break
+                        ;;
+                    esac
                 fi
-                printf "\nSearch terms: $searchString\n"
-                break
             done
+            printf "\nSearch terms: $searchString\n"
             continue 2
             ;;
         Remove*)
@@ -253,7 +259,7 @@ while true; do
                 pickOptions+=("$line")
             done < <(rg -N "$searchFor" "$searchFile")
             printf "\n"
-            PS3="Select a number from 1-${#pickOptions[@]}: "
+            PS3="Select a number from 1-${#pickOptions[@]}, or type 's(kip)': "
             COLUMNS=40
             select pickMenu in "${pickOptions[@]}"; do
                 if [ 1 -le "$REPLY" ] 2>/dev/null &&
@@ -266,7 +272,11 @@ while true; do
                     searchArray+=("$pickMenu")
                     break
                 else
-                    printf "Your selection must be a number from 1-${#pickOptions[@]}\n"
+                    case "$REPLY" in
+                    [Ss]*)
+                        break
+                        ;;
+                    esac
                 fi
             done
             break
