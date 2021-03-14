@@ -140,7 +140,7 @@ fi
 numRecords="$(rg -N name.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
 [ -z "$numRecords" ] && numRecords="$(rg -cz "^n" name.basics.tsv.gz)"
 
-# Setup ALL_TERMS with one search term per line
+# Set up ALL_TERMS with one search term per line
 for param in "$@"; do
     printf "$param\n" >>"$ALL_TERMS"
 done

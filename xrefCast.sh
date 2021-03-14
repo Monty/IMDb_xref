@@ -188,7 +188,7 @@ cat "$SEARCH_TERMS"
 cp "$SEARCH_TERMS" "$TMPFILE"
 sed 's+[()?]+\\&+g' "$TMPFILE" >"$SEARCH_TERMS"
 
-# Setup awk printf formats with tabs
+# Set up awk printf formats with tabs
 # Name|Job|Show|Role
 PTAB='%s\t%s\t%s\t%s\n'
 

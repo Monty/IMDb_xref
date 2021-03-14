@@ -196,7 +196,7 @@ printf "==> Any favorites you save will be added to: ${BLUE}$favoritesFile\n${NO
 num_TB="$(rg -N title.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
 [ -z "$num_TB" ] && num_TB="$(rg -cz "^t" title.basics.tsv.gz)"
 
-# Setup ALL_TERMS with one search term per line
+# Set up ALL_TERMS with one search term per line
 for param in "$@"; do
     printf "$param\n" >>"$ALL_TERMS"
 done
