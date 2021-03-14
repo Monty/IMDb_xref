@@ -167,7 +167,7 @@ while true; do
             ;;
         *one*)
             # Remove one of the search term
-            PS3="Select a number from 1-$searchArraySize, or type 's(kip)': "
+            PS3="Select a number from 1-$searchArraySize, or 0 to skip: "
             select deleteMenu in "${searchArray[@]}"; do
                 if [ "$REPLY" -ge 1 ] 2>/dev/null &&
                     [ "$REPLY" -le "${#searchArray[@]}" ]; then
@@ -187,7 +187,7 @@ while true; do
                     break
                 else
                     case "$REPLY" in
-                    [Ss]*)
+                    0)
                         break
                         ;;
                     esac
@@ -259,7 +259,7 @@ while true; do
                 pickOptions+=("$line")
             done < <(rg -N "$searchFor" "$searchFile")
             printf "\n"
-            PS3="Select a number from 1-${#pickOptions[@]}, or type 's(kip)': "
+            PS3="Select a number from 1-${#pickOptions[@]}, or 0 to skip: "
             COLUMNS=40
             select pickMenu in "${pickOptions[@]}"; do
                 if [ 1 -le "$REPLY" ] 2>/dev/null &&
@@ -273,7 +273,7 @@ while true; do
                     break
                 else
                     case "$REPLY" in
-                    [Ss]*)
+                    0)
                         break
                         ;;
                     esac
