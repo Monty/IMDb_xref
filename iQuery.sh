@@ -84,11 +84,17 @@ shift $((OPTIND - 1))
 # Make sure prerequisites are satisfied
 ensurePrerequisites
 
-# Setup search files and corresponding categories
+# Set up default search files and corresponding categories
+# DO NOT CHANGE THE ORDER OF uniqFiles or categories
+# The actionMenu depends on them corresponding
 uniqFiles=('uniqTitles.txt' 'uniqPersons.txt' 'uniqCharacters.txt')
 categories=('show' 'person' 'character')
 
-[ ! -e "Credits-Person.csv" ] && ensureDataFiles
+# Set up default credits file
+creditsFile="Credits-Person.csv"
+
+# Make sure creditsFile exists
+[ ! -e "$creditsFile" ] && ensureDataFiles
 
 # Check for uniq* files
 foundSizes=()
@@ -151,17 +157,17 @@ while true; do
         printf "\n"
         case "$actionMenu" in
         *show*)
-            searchFile="uniqTitles.txt"
+            searchFile="${uniqFiles[0]}"
             action="Start typing to search for show titles: "
             break
             ;;
         *person*)
-            searchFile="uniqPersons.txt"
+            searchFile="${uniqFiles[1]}"
             action="Start typing to search for persons: "
             break
             ;;
         *character*)
-            searchFile="uniqCharacters.txt"
+            searchFile="${uniqFiles[2]}"
             action="Start typing to search for characters: "
             break
             ;;
@@ -211,11 +217,11 @@ while true; do
             continue 2
             ;;
         *full*)
-            ./xrefCast.sh -n "${searchArray[@]}"
+            ./xrefCast.sh -n -f "$creditsFile" "${searchArray[@]}"
             continue 2
             ;;
         *duplicates*)
-            ./xrefCast.sh '-dn' "${searchArray[@]}"
+            ./xrefCast.sh -dn -f "$creditsFile" "${searchArray[@]}"
             continue 2
             ;;
         Quit)
