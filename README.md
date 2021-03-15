@@ -143,11 +143,17 @@ data files. That will create lists and spreadsheets that combine data for
 cross-referencing. Those files are much smaller, enabling faster queries.
 
 Select #5 `Run a cross-reference of your saved shows` to enter search terms a
-line at a time, or select #6 `Run a guided cross-reference of your saved shows`
-to predict search terms with minimal typing.
+line at a time.
 
 You can mix and match shows, cast or crew members, and characters portrayed in a
-single search, e.g. The Crown, Olivia Colman, and Queen Elizabeth.
+single search, e.g. The Crown, Olivia Colman, and Queen Elizabeth. Search for
+two or more actors to see if they appear in any shows together. Search for two
+or more shows to see which actors, if any, appear in more than one. 
+
+Select #6 `Run a guided cross-reference of your saved shows` to predict and fill
+in search terms with minimal typing. This is particularly useful on a tablet
+running a terminal emulator. *I use the free version of Termius on an iPad, but
+others should work also.*
 
 You can use #7, `Show me a list of my saved shows` to make sure you have saved
 the necessary shows before cross-referencing.
