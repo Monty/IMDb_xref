@@ -50,6 +50,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
+    trimHistory -m 20 "$favoritesFile"
     if [ -n "$DEBUG" ]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
