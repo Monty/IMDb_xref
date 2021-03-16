@@ -36,7 +36,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -m      Maximum hits allowed in the selection menu. Continue typing until
-            there are fewer hits. (defaults to 10)
+            there are fewer hits. (defaults to 15)
 
 EXAMPLES:
     iQuery.sh
@@ -50,6 +50,15 @@ trap terminate EXIT
 function terminate() {
     if [ -n "$DEBUG" ]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
+        printf "Not removing:\n" >&2
+        cat <<EOT >&2
+TITLES $TITLES
+PERSONS $PERSONS
+CHARACTERS $CHARACTERS
+CREDITS $CREDITS
+EOT
+    else
+        rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
     fi
 }
 
@@ -84,19 +93,35 @@ shift $((OPTIND - 1))
 # Make sure prerequisites are satisfied
 ensurePrerequisites
 
-# Set up default search files and corresponding categories
-# DO NOT CHANGE THE ORDER OF uniqFiles or categories
-# The actionMenu depends on them corresponding
+# Need some tempfiles
+TITLES=$(mktemp)
+PERSONS=$(mktemp)
+CHARACTERS=$(mktemp)
+CREDITS=$(mktemp)
+
+# Setup default search files and corresponding categories
+creditsFile="Credits-Person.csv"
 uniqFiles=('uniqTitles.txt' 'uniqPersons.txt' 'uniqCharacters.txt')
 categories=('show' 'person' 'character')
-
-# Set up default credits file
-creditsFile="Credits-Person.csv"
 
 # Make sure creditsFile exists
 [ ! -e "$creditsFile" ] && ensureDataFiles
 
-# Check for uniq* files
+if [ -n "$FULLCAST" ]; then
+    # Use the data from the cache
+    if [ "$(ls -1 "$cacheDirectory" | rg "^tt")" ]; then
+        cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
+            sort -fu >"$CREDITS"
+        cut -f 2 "$CREDITS" | sort -fu >"$TITLES"
+        cut -f 1 "$CREDITS" | sort -fu >"$PERSONS"
+        cut -f 6 "$CREDITS" | sort -fu >"$CHARACTERS"
+        #
+        uniqFiles=("$TITLES" "$PERSONS" "$CHARACTERS")
+        creditsFile="$CREDITS"
+    fi
+fi
+
+# Check uniq* files exist
 foundSizes=()
 foundCategories=()
 missingCategories=()
@@ -117,6 +142,7 @@ done
 # If we don't have any data...
 if [ "${#missingCategories[@]}" -gt 0 ]; then
     ensureDataFiles
+    rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
     exec ./iQuery.sh
 fi
 
@@ -173,7 +199,7 @@ while true; do
             ;;
         *one*)
             # Remove one of the search term
-            PS3="Select a number from 1-$searchArraySize, or 0 to skip: "
+            PS3="Select a number from 1-$searchArraySize, or enter '0' to skip: "
             select deleteMenu in "${searchArray[@]}"; do
                 if [ "$REPLY" -ge 1 ] 2>/dev/null &&
                     [ "$REPLY" -le "${#searchArray[@]}" ]; then
@@ -226,12 +252,14 @@ while true; do
             ;;
         Quit)
             [ -n "$NO_MENUS" ] && exit
+            rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
             exec ./start.command
             ;;
         esac
         case "$REPLY" in
         [Qq]*)
             [ -n "$NO_MENUS" ] && exit
+            rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
             exec ./start.command
             ;;
         esac
@@ -258,14 +286,14 @@ while true; do
             searchString+="\"${RED}${result}${NO_COLOR}\" "
             searchArray+=("$result")
             break
-        elif [ "$hitCount" -le "${maxHits:-10}" ]; then
+        elif [ "$hitCount" -le "${maxHits:-15}" ]; then
             # printf "\n$hitCount matches found\n"
             pickOptions=()
             while IFS=$'\n' read -r line; do
                 pickOptions+=("$line")
             done < <(rg -N "$searchFor" "$searchFile")
             printf "\n"
-            PS3="Select a number from 1-${#pickOptions[@]}, or 0 to skip: "
+            PS3="Select a number from 1-${#pickOptions[@]}, or enter '0' to skip: "
             COLUMNS=40
             select pickMenu in "${pickOptions[@]}"; do
                 if [ 1 -le "$REPLY" ] 2>/dev/null &&
