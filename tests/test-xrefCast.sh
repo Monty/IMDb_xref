@@ -36,6 +36,10 @@ while true; do
         ./xrefCast.sh "Olivia Colman" "Elizabeth Debicki"
     fi
 
+    if waitUntil "$YN_PREF" -Y '\nRun ./xrefCast.sh -pi "Olivia Colman" "Elizabeth Debicki"'; then
+        ./xrefCast.sh -pi "Olivia Colman" "Elizabeth Debicki"
+    fi
+
     if waitUntil "$YN_PREF" -Y '\nRun ./xrefCast.sh "Olivia Colman" "Princess Diana"'; then
         ./xrefCast.sh "Olivia Colman" "Princess Diana"
     fi
@@ -48,12 +52,12 @@ while true; do
         ./xrefCast.sh "Olivia Colman" "The Night Manager"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./xrefCast.sh broadchurch "the night manager"'; then
-        ./xrefCast.sh broadchurch "the night manager"
+    if waitUntil "$YN_PREF" -Y '\nRun ./xrefCast.sh "the durrells in corfu" "the night manager"'; then
+        ./xrefCast.sh "the durrells in corfu" "the night manager"
     fi
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./xrefCast.sh "The Night Manager" "Broadchurch"'; then
+        '\nRun ./xrefCast.sh "The Night Manager" ""The Durrells in Corfu"'; then
         ./xrefCast.sh "The Night Manager" "The Durrells in Corfu"
     fi
 
