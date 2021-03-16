@@ -64,12 +64,13 @@ function terminate() {
         printf "Not removing:\n" >&2
         cat <<EOT >&2
 TMPFILE $TMPFILE
+CACHEFILE $CACHEFILE
 SEARCH_TERMS $SEARCH_TERMS
 ALL_NAMES $ALL_NAMES
 MULTIPLE_NAMES $MULTIPLE_NAMES
 EOT
     else
-        rm -rf "$TMPFILE" "$SEARCH_TERMS" "$ALL_NAMES" "$MULTIPLE_NAMES"
+        rm -rf "$TMPFILE" "$CACHEFILE" "$SEARCH_TERMS" "$ALL_NAMES" "$MULTIPLE_NAMES"
     fi
 }
 
@@ -129,6 +130,7 @@ TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
 ALL_NAMES=$(mktemp)
 MULTIPLE_NAMES=$(mktemp)
+CACHEFILE="Credits-cache.csv"
 
 # If a SEARCH_FILE was specified...
 if [ -n "$SEARCH_FILE" ]; then
@@ -141,6 +143,15 @@ else
     SEARCH_FILE="Credits-Person.csv"
     # If it doesn't exist, generate it
     [ ! -e "$SEARCH_FILE" ] && ensureDataFiles
+fi
+
+if [ -n "$FULLCAST" ]; then
+    # Use the data from the cache
+    if [ "$(ls -1 "$cacheDirectory" | rg "^tt")" ]; then
+        cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
+            sort -fu >"$CACHEFILE"
+        SEARCH_FILE="$CACHEFILE"
+    fi
 fi
 
 # Make sure a search term is supplied
