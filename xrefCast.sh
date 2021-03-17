@@ -209,8 +209,8 @@ true >"$TMPFILE"
 # If we find anything, rearrange it and put it in TMPFILE
 # Sort by Job (2), Person (1), Show Title (3)
 if [ -n "$(rg -wNzSI -c -f "$SEARCH_TERMS" "$SEARCH_FILE")" ]; then
-    rg -wNzSI --color always -f "$SEARCH_TERMS" "$SEARCH_FILE" |
-        awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' |
+    awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$SEARCH_FILE" |
+        rg -wNzSI --color always -f "$SEARCH_TERMS" |
         perl -p -e 's+\tactress\t+\tactor\t+;' |
         sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
 fi
