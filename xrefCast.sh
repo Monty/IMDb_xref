@@ -148,8 +148,16 @@ fi
 if [ -n "$FULLCAST" ]; then
     # Use the data from the cache
     if [ "$(ls -1 "$cacheDirectory" | rg "^tt")" ]; then
-        cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
-            sort -fu >"$CACHEFILE"
+        # If FULLCAST is an integer -ge 10, limit size
+        if [ "$FULLCAST" -eq "$FULLCAST" ] 2>/dev/null &&
+            [ "$FULLCAST" -ge 10 ]; then
+            cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
+                sort -fu | awk -F "\t" -v maxCast="$FULLCAST" \
+                '{if ($4 <= maxCast) print}' >"$CACHEFILE"
+        else
+            cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
+                sort -fu >"$CACHEFILE"
+        fi
         SEARCH_FILE="$CACHEFILE"
     fi
 fi
