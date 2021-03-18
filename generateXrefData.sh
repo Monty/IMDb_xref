@@ -453,7 +453,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
 
     # Use the episodes list to generate raw episodes
     rg -wNz -f "$EPISODES_LIST" title.basics.tsv.gz | cut -f 1-4,6-9 |
-        perl -p -f "$XLATE_PL" | perl -p -e 's+\\N++g;' |
+        perl -p -e 's+\\N++g;' |
         sort -f -t$'\t' --key=3,3 --key=5,5 --key=4,4 >"$RAW_EPISODES"
 
     # Use tconst list to lookup principal titles & generate tconst/nconst credits csv
