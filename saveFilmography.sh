@@ -268,8 +268,16 @@ fi
 cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
 rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz |
     cut -f 1,3,4 >"$POSSIBLE_MATCHES"
-perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' \
-    "$POSSIBLE_MATCHES"
+
+if [ -n "$FULLCAST" ]; then
+    # Used to debug possibly missing data from the .tsv.gz files
+    true >"$POSSIBLE_MATCHES"
+    while read -r nconstID; do
+        source="https://www.imdb.com/name/$nconstID/?nmdp=1&ref_=nm_ql_4#filmography"
+        curl -s "$source" -o "$TMPFILE"
+        awk -f getFilmography.awk "$TMPFILE" >>"$POSSIBLE_MATCHES"
+    done <"$NCONST_TERMS"
+fi
 
 while read -r line; do
     true >"$FINAL_RESULTS"
