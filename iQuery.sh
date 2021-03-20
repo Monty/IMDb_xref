@@ -174,14 +174,19 @@ while true; do
         actionOptions+=("Remove one search term" "Delete all search terms")
     [ "$searchArraySize" -gt 0 ] &&
         actionOptions+=("Run full search" "Run 'duplicates only' search")
-    actionOptions+=("Quit")
+    actionOptions+=("List all shows" "Quit")
 
     printf "What would you like to do?\n"
     PS3="Select a number from 1-${#actionOptions[@]}, or type 'q(uit)': "
     COLUMNS=80
     select actionMenu in "${actionOptions[@]}"; do
         printf "\n"
+        # Be cautious about ordering case statements e.g. List* and *show*
         case "$actionMenu" in
+        List*)
+            sort -df "${uniqFiles[0]}"
+            continue 2
+            ;;
         *show*)
             searchFile="${uniqFiles[0]}"
             action="Start typing to search for show titles: "
@@ -235,7 +240,7 @@ while true; do
             searchString=""
             continue 2
             ;;
-        *all*)
+        Delete*)
             # printf "Removing $searchString\n"
             printf "Deleting all search terms...\n"
             searchArray=()
