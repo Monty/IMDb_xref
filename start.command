@@ -14,7 +14,6 @@ printf '\e[9;2t'
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
-export LC_COLLATE="C"
 source functions/define_colors
 source functions/define_files
 source functions/load_functions
