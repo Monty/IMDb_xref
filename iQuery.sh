@@ -192,7 +192,7 @@ while true; do
         case "$actionMenu" in
         List*)
             if [ -n "$USE_LESS" ]; then
-                sort -df "${uniqFiles[0]}" | less -X
+                sort -df "${uniqFiles[0]}" | less -EX
             else
                 sort -df "${uniqFiles[0]}"
             fi
