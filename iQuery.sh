@@ -35,8 +35,12 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -m      Maximum hits allowed in the selection menu. Continue typing until
-            there are fewer hits. (defaults to 15)
+    -l      Use 'less' to list shows a page at a time rather than all at once.
+            Type space bar for next page, 'b' for previous page, 'h' for help,
+            '/' to search, 'q' to quit.
+    -m      Maximum items to be shown in the search menu. Continue typing until
+            there will be fewer items. Larger numbers will require less typing,
+            but have longer menus. (defaults to 15)
 
 EXAMPLES:
     iQuery.sh
@@ -70,11 +74,14 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":hm:" opt; do
+while getopts ":hlm:" opt; do
     case $opt in
     h)
         help
         exit
+        ;;
+    l)
+        USE_LESS="yes"
         ;;
     m)
         maxHits="$OPTARG"
@@ -184,7 +191,11 @@ while true; do
         # Be cautious about ordering case statements e.g. List* and *show*
         case "$actionMenu" in
         List*)
-            sort -df "${uniqFiles[0]}"
+            if [ -n "$USE_LESS" ]; then
+                sort -df "${uniqFiles[0]}" | less -X
+            else
+                sort -df "${uniqFiles[0]}"
+            fi
             continue 2
             ;;
         *show*)
