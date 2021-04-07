@@ -38,6 +38,8 @@
 }
 
 /^<a href="\/name\// {
+    split ($0,fld,"/")
+    nconstID = fld[3]
     getline
     if ($0 ~ /><img height/)
         next
@@ -45,7 +47,7 @@
     name = $0
     if (category != "actor" && name != previousName) {
         rank += 1
-        printf ("%s\t%s\t\t%02d\t%s\t\n",name,showTitle,rank,category)
+        printf ("%s\t%s\t\t%02d\t%s\t\t%s\n",name,showTitle,rank,category,nconstID)
     }
     previousName = name
     next
@@ -56,7 +58,7 @@
     #
     split ($0,fld,"[<>]")
     character =  fld[3]
-    printf ("%s\t%s\t\t%02d\t%s\t%s\n",name,showTitle,rank,category,character)
+    printf ("%s\t%s\t\t%02d\t%s\t%s\t%s\n",name,showTitle,rank,category,character,nconstID)
     next
 }
 
