@@ -344,19 +344,23 @@ done < <(cut -f 2 "$SHOW_NAMES")
 
 true >"$CAST_CSV"
 while IFS='' read -r line; do
-    printf "$line\n" >>"$CAST_CSV"
+    printf "$line\n" >"$TMPFILE"
     actor=$(cut -f 1 <<<"$line")
-    rg "$actor" "$OTHERS_CSV" | sort -f -t$'\t' --key=4,4n --key=3,3 >>"$CAST_CSV"
-    printf " ---\t\t\t\t\n" >>"$CAST_CSV"
+    if [ "$maxRank" -gt 0 ]; then
+        rg "$actor" "$OTHERS_CSV" | sort -f -t$'\t' --key=4,4n --key=3,3 |
+            awk -F "\t" -v rmax="$maxRank" '{if ($4 <= rmax) print}' >>"$TMPFILE"
+    else
+        rg "$actor" "$OTHERS_CSV" | sort -f -t$'\t' --key=4,4n --key=3,3 >>"$TMPFILE"
+    fi
+    numLines="$(sed -n '$=' "$TMPFILE")"
+    if [ "$numLines" -gt 1 ]; then
+        cat "$TMPFILE" >>"$CAST_CSV"
+        printf " ---\t\t\t\t\n" >>"$CAST_CSV"
+    fi
 done <"$CREDITS_CSV"
 
 # Save a full copy to use in spreadsheets
 printf "Person\tJob\tShow Title\tRank\tCharacter Name\n" >"CAST_LIST.csv"
 cat "$CAST_CSV" >>"CAST_LIST.csv"
 
-printf "==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role):\n"
-if [ "$maxRank" -gt 0 ]; then
-    cp "$CAST_CSV" "$TMPFILE"
-    awk -F "\t" -v rmax="$maxRank" '{if ($4 <= rmax) print}' "$TMPFILE" >"$CAST_CSV"
-fi
 tsvPrint -c 1 "$CAST_CSV"
