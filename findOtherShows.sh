@@ -24,12 +24,14 @@ OPTIONS:
     -h      Print this message.
     -m      Maximum matches for a show title allowed in menu, defaults to 25.
     -n      Number of principal cast members to process, 0 = all, defaults to 15.
+    -r      Maximum rank of cast members in other shows to list, 0 = all, defaults to 50
 
 EXAMPLES:
     ./findOtherShows.sh
     ./findOtherShows.sh "The Crown"
     ./findOtherShows.sh tt1606375
     ./findOtherShows.sh -n 10 Broadchurch
+    ./findOtherShows.sh -n 50 -r 100 "London Kills"
 EOF
 }
 
@@ -75,7 +77,7 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":hm:n:" opt; do
+while getopts ":hm:n:r:" opt; do
     case $opt in
     h)
         help
@@ -86,6 +88,9 @@ while getopts ":hm:n:" opt; do
         ;;
     n)
         maxCast="$OPTARG"
+        ;;
+    r)
+        maxRank="$OPTARG"
         ;;
     \?)
         printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
@@ -100,6 +105,7 @@ shift $((OPTIND - 1))
 
 maxMenuSize="${maxMenuSize:-25}"
 maxCast="${maxCast:-15}"
+maxRank="${maxRank:-50}"
 
 # Make sure prerequisites are satisfied
 ensurePrerequisites
@@ -344,9 +350,13 @@ while IFS='' read -r line; do
     printf " ---\t\t\t\t\n" >>"$CAST_CSV"
 done <"$CREDITS_CSV"
 
-printf "==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role):\n"
-tsvPrint -c 1 "$CAST_CSV"
-
-# Save a copy to use in spreadsheets
+# Save a full copy to use in spreadsheets
 printf "Person\tJob\tShow Title\tRank\tCharacter Name\n" >"CAST_LIST.csv"
 cat "$CAST_CSV" >>"CAST_LIST.csv"
+
+printf "==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role):\n"
+if [ "$maxRank" -gt 0 ]; then
+    cp "$CAST_CSV" "$TMPFILE"
+    awk -F "\t" -v rmax="$maxRank" '{if ($4 <= rmax) print}' "$TMPFILE" >"$CAST_CSV"
+fi
+tsvPrint -c 1 "$CAST_CSV"
