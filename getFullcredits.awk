@@ -6,6 +6,12 @@
 # Process director, writer, actor, producer
 # Exit when composer is encountered to cut reading ~50% of file.
 
+/<meta property="pageId"/ {
+    split ($0,fld,"\"")
+    tconstID = fld[4]
+    next
+}
+
 /<meta name="title" content=/ {
     split ($0,fld,"\"")
     showTitle = fld[4]
@@ -47,7 +53,8 @@
     name = $0
     if (category != "actor" && name != previousName) {
         rank += 1
-        printf ("%s\t%s\t\t%02d\t%s\t\t%s\n",name,showTitle,rank,category,nconstID)
+        printf ("%s\t%s\t\t%02d\t%s\t\t%s\t%s\n",
+                name,showTitle,rank,category,nconstID,tconstID)
     }
     previousName = name
     next
@@ -58,7 +65,8 @@
     #
     split ($0,fld,"[<>]")
     character =  fld[3]
-    printf ("%s\t%s\t\t%02d\t%s\t%s\t%s\n",name,showTitle,rank,category,character,nconstID)
+    printf ("%s\t%s\t\t%02d\t%s\t%s\t%s\t%s\n",
+            name,showTitle,rank,category,character,nconstID,tconstID)
     next
 }
 
