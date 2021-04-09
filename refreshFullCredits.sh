@@ -32,9 +32,6 @@ printDuration
 
 # https://www.imdb.com/title/tt5017060/fullcredits?ref_=tt_ql_1
 # https://www.imdb.com/title/tt4786824/fullcredits?ref_=tt_ql_1
-# https://www.imdb.com/title/tt2249364/fullcredits?ref_=tt_ql_1
-# https://www.imdb.com/title/tt2249364/fullcredits?ref_=tt_cl_sm#cast
-
 CACHE_LIST=$(mktemp)
 TCONST_LIST=$(mktemp)
 TMPFILE=$(mktemp)
@@ -45,7 +42,7 @@ cut -f 1 LinksToTitles.csv | rg "^tt" >>"$TMPFILE"
 sort -fu "$TMPFILE" >"$TCONST_LIST"
 
 while IFS='' read -r line; do
-    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconstID\n" \
+    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconstID\ttconstID\n" \
         >"$cacheDirectory/$line"
     source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
     curl -s "$source" -o "$TMPFILE"
