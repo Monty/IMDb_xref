@@ -460,21 +460,21 @@ if [ -z "$BYPASS_PROCESSING" ]; then
     rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
         sort --key=1,1 --key=2,2n | perl -p -e 's+nm0745728+nm0745694+' |
         perl -p -e 's+\\N++g;' |
-        perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\t%s\n", @F[2,0,1,3,5,2]' |
+        perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\t%s\t%s\n", @F[2,0,1,3,5,2,0]' |
         rg "$ALL_JOBS" | tee "$UNSORTED_CREDITS" | cut -f 1 |
         sort -u | tee "$TEMPFILE" >"$NCONST_LIST"
 
     # Use episodes list to lookup principal titles & add to tconst/nconst credits csv
     rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
         sort --key=1,1 --key=2,2n | perl -p -e 's+\\N++g;' |
-        perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\t%s\n", @F[2,0,0,1,3,5,2]' |
+        perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\t%s\t%s\n", @F[2,0,0,1,3,5,2,0]' |
         rg "$ALL_JOBS" |
         tee -a "$UNSORTED_CREDITS" | cut -f 1 | sort -u |
         rg -v -f "$TEMPFILE" >>"$NCONST_LIST"
 
     # Create a perl script to globally convert a show tconst to a show title
     cut -f 1,5 "$RAW_SHOWS" |
-        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >"$TCONST_SHOWS_PL"
+        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]};";' >"$TCONST_SHOWS_PL"
 
     # Create a perl script to convert an episode tconst to its parent show title
     perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[1]\\t@F[2]\\t@F[3]};";' "$UNSORTED_EPISODES" |
@@ -563,7 +563,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
             --key=6,6 >>"$SHOWS"
 
     # Create the sorted CREDITS spreadsheets
-    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\n" |
+    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" |
         tee "$CREDITS_SHOW" >"$CREDITS_PERSON"
     # Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
     sort -f -t$'\t' --key=1,2 --key=4,4 --key=3,3 "$UNSORTED_CREDITS" \
