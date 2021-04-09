@@ -308,7 +308,7 @@ cut -f 1 "$SHOW_NAMES" | sort >"$TCONST_LIST"
 
 # Cache the TCONST_LIST from the "Full Cast & Crew" page
 while IFS='' read -r line; do
-    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\n" \
+    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" \
         >"$cacheDirectory/$line"
     source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
     curl -s "$source" -o "$TMPFILE"
@@ -328,16 +328,21 @@ printf "\n"
 cp "$NCONST_LIST" "$TMPFILE"
 sort -fu "$TMPFILE" >"$NCONST_LIST"
 
-PTAB='%s\t%s\t%s\t%s\t%s\n'
+PTAB='%s\t%s\t%s\t%s\t%s\t%s\t%s\n'
 rg -NI -f "$NCONST_LIST" "$cacheDirectory"/tt* |
-    awk -F "\t" '{printf("%s\t%s\t%s\t%s\t%s\n",$1,$5,$2,$4,$6)}' | sort |
-    awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5]);
-    printf(PF,$1,$2,$3,$4,$5)} split($0,f)}' | rg 'actor' | sort -fu |
+    awk -F "\t" -v PF="$PTAB" '{printf(PF,$1,$5,$2,$4,$6,$7,$8)}' |
+    sort | awk -F "\t" -v PF="$PTAB" \
+    '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4],f[5],f[6],f[7]);
+    printf(PF,$1,$2,$3,$4,$5,$6,$7)} split($0,f)}' | rg 'actor' | sort -fu |
     sort -f -t$'\t' --key=4,4n >"$CAST_CSV"
 
 while IFS='' read -r line; do
-    rg "$line" "$CAST_CSV" >"$CREDITS_CSV"
-    rg -v "$line" "$CAST_CSV" >"$OTHERS_CSV"
+    PTAB='%s\t%s\t%s\t%s\t%s\timdb.com/name/%s\n'
+    rg "$line" "$CAST_CSV" | awk -F "\t" -v PF="$PTAB" \
+        '{printf(PF,$1,$2,$3,$4,$5,$6)}' >"$CREDITS_CSV"
+    PTAB='%s\t%s\t%s\t%s\t%s\timdb.com/title/%s\n'
+    rg -v "$line" "$CAST_CSV" | awk -F "\t" -v PF="$PTAB" \
+        '{printf(PF,$1,$2,$3,$4,$5,$7)}' >"$OTHERS_CSV"
 done < <(cut -f 2 "$SHOW_NAMES")
 
 true >"$CAST_CSV"
@@ -353,13 +358,13 @@ while IFS='' read -r line; do
     numLines="$(sed -n '$=' "$TMPFILE")"
     if [ "$numLines" -gt 1 ]; then
         cat "$TMPFILE" >>"$CAST_CSV"
-        printf " ---\t\t\t\t\n" >>"$CAST_CSV"
+        printf " ---\t\t\t\t\t\n" >>"$CAST_CSV"
     fi
 done <"$CREDITS_CSV"
 
 # Save a full copy to use in spreadsheets
-printf "Person\tJob\tShow Title\tRank\tCharacter Name\n" >"CAST_LIST.csv"
+printf "Person\tJob\tShow Title\tRank\tCharacter Name\tLink\n" >"CAST_LIST.csv"
 cat "$CAST_CSV" >>"CAST_LIST.csv"
 
-printf "==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role):\n"
+printf "==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role|Link):\n"
 tsvPrint -c 1 "$CAST_CSV"
