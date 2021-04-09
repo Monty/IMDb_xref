@@ -29,9 +29,9 @@ OPTIONS:
 EXAMPLES:
     ./findOtherShows.sh
     ./findOtherShows.sh "The Crown"
-    ./findOtherShows.sh tt1606375
+    ./findOtherShows.sh tt1399664
     ./findOtherShows.sh -n 10 Broadchurch
-    ./findOtherShows.sh -n 50 -r 100 "London Kills"
+    ./findOtherShows.sh -n 50 -r 100 Broadchurch
 EOF
 }
 
