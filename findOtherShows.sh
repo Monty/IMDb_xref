@@ -103,7 +103,6 @@ while getopts ":hm:n:r:" opt; do
 done
 shift $((OPTIND - 1))
 
-maxMenuSize="${maxMenuSize:-25}"
 maxCast="${maxCast:-15}"
 maxRank="${maxRank:-50}"
 
@@ -181,7 +180,7 @@ EOF
     fi
 
     printf "\nI found $count shows titled \"$match\"\n"
-    if [ "$count" -ge "maxMenuSize" ]; then
+    if [ "$count" -ge "${maxMenuSize:-25}" ]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
 
@@ -328,7 +327,6 @@ printf "\n"
 
 cp "$NCONST_LIST" "$TMPFILE"
 sort -fu "$TMPFILE" >"$NCONST_LIST"
-numIDs="$(sed -n '$=' "$NCONST_LIST")"
 
 PTAB='%s\t%s\t%s\t%s\t%s\n'
 rg -NI -f "$NCONST_LIST" "$cacheDirectory"/tt* |
@@ -363,4 +361,5 @@ done <"$CREDITS_CSV"
 printf "Person\tJob\tShow Title\tRank\tCharacter Name\n" >"CAST_LIST.csv"
 cat "$CAST_CSV" >>"CAST_LIST.csv"
 
+printf "==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role):\n"
 tsvPrint -c 1 "$CAST_CSV"
