@@ -165,6 +165,7 @@ cut -f 3 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
     rawmatch=$(cut -f 2 <<<"$line")
+    # shellcheck disable=SC2001      # too complex for ${variable//search/replace}
     match=$(sed 's+[()?]+\\&+g' <<<"$rawmatch")
     if [ "$count" -eq 1 ]; then
         rg "\t$match\t" "$POSSIBLE_MATCHES" |
