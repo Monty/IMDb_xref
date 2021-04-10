@@ -151,7 +151,7 @@ cat "$TCONST_TERMS" "$SHOWS_TERMS"
 
 # Reconstitute ALL_TERMS with column guards
 perl -p -e 's/^/^/; s/$/\\t/;' "$TCONST_TERMS" >"$ALL_TERMS"
-perl -p -e 's/^/\\t/; s/$/\\t/;' "$SHOWS_TERMS" >>"$ALL_TERMS"
+perl -p -e 's/^/\\t/; s/$/\\t/;' "$SHOWS_TERMS" | sed 's+[()?]+\\&+g' >>"$ALL_TERMS"
 numTerms="$(sed -n '$=' "$ALL_TERMS")"
 
 # Get all possible matches at once
@@ -164,7 +164,8 @@ cut -f 3 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 # Add possible matches one at a time, preceded by URL
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
-    match=$(cut -f 2 <<<"$line")
+    rawmatch=$(cut -f 2 <<<"$line")
+    match=$(sed 's+[()?]+\\&+g' <<<"$rawmatch")
     if [ "$count" -eq 1 ]; then
         rg "\t$match\t" "$POSSIBLE_MATCHES" |
             sed 's+^+imdb.com/title/+' >>"$ALL_MATCHES"
