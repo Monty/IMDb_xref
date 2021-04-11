@@ -79,7 +79,7 @@ EOF
     else
         # Use searchFile for highlighting
         searchFile=$(mktemp)
-        cut -f "${columnNum:-3}" "$tsvFile" >"$searchFile"
+        cut -f "${columnNum:-3}" "$tsvFile" | sed 's+[()?]+\\&+g' >"$searchFile"
         if checkForExecutable -q xsv && [ -z "$NO_XSV" ]; then
             xsv table -d "\t" "$tsvFile" | rg --color always -f "$searchFile"
         else
