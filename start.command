@@ -14,6 +14,9 @@ printf '\e[9;2t'
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
+FULLCAST="${FULLCAST:-20}"
+export FULLCAST
+
 source functions/define_colors
 source functions/define_files
 source functions/load_functions
@@ -21,7 +24,7 @@ source functions/load_functions
 function start_help() {
     cat <<EOF
 
-1) Find the principal cast and crew members of one or more shows
+1) Find shows, then list their top 20 cast & crew members
 
         Search IMDb titles for show names or tconst IDs such as tt1606375,
         which is the tconst for Downton Abbey -- taken from this URL:
@@ -33,19 +36,21 @@ function start_help() {
 
         An excerpt from searching for The Crown:
 
-        ==> Principal cast & crew members (Name|Job|Show|Role):
-        Ben Daniels        actor     The Crown  Lord Snowdon
-        Josh O'Connor      actor     The Crown  Prince Charles
-        Elizabeth Debicki  actress   The Crown  Princess Diana
-        Gillian Anderson   actress   The Crown  Margaret Thatcher
-        Olivia Colman      actress   The Crown  Queen Elizabeth II
-        Jessica Hobbs      director  The Crown
-        Jonathan Wilson    writer    The Crown
+==> Top 20 cast & crew members in IMDb billing order (Name|Job|Show|Role):
+Claire Foy                  actor     The Crown  Queen Elizabeth II
+Olivia Colman               actor     The Crown  Queen Elizabeth II
+Imelda Staunton             actor     The Crown  Queen Elizabeth II
+Matt Smith                  actor     The Crown  Philip, Duke of Edinburgh
+Tobias Menzies              actor     The Crown  Prince Philip, Duke of Edinburgh
+Jonathan Pryce              actor     The Crown  Prince Philip, Duke of Edinburgh
+Lesley Manville             actor     The Crown  Princess Margaret
+Elizabeth Debicki           actor     The Crown  Princess Diana
+Dominic West                actor     The Crown  Prince Charles
 EOF
     waitUntil -k
     cat <<EOF
 
-2) Find any principal cast & crew members listed in more than one show
+2) Find shows, then list only cast & crew members they share
 
         Search IMDb titles for show names or tconst IDs such as tt4786824,
         which is the tconst for The Crown.
@@ -55,18 +60,46 @@ EOF
 
         The result from searching for The Crown and The Night Manager:
 
-        ==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):
-        Tobias Menzies     actor    The Crown          Prince Philip, Duke of Edinburgh
-        Tobias Menzies     actor    The Night Manager  Geoffrey Dromgoole
-        Elizabeth Debicki  actress  The Crown          Princess Diana
-        Elizabeth Debicki  actress  The Night Manager  Jed Marshall
-        Olivia Colman      actress  The Crown          Queen Elizabeth II
-        Olivia Colman      actress  The Night Manager  Angela Burr
+==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):
+Elizabeth Debicki  actor  The Crown          Princess Diana
+Elizabeth Debicki  actor  The Night Manager  Jed Marshall
+Olivia Colman      actor  The Crown          Queen Elizabeth II
+Olivia Colman      actor  The Night Manager  Angela Burr
+Tobias Menzies     actor  The Crown          Prince Philip, Duke of Edinburgh
+Tobias Menzies     actor  The Night Manager  Geoffrey Dromgoole
 EOF
     waitUntil -k
     cat <<EOF
 
-3) Find all shows listing a person as a principal cast or crew member
+3) Find a show, then list its top 20 actors that are in your cached shows
+
+        Search IMDb titles for one show name or tconst ID such as tt4786824,
+        which is the tconst for The Crown.
+
+        List any of the top 20 actors who also appear any any show you've
+        previously searched for, i.e. not just your saved shows.
+
+==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role|Link):
+Olivia Colman      actor  The Crown          02  Queen Elizabeth II                imdb.com/name/nm1469236
+Olivia Colman      actor  Broadchurch        02  Ellie Miller                      imdb.com/title/tt2249364
+Olivia Colman      actor  The Night Manager  04  Angela Burr                       imdb.com/title/tt1399664
+ ---
+Tobias Menzies     actor  The Crown          05  Prince Philip, Duke of Edinburgh  imdb.com/name/nm0580014
+Tobias Menzies     actor  The Night Manager  14  Geoffrey Dromgoole                imdb.com/title/tt1399664
+ ---
+Elizabeth Debicki  actor  The Crown          08  Princess Diana                    imdb.com/name/nm4456120
+Elizabeth Debicki  actor  The Night Manager  03  Jed Marshall                      imdb.com/title/tt1399664
+ ---
+Charles Edwards    actor  The Crown          10  Martin Charteris                  imdb.com/name/nm0249876
+Charles Edwards    actor  Downton Abbey      46  Michael Gregson                   imdb.com/title/tt1606375
+ ---
+Josh O'Connor      actor  The Crown          19  Prince Charles                    imdb.com/name/nm4853066
+Josh O'Connor      actor  The Durrells       02  Lawrence Durrell                  imdb.com/title/tt5014882
+EOF
+    waitUntil -k
+    cat <<EOF
+
+4) Find people, then list all shows having them as a principal cast or crew member
 
         Find all shows listing a person as a principal cast or crew member based
         on their name or nconst ID, such as nm0000233 -- which is the nconst for
@@ -74,45 +107,51 @@ EOF
 
         An excerpt from searching for Quentin Tarantino:
 
-        ==> I found 9 titles listing Quentin Tarantino as: writer
-        movie  Natural Born Killers  1994
+==> I found 38 titles listing Quentin Tarantino as: actor
+==> Shall I list them? [Y/n]
+movie      Once Upon a Time... In Hollywood            2019
+movie      The Hateful Eight                           2015
+movie      She's Funny That Way                        2014
+movie      Django Unchained                            2012
 
-        ==> I found 15 titles listing Quentin Tarantino as: director
-        movie  The Hateful Eight     2015
-        movie  Django Unchained      2012
+==> I found 21 titles listing Quentin Tarantino as: director
+==> Shall I list them? [Y/n]
+movie     Once Upon a Time... In Hollywood    2019
+movie     The Hateful Eight                   2015
+movie     Django Unchained                    2012
 EOF
     waitUntil -k
     cat <<EOF
 
-4) Save a filmography for a principal cast or crew member
+5) Find people, then save a filmography for them
 
-        Generate a filmography based on a person's name or nconst ID.  such as
+        Generate a filmography based on a person's name or nconst ID, such as
         nm0000123 -- which is the nconst for George Clooney.
 
-        Basically the same as 3), but more useful for detailed research as it
+        Basically the same as 4), but more useful for detailed research as it
         will offer to save any sections and create related lists and
         spreadsheets.
 EOF
     waitUntil -k
     cat <<EOF
 
-5) Run a cross-reference of your saved shows
+6) Run a cross-reference of your cached shows
 
-        Run detailed queries of any shows you saved as favorites in 1) or 2).
+        Run detailed queries of any shows you searched as favorites in 1) or 2).
 
-        Search saved shows for any mix of shows, cast or crew members, and
+        Search cached shows for any mix of shows, cast or crew members, and
         characters portrayed, e.g. The Crown, Olivia Colman, or Queen Elizabeth.
 
-        1) and 2) search all records for shows. 3) searches all records for cast
-        or crew names. This script only searches saved shows, but adds searching
-        for characters and mixing all three types.
+        1), 2), and 3) search all records for shows. 4) and 5) search all
+        records for cast or crew names. This script only searches cached shows,
+        but adds searching for characters and mixing all three types.
 EOF
     waitUntil -k
     cat <<EOF
 
-6) Run a guided cross-reference of your saved shows
+7) Run a guided cross-reference of your cached shows
 
-        Runs the same types of queries as 5), but is menu and prompt driven.
+        Runs the same types of queries as 6), but is menu and prompt driven.
 
         Instead of entering a full show name like The Night Manager, you only
         need to enter enough characters to ensure a unique match.
@@ -136,22 +175,24 @@ ensurePrerequisites
 printf "==> What would you like to do next?\n"
 
 # 1
-pickOptions=("Find the principal cast & crew members of one or more shows")
+pickOptions=("Find shows, then list their top 20 cast & crew members")
 # 2
-pickOptions+=("Find any principal cast & crew members listed in more than one show")
+pickOptions+=("Find shows, then list only cast & crew members they share")
 # 3
-pickOptions+=("Find all shows listing a person as a principal cast or crew member")
+pickOptions+=("Find a show, then list its top 20 actors that are in your cached shows")
 # 4
-pickOptions+=("Save a filmography for a principal cast or crew member")
+pickOptions+=("Find people, then list all shows having them as a principal cast or crew member")
 # 5
-pickOptions+=("Run a cross-reference of your saved shows")
+pickOptions+=("Find people, then save a filmography for them")
 # 6
-pickOptions+=("Run a guided cross-reference of your saved shows")
+pickOptions+=("Run a cross-reference of your cached shows")
 # 7
-pickOptions+=("Show me a list of my saved shows")
+pickOptions+=("Run a guided cross-reference of your cached shows")
 # 8
-pickOptions+=("Help")
+pickOptions+=("Show me a list of my saved shows")
 # 9
+pickOptions+=("Help")
+# 10
 pickOptions+=("Quit")
 
 PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
@@ -167,28 +208,31 @@ select pickMenu in "${pickOptions[@]}"; do
             exec ./findCastOf.sh -d
             ;;
         3)
-            exec ./findShowsWith.sh
+            exec ./findOtherShows.sh -n 20
             ;;
         4)
-            exec ./saveFilmography.sh
+            exec ./findShowsWith.sh
             ;;
         5)
-            exec ./xrefCast.sh
+            exec ./saveFilmography.sh
             ;;
         6)
-            exec ./iQuery.sh
+            exec ./xrefCast.sh
             ;;
         7)
+            exec ./iQuery.sh
+            ;;
+        8)
             printf "\n"
             cat uniqTitles.txt
             printf "\n"
             exec ./start.command
             ;;
-        8)
+        9)
             start_help
             exec ./start.command
             ;;
-        9)
+        10)
             printf "Quitting...\n"
             exit
             ;;
