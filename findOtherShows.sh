@@ -388,7 +388,7 @@ fi
 showName="$(head -2 "$TMPFILE" | tail -1 | cut -f 3)"
 CAST_SPREADSHEET="ShowsWithActorsFrom-${showName//[[:space:]]/_}.csv"
 printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_COLOR}\n"
-cp "$TMPFILE" "$CAST_SPREADSHEET"
+rg -v ' ---' "$TMPFILE" >"$CAST_SPREADSHEET"
 
 if [ "$maxCast" -gt 0 ]; then
     printf "==> Top $maxCast cast members that appear in other cached shows (Name|Job|Show|Rank|Role|Link):\n"
