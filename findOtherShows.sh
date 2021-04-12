@@ -77,6 +77,13 @@ function cleanup() {
     exit 130
 }
 
+function loopOrExitP() {
+    printf "\n"
+    terminate
+    [ -n "$NO_MENUS" ] && exit
+    exec ./start.command
+}
+
 while getopts ":hm:n:r:" opt; do
     case $opt in
     h)
@@ -132,7 +139,7 @@ if [ $# -eq 0 ]; then
     read -r -p "Enter a show name or tconst ID: " searchTerm </dev/tty
     tr -ds '"' '[:space:]' <<<"$searchTerm" >"$ALL_TERMS"
     if [ ! -s "$ALL_TERMS" ]; then
-        exit
+        loopOrExitP
     fi
     printf "\n"
 else
@@ -213,7 +220,7 @@ EOF
                 break
                 ;;
             Quit)
-                exit
+                loopOrExitP
                 ;;
             *)
                 printf "${tabbedOptions[REPLY - 1]}\n" >>"$ALL_MATCHES"
@@ -223,7 +230,7 @@ EOF
         else
             case "$REPLY" in
             [Qq]*)
-                exit
+                loopOrExitP
                 ;;
             esac
         fi
@@ -234,7 +241,7 @@ done <"$MATCH_COUNTS"
 if [ ! -s "$ALL_MATCHES" ]; then
     printf "\n==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
     printf "    Check the \"Searching $num_TB records for:\" section above.\n"
-    exit
+    loopOrExitP
 fi
 
 # Remove any duplicates
@@ -273,7 +280,7 @@ while [ "$numMatches" -gt "$numTerms" ]; do
                 break
                 ;;
             Quit)
-                exit
+                loopOrExitP
                 ;;
             *)
                 removeItem="${tabbedOptions[REPLY - 1]}"
@@ -286,7 +293,7 @@ while [ "$numMatches" -gt "$numTerms" ]; do
         else
             case "$REPLY" in
             [Qq]*)
-                exit
+                loopOrExitP
                 ;;
             esac
         fi
@@ -296,7 +303,7 @@ done
 # Found results, check with user before adding to local data
 printf "\nThese are the results I can process:\n"
 tsvPrint "$ALL_MATCHES"
-! waitUntil "$YN_PREF" -Y && exit
+! waitUntil "$YN_PREF" -Y && loopOrExitP
 
 # Remember how many matches there were
 numMatches=$(sed -n '$=' "$ALL_MATCHES")
@@ -368,5 +375,26 @@ done <"$CREDITS_CSV"
 printf "Person\tJob\tShow Title\tRank\tCharacter Name\tLink\n" >"CAST_LIST.csv"
 cat "$CAST_CSV" >>"CAST_LIST.csv"
 
-printf "==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role|Link):\n"
+numLines="$(sed -n '$=' "CAST_LIST.csv")"
+if [ "$numLines" -eq 1 ]; then
+    rm -f "CAST_LIST.csv"
+    if [ "$maxCast" -gt 0 ]; then
+        printf "==> None of the top $maxCast cast members appear in other cached shows.\n"
+    else
+        printf "==> None of the top cast members appear in other cached shows.\n"
+    fi
+    loopOrExitP
+fi
+
+printf "==> The full list of cast members that appear in other cached shows will be saved "
+printf "in ${BLUE}CAST_LIST.csv${NO_COLOR}\n\n"
+
+if [ "$maxCast" -gt 0 ]; then
+    printf "==> Top $maxCast cast members that appear in other cached shows (Name|Job|Show|Rank|Role|Link):\n"
+else
+    printf "==> Top cast members that appear in other cached shows (Name|Job|Show|Rank|Role|Link):\n"
+fi
+
 tsvPrint -c 1 "$CAST_CSV"
+
+loopOrExitP
