@@ -371,13 +371,11 @@ while IFS='' read -r line; do
     fi
 done <"$CREDITS_CSV"
 
-# Save a full copy to use in spreadsheets
-printf "Person\tJob\tShow Title\tRank\tCharacter Name\tLink\n" >"CAST_LIST.csv"
-cat "$CAST_CSV" >>"CAST_LIST.csv"
+printf "Person\tJob\tShow Title\tRank\tCharacter Name\tLink\n" >"$TMPFILE"
+cat "$CAST_CSV" >>"$TMPFILE"
 
-numLines="$(sed -n '$=' "CAST_LIST.csv")"
+numLines="$(sed -n '$=' "$TMPFILE")"
 if [ "$numLines" -eq 1 ]; then
-    rm -f "CAST_LIST.csv"
     if [ "$maxCast" -gt 0 ]; then
         printf "==> None of the top $maxCast cast members appear in other cached shows.\n"
     else
@@ -386,8 +384,11 @@ if [ "$numLines" -eq 1 ]; then
     loopOrExitP
 fi
 
-printf "==> The full list of cast members that appear in other cached shows will be saved "
-printf "in ${BLUE}CAST_LIST.csv${NO_COLOR}\n\n"
+# Create a copy to use in spreadsheets
+showName="$(head -2 "$TMPFILE" | tail -1 | cut -f 3)"
+CAST_SPREADSHEET="ShowsWithActorsFrom-${showName//[[:space:]]/_}.csv"
+printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_COLOR}\n"
+cp "$TMPFILE" "$CAST_SPREADSHEET"
 
 if [ "$maxCast" -gt 0 ]; then
     printf "==> Top $maxCast cast members that appear in other cached shows (Name|Job|Show|Rank|Role|Link):\n"
