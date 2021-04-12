@@ -17,6 +17,12 @@ cd "$DIRNAME" || exit
 FULLCAST="${FULLCAST:-20}"
 export FULLCAST
 
+# Is FULLCAST an integer?
+if [ "$FULLCAST" -eq "$FULLCAST" ] 2>/dev/null; then
+    maxCast="$FULLCAST "
+    [ "$FULLCAST" -eq 0 ] && maxCast=""
+fi
+
 source functions/define_colors
 source functions/define_files
 source functions/load_functions
@@ -24,7 +30,7 @@ source functions/load_functions
 function start_help() {
     cat <<EOF
 
-1) Find shows, then list their top 20 cast & crew members
+1) Find shows, then list their top ${maxCast}cast & crew members
 
         Search IMDb titles for show names or tconst IDs such as tt1606375,
         which is the tconst for Downton Abbey -- taken from this URL:
@@ -36,7 +42,7 @@ function start_help() {
 
         An excerpt from searching for The Crown:
 
-==> Top 20 cast & crew members in IMDb billing order (Name|Job|Show|Role):
+==> Top ${maxCast}cast & crew members in IMDb billing order (Name|Job|Show|Role):
 Claire Foy                  actor     The Crown  Queen Elizabeth II
 Olivia Colman               actor     The Crown  Queen Elizabeth II
 Imelda Staunton             actor     The Crown  Queen Elizabeth II
@@ -71,12 +77,12 @@ EOF
     waitUntil -k
     cat <<EOF
 
-3) Find a show, then list its top 20 actors that are in your cached shows
+3) Find a show, then list its top ${maxCast}actors that are in your cached shows
 
         Search IMDb titles for one show name or tconst ID such as tt4786824,
         which is the tconst for The Crown.
 
-        List any of the top 20 actors who also appear any any show you've
+        List any of the top ${maxCast}actors who also appear any any show you've
         previously searched for, i.e. not just your saved shows.
 
 ==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role|Link):
@@ -175,11 +181,11 @@ ensurePrerequisites
 printf "==> What would you like to do next?\n"
 
 # 1
-pickOptions=("Find shows, then list their top 20 cast & crew members")
+pickOptions=("Find shows, then list their top ${maxCast}cast & crew members")
 # 2
 pickOptions+=("Find shows, then list only cast & crew members they share")
 # 3
-pickOptions+=("Find a show, then list its top 20 actors that are in your cached shows")
+pickOptions+=("Find a show, then list its top ${maxCast}actors that are in your cached shows")
 # 4
 pickOptions+=("Find people, then list all shows having them as a principal cast or crew member")
 # 5
@@ -208,7 +214,7 @@ select pickMenu in "${pickOptions[@]}"; do
             exec ./findCastOf.sh -d
             ;;
         3)
-            exec ./findOtherShows.sh -n 20
+            exec ./findOtherShows.sh -n $FULLCAST
             ;;
         4)
             exec ./findShowsWith.sh
