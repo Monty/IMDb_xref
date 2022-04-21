@@ -59,7 +59,7 @@ cause a popup asking if you would like to install the tools. You don't need to
 EOF
         waitUntil -k
         # This should trigger the popup
-        cc --version >/dev/null 2>/dev/null
+        xcode-select --install >/dev/null 2>/dev/null
         #
         if ! waitUntil "$YN_PREF" "Have you completed installing the developer tools?"; then
             printf "\n==> [${RED}Error${NO_COLOR}] Missing the macOS developer tools.\n" >&2
