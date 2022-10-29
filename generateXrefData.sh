@@ -666,7 +666,7 @@ function checkdiffs() {
     else
         printf "==> what changed between %s and %s:\n" "$1" "$2"
         # first the stats
-        diff -c "$1" "$2" | diffstat -sq \
+        diff -u "$1" "$2" | diffstat -sq \
             -D "$(cd "$(dirname "$2")" && pwd -P)" |
             sed -e 's+ 1 file changed,+==>+' -e 's+([+-=\!])++g'
         # then the diffs
