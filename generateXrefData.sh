@@ -657,31 +657,27 @@ fi
 # checkdiffs basefile newfile
 function checkdiffs() {
     printf "\n"
+    if [ ! -e "$2" ]; then
+        printf "==> $2 does not exist. Skipping diff.\n"
+        return 1
+    fi
     if [ ! -e "$1" ]; then
         # If the basefile file doesn't yet exist, assume no differences
         # and copy the newfile to the basefile so it can serve
         # as a base for diffs in the future.
-        printf "==> %s does not exist. Creating it, assuming no diffs.\n" "$1"
+        printf "==> $1 does not exist. Creating it, assuming no diffs.\n"
         cp -p "$2" "$1"
     else
-        printf "==> what changed between %s and %s:\n" "$1" "$2"
         # first the stats
+        printf "./whatChanged.sh \"$1\" \"$2\"\n"
         diff -u "$1" "$2" | diffstat -sq \
-            -D "$(cd "$(dirname "$2")" && pwd -P)" |
-            sed -e 's+ 1 file changed,+==>+' -e 's+([+-=\!])++g'
+            -D $(cd $(dirname "$2") && pwd -P) |
+            sed -e "s/ 1 file changed,/==>/" -e "s/([+-=\!])//g"
         # then the diffs
-        diff \
-            --unchanged-group-format='' \
-            --old-group-format='==> deleted %dn line%(n=1?:s) at line %df <==
-%<' \
-            --new-group-format='==> added %dN line%(N=1?:s) after line %de <==
-%>' \
-            --changed-group-format='==> changed %dn line%(n=1?:s) at line %df <==
-%<------ to:
-%>' "$1" "$2"
-        # shellcheck disable=SC2181      # Breaks unless $? is used
-        if [ $? == 0 ]; then
+        if cmp --quiet "$1" "$2"; then
             printf "==> no diffs found.\n"
+        else
+            diff -U 0 "$1" "$2" | awk -f formatUnifiedDiffOutput.awk
         fi
     fi
 }
@@ -711,7 +707,7 @@ $(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
 
 EOF
 
-touch $HIST_TCONST # In case we've not run printHistory
+touch "$HIST_TCONST" # In case we've not run printHistory
 wc "${ALL_WORK[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}" \
     >>"$POSSIBLE_DIFFS"
 
