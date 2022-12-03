@@ -272,7 +272,7 @@ if [ -n "$FULLCAST" ]; then
     # Used to debug possibly missing data from the .tsv.gz files
     true >"$POSSIBLE_MATCHES"
     while read -r nconstID; do
-        source="https://www.imdb.com/name/$nconstID/?nmdp=1&ref_=nm_ql_4#filmography"
+        source="https://www.imdb.com/name/$nconstID/fullcredits?ref_=nm_flmg_sort_text_view"
         curl -s "$source" -o "$TMPFILE"
         awk -f getFilmography.awk "$TMPFILE" >>"$POSSIBLE_MATCHES"
     done <"$NCONST_TERMS"
