@@ -388,7 +388,7 @@ if [ -n "$FULLCAST" ]; then
 
     # Cache the TCONST_LIST from the "Full Cast & Crew" page
     while IFS='' read -r line; do
-        printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
+        printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" \
             >"$cacheDirectory/$line"
         source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
         printf "Reading https://www.imdb.com/title/$line\n"
