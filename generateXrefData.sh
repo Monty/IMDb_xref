@@ -404,7 +404,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
         perl -p -f "$XLATE_PL" | perl -p -e 's+\t+\t\t\t+;' >"$RAW_SHOWS"
 
     ### Check for and repair duplicate titles
-    cut -f 6 "$RAW_SHOWS" | sort -f | uniq -d >"$TEMP_DUPES"
+    cut -f 5 "$RAW_SHOWS" | sort -f | uniq -d >"$TEMP_DUPES"
     if [ -s "$TEMP_DUPES" ]; then
         # Create an awk script to add dates to titles on shows with title conflicts
         printf 'BEGIN {OFS = "\\t"}\n' >"$TEMP_AWK"
