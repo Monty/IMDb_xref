@@ -347,8 +347,8 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
     [ "$numRequired" -ne "$numAvailable" ] && RELOAD="yes"
 
     # 2) Is any gzip file newer than any generateXrefData file?
-    lastWritten="$(ls -1t "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
-        2>/dev/null | head -1)"
+    lastWritten="$(find "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
+        2>/dev/null | tail -1)"
     # [[ "$lastWritten" =~ .*tsv\.gz ]] && printf "Last written is a tsv.gz.\n"
     [[ $lastWritten =~ .*tsv\.gz ]] && RELOAD="yes"
 
