@@ -25,7 +25,7 @@ for file in "$@"; do
     shortfile="$file-cache.csv"
     printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconstID\ttconstID\n" \
         >"$shortfile"
-    printf "Writing $shortfile\t"
+    printf "Writing %s\t" "$shortfile"
     curl -s "$source" -o "$outfile"
     #
     # awk -f getFullcredits.awk "$outfile" | sort -fu >"$shortfile"
