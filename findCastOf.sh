@@ -519,7 +519,7 @@ fi
 
 touch "$favoritesFile"
 # Check whether shows searched are already in favoritesFile
-# shellcheck disable=SC2154      # favoritesFile is defined
+# shellcheck disable=SC2154     # favoritesFile is defined
 rg -IN "^tt" "$favoritesFile" | cut -f 1 | sort -u >"$CACHE_LIST"
 printHistory "$favoritesFile" | rg -IN "^tt" | cut -f 1 |
     sort -u >"$TMPFILE"
