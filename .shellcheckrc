@@ -1,0 +1,2 @@
+# SC2154 (warning): YN_PREF is referenced but not assigned.
+disable=SC2154
