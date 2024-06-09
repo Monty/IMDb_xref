@@ -673,7 +673,7 @@ function checkdiffs() {
         # first the stats
         printf "./whatChanged.sh \"$1\" \"$2\"\n"
         diff -u "$1" "$2" | diffstat -sq \
-            -D $(cd $(dirname "$2") && pwd -P) |
+            -D "$(cd "$(dirname "$2")" && pwd -P)" |
             sed -e "s/ 1 file changed,/==>/" -e "s/([+-=\!])//g"
         # then the diffs
         if cmp --quiet "$1" "$2"; then
