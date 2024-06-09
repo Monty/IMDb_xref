@@ -47,7 +47,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n "$DEBUG" ]]; then
         printf "\nTerminating: %s\n" "$(basename "$0")" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
@@ -104,7 +104,7 @@ SEARCH_LIST=$(mktemp)
 TCONST_LIST=$(mktemp)
 
 # Make sure a file was supplied
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
     printf "==> [${RED}Error${NO_COLOR}] Please supply a tconst filename on the command line.\n\n" >&2
     exit 1
 fi
@@ -113,7 +113,7 @@ function copyResults() {
     # Preserve comments at top
     cat "$COMMENTS"
     # Then add the sorted tconst lines
-    if [ -n "$ALLOW_EPISODES" ]; then
+    if [[ -n "$ALLOW_EPISODES" ]]; then
         sort -f -t$'\t' --key=3,3 "$RESULT"
     else
         sort -f -t$'\t' --key=3,3 "$RESULT" | rg -wNv "tvEpisode"
@@ -125,7 +125,7 @@ touch "$cacheFile"
 rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
 
 for file in "$@"; do
-    [ -z "$INPLACE" ] && printf "==> %s\n" "$file"
+    [[ -z "$INPLACE" ]] && printf "==> %s\n" "$file"
 
     # Make sure there is no carryover
     true >"$RESULT"
@@ -143,18 +143,18 @@ for file in "$@"; do
     rg -wNz -f "$SEARCH_LIST" "$cacheFile" >"$RESULT"
 
     # If everything is cached, skip searching entirely
-    if [ -n "$(rg -c ^tt "$TCONST_LIST")" ]; then
+    if [[ -n "$(rg -c ^tt "$TCONST_LIST")" ]]; then
         # Look the ones up that weren't cached, get fields 1-4,6
         rg -wNz -f "$TCONST_LIST" title.basics.tsv.gz | cut -f 1-4,6 |
             perl -p -e 's+\\N++g;' >>"$RESULT"
     fi
 
     # Either overwrite or print on stdout
-    if [ -z "$INPLACE" ]; then
+    if [[ -z "$INPLACE" ]]; then
         copyResults
         printf "\n"
     else
-        if [ -z "$DONT_ASK" ]; then
+        if [[ -z "$DONT_ASK" ]]; then
             waitUntil "$YN_PREF" -N "OK to overwrite $file?" && copyResults \
                 >"$file"
         else

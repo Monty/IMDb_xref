@@ -76,7 +76,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n "$DEBUG" ]]; then
         printf "\nTerminating: %s\n" "$(basename "$0")" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
@@ -104,19 +104,19 @@ function cleanup() {
 
 function processDurations() {
     # If we're not in the primary directory, don't record times
-    [ -n "$OUTPUT_DIR" ] || [ -n "$BYPASS_PROCESSING" ] && exit
+    [[ -n "$OUTPUT_DIR" ]] || [[ -n "$BYPASS_PROCESSING" ]] && exit
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations -m 10
     # Save the contents of every tconst to use for manual comparison next time
-    [ -n "$useEveryTconst" ] && saveHistory "$EVERY_TCONST"
+    [[ -n "$useEveryTconst" ]] && saveHistory "$EVERY_TCONST"
     # Keep 20 history files for this script
     trimHistory -m 20
     exit
 }
 
 function breakpoint() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n "$DEBUG" ]]; then
         if waitUntil "$YN_PREF" -N "Quit now?"; then
             printf "Quitting ...\n"
             exit 1
@@ -167,19 +167,19 @@ shift $((OPTIND - 1))
 ensurePrerequisites
 
 # Create some timestamps - only use DATE_ID if we're debugging
-[ -n "$DEBUG" ] && DATE_ID="-$(date +%y%m%d)"
+[[ -n "$DEBUG" ]] && DATE_ID="-$(date +%y%m%d)"
 LONGDATE="-$(date +%y%m%d.%H%M%S)"
 
 # Required subdirectories
 WORK="secondary"
 CACHE="${WORK}/cache"
 BASE="test_results"
-[ -n "$OUTPUT_DIR" ] && mkdir -p "$OUTPUT_DIR"
+[[ -n "$OUTPUT_DIR" ]] && mkdir -p "$OUTPUT_DIR"
 mkdir -p "$WORK" "$BASE" "$CACHE"
 
 # Error and debugging info (per run)
 POSSIBLE_DIFFS="diffs$LONGDATE.txt"
-[ -n "$CREATE_DIFF" ] &&
+[[ -n "$CREATE_DIFF" ]] &&
     printf "\n==> %s contains diffs between generated files and files saved in %s\n" \
         "$POSSIBLE_DIFFS" "$BASE"
 
@@ -269,50 +269,50 @@ ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW")
 ALL_SHEETS+=("$KNOWN_PERSONS" "$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS")
 
 # If we ALWAYS want QUIET
-[ -n "$(rg -c "QUIET=yes" "$configFile")" ] && QUIET="yes"
+[[ -n "$(rg -c "QUIET=yes" "$configFile")" ]] && QUIET="yes"
 
 # All jobs or just the most important ones?
-[ -z "$ALL_JOBS" ] && ALL_JOBS="\b(actor|actress|writer|director|producer)\b"
+[[ -z "$ALL_JOBS" ]] && ALL_JOBS="\b(actor|actress|writer|director|producer)\b"
 
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
 
-if [ -z "$(ls -- *.xlate 2>/dev/null)" ]; then
-    [ -z "$QUIET" ] &&
+if [[ -z "$(ls -- *.xlate 2>/dev/null)" ]]; then
+    [[ -z "$QUIET" ]] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
-if [ -z "$(ls -- *.tconst 2>/dev/null)" ]; then
-    [ -z "$QUIET" ] &&
+if [[ -z "$(ls -- *.tconst 2>/dev/null)" ]]; then
+    [[ -z "$QUIET" ]] &&
         printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
         -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
-if [ -n "$TEST_MODE" ]; then
+if [[ -n "$TEST_MODE" ]]; then
     XLATE_FILES=("xlate.example")
     TCONST_FILES=("tconst.example")
     printf "==> Using xlate.example files for IMDb title translation.\n\n"
     printf "==> Searching tconst.example for IMDb title identifiers.\n"
 else
     # Pick xlate file(s) to process if not specified with -x option
-    if [ -z "${XLATE_FILES[*]}" ]; then
+    if [[ -z "${XLATE_FILES[*]}" ]]; then
         XLATE_FILES=(*.xlate)
-        [ -z "$QUIET" ] &&
+        [[ -z "$QUIET" ]] &&
             printf "==> Using all .xlate files for IMDb title translation.\n\n"
     else
-        [ -z "$QUIET" ] &&
+        [[ -z "$QUIET" ]] &&
             printf "==> Using %s for IMDb title translation.\n\n" "${XLATE_FILES[@]}"
     fi
-    if [ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]; then
+    if [[ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]]; then
         printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
         exit 1
     fi
 
     # Pick tconst file(s) to process
-    if [ $# -eq 0 ]; then
+    if [[ $# -eq 0 ]]; then
         TCONST_FILES=(*.tconst)
-        [ -z "$QUIET" ] &&
+        [[ -z "$QUIET" ]] &&
             printf "==> Searching all .tconst files for IMDb title identifiers.\n"
         # Cache is only enabled if *.tconst is used, which is the usual mode.
         useEveryTconst="yes"
@@ -320,13 +320,13 @@ else
         head -9999 -- *tconst | rg -v "^$|#" >"$EVERY_TCONST"
     else
         for file in "$@"; do
-            if [ ! -e "$file" ]; then
+            if [[ ! -e "$file" ]]; then
                 printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "$file" >&2
                 exit 1
             fi
             TCONST_FILES+=("$file")
         done
-        [ -z "$QUIET" ] &&
+        [[ -z "$QUIET" ]] &&
             printf "==> Searching %s for IMDb title identifiers.\n" "${TCONST_FILES[*]}"
     fi
 fi
@@ -334,7 +334,7 @@ fi
 # Coalesce a single tconst input list
 rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
 
-if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
+if [[ -z "$RELOAD" ]] && [[ -n "$useEveryTconst" ]]; then
     # Figure out whether we can use previous run as a cache.
     # Must force reload everything if:
     # 1) Missing any gzip or previous generateXrefData files
@@ -346,7 +346,7 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
     numAvailable="$(ls -1 "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
         2>/dev/null | sed -n '$=')"
     # [ "$numRequired" -ne "$numAvailable" ] && printf "Files missing.\n"
-    [ "$numRequired" -ne "$numAvailable" ] && RELOAD="yes"
+    [[ "$numRequired" -ne "$numAvailable" ]] && RELOAD="yes"
 
     # 2) Is any gzip file newer than any generateXrefData file?
     lastWritten="$(find "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
@@ -354,11 +354,11 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
     # [[ "$lastWritten" =~ .*tsv\.gz ]] && printf "Last written is a tsv.gz.\n"
     [[ $lastWritten =~ .*tsv\.gz ]] && RELOAD="yes"
 
-    if [ -z "$RELOAD" ]; then
+    if [[ -z "$RELOAD" ]]; then
         # Get tconst IDs from previous run
         printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$HIST_TCONST"
         #
-        if [ -z "$(comm -13 "$HIST_TCONST" "$TCONST_LIST")" ]; then
+        if [[ -z "$(comm -13 "$HIST_TCONST" "$TCONST_LIST")" ]]; then
             # Nothing new. No processing required. Very fast...
             BYPASS_PROCESSING="yes"
             printf "\n==> No changes, no new files generated. Use -r to "
@@ -367,7 +367,7 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
             # Some new shows. Minimal processing required. Use merge strategy.
             numNew="$(comm -13 "$HIST_TCONST" "$TCONST_LIST" | tee "$TEMPFILE" |
                 sed -n '$=')"
-            [ "$numNew" -gt 1 ] && plural="s"
+            [[ "$numNew" -gt 1 ]] && plural="s"
             printf "\n==> Adding $numNew new show$plural. Use -r to "
             printf "force reload all shows.\n\n"
             mergeFilesP="yes"
@@ -377,7 +377,7 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
     fi
 fi
 
-if [ -z "$BYPASS_PROCESSING" ]; then
+if [[ -z "$BYPASS_PROCESSING" ]]; then
     # Cleanup any possible leftover files
     rm -f "${ALL_TEMPS[@]}" "${ALL_WORK[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}"
 
@@ -390,7 +390,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
     # Check for translation conflicts
     rg -INv "^#|^$" "${XLATE_FILES[@]}" | sort -fu | cut -f 1 | sort -f | uniq -d >"$TEMP_DUPES"
     ### Stop here if there are translation conflicts.
-    if [ -s "$TEMP_DUPES" ]; then
+    if [[ -s "$TEMP_DUPES" ]]; then
         # shellcheck disable=SC2059      # variables in printf OK here
         printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "
         cat "$TEMP_DUPES"
@@ -407,7 +407,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
 
     ### Check for and repair duplicate titles
     cut -f 5 "$RAW_SHOWS" | sort -f | uniq -d >"$TEMP_DUPES"
-    if [ -s "$TEMP_DUPES" ]; then
+    if [[ -s "$TEMP_DUPES" ]]; then
         # Create an awk script to add dates to titles on shows with title conflicts
         printf 'BEGIN {OFS = "\\t"}\n' >"$TEMP_AWK"
         perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' "$TEMP_DUPES" \
@@ -442,10 +442,10 @@ if [ -z "$BYPASS_PROCESSING" ]; then
         fmt -w 80
     perl -p -e 's+$+;+' "$UNIQUE_TITLES" | fmt -w 80 | perl -p -e 's+^+\t+' |
         sed '$ s+.$++'
-    [ -n "$OUTPUT_DIR" ] && printf "\n"
+    [[ -n "$OUTPUT_DIR" ]] && printf "\n"
 
     # Let us know how long it took last time, unless we're not in the primary directory
-    [ -z "$OUTPUT_DIR" ] && printDuration
+    [[ -z "$OUTPUT_DIR" ]] && printDuration
 
     # Use the tconst list to lookup episode IDs and generate an episode tconst file
     rg -wNz -f "$TCONST_LIST" title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
@@ -576,7 +576,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
 # End of BYPASS_PROCESSING
 fi
 
-if [ -n "$mergeFilesP" ]; then
+if [[ -n "$mergeFilesP" ]]; then
     # Merge two files that have a header line. Sort key is 2nd param.
     function mergeSort() {
         file="$1"
@@ -606,7 +606,7 @@ if [ -n "$mergeFilesP" ]; then
 fi
 
 # Save file for later searching
-[ -n "$OUTPUT_FILE" ] && cp -p "$CREDITS_PERSON" "$OUTPUT_FILE"
+[[ -n "$OUTPUT_FILE" ]] && cp -p "$CREDITS_PERSON" "$OUTPUT_FILE"
 
 # Shortcut for printing file info (before adding totals)
 function printAdjustedFileInfo() {
@@ -621,7 +621,7 @@ function printAdjustedFileInfo() {
 }
 
 # Output some stats from $SHOWS
-if [ -z "$QUIET" ]; then
+if [[ -z "$QUIET" ]]; then
     printf "==> Show types in %s:\n" "$SHOWS"
     rg -v "^Show Title\t" "$SHOWS" | cut -f 2 | frequency
 
@@ -653,17 +653,17 @@ if [ -z "$QUIET" ]; then
 fi
 
 # Skip diff output if requested. Save durations and exit
-[ -z "$CREATE_DIFF" ] && processDurations
+[[ -z "$CREATE_DIFF" ]] && processDurations
 
 # Shortcut for checking differences between two files.
 # checkdiffs basefile newfile
 function checkdiffs() {
     printf "\n"
-    if [ ! -e "$2" ]; then
+    if [[ ! -e "$2" ]]; then
         printf "==> $2 does not exist. Skipping diff.\n"
         return 1
     fi
-    if [ ! -e "$1" ]; then
+    if [[ ! -e "$1" ]]; then
         # If the basefile file doesn't yet exist, assume no differences
         # and copy the newfile to the basefile so it can serve
         # as a base for diffs in the future.
@@ -689,21 +689,21 @@ cat >>"$POSSIBLE_DIFFS" <<EOF
 ==> ${0##*/} completed: $(date)
 
 ### Check the diffs to see if any changes are meaningful
-$(checkdiffs $PUBLISHED_SKIP_EPISODES $SKIP_EPISODES)
-$(checkdiffs $PUBLISHED_TCONST_LIST "$TCONST_LIST")
-$(checkdiffs $PUBLISHED_EPISODES_LIST "$EPISODES_LIST")
-$(checkdiffs $PUBLISHED_KNOWNFOR_LIST "$KNOWNFOR_LIST")
-$(checkdiffs $PUBLISHED_NCONST_LIST "$NCONST_LIST")
-$(checkdiffs $PUBLISHED_UNIQUE_TITLES "$UNIQUE_TITLES")
-$(checkdiffs $PUBLISHED_UNIQUE_CHARS "$UNIQUE_CHARS")
-$(checkdiffs $PUBLISHED_UNIQUE_PERSONS "$UNIQUE_PERSONS")
-$(checkdiffs $PUBLISHED_RAW_PERSONS "$RAW_PERSONS")
-$(checkdiffs $PUBLISHED_RAW_SHOWS "$RAW_SHOWS")
-$(checkdiffs $PUBLISHED_SHOWS "$SHOWS")
-$(checkdiffs $PUBLISHED_KNOWN_PERSONS "$KNOWN_PERSONS")
-$(checkdiffs $PUBLISHED_CREDITS_SHOW "$CREDITS_SHOW")
-$(checkdiffs $PUBLISHED_CREDITS_PERSON "$CREDITS_PERSON")
-$(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
+$(checkdiffs "$PUBLISHED_SKIP_EPISODES" "$SKIP_EPISODES")
+$(checkdiffs "$PUBLISHED_TCONST_LIST" "$TCONST_LIST")
+$(checkdiffs "$PUBLISHED_EPISODES_LIST" "$EPISODES_LIST")
+$(checkdiffs "$PUBLISHED_KNOWNFOR_LIST" "$KNOWNFOR_LIST")
+$(checkdiffs "$PUBLISHED_NCONST_LIST" "$NCONST_LIST")
+$(checkdiffs "$PUBLISHED_UNIQUE_TITLES" "$UNIQUE_TITLES")
+$(checkdiffs "$PUBLISHED_UNIQUE_CHARS" "$UNIQUE_CHARS")
+$(checkdiffs "$PUBLISHED_UNIQUE_PERSONS" "$UNIQUE_PERSONS")
+$(checkdiffs "$PUBLISHED_RAW_PERSONS" "$RAW_PERSONS")
+$(checkdiffs "$PUBLISHED_RAW_SHOWS" "$RAW_SHOWS")
+$(checkdiffs "$PUBLISHED_SHOWS" "$SHOWS")
+$(checkdiffs "$PUBLISHED_KNOWN_PERSONS" "$KNOWN_PERSONS")
+$(checkdiffs "$PUBLISHED_CREDITS_SHOW" "$CREDITS_SHOW")
+$(checkdiffs "$PUBLISHED_CREDITS_PERSON" "$CREDITS_PERSON")
+$(checkdiffs "$PUBLISHED_ASSOCIATED_TITLES" "$ASSOCIATED_TITLES")
 
 ### Any funny stuff with file lengths?
 

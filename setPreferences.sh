@@ -28,7 +28,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n "$DEBUG" ]]; then
         printf "Terminating...\n" >&2
     fi
 }
@@ -89,7 +89,7 @@ while true; do
     PS3="Select a number from 1-${#ynOptions[@]}: "
     # shellcheck disable=SC2034      # ynMenu is intentionally not used
     select ynMenu in "${ynOptions[@]}"; do
-        if [ "$REPLY" -ge 1 ] 2>/dev/null && [ "$REPLY" -le "${#ynOptions[@]}" ]; then
+        if [[ "$REPLY" -ge 1 ]] 2>/dev/null && [[ "$REPLY" -le "${#ynOptions[@]}" ]]; then
             case "$REPLY" in
             1)
                 YN_PREF=

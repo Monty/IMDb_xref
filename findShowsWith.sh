@@ -41,7 +41,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n "$DEBUG" ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
@@ -71,7 +71,7 @@ function cleanup() {
 function loopOrExitP() {
     printf "\n"
     terminate
-    [ -n "$NO_MENUS" ] && exit
+    [[ -n "$NO_MENUS" ]] && exit
     exec ./start.command
 }
 
@@ -112,7 +112,7 @@ JOB_RESULTS=$(mktemp)
 TMPFILE=$(mktemp)
 
 # Make sure a search term is supplied
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
     cat <<EOF
 ==> I can find all shows listing a person as a principal cast or crew member
     based on their name or nconst ID, such as nm0000123 -- which is the nconst
@@ -121,10 +121,10 @@ if [ $# -eq 0 ]; then
 Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a person's name or nconst ID: " searchTerm; do
-        [ -z "$searchTerm" ] && break
+        [[ -z "$searchTerm" ]] && break
         tr -ds '"' '[:space:]' <<<"$searchTerm" >>"$ALL_TERMS"
     done </dev/tty
-    if [ ! -s "$ALL_TERMS" ]; then
+    if [[ ! -s "$ALL_TERMS" ]]; then
         if waitUntil "$YN_PREF" -N \
             "Would you like to see all shows listing George Clooney as an example?"; then
             printf "nm0000123\n" >>"$ALL_TERMS"
@@ -137,7 +137,7 @@ fi
 
 # Get gz file size - which should already exist but make sure...
 numRecords="$(rg -N name.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
-[ -z "$numRecords" ] && numRecords="$(rg -cz "^n" name.basics.tsv.gz)"
+[[ -z "$numRecords" ]] && numRecords="$(rg -cz "^n" name.basics.tsv.gz)"
 
 # Set up ALL_TERMS with one search term per line
 for param in "$@"; do
@@ -165,12 +165,12 @@ cut -f 2 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 while read -r line; do
     count=$(cut -f 1 <<<"$line")
     match=$(cut -f 2 <<<"$line")
-    if [ "$count" -eq 1 ]; then
+    if [[ "$count" -eq 1 ]]; then
         rg "\t$match\t" "$POSSIBLE_MATCHES" |
             sed 's+^+imdb.com/name/+' >>"$PERSON_RESULTS"
         continue
     fi
-    if [ -z "$alreadyPrintedP" ]; then
+    if [[ -z "$alreadyPrintedP" ]]; then
         cat <<EOF
 
 Some person names occur more than once on IMDb, e.g. John Wayne or John Lennon.
@@ -180,7 +180,7 @@ EOF
     fi
 
     printf "\nI found $count persons named \"$match\"\n"
-    if [ "$count" -ge "${maxMenuSize:-10}" ]; then
+    if [[ "$count" -ge "${maxMenuSize:-10}" ]]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
 
@@ -204,8 +204,8 @@ EOF
     PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
-        if [ "$REPLY" -ge 1 ] 2>/dev/null &&
-            [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+        if [[ "$REPLY" -ge 1 ]] 2>/dev/null &&
+            [[ "$REPLY" -le "${#pickOptions[@]}" ]]; then
             case "$pickMenu" in
             Skip*)
                 break
@@ -229,7 +229,7 @@ EOF
 done <"$MATCH_COUNTS"
 
 # Didn't find any results
-if [ ! -s "$PERSON_RESULTS" ]; then
+if [[ ! -s "$PERSON_RESULTS" ]]; then
     printf "\n==> I didn't find ${RED}any${NO_COLOR} matching persons.\n"
     printf "    Check the \"Searching $numRecords records for:\" section above.\n"
     loopOrExitP
@@ -250,7 +250,7 @@ fi
 cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
 rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz | cut -f 1,3,4 >"$POSSIBLE_MATCHES"
 
-if [ -n "$FULLCAST" ]; then
+if [[ -n "$FULLCAST" ]]; then
     # Used to debug possibly missing data from the .tsv.gz files
     true >"$POSSIBLE_MATCHES"
     while read -r nconstID; do
@@ -264,7 +264,7 @@ while read -r line; do
     nconstID="$line"
     nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
     rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
-    if [ ! -s "$MATCH_COUNTS" ]; then
+    if [[ ! -s "$MATCH_COUNTS" ]]; then
         printf "\n==> I didn't find any principal cast member records for "
         printf "${RED}$nconstName${NO_COLOR}.\n"
         printf "    Check ${RED}imdb.com/name/$nconstID${NO_COLOR} to get more details.\n"
@@ -282,9 +282,9 @@ while read -r line; do
         if [[ $numResults -gt 0 ]]; then
             _title="title"
             _pron="it"
-            [ "$numResults" -gt 1 ] && _title="titles" && _pron="them"
+            [[ "$numResults" -gt 1 ]] && _title="titles" && _pron="them"
             printf "==> I found $numResults $_title listing $nconstName as: $match\n"
-            if [ -n "$skipPrompts" ] || waitUntil "$YN_PREF" -Y \
+            if [[ -n "$skipPrompts" ]] || waitUntil "$YN_PREF" -Y \
                 "==> Shall I list $_pron?"; then
                 tsvPrint -n "$TMPFILE"
             fi

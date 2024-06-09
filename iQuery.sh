@@ -51,7 +51,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n "$DEBUG" ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
@@ -111,11 +111,11 @@ uniqFiles=('uniqTitles.txt' 'uniqPersons.txt' 'uniqCharacters.txt')
 categories=('show' 'person' 'character')
 
 # Make sure creditsFile exists
-[ ! -e "$creditsFile" ] && ensureDataFiles
+[[ ! -e "$creditsFile" ]] && ensureDataFiles
 
-if [ -n "$FULLCAST" ]; then
+if [[ -n "$FULLCAST" ]]; then
     # Use the data from the cache
-    if [ "$(ls -1 "$cacheDirectory" | rg "^tt")" ]; then
+    if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
         cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
             sort -fu >"$CREDITS"
         cut -f 2 "$CREDITS" | sort -fu >"$TITLES"
@@ -134,7 +134,7 @@ missingCategories=()
 categoryOptions=()
 idx=0
 for file in "${uniqFiles[@]}"; do
-    if [ -e "$file" ]; then
+    if [[ -e "$file" ]]; then
         numFound="$(sed -n '$=' "$file")"
         foundSizes+=("$numFound" "${categories[$idx]}s,")
         foundCategories+=("${categories[$idx]}")
@@ -146,7 +146,7 @@ for file in "${uniqFiles[@]}"; do
 done
 
 # If we don't have any data...
-if [ "${#missingCategories[@]}" -gt 0 ]; then
+if [[ "${#missingCategories[@]}" -gt 0 ]]; then
     ensureDataFiles
     rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
     exec ./iQuery.sh
@@ -175,10 +175,10 @@ while true; do
     printf "\n"
 
     searchArraySize="${#searchArray[@]}"
-    [ "$searchArraySize" -eq 1 ] && actionOptions+=("Remove search term")
-    [ "$searchArraySize" -gt 1 ] &&
+    [[ "$searchArraySize" -eq 1 ]] && actionOptions+=("Remove search term")
+    [[ "$searchArraySize" -gt 1 ]] &&
         actionOptions+=("Remove one search term" "Delete all search terms")
-    [ "$searchArraySize" -gt 0 ] &&
+    [[ "$searchArraySize" -gt 0 ]] &&
         actionOptions+=("Run full search" "Run 'duplicates only' search")
     actionOptions+=("List all shows" "Quit")
 
@@ -190,7 +190,7 @@ while true; do
         # Be cautious about ordering case statements e.g. List* and *show*
         case "$actionMenu" in
         List*)
-            if [ -n "$USE_LESS" ]; then
+            if [[ -n "$USE_LESS" ]]; then
                 sort -df "${uniqFiles[0]}" | less -EX
             else
                 sort -df "${uniqFiles[0]}"
@@ -216,8 +216,8 @@ while true; do
             # Remove one of the search term
             PS3="Select a number from 1-$searchArraySize, or enter '0' to skip: "
             select deleteMenu in "${searchArray[@]}"; do
-                if [ "$REPLY" -ge 1 ] 2>/dev/null &&
-                    [ "$REPLY" -le "${#searchArray[@]}" ]; then
+                if [[ "$REPLY" -ge 1 ]] 2>/dev/null &&
+                    [[ "$REPLY" -le "${#searchArray[@]}" ]]; then
                     printf "Removing: \"$deleteMenu\"\n"
                     # Arrays are zero based
                     ((REPLY--)) || true
@@ -226,7 +226,7 @@ while true; do
                     searchString=""
                     for i in "${!tempArray[@]}"; do
                         # printf "i = $i, REPLY = $REPLY\n"
-                        if [ "$i" -ne "$REPLY" ]; then
+                        if [[ "$i" -ne "$REPLY" ]]; then
                             searchArray+=("${tempArray[$i]}")
                             searchString+="\"${RED}${tempArray[$i]}${NO_COLOR}\" "
                         fi
@@ -266,14 +266,14 @@ while true; do
             continue 2
             ;;
         Quit)
-            [ -n "$NO_MENUS" ] && exit
+            [[ -n "$NO_MENUS" ]] && exit
             rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
             exec ./start.command
             ;;
         esac
         case "$REPLY" in
         [Qq]*)
-            [ -n "$NO_MENUS" ] && exit
+            [[ -n "$NO_MENUS" ]] && exit
             rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
             exec ./start.command
             ;;
@@ -289,19 +289,19 @@ while true; do
         printf "$REPLY"
         searchFor+="$REPLY"
         hitCount="$(rg -N -c "$searchFor" "$searchFile")"
-        if [ "$hitCount" == "" ]; then
+        if [[ "$hitCount" == "" ]]; then
             printf "\nNo matches found.\n"
             break
-        elif [ "$hitCount" -eq 1 ]; then
+        elif [[ "$hitCount" -eq 1 ]]; then
             # printf "\nOnly one match found\n"
             result="$(rg -N "$searchFor" "$searchFile")"
             for term in "${searchArray[@]}"; do
-                [ "$result" == "$term" ] && break 2
+                [[ "$result" == "$term" ]] && break 2
             done
             searchString+="\"${RED}${result}${NO_COLOR}\" "
             searchArray+=("$result")
             break
-        elif [ "$hitCount" -le "${maxHits:-15}" ]; then
+        elif [[ "$hitCount" -le "${maxHits:-15}" ]]; then
             # printf "\n$hitCount matches found\n"
             pickOptions=()
             while IFS=$'\n' read -r line; do
@@ -311,11 +311,11 @@ while true; do
             PS3="Select a number from 1-${#pickOptions[@]}, or enter '0' to skip: "
             COLUMNS=40
             select pickMenu in "${pickOptions[@]}"; do
-                if [ 1 -le "$REPLY" ] 2>/dev/null &&
-                    [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+                if [[ 1 -le "$REPLY" ]] 2>/dev/null &&
+                    [[ "$REPLY" -le "${#pickOptions[@]}" ]]; then
                     # printf "You picked $pickMenu ($REPLY)\n"
                     for term in "${searchArray[@]}"; do
-                        [ "$pickMenu" == "$term" ] && break 2
+                        [[ "$pickMenu" == "$term" ]] && break 2
                     done
                     searchString+="\"${RED}${pickMenu}${NO_COLOR}\" "
                     searchArray+=("$pickMenu")
@@ -333,5 +333,5 @@ while true; do
     done
 
     searchArraySize="${#searchArray[@]}"
-    [ "$searchArraySize" -ne 0 ] && printf "\nSearch terms: $searchString\n"
+    [[ "$searchArraySize" -ne 0 ]] && printf "\nSearch terms: $searchString\n"
 done

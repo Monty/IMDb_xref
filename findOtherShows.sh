@@ -40,7 +40,7 @@ trap terminate EXIT
 #
 function terminate() {
     trimHistory -m 20 "$favoritesFile"
-    if [ -n "$DEBUG" ]; then
+    if [[ -n "$DEBUG" ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
@@ -80,7 +80,7 @@ function cleanup() {
 function loopOrExitP() {
     printf "\n"
     terminate
-    [ -n "$NO_MENUS" ] && exit
+    [[ -n "$NO_MENUS" ]] && exit
     exec ./start.command
 }
 
@@ -135,10 +135,10 @@ CAST_CSV=$(mktemp)
 TMPFILE=$(mktemp)
 
 # Make sure a search term is supplied
-if [ $# -eq 0 ]; then
+if [[ $# -eq 0 ]]; then
     read -r -p "Enter a show name or tconst ID: " searchTerm </dev/tty
     tr -ds '"' '[:space:]' <<<"$searchTerm" >"$ALL_TERMS"
-    if [ ! -s "$ALL_TERMS" ]; then
+    if [[ ! -s "$ALL_TERMS" ]]; then
         loopOrExitP
     fi
     printf "\n"
@@ -148,7 +148,7 @@ fi
 
 # Get title.basics.tsv.gz file size - should already exist but make sure...
 num_TB="$(rg -N title.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
-[ -z "$num_TB" ] && num_TB="$(rg -cz "^t" title.basics.tsv.gz)"
+[[ -z "$num_TB" ]] && num_TB="$(rg -cz "^t" title.basics.tsv.gz)"
 
 # Split into two groups so we can process them differently
 rg -wN "^tt[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$TCONST_TERMS"
@@ -174,12 +174,12 @@ while read -r line; do
     rawmatch=$(cut -f 2 <<<"$line")
     # shellcheck disable=SC2001      # too complex for ${variable//search/replace}
     match=$(sed 's+[()?]+\\&+g' <<<"$rawmatch")
-    if [ "$count" -eq 1 ]; then
+    if [[ "$count" -eq 1 ]]; then
         rg "\t$match\t" "$POSSIBLE_MATCHES" |
             sed 's+^+imdb.com/title/+' >>"$ALL_MATCHES"
         continue
     fi
-    if [ -z "$alreadyPrintedP" ]; then
+    if [[ -z "$alreadyPrintedP" ]]; then
         cat <<EOF
 
 Some titles on IMDb occur more than once, e.g. as both a movie and TV show.
@@ -189,7 +189,7 @@ EOF
     fi
 
     printf "\nI found $count shows titled \"$match\"\n"
-    if [ "$count" -ge "${maxMenuSize:-25}" ]; then
+    if [[ "$count" -ge "${maxMenuSize:-25}" ]]; then
         waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
     fi
 
@@ -213,8 +213,8 @@ EOF
     PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
-        if [ "$REPLY" -ge 1 ] 2>/dev/null &&
-            [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+        if [[ "$REPLY" -ge 1 ]] 2>/dev/null &&
+            [[ "$REPLY" -le "${#pickOptions[@]}" ]]; then
             case "$pickMenu" in
             Skip*)
                 break
@@ -238,7 +238,7 @@ EOF
 done <"$MATCH_COUNTS"
 
 # Didn't find any results
-if [ ! -s "$ALL_MATCHES" ]; then
+if [[ ! -s "$ALL_MATCHES" ]]; then
     printf "\n==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
     printf "    Check the \"Searching $num_TB records for:\" section above.\n"
     loopOrExitP
@@ -246,7 +246,7 @@ fi
 
 # Remove any duplicates
 sort -f "$ALL_MATCHES" | uniq -d >"$TMPFILE"
-if [ -s "$TMPFILE" ]; then
+if [[ -s "$TMPFILE" ]]; then
     sort -fu "$ALL_MATCHES" >"$TMPFILE"
     sort -f -t$'\t' --key=2,2 --key=5,5r "$TMPFILE" >"$ALL_MATCHES"
 fi
@@ -255,7 +255,7 @@ fi
 numMatches=$(sed -n '$=' "$ALL_MATCHES")
 
 # Did we find more than requested?
-while [ "$numMatches" -gt "$numTerms" ]; do
+while [[ "$numMatches" -gt "$numTerms" ]]; do
     printf "\n==> I found more results than expected. What would you like to do?\n"
 
     # Create parallel tabbed array
@@ -272,8 +272,8 @@ while [ "$numMatches" -gt "$numTerms" ]; do
     PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
     COLUMNS=40
     select pickMenu in "${pickOptions[@]}"; do
-        if [ "$REPLY" -ge 1 ] 2>/dev/null &&
-            [ "$REPLY" -le "${#pickOptions[@]}" ]; then
+        if [[ "$REPLY" -ge 1 ]] 2>/dev/null &&
+            [[ "$REPLY" -le "${#pickOptions[@]}" ]]; then
             case "$pickMenu" in
             Keep*)
                 numMatches="$numTerms"
@@ -324,7 +324,7 @@ while IFS='' read -r line; do
     awk -f getFullcredits.awk "$TMPFILE" |
         sort -f -t$'\t' --key=5,5 --key=4,4n --key=1,1 \
             >>"$cacheDirectory/$line"
-    if [ "$maxCast" -gt 0 ]; then
+    if [[ "$maxCast" -gt 0 ]]; then
         cut -f 7 "$cacheDirectory/$line" | rg "^nm" | head -"$maxCast" \
             >>"$NCONST_LIST"
     else
@@ -358,14 +358,14 @@ true >"$CAST_CSV"
 while IFS='' read -r line; do
     printf "$line\n" >"$TMPFILE"
     actor=$(cut -f 1 <<<"$line")
-    if [ "$maxRank" -gt 0 ]; then
+    if [[ "$maxRank" -gt 0 ]]; then
         rg "$actor" "$OTHERS_CSV" | sort -f -t$'\t' --key=4,4n --key=3,3 |
             awk -F "\t" -v rmax="$maxRank" '{if ($4 <= rmax) print}' >>"$TMPFILE"
     else
         rg "$actor" "$OTHERS_CSV" | sort -f -t$'\t' --key=4,4n --key=3,3 >>"$TMPFILE"
     fi
     numLines="$(sed -n '$=' "$TMPFILE")"
-    if [ "$numLines" -gt 1 ]; then
+    if [[ "$numLines" -gt 1 ]]; then
         cat "$TMPFILE" >>"$CAST_CSV"
         printf " ---\t\t\t\t\t\n" >>"$CAST_CSV"
     fi
@@ -375,8 +375,8 @@ printf "Person\tJob\tShow Title\tRank\tCharacter Name\tLink\n" >"$TMPFILE"
 cat "$CAST_CSV" >>"$TMPFILE"
 
 numLines="$(sed -n '$=' "$TMPFILE")"
-if [ "$numLines" -eq 1 ]; then
-    if [ "$maxCast" -gt 0 ]; then
+if [[ "$numLines" -eq 1 ]]; then
+    if [[ "$maxCast" -gt 0 ]]; then
         printf "==> None of the top $maxCast cast members appear in other cached shows.\n"
     else
         printf "==> None of the top cast members appear in other cached shows.\n"
@@ -390,7 +390,7 @@ CAST_SPREADSHEET="ShowsWithActorsFrom-${showName//[[:space:]]/_}.csv"
 printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_COLOR}\n"
 rg -v ' ---' "$TMPFILE" >"$CAST_SPREADSHEET"
 
-if [ "$maxCast" -gt 0 ]; then
+if [[ "$maxCast" -gt 0 ]]; then
     printf "==> Top $maxCast cast members that appear in other cached shows (Name|Job|Show|Rank|Role|Link):\n"
 else
     printf "==> Top cast members that appear in other cached shows (Name|Job|Show|Rank|Role|Link):\n"
