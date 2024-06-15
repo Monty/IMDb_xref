@@ -631,6 +631,9 @@ if [[ -n "$(rg -c "^tt" "$SHOWS")" ]]; then
     printf "### Shows in %s with a tconst instead of a name:\n\n" "$SHOWS" \
         >"$ERRORS"
     rg -N "^tt" "$SHOWS" >>"$ERRORS"
+    printf "==> [${YELLOW}Warning${NO_COLOR}] Shows in $SHOWS have a tconst for a name:\n"
+    printf "    For more details:\n"
+    printf "    rg -N '^tt[0-9]*' %s\n\n" "$SHOWS"
 fi
 
 # Output some stats from $SHOWS
