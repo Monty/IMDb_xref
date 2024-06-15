@@ -183,6 +183,9 @@ POSSIBLE_DIFFS="diffs$LONGDATE.txt"
     printf "\n==> %s contains diffs between generated files and files saved in %s\n" \
         "$POSSIBLE_DIFFS" "$BASE"
 
+# Error and debugging info (per run)
+ERRORS="${OUTPUT_DIR}generate_anomalies$LONGDATE.txt"
+
 # Final output spreadsheets
 ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
 CREDITS_PERSON="${OUTPUT_DIR}Credits-Person$DATE_ID.csv"
@@ -622,6 +625,13 @@ function printAdjustedFileInfo() {
     ls -loh "$1" | perl -lane 'printf "%-45s%6s%6s %s %s ",@F[7,3,4,5,6];'
     printf "%8d lines\n" "$numlines"
 }
+
+# Check for SHOWS starting with tt
+if [[ -n "$(rg -c "^tt" "$SHOWS")" ]]; then
+    printf "### Shows in %s with a tconst instead of a name:\n\n" "$SHOWS" \
+        >"$ERRORS"
+    rg -N "^tt" "$SHOWS" >>"$ERRORS"
+fi
 
 # Output some stats from $SHOWS
 if [[ -z "$QUIET" ]]; then
