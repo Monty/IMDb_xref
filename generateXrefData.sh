@@ -541,6 +541,9 @@ if [[ -z "$BYPASS_PROCESSING" ]]; then
     # Add episodes into raw shows
     perl -p -f "$TCONST_EPISODES_PL" "$RAW_EPISODES" >>"$RAW_SHOWS"
 
+    # Fix perl errors for shows ending in '$' -- 'Arli$$' 'Biz Kid$'
+    perl -pi -e 's/Arli\$/Arli\\\$/g;' -e 's/\$\}/\\\$}/g;' "$TCONST_KNOWN_PL"
+
     # Translate tconst and nconst into titles and names
     perl -pi -f "$TCONST_SHOWS_PL" "$RAW_SHOWS"
     perl -pi -f "$TCONST_SHOWS_PL" "$UNSORTED_CREDITS"
