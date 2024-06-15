@@ -13,6 +13,3 @@
 #    rg -wNz tt0115355 title.basics.tsv.gz | cut -f 1-4,6 >>skipEpisodes.example
 
 # tconst	Type	Primary Title	Original Title	Date
-tt0094416	tvSeries	American Experience	American Experience	1988
-tt1091909	tvSeries	Murdoch Mysteries	Murdoch Mysteries	2008
-tt0115355	tvSeries	Silent Witness	Silent Witness	1996
