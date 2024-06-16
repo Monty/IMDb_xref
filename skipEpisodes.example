@@ -13,3 +13,8 @@
 #    rg -wNz tt0115355 title.basics.tsv.gz | cut -f 1-4,6 >>skipEpisodes.example
 
 # tconst	Type	Primary Title	Original Title	Date
+
+# Tarantino_director.tconst contains a tvEpisode tt0534695 which is
+# one episode of 336 from CSI: Crime Scene Investigation. The following
+# line prevents any other episodes from being processed.
+tt0247082	tvSeries	CSI: Crime Scene Investigation	CSI: Crime Scene Investigation	2000
