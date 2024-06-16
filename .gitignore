@@ -1,9 +1,10 @@
 ## MAC OS
 .DS_Store
 
-# IMDb ID and translation files manually created by user
+# IMDb ID, translation, and skipEpisodes files manually created by user
 *.tconst
 *.xlate
+*.skipEpisodes
 
 # Output from running any commands
 *.gz
