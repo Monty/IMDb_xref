@@ -270,8 +270,8 @@ ALL_WORK+=("$TCONST_KNOWN_PL" "$TCONST_SHOWS_PL" "$XLATE_PL")
 ALL_TXT=("$UNIQUE_CHARS" "$UNIQUE_PERSONS" "$UNIQUE_TITLES")
 #
 # Final output spreadsheets
-ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW")
-ALL_SHEETS+=("$KNOWN_PERSONS" "$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS")
+ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW" "$KNOWN_PERSONS")
+ALL_SHEETS+=("$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS" "$EPISODE_COUNT")
 
 # If we ALWAYS want QUIET
 [[ -n "$(rg -c "QUIET=yes" "$configFile")" ]] && QUIET="yes"
@@ -683,8 +683,8 @@ if [[ -z $QUIET ]]; then
 fi
 
 # List the ten shows having the most episodes
-printf "\n==> Shows with the most episodes from %s:\n" "$SHOWS"
-head -11 "$EPISODE_COUNT" | perl -p -e "s/\t'/\t/"
+printf "\n==> Shows with the most episodes in %s:\n" "$SHOWS"
+head -11 "$EPISODE_COUNT" | rg -v '^Count' | perl -p -e "s/\t'/\t/"
 
 # Skip diff output if requested. Save durations and exit
 [[ -z $CREATE_DIFF ]] && processDurations
