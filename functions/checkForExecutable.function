@@ -58,7 +58,7 @@ EOF
 
     # Make sure we can execute exeName.
     if ! type -p "$exeName" >/dev/null; then
-        if [ -z "$quietly" ]; then
+        if [[ -z $quietly ]]; then
             printf "==> [${RED}Error${NO_COLOR}] Can't run ${RED}$exeName${NO_COLOR}. " >&2
             printf "Please install ${RED}$exeName${NO_COLOR}, then re-run this script.\n\n" >&2
             exit 1

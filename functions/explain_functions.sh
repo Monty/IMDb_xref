@@ -18,7 +18,7 @@ source functions/load_functions
 
 for file in functions/*.function; do
     [[ -e $file ]] || break # handle the case of no files
-    if [ "$(grep -cF 'help()' "$file")" -ne 0 ]; then
+    if [[ "$(grep -cF 'help()' "$file")" -ne 0 ]]; then
         clear
         function="$(basename "${file%\.function}")"
         eval "$function" -h

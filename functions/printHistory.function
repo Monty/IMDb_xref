@@ -50,5 +50,5 @@ EOF
     appendName="${1:-$(basename "$0")}"
     # shellcheck disable=SC2012,SC2154      # ls is OK since I control the filenames
     histFile="$(ls -1 -t "$histDirectory"/*-"$appendName" 2>/dev/null | head -1)"
-    [ -n "$histFile" ] && cat "$histFile"
+    [[ -n $histFile ]] && cat "$histFile"
 }
