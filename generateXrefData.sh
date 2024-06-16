@@ -628,9 +628,15 @@ function printAdjustedFileInfo() {
 
 # Check for SHOWS starting with tt
 if [[ -n "$(rg -c "^tt" "$SHOWS")" ]]; then
-    printf "### Shows in %s with a tconst instead of a name:\n\n" "$SHOWS" \
+    printf "### Shows in %s with a tconst instead of a name:\n" "$SHOWS" \
         >"$ERRORS"
     rg -N "^tt" "$SHOWS" >>"$ERRORS"
+    cat >>"$ERRORS" <<EOF
+### Usually caused by an episode tconst without its parent tconst. If you
+### only want specific episodes, but not all episodes in a show, add the
+### parent tconst to skipEpisodes.example
+EOF
+    #
     printf "==> [${YELLOW}Warning${NO_COLOR}] Shows in $SHOWS have a tconst for a name:\n"
     printf "    For more details:\n"
     printf "    rg -N '^tt[0-9]*' %s\n\n" "$SHOWS"
