@@ -190,6 +190,7 @@ ERRORS="${OUTPUT_DIR}generate_anomalies$LONGDATE.txt"
 ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
 CREDITS_PERSON="${OUTPUT_DIR}Credits-Person$DATE_ID.csv"
 CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
+EPISODE_COUNT="${OUTPUT_DIR}Episode-Count$DATE_ID.csv"
 KNOWN_PERSONS="${OUTPUT_DIR}Persons-KnownFor$DATE_ID.csv"
 LINKS_TO_PERSONS="${OUTPUT_DIR}LinksToPersons$DATE_ID.csv"
 LINKS_TO_TITLES="${OUTPUT_DIR}LinksToTitles$DATE_ID.csv"
@@ -244,6 +245,7 @@ PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
 PUBLISHED_UNIQUE_TITLES="$BASE/uniqTitles.txt"
 #
 PUBLISHED_EPISODES_LIST="$BASE/tconst-episodes.csv"
+PUBLISHED_EPISODE_COUNT="$BASE/episode-count.csv"
 PUBLISHED_KNOWNFOR_LIST="$BASE/tconst_known.txt"
 PUBLISHED_NCONST_LIST="$BASE/nconst.txt"
 PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
@@ -570,6 +572,11 @@ if [[ -z $BYPASS_PROCESSING ]]; then
         sort -f -t$'\t' --key=1,1 --key=2,2r --key=4,4n --key=5,5n \
             --key=6,6 >>"$SHOWS"
 
+    # Create the EPISODE_COUNT spreadsheet
+    printf "Count\tTitle\n" >"$EPISODE_COUNT"
+    rg "^'" "$SHOWS" | cut -f 1 | uniq -c | sort -nr |
+        perl -p -e "s/ '/  \t'/" >>"$EPISODE_COUNT"
+
     # Create the sorted CREDITS spreadsheets
     printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" |
         tee "$CREDITS_SHOW" >"$CREDITS_PERSON"
@@ -661,6 +668,7 @@ if [[ -z $QUIET ]]; then
     printAdjustedFileInfo "$LINKS_TO_TITLES" 1
     # printAdjustedFileInfo $TCONST_LIST 0
     # printAdjustedFileInfo $RAW_SHOWS 0
+    printAdjustedFileInfo "$EPISODE_COUNT" 1
     printAdjustedFileInfo "$SHOWS" 1
     # printAdjustedFileInfo $NCONST_LIST 0
     printAdjustedFileInfo "$UNIQUE_CHARS" 0
@@ -673,6 +681,10 @@ if [[ -z $QUIET ]]; then
     printAdjustedFileInfo "$CREDITS_PERSON" 1
     # printAdjustedFileInfo $KNOWNFOR_LIST 0
 fi
+
+# List the ten shows having the most episodes
+printf "\n==> Shows with the most episodes from %s:\n" "$SHOWS"
+head -11 "$EPISODE_COUNT" | perl -p -e "s/\t'/\t/"
 
 # Skip diff output if requested. Save durations and exit
 [[ -z $CREATE_DIFF ]] && processDurations
@@ -714,6 +726,7 @@ cat >>"$POSSIBLE_DIFFS" <<EOF
 $(checkdiffs "$PUBLISHED_SKIP_EPISODES" "$SKIP_EPISODES")
 $(checkdiffs "$PUBLISHED_TCONST_LIST" "$TCONST_LIST")
 $(checkdiffs "$PUBLISHED_EPISODES_LIST" "$EPISODES_LIST")
+$(checkdiffs "$PUBLISHED_EPISODE_COUNT" "$EPISODE_COUNT")
 $(checkdiffs "$PUBLISHED_KNOWNFOR_LIST" "$KNOWNFOR_LIST")
 $(checkdiffs "$PUBLISHED_NCONST_LIST" "$NCONST_LIST")
 $(checkdiffs "$PUBLISHED_UNIQUE_TITLES" "$UNIQUE_TITLES")
