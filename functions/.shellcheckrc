@@ -1,0 +1,13 @@
+# SC1091 (info): Not following:
+disable=SC1091
+# SC2034 (warning): VAR appears unused
+disable=SC2034
+
+# From parent directory as they are not inherited
+
+# SC2154 (warning): YN_PREF is referenced but not assigned.
+disable=SC2154
+# SC2059 (info): Don't use variables in the printf format string
+disable=SC2059
+# SC2249 (info): Consider adding a default *) case
+disable=SC2249
