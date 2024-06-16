@@ -58,7 +58,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
-    if [[ -n "$DEBUG" ]]; then
+    if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
@@ -85,7 +85,7 @@ function cleanup() {
 function loopOrExitP() {
     printf "\n"
     terminate
-    [[ -n "$noLoop" ]] || [[ -n "$NO_MENUS" ]] && exit
+    [[ -n $noLoop ]] || [[ -n $NO_MENUS ]] && exit
     exec ./start.command
 }
 
@@ -132,24 +132,24 @@ MULTIPLE_NAMES=$(mktemp)
 CACHEFILE="Credits-cache.csv"
 
 # If a SEARCH_FILE was specified...
-if [[ -n "$SEARCH_FILE" ]]; then
+if [[ -n $SEARCH_FILE ]]; then
     # Make sure it exists, no way to recover
-    if [[ ! -e "$SEARCH_FILE" ]]; then
+    if [[ ! -e $SEARCH_FILE ]]; then
         printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
         loopOrExitP
     fi
 else
     SEARCH_FILE="Credits-Person.csv"
     # If it doesn't exist, generate it
-    [[ ! -e "$SEARCH_FILE" ]] && ensureDataFiles
+    [[ ! -e $SEARCH_FILE ]] && ensureDataFiles
 fi
 
-if [[ -n "$FULLCAST" ]]; then
+if [[ -n $FULLCAST ]]; then
     # Use the data from the cache
     if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
         # If FULLCAST is an integer -ge 10, limit size
-        if [[ "$FULLCAST" -eq "$FULLCAST" ]] 2>/dev/null &&
-            [[ "$FULLCAST" -ge 10 ]]; then
+        if [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null &&
+            [[ $FULLCAST -ge 10 ]]; then
             cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
                 sort -fu | awk -F "\t" -v maxCast="$FULLCAST" \
                 '{if ($4 <= maxCast) print}' >"$CACHEFILE"
@@ -172,10 +172,10 @@ if [[ $# -eq 0 ]]; then
 Only one search term per line. Enter a blank line to finish.
 EOF
     while read -r -p "Enter a show, actor, or character: " searchTerm; do
-        [[ -z "$searchTerm" ]] && break
+        [[ -z $searchTerm ]] && break
         tr -ds '"' '[:space:]' <<<"$searchTerm" >>"$TMPFILE"
     done </dev/tty
-    if [[ ! -s "$TMPFILE" ]]; then
+    if [[ ! -s $TMPFILE ]]; then
         if waitUntil "$YN_PREF" -N \
             "Would you like to see who played Queen Elizabeth II as an example?"; then
             printf "Queen Elizabeth II\n" >>"$TMPFILE"
@@ -195,7 +195,7 @@ sort -fu "$TMPFILE" >"$SEARCH_TERMS"
 
 # Let us know how many records we're searching
 numRecords=$(sed -n '$=' "$SEARCH_FILE")
-[[ "$INFO" == "yes" ]] &&
+[[ $INFO == "yes" ]] &&
     printf "==> Searching $numRecords records in $SEARCH_FILE for cast & crew data.\n\n"
 
 # Let us know what we're searching for
@@ -223,13 +223,13 @@ if [[ -n "$(rg -wNzSI -c -f "$SEARCH_TERMS" "$SEARCH_FILE")" ]]; then
 fi
 
 # Any results? If not, don't continue.
-if [[ ! -s "$TMPFILE" ]]; then
+if [[ ! -s $TMPFILE ]]; then
     printf "==> I didn't find ${RED}any${NO_COLOR} matching records.\n"
     printf "    Check the \"Searching for:\" section above.\n"
     loopOrExitP
 else
     numAll=$(cut -f 1 "$TMPFILE" | sort -fu | sed -n '$=')
-    [[ "$numAll" -eq 1 ]] && [[ -z "$MULTIPLE_NAMES_ONLY" ]] &&
+    [[ $numAll -eq 1 ]] && [[ -z $MULTIPLE_NAMES_ONLY ]] &&
         PRINCIPAL_CAST_ONLY="yes"
 fi
 
@@ -247,18 +247,18 @@ awk -F "\t" -v PF="$PTAB" '{if($1==f[1]&&$3!=f[3]) {printf(PF,f[1],f[2],f[3],f[4
     sort -f -t$'\t' -k 2,2 -k 1,1 -k 3,3 >"$MULTIPLE_NAMES"
 
 # Multiple results?
-if [[ ! -s "$MULTIPLE_NAMES" ]]; then
+if [[ ! -s $MULTIPLE_NAMES ]]; then
     numMultiple="0"
 else
     _vb="is"
     _pron="that"
     numMultiple=$(cut -f 1 "$TMPFILE" | sort -f | uniq -d | sed -n '$=')
-    [[ "$numMultiple" -gt 1 ]] && _vb="are" && _pron="those"
+    [[ $numMultiple -gt 1 ]] && _vb="are" && _pron="those"
 fi
 
 # If in interactive mode, give user a choice of all or duplicates only
-if [[ -z "$noLoop" ]] && [[ -z "$MULTIPLE_NAMES_ONLY" ]] &&
-    [[ -z "$PRINCIPAL_CAST_ONLY" ]] && [[ "$numMultiple" -ne 0 ]]; then
+if [[ -z $noLoop ]] && [[ -z $MULTIPLE_NAMES_ONLY ]] &&
+    [[ -z $PRINCIPAL_CAST_ONLY ]] && [[ $numMultiple -ne 0 ]]; then
     printf "\n==> I found $numAll principal cast & crew members. "
     printf "$numMultiple $_vb listed in more than one show.\n"
     waitUntil "$YN_PREF" -N "Should I only print $_pron $numMultiple?" &&
@@ -266,17 +266,17 @@ if [[ -z "$noLoop" ]] && [[ -z "$MULTIPLE_NAMES_ONLY" ]] &&
 fi
 
 # Unless MULTIPLE_NAMES_ONLY, print all search results
-if [[ -z "$MULTIPLE_NAMES_ONLY" ]]; then
+if [[ -z $MULTIPLE_NAMES_ONLY ]]; then
     printf "\n==> Principal cast & crew members in alphabetical order (Name|Job|Show|Role):\n"
     tsvPrint -n "$ALL_NAMES"
 fi
 
 # If PRINCIPAL_CAST_ONLY, exit here
-[[ -n "$PRINCIPAL_CAST_ONLY" ]] && loopOrExitP
+[[ -n $PRINCIPAL_CAST_ONLY ]] && loopOrExitP
 
 # Print multiple search results
-if [[ "$numMultiple" -eq 0 ]]; then
-    [[ -n "$MULTIPLE_NAMES_ONLY" ]] &&
+if [[ $numMultiple -eq 0 ]]; then
+    [[ -n $MULTIPLE_NAMES_ONLY ]] &&
         printf "\n==> I didn't find any cast or crew members who are listed in more than one show.\n"
 else
     printf "\n==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):\n"
