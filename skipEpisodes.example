@@ -14,7 +14,8 @@
 
 # tconst	Type	Primary Title	Original Title	Date
 
-# Tarantino_director.tconst contains a tvEpisode tt0534695 which is
-# one episode of 336 from CSI: Crime Scene Investigation. The following
-# line prevents any other episodes from being processed.
+# Tarantino_director.tconst contains a tvEpisode which is one of 336 from
+# CSI: Crime Scene Investigation, and another which is one of 331 from ER.
+# The following lines prevent other episodes from those shows being processed.
 tt0247082	tvSeries	CSI: Crime Scene Investigation	CSI: Crime Scene Investigation	2000
+tt0108757	tvSeries	ER	ER	1994
