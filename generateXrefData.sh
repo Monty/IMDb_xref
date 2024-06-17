@@ -26,8 +26,20 @@
 #       Defaults to all .xlate files, or specify one with -x [file] on the
 #       command line
 #
-#   Set DEBUG environment variable to enable 'breakpoint' function, save
-#   secondary files
+#
+#    3) .skipEpisodes file(s) with tconst IDs to exclude from processing
+#
+#       For example:
+#           tt0094416
+#           tt1091909
+#           tt0115355
+#           ...
+#
+#       Defaults to all .skipEpisodes files, or specify one with -s [file]
+#       on the command line
+#
+#   Set DEBUG environment variable to enable 'breakpoint' function, and
+#   to save secondary files
 #
 # shellcheck disable=SC2317     # Command appears to be unreachable
 
