@@ -72,11 +72,13 @@ OPTIONS:
     -x      Xlate -- Use a specific translation file instead of *xlate.
     -q      Quiet -- Minimize output, print only the list of shows being processed.
     -r      Reload -- Force all data to be reloaded, even if not necessary.
+    -s      Skip -- Use a specific skipEpisodes file instead of *skipEpisodes
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
 
 EXAMPLES:
     ./generateXrefData.sh
-    ./generateXrefData.sh -x Contrib/Others.xlate Contrib/OPB.tconst
+    ./generateXrefData.sh -x Contrib/OPB.xlate Contrib/OPB.tconst
+    ./generateXrefData.sh -s Tarantino.skipEpisodes Tarantino-director.tconst
     ./generateXrefData.sh -d Comedies
     ./generateXrefData.sh -arq
     ./generateXrefData.sh -t
