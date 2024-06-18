@@ -605,7 +605,7 @@ if [[ -z $BYPASS_PROCESSING ]]; then
     # Create the EPISODE_COUNT spreadsheet
     printf "Count\tTitle\n" >"$EPISODE_COUNT"
     rg "^'" "$SHOWS" | cut -f 1 | uniq -c | sort -nr |
-        perl -p -e "s/ '/  \t'/" >>"$EPISODE_COUNT"
+        perl -p -e "s/ '/\t'/" >>"$EPISODE_COUNT"
 
     # Create the sorted CREDITS spreadsheets
     printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" |
