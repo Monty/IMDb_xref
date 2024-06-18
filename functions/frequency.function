@@ -79,8 +79,8 @@ EOF
 
     # Default fieldwidth to 8
     fmt_str="%${fieldwidth:-8}s %s\n"
-    [ -n "$tab_separated" ] && fmt_str="%s\t%s\n"
-    if [ -n "$sort_by_value" ]; then
+    [[ -n $tab_separated ]] && fmt_str="%s\t%s\n"
+    if [[ -n $sort_by_value ]]; then
         awk -v FW="$fmt_str" \
             '{cnts[$0]+=1} END {for (c in cnts) printf (FW,cnts[c],c)}' |
             sort -f -t$'\t' --key=2

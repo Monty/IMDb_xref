@@ -59,17 +59,16 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    columnNum="${columnNum}"
     tsvFile="$1"
 
-    if [ -z "$tsvFile" ]; then
+    if [[ -z $tsvFile ]]; then
         printf "\n==> [${RED}Error${NO_COLOR}] ${RED}$0>tsvPrint${NO_COLOR} " >&2
         printf "requires a filename argument.\n" >&2
         exit 1
     fi
 
-    if [ -n "$noHighlighting" ]; then
-        if checkForExecutable -q xsv && [ -z "$NO_XSV" ]; then
+    if [[ -n $noHighlighting ]]; then
+        if checkForExecutable -q xsv && [[ -z $NO_XSV ]]; then
             xsv table -d "\t" "$tsvFile"
         else
             PFMT="$(awk -F "\t" -f elastic_tabs.awk "$tsvFile")"
@@ -80,7 +79,7 @@ EOF
         # Use searchFile for highlighting
         searchFile=$(mktemp)
         cut -f "${columnNum:-3}" "$tsvFile" | sed 's+[()?]+\\&+g' >"$searchFile"
-        if checkForExecutable -q xsv && [ -z "$NO_XSV" ]; then
+        if checkForExecutable -q xsv && [[ -z $NO_XSV ]]; then
             xsv table -d "\t" "$tsvFile" | rg --color always -f "$searchFile"
         else
             PFMT="$(awk -F "\t" -f elastic_tabs.awk "$tsvFile")"

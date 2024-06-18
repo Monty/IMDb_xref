@@ -24,10 +24,10 @@ mkdir -p ~/.config/IMDb_xref
 configFile=~/.config/IMDb_xref/config
 
 # Remove invalid configFile if one exists
-[ -e "$configFile" ] && [ "$(grep -c YN_PREF "$configFile")" -eq 0 ] &&
+[[ -e $configFile ]] && [[ "$(grep -c YN_PREF "$configFile")" -eq 0 ]] &&
     rm -f "$configFile"
 
-[ ! -e "$configFile" ] && cat <<EOF >>"$configFile"
+[[ ! -e $configFile ]] && cat <<EOF >>"$configFile"
 #!/usr/bin/env bash
 #
 # This is the IMDb_xref configuration file. Each line either contains a comment
@@ -49,10 +49,10 @@ EOF
 favoritesFile="favorites.tconst"
 
 durationFile=".xref_durations"
-[ ! -e "$durationFile" ] && touch "$durationFile"
+[[ ! -e $durationFile ]] && touch "$durationFile"
 
 numRecordsFile=".xref_numRecords"
-[ ! -e "$numRecordsFile" ] && touch "$numRecordsFile"
+[[ ! -e $numRecordsFile ]] && touch "$numRecordsFile"
 
 # Cleared by downloadIMDbFiles
 cacheDirectory=".xref_cache"

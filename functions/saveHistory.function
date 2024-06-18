@@ -52,7 +52,7 @@ EOF
     appendName="${2:-$(basename "$0")}"
     histFile="$1"
 
-    if [ -z "$histFile" ]; then
+    if [[ -z $histFile ]]; then
         printf "\n==> [${RED}Error${NO_COLOR}] ${RED}$0>saveHistory${NO_COLOR} " >&2
         printf "requires a filename argument.\n" >&2
         exit 1
@@ -60,7 +60,7 @@ EOF
 
     # The date & time this function ran
     date_fmt="%y%m%d.%H%M%S"
-    timestamp=$(date +$date_fmt)
+    timestamp=$(date +"$date_fmt")
     # shellcheck disable=SC2154      # histDirectory is defined
     savedFile="$histDirectory/$timestamp-$appendName"
     #

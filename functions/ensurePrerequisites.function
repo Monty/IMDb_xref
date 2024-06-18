@@ -43,7 +43,7 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    if [ -n "$NEED_PREFS" ]; then
+    if [[ -n $NEED_PREFS ]]; then
         cat <<EOT
 Welcome to IMDb_xref!
 
@@ -63,8 +63,8 @@ EOT
     fi
 
     # Make sure we have the necessary IMDb .gz files
-    if [ ! -e "name.basics.tsv.gz" ] || [ ! -e "title.basics.tsv.gz" ] ||
-        [ ! -e "title.episode.tsv.gz" ] || [ ! -e "title.principals.tsv.gz" ]; then
+    if [[ ! -e "name.basics.tsv.gz" ]] || [[ ! -e "title.basics.tsv.gz" ]] ||
+        [[ ! -e "title.episode.tsv.gz" ]] || [[ ! -e "title.principals.tsv.gz" ]]; then
         printf "==> Missing IMDb data files. Run downloadIMDbFiles.sh to fix this problem.\n"
         if waitUntil "$YN_PREF" -N "Would you like me to do this for you?"; then
             printf "OK. Downloading...\n"
@@ -78,7 +78,7 @@ EOT
     fi
 
     # Let us know we were successful
-    if [ -n "$tookAction" ]; then
+    if [[ -n $tookAction ]]; then
         printf "==> Prerequisites sucessfully installed."
         waitUntil -k "Hit any key to clear screen and continue, '^C' to quit."
         clear
