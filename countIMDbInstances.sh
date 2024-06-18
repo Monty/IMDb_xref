@@ -20,7 +20,7 @@ for srchString in "$@"; do
     for file in *.tsv.gz; do
         [[ -e $file ]] || break # handle the case of no files
         count=$(rg -wcz "$srchString" "$file")
-        if [ "$count" == "" ]; then
+        if [[ $count == "" ]]; then
             count=0
         fi
         printf "%-10s %5d  %s\n" "$srchString" "$count" "$file"

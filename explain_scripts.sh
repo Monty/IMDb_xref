@@ -18,9 +18,9 @@ source functions/load_functions
 
 for script in *.sh; do
     [[ -e $script ]] || break # handle the case of no files
-    if [ "$(grep -cF 'help()' "$script")" -ne 0 ]; then
-        [ "$script" == "explain_scripts.sh" ] && continue
-        [ "$script" == "start.command" ] && continue
+    if [[ "$(grep -cF 'help()' "$script")" -ne 0 ]]; then
+        [[ $script == "explain_scripts.sh" ]] && continue
+        [[ $script == "start.command" ]] && continue
         clear
         eval ./"$script" -h
         waitUntil -k

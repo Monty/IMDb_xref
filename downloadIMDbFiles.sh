@@ -36,7 +36,7 @@ printDuration
 
 for file in "${gzFiles[@]}"; do
     source="https://datasets.imdbws.com/$file"
-    printf "Downloading $source\n"
+    printf "Downloading %s\n" "$source"
     curl -s -O "$source"
 done
 

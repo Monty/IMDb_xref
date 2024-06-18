@@ -26,8 +26,22 @@
 #       Defaults to all .xlate files, or specify one with -x [file] on the
 #       command line
 #
-#   Set DEBUG environment variable to enable 'breakpoint' function, save
-#   secondary files
+#
+#    3) .skipEpisodes file(s) with tconst IDs to exclude from processing
+#
+#       For example:
+#           tt0094416
+#           tt1091909
+#           tt0115355
+#           ...
+#
+#       Defaults to all .skipEpisodes files, or specify one with -s [file]
+#       on the command line
+#
+#   Set DEBUG environment variable to enable 'breakpoint' function, and
+#   to save secondary files
+#
+# shellcheck disable=SC2317     # Command appears to be unreachable
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
@@ -58,11 +72,13 @@ OPTIONS:
     -x      Xlate -- Use a specific translation file instead of *xlate.
     -q      Quiet -- Minimize output, print only the list of shows being processed.
     -r      Reload -- Force all data to be reloaded, even if not necessary.
+    -s      Skip -- Use a specific skipEpisodes file instead of *skipEpisodes
     -t      Test mode -- Use tconst.example, xlate.example; diff against test_results.
 
 EXAMPLES:
     ./generateXrefData.sh
-    ./generateXrefData.sh -x Contrib/Others.xlate Contrib/OPB.tconst
+    ./generateXrefData.sh -x Contrib/OPB.xlate Contrib/OPB.tconst
+    ./generateXrefData.sh -s Tarantino.skipEpisodes Tarantino-director.tconst
     ./generateXrefData.sh -d Comedies
     ./generateXrefData.sh -arq
     ./generateXrefData.sh -t
@@ -74,7 +90,7 @@ EOF
 trap terminate EXIT
 #
 function terminate() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n $DEBUG ]]; then
         printf "\nTerminating: %s\n" "$(basename "$0")" >&2
         printf "Not removing:\n" >&2
         cat <<EOT >&2
@@ -102,19 +118,19 @@ function cleanup() {
 
 function processDurations() {
     # If we're not in the primary directory, don't record times
-    [ -n "$OUTPUT_DIR" ] || [ -n "$BYPASS_PROCESSING" ] && exit
+    [[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]] && exit
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations -m 10
     # Save the contents of every tconst to use for manual comparison next time
-    [ -n "$useEveryTconst" ] && saveHistory "$EVERY_TCONST"
+    [[ -n $useEveryTconst ]] && saveHistory "$EVERY_TCONST"
     # Keep 20 history files for this script
     trimHistory -m 20
     exit
 }
 
 function breakpoint() {
-    if [ -n "$DEBUG" ]; then
+    if [[ -n $DEBUG ]]; then
         if waitUntil "$YN_PREF" -N "Quit now?"; then
             printf "Quitting ...\n"
             exit 1
@@ -122,7 +138,7 @@ function breakpoint() {
     fi
 }
 
-while getopts ":d:f:x:hraqt" opt; do
+while getopts ":d:f:s:x:hraqt" opt; do
     case $opt in
     a)
         ALL_JOBS="^"
@@ -142,6 +158,9 @@ while getopts ":d:f:x:hraqt" opt; do
         ;;
     q)
         QUIET="yes"
+        ;;
+    s)
+        SKIP_EPISODES=("$OPTARG")
         ;;
     t)
         TEST_MODE="yes"
@@ -165,26 +184,30 @@ shift $((OPTIND - 1))
 ensurePrerequisites
 
 # Create some timestamps - only use DATE_ID if we're debugging
-[ -n "$DEBUG" ] && DATE_ID="-$(date +%y%m%d)"
+[[ -n $DEBUG ]] && DATE_ID="-$(date +%y%m%d)"
 LONGDATE="-$(date +%y%m%d.%H%M%S)"
 
 # Required subdirectories
 WORK="secondary"
 CACHE="${WORK}/cache"
 BASE="test_results"
-[ -n "$OUTPUT_DIR" ] && mkdir -p "$OUTPUT_DIR"
+[[ -n $OUTPUT_DIR ]] && mkdir -p "$OUTPUT_DIR"
 mkdir -p "$WORK" "$BASE" "$CACHE"
 
 # Error and debugging info (per run)
 POSSIBLE_DIFFS="diffs$LONGDATE.txt"
-[ -n "$CREATE_DIFF" ] &&
-    printf "\n==> %s contains diffs between generated files and files saved in %s\n" \
+[[ -n $CREATE_DIFF ]] &&
+    printf "\n==> %s contains diffs between generated files and files saved in %s\n\n" \
         "$POSSIBLE_DIFFS" "$BASE"
+
+# Error and debugging info (per run)
+ERRORS="${OUTPUT_DIR}generate_anomalies$LONGDATE.txt"
 
 # Final output spreadsheets
 ASSOCIATED_TITLES="${OUTPUT_DIR}AssociatedTitles$DATE_ID.csv"
 CREDITS_PERSON="${OUTPUT_DIR}Credits-Person$DATE_ID.csv"
 CREDITS_SHOW="${OUTPUT_DIR}Credits-Show$DATE_ID.csv"
+EPISODE_COUNT="${OUTPUT_DIR}Episode-Count$DATE_ID.csv"
 KNOWN_PERSONS="${OUTPUT_DIR}Persons-KnownFor$DATE_ID.csv"
 LINKS_TO_PERSONS="${OUTPUT_DIR}LinksToPersons$DATE_ID.csv"
 LINKS_TO_TITLES="${OUTPUT_DIR}LinksToTitles$DATE_ID.csv"
@@ -222,23 +245,19 @@ XLATE_PL="$WORK/xlate-pl$DATE_ID.txt"
 TCONST_LIST="$WORK/tconst$DATE_ID.txt"
 EVERY_TCONST="$WORK/every_tconst$DATE_ID.txt"
 
-# Manually entered list of tconst ID's that we don't want tvEpisodes for
-# either because they have too many episodes, or episodes don't translate well
-SKIP_EPISODES="skipEpisodes.example"
-
 # Saved files used for comparison with current files
 PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
 PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
 PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
 PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
-PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
 #
 PUBLISHED_UNIQUE_CHARS="$BASE/uniqCharacters.txt"
 PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
 PUBLISHED_UNIQUE_TITLES="$BASE/uniqTitles.txt"
 #
 PUBLISHED_EPISODES_LIST="$BASE/tconst-episodes.csv"
+PUBLISHED_EPISODE_COUNT="$BASE/episode-count.csv"
 PUBLISHED_KNOWNFOR_LIST="$BASE/tconst_known.txt"
 PUBLISHED_NCONST_LIST="$BASE/nconst.txt"
 PUBLISHED_RAW_PERSONS="$BASE/raw_persons.csv"
@@ -263,54 +282,72 @@ ALL_WORK+=("$TCONST_KNOWN_PL" "$TCONST_SHOWS_PL" "$XLATE_PL")
 ALL_TXT=("$UNIQUE_CHARS" "$UNIQUE_PERSONS" "$UNIQUE_TITLES")
 #
 # Final output spreadsheets
-ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW")
-ALL_SHEETS+=("$KNOWN_PERSONS" "$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS")
+ALL_SHEETS=("$ASSOCIATED_TITLES" "$CREDITS_PERSON" "$CREDITS_SHOW" "$KNOWN_PERSONS")
+ALL_SHEETS+=("$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS" "$EPISODE_COUNT")
 
 # If we ALWAYS want QUIET
-[ -n "$(rg -c "QUIET=yes" "$configFile")" ] && QUIET="yes"
+[[ -n "$(rg -c "QUIET=yes" "$configFile")" ]] && QUIET="yes"
 
 # All jobs or just the most important ones?
-[ -z "$ALL_JOBS" ] && ALL_JOBS="\b(actor|actress|writer|director|producer)\b"
+[[ -z $ALL_JOBS ]] && ALL_JOBS="\b(actor|actress|writer|director|producer)\b"
 
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
 
-if [ -z "$(ls -- *.xlate 2>/dev/null)" ]; then
-    [ -z "$QUIET" ] &&
+if [[ -z "$(ls -- *.xlate 2>/dev/null)" ]]; then
+    [[ -z $QUIET ]] &&
         printf "==> Creating an example translation file: PBS.xlate\n\n"
     rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
-if [ -z "$(ls -- *.tconst 2>/dev/null)" ]; then
-    [ -z "$QUIET" ] &&
+if [[ -z "$(ls -- *.tconst 2>/dev/null)" ]]; then
+    [[ -z $QUIET ]] &&
         printf "==> Creating an example tconst file: PBS.tconst\n\n"
     rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
         -e "The Crown" tconst.example >"PBS.tconst"
 fi
 
-if [ -n "$TEST_MODE" ]; then
+if [[ -n $TEST_MODE ]]; then
     XLATE_FILES=("xlate.example")
+    SKIP_EPISODES=("skipEpisodes.example")
     TCONST_FILES=("tconst.example")
-    printf "==> Using xlate.example files for IMDb title translation.\n\n"
+    printf "==> Using xlate.example file for IMDb title translation.\n\n"
+    printf "==> Using skipEpisodes.example file for skipping episodes.\n\n"
     printf "==> Searching tconst.example for IMDb title identifiers.\n"
 else
     # Pick xlate file(s) to process if not specified with -x option
-    if [ -z "${XLATE_FILES[*]}" ]; then
+    if [[ -z ${XLATE_FILES[*]} ]]; then
         XLATE_FILES=(*.xlate)
-        [ -z "$QUIET" ] &&
+        [[ -z $QUIET ]] &&
             printf "==> Using all .xlate files for IMDb title translation.\n\n"
     else
-        [ -z "$QUIET" ] &&
+        [[ -z $QUIET ]] &&
             printf "==> Using %s for IMDb title translation.\n\n" "${XLATE_FILES[@]}"
     fi
-    if [ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]; then
+    if [[ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]]; then
         printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
         exit 1
     fi
 
+    # Pick skipEpisodes file(s) to process if not specified with -s option
+    if [[ -z ${SKIP_EPISODES[*]} ]]; then
+        SKIP_EPISODES=(*.skipEpisodes)
+        [[ -z $QUIET ]] &&
+            printf "==> Using all .skipEpisodes files for skipping episodes.\n\n"
+    else
+        [[ -z $QUIET ]] &&
+            printf "==> Using %s for skipping episodes.\n\n" \
+                "${SKIP_EPISODES[@]}"
+    fi
+    if [[ -z "$(ls "${SKIP_EPISODES[@]}" 2>/dev/null)" ]]; then
+        printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" \
+            "${SKIP_EPISODES[@]}" >&2
+        exit 1
+    fi
+
     # Pick tconst file(s) to process
-    if [ $# -eq 0 ]; then
+    if [[ $# -eq 0 ]]; then
         TCONST_FILES=(*.tconst)
-        [ -z "$QUIET" ] &&
+        [[ -z $QUIET ]] &&
             printf "==> Searching all .tconst files for IMDb title identifiers.\n"
         # Cache is only enabled if *.tconst is used, which is the usual mode.
         useEveryTconst="yes"
@@ -318,13 +355,13 @@ else
         head -9999 -- *tconst | rg -v "^$|#" >"$EVERY_TCONST"
     else
         for file in "$@"; do
-            if [ ! -e "$file" ]; then
+            if [[ ! -e $file ]]; then
                 printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "$file" >&2
                 exit 1
             fi
             TCONST_FILES+=("$file")
         done
-        [ -z "$QUIET" ] &&
+        [[ -z $QUIET ]] &&
             printf "==> Searching %s for IMDb title identifiers.\n" "${TCONST_FILES[*]}"
     fi
 fi
@@ -332,7 +369,7 @@ fi
 # Coalesce a single tconst input list
 rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f 1 | sort -u >"$TCONST_LIST"
 
-if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
+if [[ -z $RELOAD ]] && [[ -n $useEveryTconst ]]; then
     # Figure out whether we can use previous run as a cache.
     # Must force reload everything if:
     # 1) Missing any gzip or previous generateXrefData files
@@ -344,19 +381,19 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
     numAvailable="$(ls -1 "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
         2>/dev/null | sed -n '$=')"
     # [ "$numRequired" -ne "$numAvailable" ] && printf "Files missing.\n"
-    [ "$numRequired" -ne "$numAvailable" ] && RELOAD="yes"
+    [[ $numRequired -ne $numAvailable ]] && RELOAD="yes"
 
     # 2) Is any gzip file newer than any generateXrefData file?
-    lastWritten="$(ls -1t "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
-        2>/dev/null | head -1)"
+    lastWritten="$(find "${ALL_TXT[@]}" "${ALL_SHEETS[@]}" "${gzFiles[@]}" \
+        2>/dev/null | tail -1)"
     # [[ "$lastWritten" =~ .*tsv\.gz ]] && printf "Last written is a tsv.gz.\n"
     [[ $lastWritten =~ .*tsv\.gz ]] && RELOAD="yes"
 
-    if [ -z "$RELOAD" ]; then
+    if [[ -z $RELOAD ]]; then
         # Get tconst IDs from previous run
         printHistory | rg -IN "^tt" | cut -f 1 | sort -u >"$HIST_TCONST"
         #
-        if [ -z "$(comm -13 "$HIST_TCONST" "$TCONST_LIST")" ]; then
+        if [[ -z "$(comm -13 "$HIST_TCONST" "$TCONST_LIST")" ]]; then
             # Nothing new. No processing required. Very fast...
             BYPASS_PROCESSING="yes"
             printf "\n==> No changes, no new files generated. Use -r to "
@@ -365,7 +402,7 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
             # Some new shows. Minimal processing required. Use merge strategy.
             numNew="$(comm -13 "$HIST_TCONST" "$TCONST_LIST" | tee "$TEMPFILE" |
                 sed -n '$=')"
-            [ "$numNew" -gt 1 ] && plural="s"
+            [[ $numNew -gt 1 ]] && plural="s"
             printf "\n==> Adding $numNew new show$plural. Use -r to "
             printf "force reload all shows.\n\n"
             mergeFilesP="yes"
@@ -375,7 +412,7 @@ if [ -z "$RELOAD" ] && [ -n "$useEveryTconst" ]; then
     fi
 fi
 
-if [ -z "$BYPASS_PROCESSING" ]; then
+if [[ -z $BYPASS_PROCESSING ]]; then
     # Cleanup any possible leftover files
     rm -f "${ALL_TEMPS[@]}" "${ALL_WORK[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}"
 
@@ -388,7 +425,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
     # Check for translation conflicts
     rg -INv "^#|^$" "${XLATE_FILES[@]}" | sort -fu | cut -f 1 | sort -f | uniq -d >"$TEMP_DUPES"
     ### Stop here if there are translation conflicts.
-    if [ -s "$TEMP_DUPES" ]; then
+    if [[ -s $TEMP_DUPES ]]; then
         # shellcheck disable=SC2059      # variables in printf OK here
         printf "[${RED}Error${NO_COLOR}] Translation conflicts for show titles are listed below. "
         cat "$TEMP_DUPES"
@@ -404,8 +441,8 @@ if [ -z "$BYPASS_PROCESSING" ]; then
         perl -p -f "$XLATE_PL" | perl -p -e 's+\t+\t\t\t+;' >"$RAW_SHOWS"
 
     ### Check for and repair duplicate titles
-    cut -f 6 "$RAW_SHOWS" | sort -f | uniq -d >"$TEMP_DUPES"
-    if [ -s "$TEMP_DUPES" ]; then
+    cut -f 5 "$RAW_SHOWS" | sort -f | uniq -d >"$TEMP_DUPES"
+    if [[ -s $TEMP_DUPES ]]; then
         # Create an awk script to add dates to titles on shows with title conflicts
         printf 'BEGIN {OFS = "\\t"}\n' >"$TEMP_AWK"
         perl -p -e 's+^+\$5 == "+; s+$+" {\$5 = \$5 " (" \$7 ")"}+;' "$TEMP_DUPES" \
@@ -424,9 +461,9 @@ if [ -z "$BYPASS_PROCESSING" ]; then
 
     # We don't want to check for episodes in any tvSeries that has hundreds of
     # tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
-    # that can't be "translated" back to the original show. Manually maintain a skip
-    # list in $SKIP_EPISODES.
-    rg -v -e "^#" -e "^$" "$SKIP_EPISODES" | cut -f 1 >"$TEMP_SKIPS"
+    # that can't be "translated" back to the original show. Manually maintain
+    # a skip list in *.skipEpisodes
+    rg -v -e "^#" -e "^$" "${SKIP_EPISODES[*]}" | cut -f 1 >"$TEMP_SKIPS"
 
     # We should now be conflict free
     cut -f 5 "$RAW_SHOWS" | sort -fu >"$UNIQUE_TITLES"
@@ -440,10 +477,10 @@ if [ -z "$BYPASS_PROCESSING" ]; then
         fmt -w 80
     perl -p -e 's+$+;+' "$UNIQUE_TITLES" | fmt -w 80 | perl -p -e 's+^+\t+' |
         sed '$ s+.$++'
-    [ -n "$OUTPUT_DIR" ] && printf "\n"
+    [[ -n $OUTPUT_DIR ]] && printf "\n"
 
     # Let us know how long it took last time, unless we're not in the primary directory
-    [ -z "$OUTPUT_DIR" ] && printDuration
+    [[ -z $OUTPUT_DIR ]] && printDuration
 
     # Use the tconst list to lookup episode IDs and generate an episode tconst file
     rg -wNz -f "$TCONST_LIST" title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
@@ -460,21 +497,21 @@ if [ -z "$BYPASS_PROCESSING" ]; then
     rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
         sort --key=1,1 --key=2,2n | perl -p -e 's+nm0745728+nm0745694+' |
         perl -p -e 's+\\N++g;' |
-        perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
+        perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\t%s\t%s\n", @F[2,0,1,3,5,2,0]' |
         rg "$ALL_JOBS" | tee "$UNSORTED_CREDITS" | cut -f 1 |
         sort -u | tee "$TEMPFILE" >"$NCONST_LIST"
 
     # Use episodes list to lookup principal titles & add to tconst/nconst credits csv
     rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
         sort --key=1,1 --key=2,2n | perl -p -e 's+\\N++g;' |
-        perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
+        perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\t%s\t%s\n", @F[2,0,0,1,3,5,2,0]' |
         rg "$ALL_JOBS" |
         tee -a "$UNSORTED_CREDITS" | cut -f 1 | sort -u |
         rg -v -f "$TEMPFILE" >>"$NCONST_LIST"
 
     # Create a perl script to globally convert a show tconst to a show title
     cut -f 1,5 "$RAW_SHOWS" |
-        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]}g;";' >"$TCONST_SHOWS_PL"
+        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]};";' >"$TCONST_SHOWS_PL"
 
     # Create a perl script to convert an episode tconst to its parent show title
     perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[1]\\t@F[2]\\t@F[3]};";' "$UNSORTED_EPISODES" |
@@ -539,6 +576,9 @@ if [ -z "$BYPASS_PROCESSING" ]; then
     # Add episodes into raw shows
     perl -p -f "$TCONST_EPISODES_PL" "$RAW_EPISODES" >>"$RAW_SHOWS"
 
+    # Fix perl errors for shows ending in '$' -- 'Arli$$' 'Biz Kid$'
+    perl -pi -e 's/Arli\$/Arli\\\$/g;' -e 's/\$\}/\\\$}/g;' "$TCONST_KNOWN_PL"
+
     # Translate tconst and nconst into titles and names
     perl -pi -f "$TCONST_SHOWS_PL" "$RAW_SHOWS"
     perl -pi -f "$TCONST_SHOWS_PL" "$UNSORTED_CREDITS"
@@ -562,8 +602,13 @@ if [ -z "$BYPASS_PROCESSING" ]; then
         sort -f -t$'\t' --key=1,1 --key=2,2r --key=4,4n --key=5,5n \
             --key=6,6 >>"$SHOWS"
 
+    # Create the EPISODE_COUNT spreadsheet
+    printf "Count\tTitle\n" >"$EPISODE_COUNT"
+    rg "^'" "$SHOWS" | cut -f 1 | uniq -c | sort -nr |
+        perl -p -e "s/ '/\t'/" >>"$EPISODE_COUNT"
+
     # Create the sorted CREDITS spreadsheets
-    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" |
+    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" |
         tee "$CREDITS_SHOW" >"$CREDITS_PERSON"
     # Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
     sort -f -t$'\t' --key=1,2 --key=4,4 --key=3,3 "$UNSORTED_CREDITS" \
@@ -574,7 +619,7 @@ if [ -z "$BYPASS_PROCESSING" ]; then
 # End of BYPASS_PROCESSING
 fi
 
-if [ -n "$mergeFilesP" ]; then
+if [[ -n $mergeFilesP ]]; then
     # Merge two files that have a header line. Sort key is 2nd param.
     function mergeSort() {
         file="$1"
@@ -604,7 +649,7 @@ if [ -n "$mergeFilesP" ]; then
 fi
 
 # Save file for later searching
-[ -n "$OUTPUT_FILE" ] && cp -p "$CREDITS_PERSON" "$OUTPUT_FILE"
+[[ -n $OUTPUT_FILE ]] && cp -p "$CREDITS_PERSON" "$OUTPUT_FILE"
 
 # Shortcut for printing file info (before adding totals)
 function printAdjustedFileInfo() {
@@ -618,8 +663,24 @@ function printAdjustedFileInfo() {
     printf "%8d lines\n" "$numlines"
 }
 
+# Check for SHOWS starting with tt
+if [[ -n "$(rg -c "^tt" "$SHOWS")" ]]; then
+    printf "### Shows in %s with a tconst instead of a name:\n" "$SHOWS" \
+        >"$ERRORS"
+    rg -N "^tt" "$SHOWS" >>"$ERRORS"
+    cat >>"$ERRORS" <<EOF
+### Usually caused by an episode tconst without its parent tconst. If you
+### only want specific episodes, but not all episodes in a show, add the
+### parent tconst to skipEpisodes.example
+EOF
+    #
+    printf "==> [${YELLOW}Warning${NO_COLOR}] Shows in $SHOWS have a tconst for a name:\n"
+    printf "    For more details:\n"
+    printf "    rg -N '^tt[0-9]*' %s\n\n" "$SHOWS"
+fi
+
 # Output some stats from $SHOWS
-if [ -z "$QUIET" ]; then
+if [[ -z $QUIET ]]; then
     printf "==> Show types in %s:\n" "$SHOWS"
     rg -v "^Show Title\t" "$SHOWS" | cut -f 2 | frequency
 
@@ -637,6 +698,7 @@ if [ -z "$QUIET" ]; then
     printAdjustedFileInfo "$LINKS_TO_TITLES" 1
     # printAdjustedFileInfo $TCONST_LIST 0
     # printAdjustedFileInfo $RAW_SHOWS 0
+    printAdjustedFileInfo "$EPISODE_COUNT" 1
     printAdjustedFileInfo "$SHOWS" 1
     # printAdjustedFileInfo $NCONST_LIST 0
     printAdjustedFileInfo "$UNIQUE_CHARS" 0
@@ -650,38 +712,38 @@ if [ -z "$QUIET" ]; then
     # printAdjustedFileInfo $KNOWNFOR_LIST 0
 fi
 
+# List the ten shows having the most episodes
+printf "\n==> Shows with the most episodes in %s:\n" "$SHOWS"
+head -11 "$EPISODE_COUNT" | rg -v '^Count' | perl -p -e "s/\t'/\t/"
+
 # Skip diff output if requested. Save durations and exit
-[ -z "$CREATE_DIFF" ] && processDurations
+[[ -z $CREATE_DIFF ]] && processDurations
 
 # Shortcut for checking differences between two files.
 # checkdiffs basefile newfile
 function checkdiffs() {
     printf "\n"
-    if [ ! -e "$1" ]; then
+    if [[ ! -e $2 ]]; then
+        printf "==> $2 does not exist. Skipping diff.\n"
+        return 1
+    fi
+    if [[ ! -e $1 ]]; then
         # If the basefile file doesn't yet exist, assume no differences
         # and copy the newfile to the basefile so it can serve
         # as a base for diffs in the future.
-        printf "==> %s does not exist. Creating it, assuming no diffs.\n" "$1"
+        printf "==> $1 does not exist. Creating it, assuming no diffs.\n"
         cp -p "$2" "$1"
     else
-        printf "==> what changed between %s and %s:\n" "$1" "$2"
         # first the stats
-        diff -c "$1" "$2" | diffstat -sq \
+        printf "./whatChanged.sh \"$1\" \"$2\"\n"
+        diff -u "$1" "$2" | diffstat -sq \
             -D "$(cd "$(dirname "$2")" && pwd -P)" |
-            sed -e 's+ 1 file changed,+==>+' -e 's+([+-=\!])++g'
+            sed -e "s/ 1 file changed,/==>/" -e "s/([+-=\!])//g"
         # then the diffs
-        diff \
-            --unchanged-group-format='' \
-            --old-group-format='==> deleted %dn line%(n=1?:s) at line %df <==
-%<' \
-            --new-group-format='==> added %dN line%(N=1?:s) after line %de <==
-%>' \
-            --changed-group-format='==> changed %dn line%(n=1?:s) at line %df <==
-%<------ to:
-%>' "$1" "$2"
-        # shellcheck disable=SC2181      # Breaks unless $? is used
-        if [ $? == 0 ]; then
+        if cmp --quiet "$1" "$2"; then
             printf "==> no diffs found.\n"
+        else
+            diff -U 0 "$1" "$2" | awk -f formatUnifiedDiffOutput.awk
         fi
     fi
 }
@@ -691,27 +753,27 @@ cat >>"$POSSIBLE_DIFFS" <<EOF
 ==> ${0##*/} completed: $(date)
 
 ### Check the diffs to see if any changes are meaningful
-$(checkdiffs $PUBLISHED_SKIP_EPISODES $SKIP_EPISODES)
-$(checkdiffs $PUBLISHED_TCONST_LIST "$TCONST_LIST")
-$(checkdiffs $PUBLISHED_EPISODES_LIST "$EPISODES_LIST")
-$(checkdiffs $PUBLISHED_KNOWNFOR_LIST "$KNOWNFOR_LIST")
-$(checkdiffs $PUBLISHED_NCONST_LIST "$NCONST_LIST")
-$(checkdiffs $PUBLISHED_UNIQUE_TITLES "$UNIQUE_TITLES")
-$(checkdiffs $PUBLISHED_UNIQUE_CHARS "$UNIQUE_CHARS")
-$(checkdiffs $PUBLISHED_UNIQUE_PERSONS "$UNIQUE_PERSONS")
-$(checkdiffs $PUBLISHED_RAW_PERSONS "$RAW_PERSONS")
-$(checkdiffs $PUBLISHED_RAW_SHOWS "$RAW_SHOWS")
-$(checkdiffs $PUBLISHED_SHOWS "$SHOWS")
-$(checkdiffs $PUBLISHED_KNOWN_PERSONS "$KNOWN_PERSONS")
-$(checkdiffs $PUBLISHED_CREDITS_SHOW "$CREDITS_SHOW")
-$(checkdiffs $PUBLISHED_CREDITS_PERSON "$CREDITS_PERSON")
-$(checkdiffs $PUBLISHED_ASSOCIATED_TITLES "$ASSOCIATED_TITLES")
+$(checkdiffs "$PUBLISHED_TCONST_LIST" "$TCONST_LIST")
+$(checkdiffs "$PUBLISHED_EPISODES_LIST" "$EPISODES_LIST")
+$(checkdiffs "$PUBLISHED_EPISODE_COUNT" "$EPISODE_COUNT")
+$(checkdiffs "$PUBLISHED_KNOWNFOR_LIST" "$KNOWNFOR_LIST")
+$(checkdiffs "$PUBLISHED_NCONST_LIST" "$NCONST_LIST")
+$(checkdiffs "$PUBLISHED_UNIQUE_TITLES" "$UNIQUE_TITLES")
+$(checkdiffs "$PUBLISHED_UNIQUE_CHARS" "$UNIQUE_CHARS")
+$(checkdiffs "$PUBLISHED_UNIQUE_PERSONS" "$UNIQUE_PERSONS")
+$(checkdiffs "$PUBLISHED_RAW_PERSONS" "$RAW_PERSONS")
+$(checkdiffs "$PUBLISHED_RAW_SHOWS" "$RAW_SHOWS")
+$(checkdiffs "$PUBLISHED_SHOWS" "$SHOWS")
+$(checkdiffs "$PUBLISHED_KNOWN_PERSONS" "$KNOWN_PERSONS")
+$(checkdiffs "$PUBLISHED_CREDITS_SHOW" "$CREDITS_SHOW")
+$(checkdiffs "$PUBLISHED_CREDITS_PERSON" "$CREDITS_PERSON")
+$(checkdiffs "$PUBLISHED_ASSOCIATED_TITLES" "$ASSOCIATED_TITLES")
 
 ### Any funny stuff with file lengths?
 
 EOF
 
-touch $HIST_TCONST # In case we've not run printHistory
+touch "$HIST_TCONST" # In case we've not run printHistory
 wc "${ALL_WORK[@]}" "${ALL_TXT[@]}" "${ALL_CSV[@]}" "${ALL_SHEETS[@]}" \
     >>"$POSSIBLE_DIFFS"
 
