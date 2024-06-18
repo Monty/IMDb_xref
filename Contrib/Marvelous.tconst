@@ -1,5 +1,6 @@
 # IMDb tconst IDs of some Marvel Studios films and other shows with the same actors
 
+# tconst	Type	Primary Title	Original Title	Date
 tt4154796	movie	Avengers: Endgame	Avengers: Endgame	2019
 tt4154756	movie	Avengers: Infinity War	Avengers: Infinity War	2018
 tt1825683	movie	Black Panther	Black Panther	2018
@@ -15,7 +16,7 @@ tt0371724	movie	The Hitchhiker's Guide to the Galaxy	The Hitchhiker's Guide to t
 tt2310332	movie	The Hobbit: The Battle of the Five Armies	The Hobbit: The Battle of the Five Armies	2014
 tt1170358	movie	The Hobbit: The Desolation of Smaug	The Hobbit: The Desolation of Smaug	2013
 tt2381991	movie	The Huntsman: Winter's War	The Huntsman: Winter's War	2016
-tt1399664	tvMiniSeries	The Night Manager	The Night Manager	2016
+tt1399664	tvSeries	The Night Manager	The Night Manager	2016
 tt0800369	movie	Thor	Thor	2011
 tt3501632	movie	Thor: Ragnarok	Thor: Ragnarok	2017
 tt1981115	movie	Thor: The Dark World	Thor: The Dark World	2013
