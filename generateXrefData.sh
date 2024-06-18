@@ -138,7 +138,7 @@ function breakpoint() {
     fi
 }
 
-while getopts ":d:f:x:hraqt" opt; do
+while getopts ":d:f:s:x:hraqt" opt; do
     case $opt in
     a)
         ALL_JOBS="^"
@@ -158,6 +158,9 @@ while getopts ":d:f:x:hraqt" opt; do
         ;;
     q)
         QUIET="yes"
+        ;;
+    s)
+        SKIP_EPISODES=("$OPTARG")
         ;;
     t)
         TEST_MODE="yes"
@@ -194,7 +197,7 @@ mkdir -p "$WORK" "$BASE" "$CACHE"
 # Error and debugging info (per run)
 POSSIBLE_DIFFS="diffs$LONGDATE.txt"
 [[ -n $CREATE_DIFF ]] &&
-    printf "\n==> %s contains diffs between generated files and files saved in %s\n" \
+    printf "\n==> %s contains diffs between generated files and files saved in %s\n\n" \
         "$POSSIBLE_DIFFS" "$BASE"
 
 # Error and debugging info (per run)
@@ -242,17 +245,12 @@ XLATE_PL="$WORK/xlate-pl$DATE_ID.txt"
 TCONST_LIST="$WORK/tconst$DATE_ID.txt"
 EVERY_TCONST="$WORK/every_tconst$DATE_ID.txt"
 
-# Manually entered list of tconst ID's that we don't want tvEpisodes for
-# either because they have too many episodes, or episodes don't translate well
-SKIP_EPISODES="skipEpisodes.example"
-
 # Saved files used for comparison with current files
 PUBLISHED_ASSOCIATED_TITLES="$BASE/AssociatedTitles.csv"
 PUBLISHED_CREDITS_PERSON="$BASE/Credits-Person.csv"
 PUBLISHED_CREDITS_SHOW="$BASE/Credits-Show.csv"
 PUBLISHED_KNOWN_PERSONS="$BASE/Persons-KnownFor.csv"
 PUBLISHED_SHOWS="$BASE/Shows.csv"
-PUBLISHED_SKIP_EPISODES="$BASE/skipEpisodes.example"
 #
 PUBLISHED_UNIQUE_CHARS="$BASE/uniqCharacters.txt"
 PUBLISHED_UNIQUE_PERSONS="$BASE/uniqPersons.txt"
@@ -310,8 +308,10 @@ fi
 
 if [[ -n $TEST_MODE ]]; then
     XLATE_FILES=("xlate.example")
+    SKIP_EPISODES=("skipEpisodes.example")
     TCONST_FILES=("tconst.example")
-    printf "==> Using xlate.example files for IMDb title translation.\n\n"
+    printf "==> Using xlate.example file for IMDb title translation.\n\n"
+    printf "==> Using skipEpisodes.example file for skipping episodes.\n\n"
     printf "==> Searching tconst.example for IMDb title identifiers.\n"
 else
     # Pick xlate file(s) to process if not specified with -x option
@@ -325,6 +325,22 @@ else
     fi
     if [[ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]]; then
         printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
+        exit 1
+    fi
+
+    # Pick skipEpisodes file(s) to process if not specified with -s option
+    if [[ -z ${SKIP_EPISODES[*]} ]]; then
+        SKIP_EPISODES=(*.skipEpisodes)
+        [[ -z $QUIET ]] &&
+            printf "==> Using all .skipEpisodes files for skipping episodes.\n\n"
+    else
+        [[ -z $QUIET ]] &&
+            printf "==> Using %s for skipping episodes.\n\n" \
+                "${SKIP_EPISODES[@]}"
+    fi
+    if [[ -z "$(ls "${SKIP_EPISODES[@]}" 2>/dev/null)" ]]; then
+        printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" \
+            "${SKIP_EPISODES[@]}" >&2
         exit 1
     fi
 
@@ -445,9 +461,9 @@ if [[ -z $BYPASS_PROCESSING ]]; then
 
     # We don't want to check for episodes in any tvSeries that has hundreds of
     # tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
-    # that can't be "translated" back to the original show. Manually maintain a skip
-    # list in $SKIP_EPISODES.
-    rg -v -e "^#" -e "^$" "$SKIP_EPISODES" | cut -f 1 >"$TEMP_SKIPS"
+    # that can't be "translated" back to the original show. Manually maintain
+    # a skip list in *.skipEpisodes
+    rg -v -e "^#" -e "^$" "${SKIP_EPISODES[*]}" | cut -f 1 >"$TEMP_SKIPS"
 
     # We should now be conflict free
     cut -f 5 "$RAW_SHOWS" | sort -fu >"$UNIQUE_TITLES"
@@ -737,7 +753,6 @@ cat >>"$POSSIBLE_DIFFS" <<EOF
 ==> ${0##*/} completed: $(date)
 
 ### Check the diffs to see if any changes are meaningful
-$(checkdiffs "$PUBLISHED_SKIP_EPISODES" "$SKIP_EPISODES")
 $(checkdiffs "$PUBLISHED_TCONST_LIST" "$TCONST_LIST")
 $(checkdiffs "$PUBLISHED_EPISODES_LIST" "$EPISODES_LIST")
 $(checkdiffs "$PUBLISHED_EPISODE_COUNT" "$EPISODE_COUNT")
