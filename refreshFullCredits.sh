@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
-# Download full credits for a tconst
+# Regnerate credits cache (.xref_cache/tt*)
+#
+# shellcheck disable=SC2317     # Command appears to be unreachable
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
@@ -13,13 +15,25 @@ source functions/load_functions
 # Keep track of elapsed time
 SECONDS=0
 
+# Don't leave tempfiles around
+trap terminate EXIT
+#
 function terminate() {
     saveDurations "$SECONDS"
     # Only keep 3 duration lines for this script
     trimDurations -m 3
     # Only keep 5 history files for this script
     trimHistory -m 5
+    rm -f "$CACHE_LIST" "$TCONST_LIST" "$TMPFILE"
     exit
+}
+
+# trap ctrl-c and call cleanup
+trap cleanup INT
+#
+function cleanup() {
+    printf "\nCtrl-C detected. Exiting.\n" >&2
+    exit 130
 }
 
 # Make sure we can execute curl. If not, quit.
@@ -37,7 +51,9 @@ TCONST_LIST=$(mktemp)
 TMPFILE=$(mktemp)
 
 ls -1 "$cacheDirectory" | rg "^tt" >"$TMPFILE"
-cut -f 1 LinksToTitles.csv | rg "^tt" >>"$TMPFILE"
+rg "^tt" LinksToTitles.csv | cut -f 1 >>"$TMPFILE"
+# Don't process all tconsts
+# rg -I "^tt" ./*tconst Contrib/*tconst | cut -f 1 >>"$TMPFILE"
 
 sort -fu "$TMPFILE" >"$TCONST_LIST"
 
@@ -58,7 +74,9 @@ done <"$TCONST_LIST"
 sort -fd -t$'\t' --key=2 "$CACHE_LIST" | rg -v '&quot;' >"$TMPFILE"
 saveHistory "$TMPFILE"
 
-rm -f "$CACHE_LIST" "$TCONST_LIST" "$TMPFILE"
+# Tell how many cache files we updated
+num_tconsts=$(sed -n '$=' "$TMPFILE")
+printf "\n==> Refreshed %d files in .xref_cache\n" "$num_tconsts"
 
 # Save durations and exit
 terminate
