@@ -59,9 +59,8 @@ Suppose you're a fan of the PBS series "The Crown". You start watching "The
 Night Manager". You recognize the actress who played Princess Diana in "The
 Crown" but aren't sure of her name.
 
-Run `start.command`, select `Find the principal cast & crew members of one or
-more shows`. Enter **`The Crown`**, enter **`The Night Manager`**, enter a blank
-line. *It will find 4 shows titled The Crown - select #4, the tvSeries.* It will
+Run `start.command`, select `1) Find shows, then list their top 50 cast & crew members`. Enter **`The Crown`**, enter **`The Night Manager`**, enter a blank
+line. *It will find 5 shows titled The Crown - select #5, the tvSeries.* *It will find 2 shows titled The Night Manager - select #3, the one dated 2016.* It will
 display the cast of "The Crown", the cast of "The Night Manager", and finally,
 the principal cast members who appear in more than one show. You can easily see
 that the actress you were looking for is Elizabeth Debicki.
@@ -71,14 +70,12 @@ that the actress you were looking for is Elizabeth Debicki.
 If you like those shows, save them to your favorites. It will enable some
 advanced features we'll cover later.
 
-Then select `Find all shows listing a person as a principal cast or crew
-member`. Enter **`Elizabeth Debicki`**. It will find 17 titles listing Elizabeth
-Debicki as: actress.
+Then select `4) Find people, then list all shows having them as a principal cast or crew member`. Enter **`Elizabeth Debicki`**. It will find the titles listing Elizabeth Debicki as: self, actress, etc. Enter "n" for any categories you don't want to see.
 
 ![Debicki as actress](docs/Screenshots/Debicki.png?raw=true)
 
 Repeat with any cast members you want to know more about, such as Olivia Colman.
-You'll discover she is in 62 shows, including "Broadchurch".
+You'll discover she is in 130 shows, including "Broadchurch".
 
 Look up the cast of "Broadchurch" to find more actors, then find more shows and
 even more actors. Enjoy exploring! Each query result includes handy links to
@@ -113,7 +110,7 @@ compressed IMDb data files, and open the top-level menu shown below.
 
 ![Top-level menu](docs/Screenshots/startMenu.png?raw=true)
 
-Select #1 `Find the principal cast & crew members of one or more shows`. Enter
+Select #1 `Find shows, then list their top 50 cast & crew members`. Enter
 the title of a movie or TV show you like. If you know another show starring some
 of the same actors, enter that on the next line. Then enter a blank line.
 
@@ -129,11 +126,10 @@ term. It can be quite long for complex queries.
 The "... listed in more than one" section contains only rows with names
 found in more than one show. It can be empty.
 
-Selecting #2 `Find any principal cast & crew members listed in more than one
-show` will hide the "Principal cast & crew" section. Running identical queries
+Selecting #2 `Find shows, then list only cast & crew members they share` will hide the "Principal cast & crew" section. Running identical queries
 using #1 and #2 will give you an understanding of when each is useful.
 
-Menu selections #3 and #4 search for principal cast and crew members instead of
+Menu selections #4 and #5 search for principal cast and crew members instead of
 show titles. Results should be self-explanatory.
 
 ### Cross-reference saved shows
@@ -142,20 +138,20 @@ When prompted in #1 or #2, add some shows to your favorites, and update your
 data files. That will create lists and spreadsheets that combine data for
 cross-referencing. Those files are much smaller, enabling faster queries.
 
-Select #5 `Run a cross-reference of your saved shows` to enter search terms a
+Select #6 `Run a cross-reference of your cached shows` to enter search terms a
 line at a time.
 
 You can mix and match shows, cast or crew members, and characters portrayed in a
 single search, e.g. The Crown, Olivia Colman, and Queen Elizabeth. Search for
 two or more actors to see if they appear in any shows together. Search for two
-or more shows to see which actors, if any, appear in more than one. 
+or more shows to see which actors, if any, appear in more than one.
 
-Select #6 `Run a guided cross-reference of your saved shows` to predict and fill
+Select #7 `Run a guided cross-reference of your cached shows` to predict and fill
 in search terms with minimal typing. This is particularly useful on a tablet
 running a terminal emulator. *I use the free version of Termius on an iPad, but
 others should work also.*
 
-You can use #7, `Show me a list of my saved shows` to make sure you have saved
+You can use #8, `Show me a list of my saved shows` to make sure you have saved
 the necessary shows before cross-referencing.
 
 ### Search term hints
@@ -218,9 +214,9 @@ people with 758 lines of credits. It did so by selecting three PBS shows from
 **`PBS.xlate`**.
 
 If you run `./generateXrefData.sh -t`, it will load all the shows in
-**`tconst.example`**. You'll now have data on 98 shows with 2205 episodes --
-crediting 3769 people with 19002 lines of credits. Running this takes about 45
-seconds. However, queries should still take less than one second.
+**`tconst.example`**. You'll now have data on 98 shows with 2541 episodes --
+crediting 8457 people with 38151 lines of credits. Running this takes about 2
+minutes. However, queries should still take less than one second.
 
 You can clean up any data you don't want by running `cleanupEverything.sh`. I
 suggest you don't delete anything until you've run through the entire list of
@@ -252,7 +248,7 @@ for TV shows can return more than 10 because each episode has its own credits --
 which is why you can see 56 "Principal cast & crew members" for "The Crown".
 
 IMDb prohibits scraping their website, but you can use the imdb.com links we
-provide to access the "Full Cast & Crew" data online. 
+provide to access the "Full Cast & Crew" data online.
 
 Downloading IMDb data frequently is not as beneficial as you might think. While
 the data is updated daily, those updates are usually minor changes, like
