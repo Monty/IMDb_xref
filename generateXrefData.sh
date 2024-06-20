@@ -305,12 +305,6 @@ if [[ -z "$(ls -- *.xlate 2>/dev/null)" ]]; then
         printf "==> Creating an example translation file: PBS.xlate\n"
     rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
 fi
-if [[ -z "$(ls -- *.skipEpisodes 2>/dev/null)" ]]; then
-    [[ -z $QUIET ]] &&
-        printf "==> Creating an example skipEpisodes file: PBS.skipEpisodes\n\n"
-    rg -N -e "^#|^$" -e "American Experience|Nova" skipEpisodes.example \
-        >"PBS.skipEpisodes"
-fi
 
 if [[ -n $TEST_MODE ]]; then
     XLATE_FILES=("xlate.example")
@@ -324,7 +318,7 @@ else
     if [[ $# -eq 0 ]]; then
         TCONST_FILES=(*.tconst)
         [[ -z $QUIET ]] &&
-            printf "==> Searching all .tconst files for IMDb title identifiers.\n"
+            printf "\n==> Searching all .tconst files for IMDb title identifiers.\n"
         # Cache is only enabled if *.tconst is used, which is the usual mode.
         useEveryTconst="yes"
         # The history file should contain the contents of every tconst file used
@@ -338,7 +332,7 @@ else
             TCONST_FILES+=("$file")
         done
         [[ -z $QUIET ]] &&
-            printf "==> Searching %s for IMDb title identifiers.\n" "${TCONST_FILES[*]}"
+            printf "\n==> Searching %s for IMDb title identifiers.\n" "${TCONST_FILES[*]}"
     fi
 fi
 
