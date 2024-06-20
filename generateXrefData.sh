@@ -294,56 +294,32 @@ ALL_SHEETS+=("$LINKS_TO_PERSONS" "$LINKS_TO_TITLES" "$SHOWS" "$EPISODE_COUNT")
 # If the user hasn't created a .tconst or .xlate file, create a small example
 # from a PBS show. This is relatively harmless, and keeps this script simpler.
 
-if [[ -z "$(ls -- *.xlate 2>/dev/null)" ]]; then
-    [[ -z $QUIET ]] &&
-        printf "==> Creating an example translation file: PBS.xlate\n\n"
-    rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
-fi
 if [[ -z "$(ls -- *.tconst 2>/dev/null)" ]]; then
     [[ -z $QUIET ]] &&
-        printf "==> Creating an example tconst file: PBS.tconst\n\n"
+        printf "==> Creating an example tconst file: PBS.tconst\n"
     rg -N -e "^#|^$" -e "The Durrells" -e "The Night Manager" \
         -e "The Crown" tconst.example >"PBS.tconst"
+fi
+if [[ -z "$(ls -- *.xlate 2>/dev/null)" ]]; then
+    [[ -z $QUIET ]] &&
+        printf "==> Creating an example translation file: PBS.xlate\n"
+    rg -N -e "^#|^$" -e "The Durrells" xlate.example >"PBS.xlate"
+fi
+if [[ -z "$(ls -- *.skipEpisodes 2>/dev/null)" ]]; then
+    [[ -z $QUIET ]] &&
+        printf "==> Creating an example skipEpisodes file: PBS.skipEpisodes\n\n"
+    rg -N -e "^#|^$" -e "American Experience|Nova" skipEpisodes.example \
+        >"PBS.skipEpisodes"
 fi
 
 if [[ -n $TEST_MODE ]]; then
     XLATE_FILES=("xlate.example")
     SKIP_EPISODES=("skipEpisodes.example")
     TCONST_FILES=("tconst.example")
-    printf "==> Using xlate.example file for IMDb title translation.\n\n"
-    printf "==> Using skipEpisodes.example file for skipping episodes.\n\n"
     printf "==> Searching tconst.example for IMDb title identifiers.\n"
+    printf "==> Using xlate.example file for IMDb title translation.\n"
+    printf "==> Using skipEpisodes.example file for skipping episodes.\n\n"
 else
-    # Pick xlate file(s) to process if not specified with -x option
-    if [[ -z ${XLATE_FILES[*]} ]]; then
-        XLATE_FILES=(*.xlate)
-        [[ -z $QUIET ]] &&
-            printf "==> Using all .xlate files for IMDb title translation.\n\n"
-    else
-        [[ -z $QUIET ]] &&
-            printf "==> Using %s for IMDb title translation.\n\n" "${XLATE_FILES[@]}"
-    fi
-    if [[ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]]; then
-        printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
-        exit 1
-    fi
-
-    # Pick skipEpisodes file(s) to process if not specified with -s option
-    if [[ -z ${SKIP_EPISODES[*]} ]]; then
-        SKIP_EPISODES=(*.skipEpisodes)
-        [[ -z $QUIET ]] &&
-            printf "==> Using all .skipEpisodes files for skipping episodes.\n\n"
-    else
-        [[ -z $QUIET ]] &&
-            printf "==> Using %s for skipping episodes.\n\n" \
-                "${SKIP_EPISODES[@]}"
-    fi
-    if [[ -z "$(ls "${SKIP_EPISODES[@]}" 2>/dev/null)" ]]; then
-        printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" \
-            "${SKIP_EPISODES[@]}" >&2
-        exit 1
-    fi
-
     # Pick tconst file(s) to process
     if [[ $# -eq 0 ]]; then
         TCONST_FILES=(*.tconst)
@@ -364,6 +340,31 @@ else
         [[ -z $QUIET ]] &&
             printf "==> Searching %s for IMDb title identifiers.\n" "${TCONST_FILES[*]}"
     fi
+fi
+
+# Pick xlate file(s) to process if not specified with -x option
+if [[ -z ${XLATE_FILES[*]} ]]; then
+    XLATE_FILES=(*.xlate)
+    [[ -z $QUIET ]] &&
+        printf "==> Using all .xlate files for IMDb title translation.\n"
+else
+    [[ -z $QUIET ]] &&
+        printf "==> Using %s for IMDb title translation.\n" "${XLATE_FILES[@]}"
+fi
+if [[ -z "$(ls "${XLATE_FILES[@]}" 2>/dev/null)" ]]; then
+    printf "==> [${RED}Error${NO_COLOR}] No such file: %s\n" "${XLATE_FILES[@]}" >&2
+    exit 1
+fi
+
+# Pick skipEpisodes file(s) to process if not specified with -s option
+if [[ -z ${SKIP_EPISODES[*]} ]]; then
+    SKIP_EPISODES=(*.skipEpisodes)
+    [[ -z $QUIET ]] &&
+        printf "==> Using all .skipEpisodes files for skipping episodes.\n"
+else
+    [[ -z $QUIET ]] &&
+        printf "==> Using %s for skipping episodes.\n" \
+            "${SKIP_EPISODES[@]}"
 fi
 
 # Coalesce a single tconst input list
@@ -463,7 +464,13 @@ if [[ -z $BYPASS_PROCESSING ]]; then
     # tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
     # that can't be "translated" back to the original show. Manually maintain
     # a skip list in *.skipEpisodes
-    rg -v -e "^#" -e "^$" "${SKIP_EPISODES[*]}" | cut -f 1 >"$TEMP_SKIPS"
+    if [[ -z "$(ls "${SKIP_EPISODES[@]}" 2>/dev/null)" ]]; then
+        # If SKIP_EPISODES is empty, put a non-existent tconst in TEMP_SKIPS
+        # to prevent missing file errors during further processing
+        printf "tt0000000\n" >"$TEMP_SKIPS"
+    else
+        rg -v -e "^#" -e "^$" "${SKIP_EPISODES[*]}" | cut -f 1 >"$TEMP_SKIPS"
+    fi
 
     # We should now be conflict free
     cut -f 5 "$RAW_SHOWS" | sort -fu >"$UNIQUE_TITLES"
