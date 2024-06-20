@@ -253,7 +253,7 @@ changing the type of a show from tvSeries to tvEpisode, or changing the titles a
 person is most known for.
 
 Queries for principal cast & crew members can include results you might not
-expect, e.g. cinematographers, editors, and sound track. However, updating your data files
+expect, e.g. cinematographers, editors, and soundtrack. However, updating your data files
 only saves actors, actresses, writers, directors, and producers. To save all
 types run `generateXrefData.sh -a` at any time. You may want to also use the
 `-d` or `-f` options to prevent the larger results from being overwritten.
