@@ -208,13 +208,13 @@ and more.
 ### Generate additional data
 
 Since `./generateXrefData.sh` displays statistics as it runs, you probably
-noticed that it only produced data on 3 shows with 92 episodes -- crediting 87
-people with 758 lines of credits. It did so by selecting three PBS shows from
+noticed that it only produced data on 3 shows with 94 episodes -- crediting 269
+people with 1554 lines of credits. It did so by selecting three PBS shows from
 **`tconst.example`** and creating the example files **`PBS.tconst`** and
 **`PBS.xlate`**.
 
 If you run `./generateXrefData.sh -t`, it will load all the shows in
-**`tconst.example`**. You'll now have data on 98 shows with 2541 episodes --
+**`tconst.example`**. You'll now have data on 98 shows with 2543 episodes --
 crediting 8457 people with 38151 lines of credits. Running this takes about 2
 minutes. However, queries should still take less than one second.
 
