@@ -1,4 +1,4 @@
-# This is a sample tab separated file of IMDb tconst IDs
+# This is a sample tab separated file of IMDb tconst IDs to be processed
 #       See https://www.imdb.com/interfaces/ for a description of IMDb datasets
 #       tconst (string) - alphanumeric unique identifier of the title
 #

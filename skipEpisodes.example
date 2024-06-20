@@ -1,11 +1,14 @@
-# This is a sample tab separated file of IMDb tconst IDs to exclude from processing.
+# This is a sample tab separated file of IMDb tconst IDs to exclude from episode
+# processing.
 
-# When a tvSeries is processed, all its tvEpisodes are automatically looked up,
-# processed, and added. If a tvSeries has hundreds of tvEpisodes or its
-# cast & crew aren't relevant, add the tvSeries tconst below and its tvEpisodes
-# will not be processed.
+# When a tvSeries is processed, all its tvEpisodes are also automatically looked up,
+# processed, and added into the generated spreadsheets. This can greatly increase
+# their size.
+#
+# If a tvSeries has hundreds of tvEpisodes or its cast & crew aren't relevant,
+# add the tvSeries tconst below and its tvEpisodes will not be processed.
 
-# Create a similar skipEpisodes file of shows to exclude episodes from processing.
+# Create a similar skipEpisodes file of shows to exclude from episode processing.
 # If it has a .skipEpisodes extension, it will be automatically processed.
 # However it can have any name and extension and be passed as a parameter
 # on the command line using the -s switch, e.g. -s Netflix.skipEpisodes.txt
@@ -13,10 +16,8 @@
 # Only the tconst field is used. Additional fields are not needed, but useful
 # for documentation.
 
-# Hint:
-#    rg -wNz tt0115355 title.basics.tsv.gz | cut -f 1-4,6 >>PBS.skipEpisodes
-
-# tconst	Type	Primary Title	Original Title	Date
-tt0094416	tvSeries	American Experience	American Experience	1988
-tt1091909	tvSeries	Murdoch Mysteries	Murdoch Mysteries	2008
-tt0115355	tvSeries	Silent Witness	Silent Witness	1996
+# tconst	Service	Primary Title	Date
+tt1091909	Acorn	Murdoch Mysteries	2008
+tt0115355	Britbox	Silent Witness	1996
+tt0094416	PBS	American Experience	1988
+tt0206501	PBS	Nova	1974
