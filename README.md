@@ -210,7 +210,7 @@ and more.
 Since `./generateXrefData.sh` displays statistics as it runs, you probably
 noticed that it only produced data on 3 shows with 92 episodes -- crediting 87
 people with 758 lines of credits. It did so by selecting three PBS shows from
-**`example.tconst`** and creating the example files **`PBS.tconst`** and
+**`tconst.example`** and creating the example files **`PBS.tconst`** and
 **`PBS.xlate`**.
 
 If you run `./generateXrefData.sh -t`, it will load all the shows in
