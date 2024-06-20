@@ -15,7 +15,7 @@ example, [shows with episode titles](docs/OutputFiles/Shows-Episodes.tsv),
 [![Lines](https://tokei.rs/b1/github/Monty/IMDb_xref?category=lines)](https://github.com/Monty/IMDb_xref)
 [![Files](https://tokei.rs/b1/github/Monty/IMDb_xref?category=files)](https://github.com/Monty/IMDb_xref)
 [![Commits](https://badgen.net/github/commits/Monty/IMDb_xref/main/)](https://github.com/Monty/IMDb_xref)
-[![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/         IMDb_xref)
+[![Last Commit](https://img.shields.io/github/last-commit/Monty/IMDb_xref)](https://github.com/Monty/IMDb_xref)
 
 **Table of Contents**
 
@@ -60,7 +60,7 @@ Night Manager". You recognize the actress who played Princess Diana in "The
 Crown" but aren't sure of her name.
 
 Run `start.command`, select `1) Find shows, then list their top 50 cast & crew members`. Enter **`The Crown`**, enter **`The Night Manager`**, enter a blank
-line. *It will find 5 shows titled The Crown - select #5, the tvSeries.* *It will find 2 shows titled The Night Manager - select #3, the one dated 2016.* It will
+line. *It will find 5 shows titled The Crown - select #5, the tvSeries.* *It will find 2 shows titled The Night Manager - select #2, the one dated 2016.* It will
 display the cast of "The Crown", the cast of "The Night Manager", and finally,
 the principal cast members who appear in more than one show. You can easily see
 that the actress you were looking for is Elizabeth Debicki.
@@ -120,16 +120,16 @@ The "Searching for" section lists the search terms used, one per line. If you
 get unexpected results in a complex query, check it to see if you mistyped a
 search term.
 
-The "Principal cast & crew" section contains all rows with a match for **any**
+The "Top 50 cast & crew members in IMDb billing order" section contains all rows with a match for **any**
 term. It can be quite long for complex queries.
 
 The "... listed in more than one" section contains only rows with names
 found in more than one show. It can be empty.
 
-Selecting #2 `Find shows, then list only cast & crew members they share` will hide the "Principal cast & crew" section. Running identical queries
+Selecting #2 `Find shows, then list only cast & crew members they share` will hide the "Top 50 cast & crew members" section. Running identical queries
 using #1 and #2 will give you an understanding of when each is useful.
 
-Menu selections #4 and #5 search for principal cast and crew members instead of
+Menu selections #4 and #5 search for cast and crew members instead of
 show titles. Results should be self-explanatory.
 
 ### Cross-reference saved shows
@@ -256,7 +256,7 @@ changing the type of a show from tvSeries to tvEpisode, or changing the titles a
 person is most known for.
 
 Queries for principal cast & crew members can include results you might not
-expect, e.g. cinematographers and editors. However, updating your data files
+expect, e.g. cinematographers, editors, and sound track. However, updating your data files
 only saves actors, actresses, writers, directors, and producers. To save all
 types run `generateXrefData.sh -a` at any time. You may want to also use the
 `-d` or `-f` options to prevent the larger results from being overwritten.
