@@ -68,8 +68,8 @@ if waitUntil "$YN_PREF" -N \
     "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
     deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
         "AssociatedTitles*.csv" "LinksToPersons*.csv" "LinksToTitles*.csv" \
-        "uniq*.txt" "secondary" "diffs*.txt" "baseline" "test_results" \
-        "*.tsv.gz" "*.tconst" "*.xlate" ".xref_*"
+        "Episode-Count*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
+        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_*"
     exit
 else
     printf "Skipping...\n"
@@ -78,14 +78,14 @@ fi
 if waitUntil "$YN_PREF" -N \
     "Delete primary spreadsheets containing credits, shows, and episodes?"; then
     deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
-        "AssociatedTitles*.csv"
+        "AssociatedTitles*.csv" "LinksToPersons*.csv"
 else
     printf "Skipping...\n"
 fi
 
 if waitUntil "$YN_PREF" -N \
     "Delete smaller files that contain lists of persons and shows?"; then
-    deleteFiles "LinksToPersons*.csv" "LinksToTitles*.csv" "uniq*.txt"
+    deleteFiles "LinksToTitles*.csv" "Episode-Count*.csv" "uniq*.txt"
 else
     printf "Skipping...\n"
 fi
