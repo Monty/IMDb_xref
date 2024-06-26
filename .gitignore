@@ -22,6 +22,9 @@
 *[0-9].sh
 /Hidden/
 
+# Search files for use with rg -f
+*.rgx
+
 # Local backups
 *.bak
 
