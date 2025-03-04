@@ -41,7 +41,7 @@ EXAMPLES:
     ./findCastOf.sh tt1606375
     ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"
     ./findCastOf.sh -s tt1606375 tt1399664 "Broadchurch"
-    ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+    ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells"
 EOF
 }
 
