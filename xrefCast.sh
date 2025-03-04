@@ -15,7 +15,7 @@
 #
 #   Then move to more complex queries that expose other common cast & crew members
 #       ./xrefCast.sh 'The Crown'
-#       ./xrefCast.sh -d 'The Night Manager' 'The Crown' 'The Durrells in Corfu'
+#       ./xrefCast.sh -d 'The Night Manager' 'The Crown' 'The Durrells'
 #
 #   Experiment to find the most useful results.
 
@@ -48,7 +48,7 @@ EXAMPLES:
     ./xrefCast.sh "Olivia Colman"
     ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
     ./xrefCast.sh "The Crown"
-    ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+    ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells"
     ./xrefCast.sh -dn "Elizabeth Debicki"
     ./xrefCast.sh -pf Clooney.csv "Brad Pitt"
 EOF

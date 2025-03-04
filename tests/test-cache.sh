@@ -54,13 +54,13 @@ cacheSize
 
 printf "\n==> findCastOf without cache should be slow...\n"
 printf "    Hit <cr> 4 times to respond to prompts before times are reported.\n"
-time ./findCastOf.sh "The Durrells in Corfu" tt1399664 >/dev/null
+time ./findCastOf.sh "The Durrells" tt1399664 >/dev/null
 cacheSize
 waitUntil -k
 
 printf "\n==> findCastOf with cache should be faster...\n"
 printf "    Hit <cr> 4 times to respond to prompts before times are reported.\n"
-time ./findCastOf.sh "The Durrells in Corfu" tt1399664 >/dev/null
+time ./findCastOf.sh "The Durrells" tt1399664 >/dev/null
 cacheSize
 
 printf "\n==> End of test.\n\n"

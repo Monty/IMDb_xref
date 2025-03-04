@@ -71,20 +71,20 @@ while true; do
     fi
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./findCastOf.sh "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
-        ./findCastOf.sh "The Night Manager" "The Crown" "The Durrells in Corfu"
+        '\nRun ./findCastOf.sh "The Night Manager" "The Crown" "The Durrells"'; then
+        ./findCastOf.sh "The Night Manager" "The Crown" "The Durrells"
     fi
 
     printf "==> Verify -d only lists cast members who are in more than one show.\n"
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
-        ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+        '\nRun ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells"'; then
+        ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells"
     fi
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./findCastOf.sh -ds "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
-        ./findCastOf.sh -ds "The Night Manager" "The Crown" "The Durrells in Corfu"
+        '\nRun ./findCastOf.sh -ds "The Night Manager" "The Crown" "The Durrells"'; then
+        ./findCastOf.sh -ds "The Night Manager" "The Crown" "The Durrells"
     fi
 
     printf "==> Verify extra shows processing.\n\n"

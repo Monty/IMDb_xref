@@ -46,8 +46,8 @@ waitUntil -kc 'What other shows was Olivia Colman in?'
 waitUntil -k
 
 waitUntil -kc \
-    'Are there actors in common between "The Night Manager" "The Crown" "The Durrells in Corfu"?'
-./xrefCast.sh -dn "The Night Manager" 'The Crown' 'The Durrells in Corfu'
+    'Are there actors in common between "The Night Manager" "The Crown" "The Durrells"?'
+./xrefCast.sh -dn "The Night Manager" 'The Crown' 'The Durrells'
 waitUntil -k
 
 waitUntil -kc 'Who was in The Crown?'

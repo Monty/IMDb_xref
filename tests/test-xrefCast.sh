@@ -56,15 +56,15 @@ while true; do
     fi
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./xrefCast.sh "The Night Manager" ""The Durrells in Corfu"'; then
-        ./xrefCast.sh "The Night Manager" "The Durrells in Corfu"
+        '\nRun ./xrefCast.sh "The Night Manager" ""The Durrells"'; then
+        ./xrefCast.sh "The Night Manager" "The Durrells"
     fi
 
     printf "==> Verify -d only lists cast members who are in more than one show.\n"
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"'; then
-        ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells in Corfu"
+        '\nRun ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells"'; then
+        ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells"
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./xrefCast.sh'; then
