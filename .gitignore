@@ -1,6 +1,9 @@
 ## MAC OS
 .DS_Store
 
+# Node
+node_modules/
+
 # IMDb ID, translation, and skipEpisodes files manually created by user
 *.tconst
 *.xlate
