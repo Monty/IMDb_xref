@@ -32,3 +32,6 @@
 /baseline/
 /secondary/
 /test_results/
+
+# Files added by Claude
+.claude/
