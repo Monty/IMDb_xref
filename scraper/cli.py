@@ -35,6 +35,18 @@ from cache import (
     save_filmography,
     save_show,
 )
+from index import (
+    find_common_cast,
+    get_cast_for_show,
+    get_person_info,
+    get_shows_for_person,
+    get_title_info,
+    index_stats,
+    list_persons as list_index_persons,
+    list_titles,
+    rebuild_index,
+    search_index,
+)
 from models import CastMember, Show
 from pages import (
     get_filmography as scrape_filmography,
@@ -141,6 +153,76 @@ def cmd_clear_cache(args: argparse.Namespace) -> None:
     print(f"Cleared {count} files from cache.")
 
 
+# ---------------------------------------------------------------------------
+# Index commands (no browser needed)
+# ---------------------------------------------------------------------------
+
+def cmd_rebuild_index(args: argparse.Namespace) -> None:
+    counts = rebuild_index()
+    _json(counts)
+
+
+def cmd_index_stats(args: argparse.Namespace) -> None:
+    _json(index_stats())
+
+
+def cmd_query(args: argparse.Namespace) -> None:
+    index_file = args.index_file or "cast-by-person.jsonl"
+    results = search_index(args.query, index_file)
+    if args.limit:
+        results = results[: args.limit]
+    _json(results)
+
+
+def cmd_cast_for_show(args: argparse.Namespace) -> None:
+    cast = get_cast_for_show(args.tconst)
+    if args.actors_only:
+        cast = [c for c in cast if c["job"] == "actor"]
+    if args.min_episodes:
+        cast = [c for c in cast if c["episodes"] >= args.min_episodes]
+    # Sort by episodes descending, then rank ascending
+    cast = sorted(cast, key=lambda c: (-c["episodes"], c["rank"]))
+    if args.limit:
+        cast = cast[: args.limit]
+    _json(cast)
+
+
+def cmd_shows_for_person(args: argparse.Namespace) -> None:
+    shows = get_shows_for_person(args.nconst)
+    if args.limit:
+        shows = shows[: args.limit]
+    _json(shows)
+
+
+def cmd_common_cast(args: argparse.Namespace) -> None:
+    results = find_common_cast(args.tconsts)
+    _json(results)
+
+
+def cmd_title_info(args: argparse.Namespace) -> None:
+    info = get_title_info(args.tconst)
+    if info is None:
+        print(f"tconst {args.tconst} not found in index")
+        return
+    _json(info)
+
+
+def cmd_person_info(args: argparse.Namespace) -> None:
+    info = get_person_info(args.nconst)
+    if info is None:
+        print(f"nconst {args.nconst} not found in index")
+        return
+    _json(info)
+
+
+def cmd_list_titles(args: argparse.Namespace) -> None:
+    _json(list_titles())
+
+
+def cmd_list_persons_index(args: argparse.Namespace) -> None:
+    _json(list_index_persons())
+
+
 def main(argv: Sequence[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="scraper",
@@ -216,10 +298,73 @@ def main(argv: Sequence[str] | None = None) -> None:
     p_cc = subs.add_parser("clear-cache", help="Remove all cached data")
     p_cc.set_defaults(func=cmd_clear_cache)
 
+    # rebuild-index
+    p_ri = subs.add_parser("rebuild-index", help="Rebuild JSONL index from cache")
+    p_ri.set_defaults(func=cmd_rebuild_index)
+
+    # index-stats
+    p_is = subs.add_parser("index-stats", help="Show index file stats")
+    p_is.set_defaults(func=cmd_index_stats)
+
+    # query — search any index file
+    p_q = subs.add_parser("query", help="Search the index by substring")
+    p_q.add_argument("query", help="Search query")
+    p_q.add_argument(
+        "--index-file", default="cast-by-person.jsonl",
+        help="Index file to search (default: cast-by-person.jsonl)",
+    )
+    p_q.add_argument("--limit", type=int, default=0, help="Max results (0=all)")
+    p_q.set_defaults(func=cmd_query)
+
+    # cast-for-show
+    p_cfs = subs.add_parser("cast-for-show", help="Get cast for a show from index")
+    p_cfs.add_argument("tconst", help="IMDb tconst ID")
+    p_cfs.add_argument("--actors-only", action="store_true")
+    p_cfs.add_argument("--min-episodes", type=int, default=0)
+    p_cfs.add_argument("--limit", type=int, default=0, help="Max results (0=all)")
+    p_cfs.set_defaults(func=cmd_cast_for_show)
+
+    # shows-for-person
+    p_sfp = subs.add_parser("shows-for-person", help="Get shows for a person from index")
+    p_sfp.add_argument("nconst", help="IMDb nconst ID")
+    p_sfp.add_argument("--limit", type=int, default=0, help="Max results (0=all)")
+    p_sfp.set_defaults(func=cmd_shows_for_person)
+
+    # common-cast
+    p_cc2 = subs.add_parser(
+        "common-cast", help="Find cast shared between shows"
+    )
+    p_cc2.add_argument("tconsts", nargs="+", help="Two or more tconst IDs")
+    p_cc2.set_defaults(func=cmd_common_cast)
+
+    # title-info
+    p_ti = subs.add_parser("title-info", help="Get title info from index")
+    p_ti.add_argument("tconst", help="IMDb tconst ID")
+    p_ti.set_defaults(func=cmd_title_info)
+
+    # person-info
+    p_pi = subs.add_parser("person-info", help="Get person info from index")
+    p_pi.add_argument("nconst", help="IMDb nconst ID")
+    p_pi.set_defaults(func=cmd_person_info)
+
+    # list-titles
+    p_lt = subs.add_parser("list-titles", help="List all indexed titles")
+    p_lt.set_defaults(func=cmd_list_titles)
+
+    # list-persons
+    p_lp = subs.add_parser("list-persons-index", help="List all indexed persons")
+    p_lp.set_defaults(func=cmd_list_persons_index)
+
     args = parser.parse_args(argv)
 
-    # Initialize browser
-    get_manager(headless=not args.headed, delay=args.delay)
+    # Index commands don't need a browser
+    needs_browser = args.command not in (
+        "rebuild-index", "index-stats", "query", "cast-for-show",
+        "shows-for-person", "common-cast", "title-info", "person-info",
+        "list-titles", "list-persons-index", "list-cache", "clear-cache",
+    )
+    if needs_browser:
+        get_manager(headless=not args.headed, delay=args.delay)
 
     try:
         args.func(args)
