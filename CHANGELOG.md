@@ -55,3 +55,4 @@
   - `title-info <tconst>` / `person-info <nconst>` — lookup by ID
   - `list-titles` / `list-persons-index` — list all indexed entries
 - **Cast deduplication** — same person in same show is collapsed to one entry, preferring "actor" job
+- **Job filtering** — `rebuild-index` reads `rg_jobs.rgx` and only indexes jobs listed there (actor, actress, cinematographer, director, editor, producer, writer). Edit `rg_jobs.rgx` to add/remove jobs.
