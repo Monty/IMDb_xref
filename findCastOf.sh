@@ -223,7 +223,13 @@ while IFS= read -r searchTerm; do
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
     if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]]; then
         printf "==> Fetching full credits from IMDb...\n"
-        _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
+        scrapeResult=$(_scraper --delay 1 full-credits "$tconst" 2>&1)
+        scrapeRC=$?
+        if [[ $scrapeRC -ne 0 ]] || ! echo "$scrapeResult" | jq . >/dev/null 2>&1; then
+            printf "==> [${RED}Error${NO_COLOR}] Scraper failed. Make sure Playwright is installed:\n"
+            printf "    playwright install chromium\n"
+            loopOrExitP
+        fi
         _scraper rebuild-index >/dev/null 2>&1
     fi
 

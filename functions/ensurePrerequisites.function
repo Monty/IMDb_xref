@@ -85,12 +85,20 @@ EOT
     fi
 
     # Make sure Playwright chromium browser is installed
-    # macOS: ~/Library/Caches/ms-playwright/, Linux: ~/.cache/ms-playwright/
+    # Check common cache dirs for the chromium binary
+    pwCache=""
     case "$(uname)" in
         Darwin) pwCache="${HOME}/Library/Caches/ms-playwright" ;;
         *)      pwCache="${HOME}/.cache/ms-playwright" ;;
     esac
-    if ! ls "$pwCache"/chromium-* >/dev/null 2>&1; then
+    pwInstalled="no"
+    for dir in "$pwCache"/chromium-*/; do
+        if ls "$dir"chrome-* >/dev/null 2>&1; then
+            pwInstalled="yes"
+            break
+        fi
+    done
+    if [[ "$pwInstalled" != "yes" ]]; then
         printf "==> Installing Playwright chromium browser...\n"
         playwright install chromium 2>&1
         tookAction="yes"
