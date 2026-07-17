@@ -256,6 +256,13 @@ def get_full_credits(tconst: str) -> Show:
             continue
         heading_text = heading.inner_text().strip().lower()
 
+        # Skip wrapper sections that contain nested <section> elements —
+        # the first section on IMDb fullcredits wraps all 900+ items under
+        # a single "Directors" heading, misclassifying everyone.
+        nested = section.query_selector_all("section")
+        if nested:
+            continue
+
         job = None
         for key, val in heading_to_job.items():
             if key in heading_text:
