@@ -46,6 +46,7 @@ that all prerequisites are installed.
 
 EOT
         source ./setPreferences.sh
+        # shellcheck disable=SC1090 # configFile is defined
         source "$configFile"
     fi
 
