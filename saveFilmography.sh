@@ -73,10 +73,16 @@ _scraper() {
 
 while getopts ":hm:" opt; do
     case $opt in
-    h) help; exit ;;
+    h)
+        help
+        exit
+        ;;
     m) maxMenuSize="$OPTARG" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
-    :) printf "==> Option -$OPTARG requires an argument.\n" >&2; exit 1 ;;
+    :)
+        printf "==> Option -$OPTARG requires an argument.\n" >&2
+        exit 1
+        ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -123,10 +129,10 @@ printf "\n"
 while IFS= read -r searchTerm; do
     [[ -z $searchTerm ]] && continue
 
-    if [[ "$searchTerm" =~ ^nm[0-9]{7,8}$ ]]; then
+    if [[ $searchTerm =~ ^nm[0-9]{7,8}$ ]]; then
         nconst="$searchTerm"
         personInfo=$(_scraper person-info "$nconst" 2>/dev/null)
-        if [[ -n "$personInfo" ]] && [[ "$personInfo" != *"not found"* ]]; then
+        if [[ -n $personInfo ]] && [[ $personInfo != *"not found"* ]]; then
             nconstName=$(jq -r '.name // empty' <<<"$personInfo")
             printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
         fi
@@ -136,13 +142,13 @@ while IFS= read -r searchTerm; do
         searchResults=$(_scraper --delay 1 search-person "$searchTerm" 2>/dev/null)
         matchCount=$(jq 'length' <<<"$searchResults")
 
-        if [[ "$matchCount" -eq 0 ]]; then
+        if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"
             continue
         fi
 
-        if [[ "$matchCount" -ge 2 ]]; then
-            if [[ "$matchCount" -ge ${maxMenuSize:-10} ]]; then
+        if [[ $matchCount -ge 2 ]]; then
+            if [[ $matchCount -ge ${maxMenuSize:-10} ]]; then
                 if waitUntil "$YN_PREF" -Y "Found $matchCount matches. Skip?"; then
                     continue
                 fi
@@ -170,7 +176,8 @@ while IFS= read -r searchTerm; do
                     *)
                         nconst=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
                         nconstName=$(cut -f2 <<<"${tabbedOptions[REPLY - 1]}")
-                        break ;;
+                        break
+                        ;;
                     esac
                 else
                     case "$REPLY" in [Qq]*) loopOrExitP ;; esac
@@ -189,14 +196,14 @@ while IFS= read -r searchTerm; do
     fgData=$(_scraper filmography "$nconst" 2>/dev/null)
     roleCount=$(jq '.roles | length' <<<"$fgData")
 
-    if [[ "$roleCount" -eq 0 ]]; then
+    if [[ $roleCount -eq 0 ]]; then
         printf "==> Fetching filmography from IMDb...\n"
         _scraper --delay 1 filmography "$nconst" >/dev/null 2>&1
         fgData=$(_scraper filmography "$nconst" 2>/dev/null)
         roleCount=$(jq '.roles | length' <<<"$fgData")
     fi
 
-    if [[ "$roleCount" -eq 0 ]]; then
+    if [[ $roleCount -eq 0 ]]; then
         printf "\n==> No filmography found for %s.\n" "$nconstName"
         continue
     fi

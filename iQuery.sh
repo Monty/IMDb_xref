@@ -64,10 +64,16 @@ _scraper() {
 
 while getopts ":hm:" opt; do
     case $opt in
-    h) help; exit ;;
+    h)
+        help
+        exit
+        ;;
     m) maxMenuSize="$OPTARG" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
-    :) printf "Option -$OPTARG requires an argument.\n" >&2; exit 1 ;;
+    :)
+        printf "Option -$OPTARG requires an argument.\n" >&2
+        exit 1
+        ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -84,7 +90,7 @@ _scraper rebuild-index >/dev/null 2>&1
 titleCount=$(_scraper list-titles 2>/dev/null | jq 'length')
 personCount=$(_scraper list-persons-index 2>/dev/null | jq 'length')
 
-if [[ "$titleCount" -eq 0 ]] && [[ "$personCount" -eq 0 ]]; then
+if [[ $titleCount -eq 0 ]] && [[ $personCount -eq 0 ]]; then
     printf "\n==> No cached data found. Search for some shows first:\n"
     printf "    ./findCastOf.sh \"The Crown\"\n\n"
     loopOrExitP
@@ -107,17 +113,17 @@ _incremental_search() {
         local matchCount
         matchCount=$(jq 'length' <<<"$data")
 
-        if [[ "$matchCount" -eq 0 ]]; then
+        if [[ $matchCount -eq 0 ]]; then
             printf "  No matches for \"%s\"\n" "$input"
             continue
         fi
 
-        if [[ "$matchCount" -eq 1 ]]; then
+        if [[ $matchCount -eq 1 ]]; then
             echo "$data"
             return 0
         fi
 
-        if [[ "$matchCount" -le $maxMenuSize ]]; then
+        if [[ $matchCount -le $maxMenuSize ]]; then
             printf "  Found %s matches:\n" "$matchCount"
             jq -r '.[] | "    \(.tconst // .nconst)\t\(.title // .name)"' <<<"$data" | tsvPrint
 
@@ -163,14 +169,23 @@ while true; do
     PS3="Select (1-${#pickOptions[@]}): "
     select pickMenu in "${pickOptions[@]}"; do
         case "$pickMenu" in
-        "Show title") searchType="titles.jsonl"; break ;;
-        "Person name") searchType="persons.jsonl"; break ;;
-        "Done searching") searchType="done"; break ;;
+        "Show title")
+            searchType="titles.jsonl"
+            break
+            ;;
+        "Person name")
+            searchType="persons.jsonl"
+            break
+            ;;
+        "Done searching")
+            searchType="done"
+            break
+            ;;
         *) continue ;;
         esac
     done </dev/tty
 
-    [[ "$searchType" == "done" ]] && break
+    [[ $searchType == "done" ]] && break
 
     result=$(_incremental_search "$searchType" "$searchType")
     rc=$?

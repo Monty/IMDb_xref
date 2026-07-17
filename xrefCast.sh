@@ -69,14 +69,20 @@ _scraper() {
 
 while getopts ":f:hpdin" opt; do
     case $opt in
-    h) help; exit ;;
+    h)
+        help
+        exit
+        ;;
     p) PRINCIPAL_CAST_ONLY="yes" ;;
     d) MULTIPLE_NAMES_ONLY="yes" ;;
     f) SEARCH_FILE="$OPTARG" ;;
     i) INFO="yes" ;;
     n) noLoop="yes" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
-    :) printf "==> Option -$OPTARG requires an argument.\n\n" >&2; exit 1 ;;
+    :)
+        printf "==> Option -$OPTARG requires an argument.\n\n" >&2
+        exit 1
+        ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -150,7 +156,7 @@ printf "\n"
 # Search the index or file
 true >"$TMPFILE"
 
-if [[ "$USE_FILE" == "yes" ]]; then
+if [[ $USE_FILE == "yes" ]]; then
     # Search the provided file (legacy compatibility)
     PTAB='%s\t%s\t%s\t%s\n'
     if [[ -n "$(rg -wNzSI -c -f "$SEARCH_TERMS" "$SEARCH_FILE")" ]]; then

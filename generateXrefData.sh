@@ -52,7 +52,10 @@ _scraper() {
 
 while getopts ":hqrt" opt; do
     case $opt in
-    h) help; exit ;;
+    h)
+        help
+        exit
+        ;;
     q) QUIET="yes" ;;
     r) REFRESH="yes" ;;
     t)
@@ -60,7 +63,10 @@ while getopts ":hqrt" opt; do
         TCONST_FILES=("tconst.example")
         ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
-    :) printf "==> Option -$OPTARG requires an argument.\n\n" >&2; exit 1 ;;
+    :)
+        printf "==> Option -$OPTARG requires an argument.\n\n" >&2
+        exit 1
+        ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -84,7 +90,7 @@ rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f1 | sort -u >"$TCONST_LIST"
 total=$(sed -n '$=' "$TCONST_LIST")
 [[ -z $total ]] && total=0
 
-if [[ "$total" -eq 0 ]]; then
+if [[ $total -eq 0 ]]; then
     printf "\n==> No tconst IDs found.\n"
     terminate
     exit 0
@@ -107,7 +113,7 @@ while IFS= read -r tconst; do
 
     # Check if already cached
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-    if [[ -n "$titleInfo" ]] && [[ "$titleInfo" != *"not found"* ]]; then
+    if [[ -n $titleInfo ]] && [[ $titleInfo != *"not found"* ]]; then
         skipped=$((skipped + 1))
         continue
     fi
@@ -115,7 +121,7 @@ while IFS= read -r tconst; do
     # Scrape full credits
     [[ -z $QUIET ]] && printf "  Fetching: %s\n" "$tconst"
     result=$(_scraper --delay 1 full-credits "$tconst" 2>/dev/null)
-    if [[ -n "$result" ]] && [[ "$result" != "[]" ]]; then
+    if [[ -n $result ]] && [[ $result != "[]" ]]; then
         fetched=$((fetched + 1))
     fi
     processed=$((processed + 1))

@@ -91,14 +91,20 @@ _scraper() {
 
 while getopts ":hf:dme:s" opt; do
     case $opt in
-    h) help; exit ;;
+    h)
+        help
+        exit
+        ;;
     f) favoritesFile="$OPTARG" ;;
     d) MULTIPLE_NAMES_ONLY="yes" ;;
     m) maxMenuSize="$OPTARG" ;;
     e) minEpisodes="$OPTARG" ;;
     s) SHORT="yes" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
-    :) printf "Option -$OPTARG requires an argument.\n" >&2; exit 1 ;;
+    :)
+        printf "Option -$OPTARG requires an argument.\n" >&2
+        exit 1
+        ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -157,7 +163,7 @@ allNames=()
 while IFS= read -r searchTerm; do
     [[ -z $searchTerm ]] && continue
 
-    if [[ "$searchTerm" =~ ^tt[0-9]{7,8}$ ]]; then
+    if [[ $searchTerm =~ ^tt[0-9]{7,8}$ ]]; then
         tconst="$searchTerm"
     else
         # Search for the title on IMDb
@@ -165,13 +171,13 @@ while IFS= read -r searchTerm; do
         searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>/dev/null)
         matchCount=$(jq 'length' <<<"$searchResults")
 
-        if [[ "$matchCount" -eq 0 ]]; then
+        if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"
             continue
         fi
 
-        if [[ "$matchCount" -ge 2 ]]; then
-            if [[ "$matchCount" -ge ${maxMenuSize:-25} ]]; then
+        if [[ $matchCount -ge 2 ]]; then
+            if [[ $matchCount -ge ${maxMenuSize:-25} ]]; then
                 if waitUntil "$YN_PREF" -Y "Found $matchCount matches. Skip?"; then
                     continue
                 fi
@@ -199,7 +205,8 @@ while IFS= read -r searchTerm; do
                     Quit) loopOrExitP ;;
                     *)
                         tconst=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
-                        break ;;
+                        break
+                        ;;
                     esac
                 else
                     case "$REPLY" in [Qq]*) loopOrExitP ;; esac
@@ -213,7 +220,7 @@ while IFS= read -r searchTerm; do
 
     # Ensure we have full credits cached; scrape if needed
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-    if [[ -z "$titleInfo" ]] || [[ "$titleInfo" == *"not found"* ]]; then
+    if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]]; then
         printf "==> Fetching full credits from IMDb...\n"
         _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
         _scraper rebuild-index >/dev/null 2>&1
@@ -276,7 +283,8 @@ comm -23 "$SEARCH_LIST" "$TMPFILE" >"$NEW_LIST" 2>/dev/null || true
 
 if [[ -s $NEW_LIST ]]; then
     numNew=$(sed -n '$=' "$NEW_LIST")
-    _vb="is"; _pron="it"
+    _vb="is"
+    _pron="it"
     [[ $numNew -gt 1 ]] && plural="s" && _vb="are" && _pron="them"
     printf "==> I found %s show%s that %s not in $favoritesFile\n" "$numNew" "$plural" "$_vb"
     rg -f "$NEW_LIST" "$ALL_MATCHES" >"$TMPFILE" 2>/dev/null || true

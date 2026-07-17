@@ -74,13 +74,19 @@ _scraper() {
 
 while getopts ":hm:n:e:r:" opt; do
     case $opt in
-    h) help; exit ;;
+    h)
+        help
+        exit
+        ;;
     m) maxMenuSize="$OPTARG" ;;
     n) maxCast="$OPTARG" ;;
     e) minEpisodesSource="$OPTARG" ;;
     r) maxRank="$OPTARG" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
-    :) printf "Option -$OPTARG requires an argument.\n" >&2; exit 1 ;;
+    :)
+        printf "Option -$OPTARG requires an argument.\n" >&2
+        exit 1
+        ;;
     esac
 done
 shift $((OPTIND - 1))
@@ -120,20 +126,20 @@ tconst=""
 while IFS= read -r searchTerm; do
     [[ -z $searchTerm ]] && continue
 
-    if [[ "$searchTerm" =~ ^tt[0-9]{7,8}$ ]]; then
+    if [[ $searchTerm =~ ^tt[0-9]{7,8}$ ]]; then
         tconst="$searchTerm"
     else
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
         searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>/dev/null)
         matchCount=$(jq 'length' <<<"$searchResults")
 
-        if [[ "$matchCount" -eq 0 ]]; then
+        if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"
             continue
         fi
 
-        if [[ "$matchCount" -ge 2 ]]; then
-            if [[ "$matchCount" -ge ${maxMenuSize:-25} ]]; then
+        if [[ $matchCount -ge 2 ]]; then
+            if [[ $matchCount -ge ${maxMenuSize:-25} ]]; then
                 if waitUntil "$YN_PREF" -Y "Found $matchCount matches. Skip?"; then
                     continue
                 fi
@@ -158,7 +164,10 @@ while IFS= read -r searchTerm; do
                     case "$pickMenu" in
                     Skip*) break ;;
                     Quit) loopOrExitP ;;
-                    *) tconst=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}"); break ;;
+                    *)
+                        tconst=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
+                        break
+                        ;;
                     esac
                 else
                     case "$REPLY" in [Qq]*) loopOrExitP ;; esac
@@ -171,7 +180,7 @@ while IFS= read -r searchTerm; do
 
     # Ensure we have full credits
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-    if [[ -z "$titleInfo" ]] || [[ "$titleInfo" == *"not found"* ]]; then
+    if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]]; then
         printf "==> Fetching full credits...\n"
         _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
         _scraper rebuild-index >/dev/null 2>&1
@@ -193,7 +202,7 @@ castArgs=("cast-for-show" "$tconst" "--actors-only" "--min-episodes" "$minEpisod
 castData=$(_scraper "${castArgs[@]}" 2>/dev/null)
 
 castCount=$(jq 'length' <<<"$castData")
-if [[ "$castCount" -eq 0 ]]; then
+if [[ $castCount -eq 0 ]]; then
     printf "==> No cast found for this show.\n"
     loopOrExitP
 fi
@@ -210,7 +219,7 @@ while IFS= read -r actorLine; do
     relevantShows=$(jq --arg tc "$tconst" '[.[] | select(.tconst != $tc) | select(.job == "actor")]' <<<"$actorShows")
     relevantCount=$(jq 'length' <<<"$relevantShows")
 
-    if [[ "$relevantCount" -gt 0 ]]; then
+    if [[ $relevantCount -gt 0 ]]; then
         # Add source show info + other shows
         jq -r --arg name "$actorName" --arg job "actor" \
             '.[] | "\(.name // $name)\t\(.job // $job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/title/\(.tconst)"' \

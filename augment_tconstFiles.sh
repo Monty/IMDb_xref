@@ -68,10 +68,16 @@ _scraper() {
 
 while getopts ":haiyf" opt; do
     case $opt in
-    h) help; exit ;;
+    h)
+        help
+        exit
+        ;;
     a) ALLOW_EPISODES="yes" ;;
     i) INPLACE="yes" ;;
-    y) INPLACE="yes"; DONT_ASK="yes" ;;
+    y)
+        INPLACE="yes"
+        DONT_ASK="yes"
+        ;;
     f) FETCH_MISSING="yes" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
     esac
@@ -121,7 +127,7 @@ for file in "$@"; do
 
         # Try index first
         info=$(_scraper title-info "$tconst" 2>/dev/null)
-        if [[ -n "$info" ]] && [[ "$info" != *"not found"* ]]; then
+        if [[ -n $info ]] && [[ $info != *"not found"* ]]; then
             title=$(jq -r '.title // ""' <<<"$info")
             year=$(jq -r '.year // ""' <<<"$info")
             types=$(jq -r '(.types // []) | join(",")' <<<"$info")
@@ -135,7 +141,7 @@ for file in "$@"; do
             _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
             _scraper rebuild-index >/dev/null 2>&1
             info=$(_scraper title-info "$tconst" 2>/dev/null)
-            if [[ -n "$info" ]] && [[ "$info" != *"not found"* ]]; then
+            if [[ -n $info ]] && [[ $info != *"not found"* ]]; then
                 title=$(jq -r '.title // ""' <<<"$info")
                 year=$(jq -r '.year // ""' <<<"$info")
                 types=$(jq -r '(.types // []) | join(",")' <<<"$info")
