@@ -28,7 +28,7 @@ OPTIONS:
 
 EXAMPLES:
     ./generateXrefData.sh
-    ./generateXrefData.sh Contrib/OPB.tconst
+    ./generateXrefData.sh Contrib/Acorn.tconst
     ./generateXrefData.sh -r
     ./generateXrefData.sh -qt
 EOF

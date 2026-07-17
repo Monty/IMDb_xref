@@ -225,7 +225,7 @@ while IFS= read -r actorLine; do
         jq -r --arg name "$actorName" --arg job "actor" \
             '.[] | "\(.name // $name)\t\(.job // $job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/title/\(.tconst)"' \
             <<<"$relevantShows" >>"$RESULTS"
-        printf "---\t\t\t\t\t\n" >>"$RESULTS"
+        printf '%s\n' "---" >>"$RESULTS"
     fi
 done < <(jq -c '.[]' <<<"$castData")
 

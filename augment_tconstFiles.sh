@@ -36,7 +36,7 @@ OPTIONS:
     -f      Fetch -- scrape IMDb for any missing titles
 
 EXAMPLES:
-    ./augment_tconstFiles.sh Contrib/OPB.tconst
+    ./augment_tconstFiles.sh Contrib/Acorn.tconst
     ./augment_tconstFiles.sh -i Contrib/*.tconst
     ./augment_tconstFiles.sh -fy favorites.tconst
 EOF
