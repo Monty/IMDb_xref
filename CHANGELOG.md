@@ -56,3 +56,43 @@
   - `list-titles` / `list-persons-index` — list all indexed entries
 - **Cast deduplication** — same person in same show is collapsed to one entry, preferring "actor" job
 - **Job filtering** — `rebuild-index` reads `rg_jobs.rgx` and only indexes jobs listed there (actor, actress, cinematographer, director, editor, producer, writer). Edit `rg_jobs.rgx` to add/remove jobs.
+- **Fixed** wrapper section bug on fullcredits pages where nested `<section>` elements caused 900+ entries to be misclassified as "director"
+
+## [Unreleased] — Phase 4: Shell Script Migration
+
+### Changed
+
+- **`findCastOf.sh`** — Rewritten to use scraper. Searches IMDb, shows disambiguation menu, displays cast with episode counts. New `-e NNN` flag filters by minimum episodes.
+- **`findShowsWith.sh`** — Rewritten to use scraper. Searches IMDb for persons, displays filmography grouped by job.
+- **`findOtherShows.sh`** — Rewritten to use scraper. Finds cast members from a show who appear in other cached shows, with episode counts. New `-e` flag for minimum episodes in source show.
+- **`xrefCast.sh`** — Rewritten to use scraper index. Searches index instead of CSV files. Falls back to file-based search with `-f` flag for backward compatibility.
+- **`iQuery.sh`** — Rewritten to use scraper index. Incremental search over titles and persons from the index.
+- **`generateXrefData.sh`** — Simplified. Reads `.tconst` files, scrapes full credits for each, rebuilds index. No more .gz processing.
+- **`augment_tconstFiles.sh`** — Uses scraper `title-info` for metadata. New `-f` flag fetches missing titles from IMDb.
+- **`start.command`** — Removed `FULLCAST` variable. Updated menu text to reflect episode counts.
+- **`functions/ensurePrerequisites.function`** — Checks for `rg`, `jq`, `uv`, scraper `.venv`, and Playwright browsers instead of .gz files.
+- **`functions/define_files`** — Removed .gz file references.
+
+### Removed
+
+- `downloadIMDbFiles.sh` → moved to `.legacy/`
+- `printIMDbFileHeaders.sh` → moved to `.legacy/`
+- `countIMDbInstances.sh` → moved to `.legacy/`
+- `listIMDbInstances.sh` → moved to `.legacy/`
+
+### Added
+
+- `.xref_cache/` directory — contains JSON cache files for titles and persons (gitignored)
+- `.xref_index/` directory — contains JSONL index files (gitignored)
+- `rg_jobs.rgx` — list of job categories to index (one per line; currently: actor, actress, cinematographer, director, editor, producer, writer)
+- **Non-acting filter** — scraper index filters out entries in the Cast section that are actually crew positions (casting director, assistant director, sound mixer, etc.)
+
+### Changed
+
+- **`saveFilmography.sh`** — Rewritten to use scraper. Saves JSON filmographies to `secondary/filmographies/`.
+- **`functions/ensurePrerequisites.function`** — Checks for `rg`, `jq`, `uv`, `playwright`, Playwright chromium browser, and scraper `.venv`.
+- **`functions/define_files`** — Removed .gz file references.
+
+### Moved
+
+- Obsolete .gz-dependent scripts (`downloadIMDbFiles.sh`, `printIMDbFileHeaders.sh`, `countIMDbInstances.sh`, `listIMDbInstances.sh`) → `hidden/` directory

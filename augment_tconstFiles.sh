@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-# Expand initial tconst IDs in a .tconst file. Add the IMDb Primary Title,
-# Original Title, and Date. Sort by Primary Title
-#
-# Preserve all non-tconst lines, place in the header
+# Expand initial tconst IDs in a .tconst file. Add Type, Primary Title,
+# Original Title, and Date. Sort by Primary Title.
+# Uses the scraper instead of .gz database files.
 
-# Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
@@ -15,7 +13,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-augment_tconstFiles.sh -- Add Type, Primary Title, Original Title, Date. Sort by Primary Title.
+augment_tconstFiles.sh -- Add Type, Primary Title, Original Title, Date.
 
       For example, expand:
           tt1606375
@@ -34,85 +32,67 @@ OPTIONS:
     -h      Print this message.
     -a      Allow tvEpisodes -- normally they are filtered out
     -i      In place -- overwrite original file
-    -y      Yes -- overwrite without asking "OK to overwrite...
+    -y      Yes -- overwrite without asking
+    -f      Fetch -- scrape IMDb for any missing titles
 
 EXAMPLES:
     ./augment_tconstFiles.sh Contrib/OPB.tconst
     ./augment_tconstFiles.sh -i Contrib/*.tconst
-    ./augment_tconstFiles.sh -iy Contrib/*.tconst
+    ./augment_tconstFiles.sh -fy favorites.tconst
 EOF
 }
 
-# Don't leave tempfiles around
 trap terminate EXIT
-#
+RESULT=""
+COMMENTS=""
+SEARCH_LIST=""
+TCONST_LIST=""
+
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: %s\n" "$(basename "$0")" >&2
-        printf "Not removing:\n" >&2
-        cat <<EOT >&2
-RESULT $RESULT
-COMMENTS $COMMENTS
-CACHE_LIST $CACHE_LIST
-SEARCH_LIST $SEARCH_LIST
-TCONST_LIST $TCONST_LIST
-EOT
     else
-        rm -rf "$RESULT" "$COMMENTS" "$CACHE_LIST" "$SEARCH_LIST" "$TCONST_LIST"
+        rm -f "$RESULT" "$COMMENTS" "$SEARCH_LIST" "$TCONST_LIST"
     fi
 }
 
-# trap ctrl-c and call cleanup
 trap cleanup INT
-#
 function cleanup() {
     printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
 }
 
-while getopts ":haiy" opt; do
+_scraper() {
+    uv run --directory scraper python cli.py "$@"
+}
+
+while getopts ":haiyf" opt; do
     case $opt in
-    h)
-        help
-        exit
-        ;;
-    a)
-        ALLOW_EPISODES="yes"
-        ;;
-    i)
-        INPLACE="yes"
-        ;;
-    y)
-        INPLACE="yes"
-        DONT_ASK="yes"
-        ;;
-    \?)
-        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
-        ;;
+    h) help; exit ;;
+    a) ALLOW_EPISODES="yes" ;;
+    i) INPLACE="yes" ;;
+    y) INPLACE="yes"; DONT_ASK="yes" ;;
+    f) FETCH_MISSING="yes" ;;
+    \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
     esac
 done
 shift $((OPTIND - 1))
 
-# Make sure prerequisites are satisfied
-ensurePrerequisites
-
-# Need some tempfiles
 RESULT=$(mktemp)
 COMMENTS=$(mktemp)
-CACHE_LIST=$(mktemp)
 SEARCH_LIST=$(mktemp)
 TCONST_LIST=$(mktemp)
 
-# Make sure a file was supplied
 if [[ $# -eq 0 ]]; then
-    printf "==> [${RED}Error${NO_COLOR}] Please supply a tconst filename on the command line.\n\n" >&2
+    printf "==> [${RED}Error${NO_COLOR}] Please supply a tconst filename.\n\n" >&2
     exit 1
 fi
 
+# Ensure index exists
+_scraper rebuild-index >/dev/null 2>&1
+
 function copyResults() {
-    # Preserve comments at top
     cat "$COMMENTS"
-    # Then add the sorted tconst lines
     if [[ -n $ALLOW_EPISODES ]]; then
         sort -f -t$'\t' --key=3,3 "$RESULT"
     else
@@ -120,47 +100,58 @@ function copyResults() {
     fi
 }
 
-cacheFile="$cacheDirectory/augmented"
-touch "$cacheFile"
-rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
-
 for file in "$@"; do
     [[ -z $INPLACE ]] && printf "==> %s\n" "$file"
 
-    # Make sure there is no carryover
     true >"$RESULT"
 
-    # Gather and preserve all non-tconst lines
+    # Preserve comments
     rg -Nv "^tt" "$file" >"$COMMENTS"
 
-    # Gather all the lines with tconsts in column 1
-    rg -N "^tt" "$file" | cut -f 1 | sort -u >"$SEARCH_LIST"
+    # Get unique tconst IDs
+    rg -N "^tt" "$file" | cut -f1 | sort -u >"$SEARCH_LIST"
 
-    # Figure out which tconst IDs are cached and which aren't
-    comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
+    # Check which are in the index
+    indexed=$(_scraper list-titles 2>/dev/null | jq -r '.[].tconst')
+    comm -23 "$SEARCH_LIST" <(echo "$indexed" | sort) >"$TCONST_LIST" 2>/dev/null || true
 
-    # Grab the ones already cached
-    rg -wNz -f "$SEARCH_LIST" "$cacheFile" >"$RESULT"
+    # Process each tconst
+    while IFS= read -r tconst; do
+        [[ -z $tconst ]] && continue
 
-    # If everything is cached, skip searching entirely
-    if [[ -n "$(rg -c ^tt "$TCONST_LIST")" ]]; then
-        # Look the ones up that weren't cached, get fields 1-4,6
-        rg -wNz -f "$TCONST_LIST" title.basics.tsv.gz | cut -f 1-4,6 |
-            perl -p -e 's+\\N++g;' >>"$RESULT"
-    fi
+        # Try index first
+        info=$(_scraper title-info "$tconst" 2>/dev/null)
+        if [[ -n "$info" ]] && [[ "$info" != *"not found"* ]]; then
+            title=$(jq -r '.title // ""' <<<"$info")
+            year=$(jq -r '.year // ""' <<<"$info")
+            types=$(jq -r '(.types // []) | join(",")' <<<"$info")
+            printf "%s\t%s\t%s\t\t%s\n" "$tconst" "$types" "$title" "$year" >>"$RESULT"
+            continue
+        fi
 
-    # Either overwrite or print on stdout
+        # Fetch from IMDb if requested
+        if [[ -n $FETCH_MISSING ]]; then
+            printf "  Fetching: %s\n" "$tconst"
+            _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
+            _scraper rebuild-index >/dev/null 2>&1
+            info=$(_scraper title-info "$tconst" 2>/dev/null)
+            if [[ -n "$info" ]] && [[ "$info" != *"not found"* ]]; then
+                title=$(jq -r '.title // ""' <<<"$info")
+                year=$(jq -r '.year // ""' <<<"$info")
+                types=$(jq -r '(.types // []) | join(",")' <<<"$info")
+                printf "%s\t%s\t%s\t\t%s\n" "$tconst" "$types" "$title" "$year" >>"$RESULT"
+            fi
+        fi
+    done <"$SEARCH_LIST"
+
     if [[ -z $INPLACE ]]; then
         copyResults
         printf "\n"
     else
         if [[ -z $DONT_ASK ]]; then
-            waitUntil "$YN_PREF" -N "OK to overwrite $file?" && copyResults \
-                >"$file"
+            waitUntil "$YN_PREF" -N "OK to overwrite $file?" && copyResults >"$file"
         else
             copyResults >"$file"
         fi
     fi
-    cat "$cacheFile" >>"$RESULT"
-    sort -u "$RESULT" >"$cacheFile"
 done

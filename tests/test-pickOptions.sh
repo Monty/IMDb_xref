@@ -41,7 +41,6 @@ while true; do
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "John Wayne" "Robert Downey"'; then
-        printf "==> Robert Downey has no data.\n"
         ./findShowsWith.sh "John Wayne" "Robert Downey"
     fi
 

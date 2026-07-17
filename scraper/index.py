@@ -42,12 +42,84 @@ def _load_allowed_jobs() -> set[str]:
         jobs.add("actor")
     if "actor" in jobs:
         jobs.add("actress")
+
     return jobs
+
+
+# Keywords that indicate a non-acting role even if listed in the Cast section.
+# These are crew positions that IMDb sometimes includes under "Cast".
+NON_ACTING_KEYWORDS = {
+    "casting director",
+    "casting associate",
+    "casting coordinator",
+    "casting assistant",
+    "casting",
+    "assistant director",
+    "associate director",
+    "co-director",
+    "additional director",
+    "supervising director",
+    "assistant editor",
+    "additional editor",
+    "production manager",
+    "production coordinator",
+    "production assistant",
+    "sound mixer",
+    "boom operator",
+    "sound recordist",
+    "camera operator",
+    "assistant camera",
+    "steadicam",
+    "grip",
+    "electrician",
+    "gaffer",
+    "key grip",
+    "stunt coordinator",
+    "stunt performer",
+    "stunt double",
+    "stunts",
+    "costume",
+    "wardrobe",
+    "makeup",
+    "hair",
+    "vfx",
+    "visual effects",
+    "compositor",
+    "digital",
+    "location manager",
+    "script supervisor",
+    "script",
+    "transport",
+    "driver",
+    "property",
+    "art director",
+    "set decorator",
+    "publicist",
+    "publicity",
+    "legal",
+    "accountant",
+    "finance",
+    "health and safety",
+    "english version",
+    "dubbing",
+}
+
+
+def _is_non_acting(character: str) -> bool:
+    """Check if a character/role string indicates a non-acting crew position."""
+    c = character.lower().strip()
+    if not c:
+        return False
+    for keyword in NON_ACTING_KEYWORDS:
+        if keyword in c:
+            return True
+    return False
 
 
 # ---------------------------------------------------------------------------
 # Build
 # ---------------------------------------------------------------------------
+
 
 def rebuild_index() -> dict[str, int]:
     """Read all cached JSON files and produce flat JSONL index files.
@@ -91,6 +163,12 @@ def rebuild_index() -> dict[str, int]:
             if allowed_jobs and job not in allowed_jobs:
                 continue
 
+            # Skip actors whose "character" field is actually a crew role
+            # (e.g., casting director listed under Cast section)
+            character = member.get("character", "")
+            if job == "actor" and _is_non_acting(character):
+                continue
+
             persons[nconst] = {"nconst": nconst, "name": name}
 
             row = {
@@ -112,8 +190,14 @@ def rebuild_index() -> dict[str, int]:
                 if row["job"] == "actor" and existing["job"] != "actor":
                     seen[key] = row
                 # Merge characters if both have them
-                elif row["character"] and existing["character"] and row["character"] != existing["character"]:
-                    existing["character"] = existing["character"] + "; " + row["character"]
+                elif (
+                    row["character"]
+                    and existing["character"]
+                    and row["character"] != existing["character"]
+                ):
+                    existing["character"] = (
+                        existing["character"] + "; " + row["character"]
+                    )
 
         cast_rows.extend(seen.values())
 
@@ -129,30 +213,44 @@ def rebuild_index() -> dict[str, int]:
     # Write titles.jsonl
     titles_path = INDEX_DIR / "titles.jsonl"
     titles_path.write_text(
-        "\n".join(json.dumps(t, ensure_ascii=False) for t in sorted(titles.values(), key=lambda x: x["title"])) + ("\n" if titles else ""),
+        "\n".join(
+            json.dumps(t, ensure_ascii=False)
+            for t in sorted(titles.values(), key=lambda x: x["title"])
+        )
+        + ("\n" if titles else ""),
         encoding="utf-8",
     )
 
     # Write persons.jsonl
     persons_path = INDEX_DIR / "persons.jsonl"
     persons_path.write_text(
-        "\n".join(json.dumps(p, ensure_ascii=False) for p in sorted(persons.values(), key=lambda x: x["name"])) + ("\n" if persons else ""),
+        "\n".join(
+            json.dumps(p, ensure_ascii=False)
+            for p in sorted(persons.values(), key=lambda x: x["name"])
+        )
+        + ("\n" if persons else ""),
         encoding="utf-8",
     )
 
     # Write cast-by-person.jsonl (sorted by person name, then title)
     cbp_path = INDEX_DIR / "cast-by-person.jsonl"
-    cast_by_person = sorted(cast_rows, key=lambda r: (r["name"].lower(), r["title"].lower(), r["rank"]))
+    cast_by_person = sorted(
+        cast_rows, key=lambda r: (r["name"].lower(), r["title"].lower(), r["rank"])
+    )
     cbp_path.write_text(
-        "\n".join(json.dumps(r, ensure_ascii=False) for r in cast_by_person) + ("\n" if cast_by_person else ""),
+        "\n".join(json.dumps(r, ensure_ascii=False) for r in cast_by_person)
+        + ("\n" if cast_by_person else ""),
         encoding="utf-8",
     )
 
     # Write cast-by-show.jsonl (sorted by title, then person name)
     cbs_path = INDEX_DIR / "cast-by-show.jsonl"
-    cast_by_show = sorted(cast_rows, key=lambda r: (r["title"].lower(), r["name"].lower(), r["rank"]))
+    cast_by_show = sorted(
+        cast_rows, key=lambda r: (r["title"].lower(), r["name"].lower(), r["rank"])
+    )
     cbs_path.write_text(
-        "\n".join(json.dumps(r, ensure_ascii=False) for r in cast_by_show) + ("\n" if cast_by_show else ""),
+        "\n".join(json.dumps(r, ensure_ascii=False) for r in cast_by_show)
+        + ("\n" if cast_by_show else ""),
         encoding="utf-8",
     )
 
@@ -167,6 +265,7 @@ def rebuild_index() -> dict[str, int]:
 # ---------------------------------------------------------------------------
 # Query
 # ---------------------------------------------------------------------------
+
 
 def _read_jsonl(name: str) -> list[dict]:
     """Read a JSONL index file into a list of dicts."""
@@ -209,6 +308,7 @@ def find_common_cast(tconsts: list[str]) -> list[dict]:
 
     # Build: nconst -> {name, job, shows: {tconst: {title, character, episodes}}}
     from collections import defaultdict
+
     person_shows: dict[str, dict] = {}
 
     for row in _read_jsonl("cast-by-person.jsonl"):
@@ -233,11 +333,13 @@ def find_common_cast(tconsts: list[str]) -> list[dict]:
     results = []
     for nconst, data in person_shows.items():
         if len(data["shows"]) >= len(tconsts):
-            results.append({
-                "nconst": nconst,
-                "name": data["name"],
-                "shows": sorted(data["shows"].values(), key=lambda s: s["title"]),
-            })
+            results.append(
+                {
+                    "nconst": nconst,
+                    "name": data["name"],
+                    "shows": sorted(data["shows"].values(), key=lambda s: s["title"]),
+                }
+            )
 
     return sorted(results, key=lambda r: r["name"].lower())
 
@@ -273,10 +375,17 @@ def index_stats() -> dict:
     if not INDEX_DIR.exists():
         return {"exists": False}
     stats = {"exists": True}
-    for name in ["titles.jsonl", "persons.jsonl", "cast-by-person.jsonl", "cast-by-show.jsonl"]:
+    for name in [
+        "titles.jsonl",
+        "persons.jsonl",
+        "cast-by-person.jsonl",
+        "cast-by-show.jsonl",
+    ]:
         path = INDEX_DIR / name
         if path.exists():
-            lines = [l for l in path.read_text(encoding="utf-8").strip().split("\n") if l]
+            lines = [
+                l for l in path.read_text(encoding="utf-8").strip().split("\n") if l
+            ]
             stats[name] = len(lines)
         else:
             stats[name] = 0

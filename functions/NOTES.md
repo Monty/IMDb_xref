@@ -6,7 +6,7 @@ They enable changes and additions to all scripts' functionality by simply
 modifying or adding to these files.
 
 They are standard bash code. Load them into any script by using
-`source function/<function>.function`
+`source functions/<function>.function`
 
 ### Definition functions
 

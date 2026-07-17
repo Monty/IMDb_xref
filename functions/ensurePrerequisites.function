@@ -9,27 +9,21 @@ function ensurePrerequisites() {
         cat <<EOF
 ensurePrerequisites -- General-purpose function: ensure prerequisites are satisfied.
 
-Ensures that preferences are set, 'rg' is installed, and that IMDb .gz files are
-downloaded. It is automatically run before the main part of any script.
+Ensures that preferences are set, 'rg' and 'jq' are installed, and that
+the Playwright scraper is ready. Automatically run before the main part
+of any script.
 
 USAGE:
     ensurePrerequisites [OPTIONS...]
 
 OPTIONS:
     -h      Print this message.
-
-EXAMPLES:
-    ensurePrerequisites
 EOF
     }
 
     while getopts ":h" opt; do
         case $opt in
-        h)
-            help
-            waitUntil -k
-            return
-            ;;
+        h) help; waitUntil -k; return ;;
         \?)
             printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
             printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
@@ -47,40 +41,61 @@ EOF
         cat <<EOT
 Welcome to IMDb_xref!
 
-First, I'll let you choose the interaction style you prefer. Then I'll install
-any missing prerequisites and download any necessary IMDb data files.
+First, I'll let you choose the interaction style you prefer. Then I'll check
+that all prerequisites are installed.
 
 EOT
         source ./setPreferences.sh
-        # shellcheck source=functions/define_files
         source "$configFile"
     fi
 
-    # Make sure we can execute rg.
+    # Make sure we can execute rg
     if ! checkForExecutable -q rg; then
         installRipgrep
         tookAction="yes"
     fi
 
-    # Make sure we have the necessary IMDb .gz files
-    if [[ ! -e "name.basics.tsv.gz" ]] || [[ ! -e "title.basics.tsv.gz" ]] ||
-        [[ ! -e "title.episode.tsv.gz" ]] || [[ ! -e "title.principals.tsv.gz" ]]; then
-        printf "==> Missing IMDb data files. Run downloadIMDbFiles.sh to fix this problem.\n"
-        if waitUntil "$YN_PREF" -N "Would you like me to do this for you?"; then
-            printf "OK. Downloading...\n"
-            ./downloadIMDbFiles.sh 2>/dev/null
-            printf "\n"
-            tookAction="yes"
-        else
-            printf "Skipping download. Try again after running downloadIMDbFiles.sh.\n"
-            exit
-        fi
+    # Make sure jq is available
+    if ! checkForExecutable -q jq; then
+        printf "==> 'jq' is required but not installed.\n"
+        printf "    Install it with: brew install jq\n"
+        exit 1
+    fi
+
+    # Make sure uv is available
+    if ! checkForExecutable -q uv; then
+        printf "==> 'uv' is required but not installed.\n"
+        printf "    Install it from: https://docs.astral.sh/uv/\n"
+        exit 1
+    fi
+
+    # Make sure scraper dependencies are installed
+    if [[ ! -d "scraper/.venv" ]]; then
+        printf "==> Installing scraper dependencies...\n"
+        uv sync --directory scraper 2>&1
+        tookAction="yes"
+    fi
+
+    # Make sure playwright CLI is available
+    if ! checkForExecutable -q playwright; then
+        printf "==> 'playwright' is required but not installed.\n"
+        printf "    Install it with: npm install -g playwright\n"
+        exit 1
+    fi
+
+    # Make sure Playwright chromium browser is installed
+    # Check ~/.cache/ms-playwright/ for a chromium directory
+    pwCache="${HOME}/.cache/ms-playwright"
+    if ! ls "$pwCache"/chromium-* >/dev/null 2>&1; then
+        printf "==> Installing Playwright chromium browser...\n"
+        playwright install chromium 2>&1
+        tookAction="yes"
     fi
 
     # Let us know we were successful
     if [[ -n $tookAction ]]; then
-        printf "==> Prerequisites sucessfully installed."
-        waitUntil -k "Hit any key to clear screen and continue, '^C' to quit."
+        printf "\n==> Prerequisites successfully installed.\n"
+        waitUntil -k "Hit any key to continue, '^C' to quit."
         clear
     fi
 }

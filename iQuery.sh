@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 #
-# Interactively generate and run queries for xrefCast
-#
-# Type characters incrementally to generate and run queries
+# Cross-reference saved data using prompts and minimal keystrokes.
+# Uses the scraper index instead of .gz-based uniq files.
 
-# Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
@@ -14,32 +12,20 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-iQuery.sh -- Cross-reference saved data using prompts and minimal keystrokes.
+iQuery.sh -- Cross-reference cached data using prompts and minimal keystrokes.
 
-The files uniqTitles.txt, uniqPersons.txt, and uniqCharacters.txt contain all
-the entities that are in your saved data files. Type characters incrementally
-to select one entity to use as a search term for xrefCast.
+The index contains all the entities in your cached data files.
+Type characters incrementally to select one entity to use as a search term.
 
 Once there is only one possible match, or a low enough number of matches to
-select one by number; ask user to select possible actions -- including adding
-the match as an xrefCast search parameter. If there are no possible matches,
-let the user know.
-
-Minimizes the number of keystrokes required to obtain a search term with a
-guaranteed match, e.g. 'Hi' returns 'Tom Hiddleston' to use when when searching
-for people in the default data files.
+select one by number, you can pick it and add it as a search parameter.
 
 USAGE:
     iQuery.sh [OPTIONS...]
 
 OPTIONS:
     -h      Print this message.
-    -l      Use 'less' to list shows a page at a time rather than all at once.
-            Type space bar for next page, 'b' for previous page, 'h' for help,
-            '/' to search, 'q' to quit.
-    -m      Maximum items to be shown in the search menu. Continue typing until
-            there will be fewer items. Larger numbers will require less typing,
-            but have longer menus. (defaults to 15)
+    -m      Maximum items to be shown in the search menu. (defaults to 15)
 
 EXAMPLES:
     iQuery.sh
@@ -47,291 +33,176 @@ EXAMPLES:
 EOF
 }
 
-# Don't leave tempfiles around
 trap terminate EXIT
-#
+TMPFILE=""
+SEARCH_TERMS=""
+
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
-        printf "Not removing:\n" >&2
-        cat <<EOT >&2
-TITLES $TITLES
-PERSONS $PERSONS
-CHARACTERS $CHARACTERS
-CREDITS $CREDITS
-EOT
     else
-        rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
+        rm -f "$TMPFILE" "$SEARCH_TERMS"
     fi
 }
 
-# trap ctrl-c and call cleanup
 trap cleanup INT
-#
 function cleanup() {
     printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
 }
 
-while getopts ":hlm:" opt; do
+function loopOrExitP() {
+    printf "\n"
+    terminate
+    [[ -n $NO_MENUS ]] && exit
+    exec ./start.command
+}
+
+_scraper() {
+    uv run --directory scraper python cli.py "$@"
+}
+
+while getopts ":hm:" opt; do
     case $opt in
-    h)
-        help
-        exit
-        ;;
-    l)
-        USE_LESS="yes"
-        ;;
-    m)
-        maxHits="$OPTARG"
-        ;;
-    \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
-        ;;
-    :)
-        printf "==> Option -$OPTARG requires a 'maximum menu size' argument.'\n\n" >&2
-        exit 1
-        ;;
+    h) help; exit ;;
+    m) maxMenuSize="$OPTARG" ;;
+    \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
+    :) printf "Option -$OPTARG requires an argument.\n" >&2; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
-# Make sure prerequisites are satisfied
-ensurePrerequisites
+maxMenuSize="${maxMenuSize:-15}"
 
-# Need some tempfiles
-TITLES=$(mktemp)
-PERSONS=$(mktemp)
-CHARACTERS=$(mktemp)
-CREDITS=$(mktemp)
+TMPFILE=$(mktemp)
+SEARCH_TERMS=$(mktemp)
 
-# Setup default search files and corresponding categories
-creditsFile="Credits-Person.csv"
-uniqFiles=('uniqTitles.txt' 'uniqPersons.txt' 'uniqCharacters.txt')
-categories=('show' 'person' 'character')
+# Ensure index exists
+_scraper rebuild-index >/dev/null 2>&1
 
-# Make sure creditsFile exists
-[[ ! -e $creditsFile ]] && ensureDataFiles
+# Check if index has data
+titleCount=$(_scraper list-titles 2>/dev/null | jq 'length')
+personCount=$(_scraper list-persons-index 2>/dev/null | jq 'length')
 
-if [[ -n $FULLCAST ]]; then
-    # Use the data from the cache
-    if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
-        cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
-            sort -fu >"$CREDITS"
-        cut -f 2 "$CREDITS" | sort -fu >"$TITLES"
-        cut -f 1 "$CREDITS" | sort -fu >"$PERSONS"
-        cut -f 6 "$CREDITS" | sort -fu >"$CHARACTERS"
-        #
-        uniqFiles=("$TITLES" "$PERSONS" "$CHARACTERS")
-        creditsFile="$CREDITS"
-    fi
+if [[ "$titleCount" -eq 0 ]] && [[ "$personCount" -eq 0 ]]; then
+    printf "\n==> No cached data found. Search for some shows first:\n"
+    printf "    ./findCastOf.sh \"The Crown\"\n\n"
+    loopOrExitP
 fi
 
-# Check uniq* files exist
-foundSizes=()
-foundCategories=()
-missingCategories=()
-categoryOptions=()
-idx=0
-for file in "${uniqFiles[@]}"; do
-    if [[ -e $file ]]; then
-        numFound="$(sed -n '$=' "$file")"
-        foundSizes+=("$numFound" "${categories[$idx]}s,")
-        foundCategories+=("${categories[$idx]}")
-        categoryOptions+=("Add a ${categories[$idx]} to search for")
-    else
-        missingCategories+=("${categories[$idx]}")
-    fi
-    ((idx++)) || true
-done
+printf "==> Cached data: %s titles, %s persons\n\n" "$titleCount" "$personCount"
 
-# If we don't have any data...
-if [[ ${#missingCategories[@]} -gt 0 ]]; then
-    ensureDataFiles
-    rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
-    exec ./iQuery.sh
-fi
+# Function to do incremental search on an index file
+_incremental_search() {
+    local indexFile="$1"
+    local label="$2"
 
-# Let user know how much data we're dealing with
-sizeStr="${foundSizes[*]}"
-cat <<EOF
-==> I can generate searches based on ${sizeStr/%,/.}
-
-"Add a show" to list every person in a show. "Add a person" to see every show
-they were in. "Add a character" to see everyone who portrayed that character.
-Add multiple people to see all the shows they were in together. Add multiple
-shows to see if any people were in more than one. You can add more search terms
-after executing the search, or switch from a full search to a 'duplicates only'
-search.
-
-As soon as you type enough characters, a proposed search term will appear. Experiment!
-EOF
-
-# Select what action to take
-searchArray=()
-searchString=""
-while true; do
-    actionOptions=("${categoryOptions[@]}")
-    printf "\n"
-
-    searchArraySize="${#searchArray[@]}"
-    [[ $searchArraySize -eq 1 ]] && actionOptions+=("Remove search term")
-    [[ $searchArraySize -gt 1 ]] &&
-        actionOptions+=("Remove one search term" "Delete all search terms")
-    [[ $searchArraySize -gt 0 ]] &&
-        actionOptions+=("Run full search" "Run 'duplicates only' search")
-    actionOptions+=("List all shows" "Quit")
-
-    printf "What would you like to do?\n"
-    PS3="Select a number from 1-${#actionOptions[@]}, or type 'q(uit)': "
-    COLUMNS=80
-    select actionMenu in "${actionOptions[@]}"; do
-        printf "\n"
-        # Be cautious about ordering case statements e.g. List* and *show*
-        case "$actionMenu" in
-        List*)
-            if [[ -n $USE_LESS ]]; then
-                sort -df "${uniqFiles[0]}" | less -EX
-            else
-                sort -df "${uniqFiles[0]}"
-            fi
-            continue 2
-            ;;
-        *show*)
-            searchFile="${uniqFiles[0]}"
-            action="Start typing to search for show titles: "
-            break
-            ;;
-        *person*)
-            searchFile="${uniqFiles[1]}"
-            action="Start typing to search for persons: "
-            break
-            ;;
-        *character*)
-            searchFile="${uniqFiles[2]}"
-            action="Start typing to search for characters: "
-            break
-            ;;
-        *one*)
-            # Remove one of the search term
-            PS3="Select a number from 1-$searchArraySize, or enter '0' to skip: "
-            select deleteMenu in "${searchArray[@]}"; do
-                if [[ $REPLY -ge 1 ]] 2>/dev/null &&
-                    [[ $REPLY -le ${#searchArray[@]} ]]; then
-                    printf "Removing: \"$deleteMenu\"\n"
-                    # Arrays are zero based
-                    ((REPLY--)) || true
-                    tempArray=("${searchArray[@]}")
-                    searchArray=()
-                    searchString=""
-                    for i in "${!tempArray[@]}"; do
-                        # printf "i = $i, REPLY = $REPLY\n"
-                        if [[ $i -ne $REPLY ]]; then
-                            searchArray+=("${tempArray[$i]}")
-                            searchString+="\"${RED}${tempArray[$i]}${NO_COLOR}\" "
-                        fi
-                    done
-                    break
-                else
-                    case "$REPLY" in
-                    0)
-                        break
-                        ;;
-                    esac
-                fi
-            done
-            printf "\nSearch terms: $searchString\n"
-            continue 2
-            ;;
-        Remove*)
-            # Remove the only search term
-            printf "Removing $searchString\n"
-            searchArray=()
-            searchString=""
-            continue 2
-            ;;
-        Delete*)
-            # printf "Removing $searchString\n"
-            printf "Deleting all search terms...\n"
-            searchArray=()
-            searchString=""
-            continue 2
-            ;;
-        *full*)
-            ./xrefCast.sh -n -f "$creditsFile" "${searchArray[@]}"
-            continue 2
-            ;;
-        *duplicates*)
-            ./xrefCast.sh -dn -f "$creditsFile" "${searchArray[@]}"
-            continue 2
-            ;;
-        Quit)
-            [[ -n $NO_MENUS ]] && exit
-            rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
-            exec ./start.command
-            ;;
-        esac
-        case "$REPLY" in
-        [Qq]*)
-            [[ -n $NO_MENUS ]] && exit
-            rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
-            exec ./start.command
-            ;;
-        esac
-    done
-
-    printf "$action"
-
-    # Do the minimal typing search in a specific category
-    searchFor=""
     while true; do
-        read -r -n 1 -s
-        printf "$REPLY"
-        searchFor+="$REPLY"
-        hitCount="$(rg -N -c "$searchFor" "$searchFile")"
-        if [[ $hitCount == "" ]]; then
-            printf "\nNo matches found.\n"
-            break
-        elif [[ $hitCount -eq 1 ]]; then
-            # printf "\nOnly one match found\n"
-            result="$(rg -N "$searchFor" "$searchFile")"
-            for term in "${searchArray[@]}"; do
-                [[ $result == "$term" ]] && break 2
-            done
-            searchString+="\"${RED}${result}${NO_COLOR}\" "
-            searchArray+=("$result")
-            break
-        elif [[ $hitCount -le ${maxHits:-15} ]]; then
-            # printf "\n$hitCount matches found\n"
-            pickOptions=()
-            while IFS=$'\n' read -r line; do
+        read -r -p "Type to search ($label): " input
+        [[ -z $input ]] && continue
+
+        _scraper query "$input" --index-file "$indexFile" 2>/dev/null >"$TMPFILE"
+        local data
+        data=$(cat "$TMPFILE")
+        local matchCount
+        matchCount=$(jq 'length' <<<"$data")
+
+        if [[ "$matchCount" -eq 0 ]]; then
+            printf "  No matches for \"%s\"\n" "$input"
+            continue
+        fi
+
+        if [[ "$matchCount" -eq 1 ]]; then
+            echo "$data"
+            return 0
+        fi
+
+        if [[ "$matchCount" -le $maxMenuSize ]]; then
+            printf "  Found %s matches:\n" "$matchCount"
+            jq -r '.[] | "    \(.tconst // .nconst)\t\(.title // .name)"' <<<"$data" | tsvPrint
+
+            local pickOptions=()
+            local tabbedOptions=()
+            while IFS= read -r line; do
                 pickOptions+=("$line")
-            done < <(rg -N "$searchFor" "$searchFile")
-            printf "\n"
-            PS3="Select a number from 1-${#pickOptions[@]}, or enter '0' to skip: "
-            COLUMNS=40
+            done < <(jq -r '.[] | "\(.tconst // .nconst)\t\(.title // .name)"' <<<"$data" | tsvPrint)
+            pickOptions+=("Keep typing" "Quit")
+
+            while IFS= read -r line; do
+                tabbedOptions+=("$line")
+            done < <(jq -r '.[] | "\(.tconst // .nconst)\t\(.title // .name)"' <<<"$data")
+
+            PS3="Select (1-${#pickOptions[@]}): "
             select pickMenu in "${pickOptions[@]}"; do
-                if [[ 1 -le $REPLY ]] 2>/dev/null &&
-                    [[ $REPLY -le ${#pickOptions[@]} ]]; then
-                    # printf "You picked $pickMenu ($REPLY)\n"
-                    for term in "${searchArray[@]}"; do
-                        [[ $pickMenu == "$term" ]] && break 2
-                    done
-                    searchString+="\"${RED}${pickMenu}${NO_COLOR}\" "
-                    searchArray+=("$pickMenu")
-                    break
-                else
-                    case "$REPLY" in
-                    0)
-                        break
+                if [[ $REPLY -ge 1 ]] 2>/dev/null && [[ $REPLY -le ${#pickOptions[@]} ]]; then
+                    case "$pickMenu" in
+                    "Keep typing") break ;;
+                    "Quit") return 2 ;;
+                    *)
+                        local id name
+                        id=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
+                        name=$(cut -f2 <<<"${tabbedOptions[REPLY - 1]}")
+                        printf '{"id":"%s","name":"%s"}' "$id" "$name"
+                        return 0
                         ;;
                     esac
+                else
+                    case "$REPLY" in [Qq]*) return 2 ;; esac
                 fi
-            done
-            break
+            done </dev/tty
+        else
+            printf "  %s matches — keep typing\n" "$matchCount"
         fi
     done
+}
 
-    searchArraySize="${#searchArray[@]}"
-    [[ $searchArraySize -ne 0 ]] && printf "\nSearch terms: $searchString\n"
+# Main loop
+while true; do
+    printf "\n==> Search for a:\n"
+    pickOptions=("Show title" "Person name" "Done searching")
+    PS3="Select (1-${#pickOptions[@]}): "
+    select pickMenu in "${pickOptions[@]}"; do
+        case "$pickMenu" in
+        "Show title") searchType="titles.jsonl"; break ;;
+        "Person name") searchType="persons.jsonl"; break ;;
+        "Done searching") searchType="done"; break ;;
+        *) continue ;;
+        esac
+    done </dev/tty
+
+    [[ "$searchType" == "done" ]] && break
+
+    result=$(_incremental_search "$searchType" "$searchType")
+    rc=$?
+    if [[ $rc -eq 2 ]]; then
+        loopOrExitP
+    fi
+
+    selectedId=$(jq -r '.id // empty' <<<"$result" 2>/dev/null)
+    selectedName=$(jq -r '.name // empty' <<<"$result" 2>/dev/null)
+
+    # If result is a JSON array (single match), parse differently
+    if [[ -z $selectedId ]]; then
+        selectedId=$(jq -r '.[0].tconst // .[0].nconst // empty' <<<"$result" 2>/dev/null)
+        selectedName=$(jq -r '.[0].title // .[0].name // empty' <<<"$result" 2>/dev/null)
+    fi
+
+    if [[ -n $selectedId ]]; then
+        printf "  Selected: %s (%s)\n" "$selectedName" "$selectedId"
+        printf "%s\n" "$selectedId" >>"$SEARCH_TERMS"
+    fi
 done
+
+# Run the cross-reference
+if [[ ! -s $SEARCH_TERMS ]]; then
+    printf "\n==> No search terms selected.\n"
+    loopOrExitP
+fi
+
+printf "\n==> Running cross-reference for:\n"
+cat "$SEARCH_TERMS"
+printf "\n"
+
+./xrefCast.sh -n $(cat "$SEARCH_TERMS")
+
+loopOrExitP

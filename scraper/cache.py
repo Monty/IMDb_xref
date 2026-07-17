@@ -67,17 +67,13 @@ def save_filmography(fg: Filmography) -> Path:
 def list_cached_titles() -> list[str]:
     """Return all cached tconst IDs."""
     _ensure_dir()
-    return sorted(
-        str(p.stem) for p in CACHE_DIR.glob("tt*.json")
-    )
+    return sorted(str(p.stem) for p in CACHE_DIR.glob("tt*.json"))
 
 
 def list_cached_persons() -> list[str]:
     """Return all cached nconst IDs."""
     _ensure_dir()
-    return sorted(
-        str(p.stem) for p in CACHE_DIR.glob("nm*.json")
-    )
+    return sorted(str(p.stem) for p in CACHE_DIR.glob("nm*.json"))
 
 
 def clear_cache() -> int:

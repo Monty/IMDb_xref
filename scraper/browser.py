@@ -103,9 +103,7 @@ class BrowserManager:
             # Wait for real IMDb content to appear (not just the challenge shell)
             # IMDb pages have a #root div with actual content
             try:
-                page.wait_for_selector(
-                    "#root", state="attached", timeout=10000
-                )
+                page.wait_for_selector("#root", state="attached", timeout=10000)
                 # Give React a moment to hydrate
                 page.wait_for_timeout(500)
             except Exception:

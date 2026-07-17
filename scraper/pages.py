@@ -23,6 +23,7 @@ from models import (
 # Title search
 # ---------------------------------------------------------------------------
 
+
 def search_title(query: str, limit: int = 25) -> list[SearchResult]:
     """Search IMDb for titles matching *query*.
 
@@ -32,7 +33,7 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
     page = manager.goto(f"https://www.imdb.com/find/?q={query}&sattytt")
 
     results: list[SearchResult] = []
-    items = page.query_selector_all('li.ipc-metadata-list-summary-item')
+    items = page.query_selector_all("li.ipc-metadata-list-summary-item")
 
     for item in items[:limit]:
         # tconst from the first link href="/title/tt1234567/..."
@@ -79,12 +80,14 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
                 types.append(canonical)
                 break
 
-        results.append(SearchResult(
-            tconst=tconst,
-            title=title,
-            year=year,
-            types=types,
-        ))
+        results.append(
+            SearchResult(
+                tconst=tconst,
+                title=title,
+                year=year,
+                types=types,
+            )
+        )
 
     page.close()
     return results
@@ -94,13 +97,14 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
 # Person search
 # ---------------------------------------------------------------------------
 
+
 def search_person(query: str, limit: int = 25) -> list[Person]:
     """Search IMDb for people matching *query*."""
     manager = get_manager()
     page = manager.goto(f"https://www.imdb.com/find/?q={query}&sact")
 
     results: list[Person] = []
-    items = page.query_selector_all('li.ipc-metadata-list-summary-item')
+    items = page.query_selector_all("li.ipc-metadata-list-summary-item")
 
     for item in items[:limit]:
         link_el = item.query_selector("a[href*='/name/nm']")
@@ -127,6 +131,7 @@ def search_person(query: str, limit: int = 25) -> list[Person]:
 # ---------------------------------------------------------------------------
 # Full credits for a title
 # ---------------------------------------------------------------------------
+
 
 def _extract_int(text: str) -> int:
     """Pull the first integer from a string, defaulting to 0."""
@@ -191,14 +196,16 @@ def _parse_cast_section(
         elif job != "actor":
             rank += 1
 
-        members.append(CastMember(
-            nconst=nconst,
-            name=name,
-            job=job,
-            character=character,
-            episodes=episodes,
-            rank=rank,
-        ))
+        members.append(
+            CastMember(
+                nconst=nconst,
+                name=name,
+                job=job,
+                character=character,
+                episodes=episodes,
+                rank=rank,
+            )
+        )
 
     return members
 
@@ -290,6 +297,7 @@ def get_full_credits(tconst: str) -> Show:
 # Title basics (no cast — just metadata)
 # ---------------------------------------------------------------------------
 
+
 def get_title_basics(tconst: str) -> Show:
     """Scrape just the title page for basic metadata, no cast."""
     manager = get_manager()
@@ -320,6 +328,7 @@ def get_title_basics(tconst: str) -> Show:
 # ---------------------------------------------------------------------------
 # Filmography for a person
 # ---------------------------------------------------------------------------
+
 
 def get_filmography(nconst: str) -> Filmography:
     """Scrape a person's full credits page to build their filmography.
@@ -385,24 +394,33 @@ def get_filmography(nconst: str) -> Filmography:
                     ep_m = re.search(r"(\d+)", line)
                     if ep_m:
                         episodes = int(ep_m.group(1))
-                elif line in ("TV Series", "TV Mini-Series", "TV Movie",
-                              "TV Episode", "Movie", "Documentary",
-                              "TV Special", "TV Pilot"):
+                elif line in (
+                    "TV Series",
+                    "TV Mini-Series",
+                    "TV Movie",
+                    "TV Episode",
+                    "Movie",
+                    "Documentary",
+                    "TV Special",
+                    "TV Pilot",
+                ):
                     title_type = line
                 elif not re.search(r"^\d", line):
                     # Not a number — likely character name
                     if not character:
                         character = line
 
-            roles.append(FilmographyRole(
-                tconst=tconst,
-                title=title,
-                year=year,
-                title_type=title_type,
-                job=job,
-                character=character,
-                episodes=episodes,
-            ))
+            roles.append(
+                FilmographyRole(
+                    tconst=tconst,
+                    title=title,
+                    year=year,
+                    title_type=title_type,
+                    job=job,
+                    character=character,
+                    episodes=episodes,
+                )
+            )
 
     page.close()
 

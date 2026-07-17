@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # Save a filmography for a named person in IMDb
+# Uses the Playwright-based scraper.
 
-# Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
@@ -14,13 +14,12 @@ function help() {
     cat <<EOF
 saveFilmography.sh -- Save a filmography for a named person in IMDb.
 
-Search IMDb titles for person names or nconst IDs. An nconst ID should be
-unique, but a person name can have several or even many matches. Allow user to
+Search IMDb for person names or nconst IDs. An nconst ID should be unique,
+but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
-Filmographies are created in subdirectories so they will not overload the
-primary directory. You'll have the opportunity to review results before
-committing.
+Filmographies are saved as JSON in secondary/filmographies/. You'll have the
+opportunity to review results before committing.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -40,34 +39,22 @@ EXAMPLES:
 EOF
 }
 
-# Don't leave tempfiles around
 trap terminate EXIT
-#
+ALL_TERMS=""
+PERSON_RESULTS=""
+NCONST_TERMS=""
+TMPFILE=""
+FILMOGRAPHY_JSON=""
+
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
-        printf "Not removing:\n" >&2
-        cat <<EOT >&2
-ALL_TERMS $ALL_TERMS
-NCONST_TERMS $NCONST_TERMS
-PERSON_TERMS $PERSON_TERMS
-POSSIBLE_MATCHES $POSSIBLE_MATCHES
-MATCH_COUNTS $MATCH_COUNTS
-PERSON_RESULTS $PERSON_RESULTS
-JOB_RESULTS $JOB_RESULTS
-FINAL_RESULTS $FINAL_RESULTS
-TMPFILE $TMPFILE
-EOT
     else
-        rm -f "$ALL_TERMS" "$NCONST_TERMS" "$PERSON_TERMS" "$POSSIBLE_MATCHES"
-        rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS" "$FINAL_RESULTS"
-        rm -f "$TMPFILE"
+        rm -f "$ALL_TERMS" "$PERSON_RESULTS" "$NCONST_TERMS" "$TMPFILE" "$FILMOGRAPHY_JSON"
     fi
 }
 
-# trap ctrl-c and call cleanup
 trap cleanup INT
-#
 function cleanup() {
     printf "\nCtrl-C detected. Exiting.\n" >&2
     exit 130
@@ -80,45 +67,31 @@ function loopOrExitP() {
     exec ./start.command
 }
 
+_scraper() {
+    uv run --directory scraper python cli.py "$@"
+}
+
 while getopts ":hm:" opt; do
     case $opt in
-    h)
-        help
-        exit
-        ;;
-    m)
-        maxMenuSize="$OPTARG"
-        ;;
-    \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
-        ;;
-    :)
-        printf "Option -$OPTARG requires a 'maximum menu size' argument'.\n" >&2
-        exit 1
-        ;;
+    h) help; exit ;;
+    m) maxMenuSize="$OPTARG" ;;
+    \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
+    :) printf "==> Option -$OPTARG requires an argument.\n" >&2; exit 1 ;;
     esac
 done
 shift $((OPTIND - 1))
 
-# Make sure prerequisites are satisfied
-ensurePrerequisites
-
-# Need some tempfiles
 ALL_TERMS=$(mktemp)
-NCONST_TERMS=$(mktemp)
-PERSON_TERMS=$(mktemp)
-POSSIBLE_MATCHES=$(mktemp)
-MATCH_COUNTS=$(mktemp)
 PERSON_RESULTS=$(mktemp)
-JOB_RESULTS=$(mktemp)
-FINAL_RESULTS=$(mktemp)
+NCONST_TERMS=$(mktemp)
 TMPFILE=$(mktemp)
+FILMOGRAPHY_JSON=$(mktemp)
 
 # Make sure a search term is supplied
 if [[ $# -eq 0 ]]; then
     cat <<EOF
-==> I can generate a filmography based on a person's name or nconst ID, such as
-    nm0000123 -- which is the nconst for George Clooney taken from this URL:
+==> I can generate a filmography based on a person's name or nconst ID,
+    such as nm0000123 for George Clooney:
     https://www.imdb.com/name/nm0000123/
 
 Only one search term per line. Enter a blank line to finish.
@@ -138,193 +111,125 @@ EOF
     printf "\n"
 fi
 
-# Do the work of adding the matches to the TCONST_FILE
-function addToFileP() {
-    if waitUntil "$YN_PREF" -Y "==> Shall I add them?"; then
-        printf "OK. Adding...\n"
-        mkdir -p "$filmographyDir"
-        rg -N "^tt" "$FINAL_RESULTS" >>"$TCONST_FILE"
-        waitUntil "$YN_PREF" -Y \
-            "\n==> Shall I generate ${BLUE}$(basename "$filmographyDB")${NO_COLOR}?" &&
-            ./generateXrefData.sh -q -f "$filmographyDB" -d "$filmographyDir" "$filmographyFile"
-    else
-        printf "Skipping....\n"
-    fi
-}
-
-# Get gz file size - which should already exist but make sure...
-numRecords="$(rg -N name.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
-[[ -z $numRecords ]] && numRecords="$(rg -cz "^n" name.basics.tsv.gz)"
-
-# Set up ALL_TERMS with one search term per line
 for param in "$@"; do
-    printf "$param\n" >>"$ALL_TERMS"
+    printf "%s\n" "$param" >>"$ALL_TERMS"
 done
-# Split into two groups so we can process them differently
-rg -wN "^nm[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$NCONST_TERMS"
-rg -wNv "nm[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$PERSON_TERMS"
-printf "==> Searching $numRecords records for:\n"
-cat "$NCONST_TERMS" "$PERSON_TERMS"
 
-# Reconstitute ALL_TERMS with column guards
-perl -p -e 's/^/^/; s/$/\\t/;' "$NCONST_TERMS" >"$ALL_TERMS"
-perl -p -e 's/^/\\t/; s/$/\\t/;' "$PERSON_TERMS" >>"$ALL_TERMS"
+printf "==> Searching for:\n"
+cat "$ALL_TERMS"
+printf "\n"
 
-# Get all possible matches at once
-rg -NzSI -f "$ALL_TERMS" name.basics.tsv.gz | rg -wN "tt[0-9]{7,8}" | cut -f 1-5 |
-    sort -f -t$'\t' --key=2 >"$POSSIBLE_MATCHES"
-perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' "$POSSIBLE_MATCHES"
+# Process each search term
+while IFS= read -r searchTerm; do
+    [[ -z $searchTerm ]] && continue
 
-# Figure how many matches for each possible match
-cut -f 2 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
-
-# Add possible matches one at a time, preceded by URL
-while read -r line; do
-    count=$(cut -f 1 <<<"$line")
-    match=$(cut -f 2 <<<"$line")
-    if [[ $count -eq 1 ]]; then
-        rg "\t$match\t" "$POSSIBLE_MATCHES" |
-            sed 's+^+imdb.com/name/+' >>"$PERSON_RESULTS"
-        continue
-    fi
-    if [[ -z $alreadyPrintedP ]]; then
-        cat <<EOF
-
-Some person names occur more than once on IMDb, e.g. John Wayne or John Lennon.
-You can determine which one to select using the provided links to imdb.com.
-EOF
-        alreadyPrintedP="yes"
-    fi
-
-    printf "\nI found $count persons named \"$match\"\n"
-    if [[ $count -ge ${maxMenuSize:-10} ]]; then
-        waitUntil "$YN_PREF" -Y "Should I skip trying to select one?" && continue
-    fi
-
-    # Create parallel tabbed and sorted array
-    rg "\t$match\t" "$POSSIBLE_MATCHES" | sort -f -t$'\t' --key=3,3r --key=5 |
-        sed 's+^+imdb.com/name/+' >"$TMPFILE"
-    #
-    tabbedOptions=()
-    while IFS='' read -r line; do tabbedOptions+=("$line"); done <"$TMPFILE"
-
-    # Create tsvPrinted select array
-    rg "\t$match\t" "$POSSIBLE_MATCHES" | sort -f -t$'\t' --key=3,3r --key=5 |
-        sed 's+^+imdb.com/name/+' >"$TMPFILE"
-    #
-    pickOptions=()
-    while IFS='' read -r line; do
-        pickOptions+=("$line")
-    done < <(tsvPrint -c 2 "$TMPFILE")
-    pickOptions+=("Skip \"$match\"" "Quit")
-
-    PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
-    COLUMNS=40
-    select pickMenu in "${pickOptions[@]}"; do
-        if [[ $REPLY -ge 1 ]] 2>/dev/null &&
-            [[ $REPLY -le ${#pickOptions[@]} ]]; then
-            case "$pickMenu" in
-            Skip*)
-                break
-                ;;
-            Quit)
-                loopOrExitP
-                ;;
-            *)
-                printf "${tabbedOptions[REPLY - 1]}\n" >>"$PERSON_RESULTS"
-                break
-                ;;
-            esac
-        else
-            case "$REPLY" in
-            [Qq]*)
-                loopOrExitP
-                ;;
-            esac
+    if [[ "$searchTerm" =~ ^nm[0-9]{7,8}$ ]]; then
+        nconst="$searchTerm"
+        personInfo=$(_scraper person-info "$nconst" 2>/dev/null)
+        if [[ -n "$personInfo" ]] && [[ "$personInfo" != *"not found"* ]]; then
+            nconstName=$(jq -r '.name // empty' <<<"$personInfo")
+            printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
         fi
-    done </dev/tty
-done <"$MATCH_COUNTS"
-
-# Didn't find any results
-if [[ ! -s $PERSON_RESULTS ]]; then
-    printf "==> I didn't find ${RED}any${NO_COLOR} matching persons.\n"
-    printf "    Check the \"Searching $numRecords records for:\" section above.\n"
-    loopOrExitP
-fi
-
-# Found results, check with user before adding
-printf "\nThese are the results I can process:\n"
-tsvPrint -c 2 "$PERSON_RESULTS"
-
-# Get rid of the URL preface we added
-cp "$PERSON_RESULTS" "$TMPFILE"
-sed 's+imdb.com/name/++;' "$TMPFILE" >"$PERSON_RESULTS"
-
-if ! waitUntil "$YN_PREF" -Y; then
-    loopOrExitP
-fi
-
-cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
-rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz |
-    cut -f 1,3,4 >"$POSSIBLE_MATCHES"
-
-if [[ -n $FULLCAST ]]; then
-    # Used to debug possibly missing data from the .tsv.gz files
-    true >"$POSSIBLE_MATCHES"
-    while read -r nconstID; do
-        source="https://www.imdb.com/name/$nconstID/fullcredits?ref_=nm_flmg_sort_text_view"
-        curl -s "$source" -o "$TMPFILE"
-        awk -f getFilmography.awk "$TMPFILE" >>"$POSSIBLE_MATCHES"
-    done <"$NCONST_TERMS"
-fi
-
-while read -r line; do
-    true >"$FINAL_RESULTS"
-    nconstID="$line"
-    nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
-    rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
-    if [[ ! -s $MATCH_COUNTS ]]; then
-        printf "\n==> I didn't find any principal cast & crew member records for "
-        printf "${RED}$nconstName${NO_COLOR}.\n"
-        printf "    Check ${RED}imdb.com/name/$nconstID${NO_COLOR} to get more details.\n"
-        continue
-    fi
-    noSpaceName="${nconstName//[[:space:]]/_}"
-    filmographyDir="$noSpaceName-Filmography"
-    printf "\n==> Any files generated for $nconstName will be saved in ${BLUE}$filmographyDir${NO_COLOR}\n"
-    filmographyFile="$filmographyDir/$noSpaceName"
-    while read -r job; do
-        count=$(cut -f 1 <<<"$job")
-        match=$(cut -f 2 <<<"$job")
-        printf "\n"
-        rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
-        ./augment_tconstFiles.sh -y "$JOB_RESULTS"
-        cut -f 2,3,5 "$JOB_RESULTS" |
-            sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 >"$TMPFILE"
-        numResults=$(sed -n '$=' "$JOB_RESULTS")
-        if [[ $numResults -gt 0 ]]; then
-            printf "I found $numResults titles listing $nconstName as: $match\n"
-            if waitUntil "$YN_PREF" -Y \
-                "==> Do you want to review them before adding them?"; then
-                tsvPrint -n "$TMPFILE"
-            fi
-            if waitUntil "$YN_PREF" -Y "==> Shall I add them?"; then
-                filmographyFile+="-$match"
-                cat "$JOB_RESULTS" >>"$FINAL_RESULTS"
-            fi
-        fi
-    done <"$MATCH_COUNTS"
-    filmographyDB="$filmographyFile.csv"
-    filmographyFile+=".tconst"
-    TCONST_FILE="$filmographyFile"
-    if [[ -s $FINAL_RESULTS ]]; then
-        numlines=$(sed -n '$=' "$FINAL_RESULTS")
-        printf "\nI can add $numlines titles to ${BLUE}$(basename "$TCONST_FILE")${NO_COLOR}\n"
-        addToFileP
     else
-        printf "\n==> There aren't ${RED}any${NO_COLOR} $nconstName titles to add.\n"
-    fi
-done <"$NCONST_TERMS"
+        # Search for the person on IMDb
+        printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
+        searchResults=$(_scraper --delay 1 search-person "$searchTerm" 2>/dev/null)
+        matchCount=$(jq 'length' <<<"$searchResults")
 
-# Do we really want to quit?
+        if [[ "$matchCount" -eq 0 ]]; then
+            printf "==> No matches found for \"%s\"\n" "$searchTerm"
+            continue
+        fi
+
+        if [[ "$matchCount" -ge 2 ]]; then
+            if [[ "$matchCount" -ge ${maxMenuSize:-10} ]]; then
+                if waitUntil "$YN_PREF" -Y "Found $matchCount matches. Skip?"; then
+                    continue
+                fi
+            fi
+            printf "\nI found %s people named \"%s\"\n" "$matchCount" "$searchTerm"
+
+            pickOptions=()
+            tabbedOptions=()
+            while IFS= read -r line; do
+                pickOptions+=("$line")
+            done < <(jq -r '.[] | "  \(.nconst)\t\(.name)"' <<<"$searchResults" | tsvPrint)
+            pickOptions+=("Skip \"$searchTerm\"" "Quit")
+
+            while IFS= read -r line; do
+                tabbedOptions+=("$line")
+            done < <(jq -r '.[] | "\(.nconst)\t\(.name)"' <<<"$searchResults")
+
+            PS3="Select (1-${#pickOptions[@]}): "
+            COLUMNS=40
+            select pickMenu in "${pickOptions[@]}"; do
+                if [[ $REPLY -ge 1 ]] 2>/dev/null && [[ $REPLY -le ${#pickOptions[@]} ]]; then
+                    case "$pickMenu" in
+                    Skip*) break ;;
+                    Quit) loopOrExitP ;;
+                    *)
+                        nconst=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
+                        nconstName=$(cut -f2 <<<"${tabbedOptions[REPLY - 1]}")
+                        break ;;
+                    esac
+                else
+                    case "$REPLY" in [Qq]*) loopOrExitP ;; esac
+                fi
+            done </dev/tty
+            [[ -z $nconst ]] && continue
+            printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+        else
+            nconst=$(jq -r '.[0].nconst' <<<"$searchResults")
+            nconstName=$(jq -r '.[0].name' <<<"$searchResults")
+            printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+        fi
+    fi
+
+    # Fetch filmography if not cached
+    fgData=$(_scraper filmography "$nconst" 2>/dev/null)
+    roleCount=$(jq '.roles | length' <<<"$fgData")
+
+    if [[ "$roleCount" -eq 0 ]]; then
+        printf "==> Fetching filmography from IMDb...\n"
+        _scraper --delay 1 filmography "$nconst" >/dev/null 2>&1
+        fgData=$(_scraper filmography "$nconst" 2>/dev/null)
+        roleCount=$(jq '.roles | length' <<<"$fgData")
+    fi
+
+    if [[ "$roleCount" -eq 0 ]]; then
+        printf "\n==> No filmography found for %s.\n" "$nconstName"
+        continue
+    fi
+
+    # Display summary
+    noSpaceName="${nconstName//[[:space:]]/_}"
+    filmographyDir="secondary/filmographies"
+    mkdir -p "$filmographyDir"
+
+    printf "\n==> Filmography for %s (%s roles)\n" "$nconstName" "$roleCount"
+
+    # Group by job
+    jobs=$(jq -r '[.[].job] | unique | .[]' <<<"$fgData")
+    while IFS= read -r job; do
+        [[ -z $job ]] && continue
+        jobCount=$(jq --arg j "$job" '[.roles[] | select(.job == $j)] | length' <<<"$fgData")
+        [[ $jobCount -eq 0 ]] && continue
+        printf "  %-20s %s titles\n" "$job:" "$jobCount"
+    done <<<"$jobs"
+
+    # Offer to save
+    filmographyFile="$filmographyDir/${noSpaceName}-${nconst}.json"
+    printf "\n==> Save to ${BLUE}$filmographyFile${NO_COLOR}?\n"
+    if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
+        echo "$fgData" >"$filmographyFile"
+        printf "==> Saved.\n"
+    fi
+
+    # Offer to add titles to tconst file
+    tconsts=$(jq -r '[.roles[].tconst] | unique | .[]' <<<"$fgData")
+    tconstCount=$(echo "$tconsts" | rg -c "^tt")
+    printf "\n==> This filmography includes %s unique titles.\n" "$tconstCount"
+
+done <"$ALL_TERMS"
+
 loopOrExitP

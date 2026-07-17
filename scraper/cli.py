@@ -63,9 +63,9 @@ def _json(obj) -> None:
         print(obj.model_dump_json())
     elif isinstance(obj, list):
         # For lists of SearchResults, dump manually
-        print(json.dumps([
-            r.model_dump() if hasattr(r, "model_dump") else r for r in obj
-        ]))
+        print(
+            json.dumps([r.model_dump() if hasattr(r, "model_dump") else r for r in obj])
+        )
     else:
         print(json.dumps(obj))
 
@@ -157,6 +157,7 @@ def cmd_clear_cache(args: argparse.Namespace) -> None:
 # Index commands (no browser needed)
 # ---------------------------------------------------------------------------
 
+
 def cmd_rebuild_index(args: argparse.Namespace) -> None:
     counts = rebuild_index()
     _json(counts)
@@ -229,11 +230,14 @@ def main(argv: Sequence[str] | None = None) -> None:
         description="IMDb scraper CLI for IMDb_xref",
     )
     parser.add_argument(
-        "--headed", action="store_true",
+        "--headed",
+        action="store_true",
         help="Run browser in headed mode for debugging",
     )
     parser.add_argument(
-        "--delay", type=float, default=1.5,
+        "--delay",
+        type=float,
+        default=1.5,
         help="Seconds between page navigations (default 1.5)",
     )
 
@@ -270,17 +274,18 @@ def main(argv: Sequence[str] | None = None) -> None:
     p_fg.set_defaults(func=cmd_filmography)
 
     # cast-rankings
-    p_cr = subs.add_parser(
-        "cast-rankings", help="List cast sorted by episode count"
-    )
+    p_cr = subs.add_parser("cast-rankings", help="List cast sorted by episode count")
     p_cr.add_argument("tconst", help="IMDb tconst ID")
     p_cr.add_argument("--refresh", action="store_true", help="Bypass cache")
     p_cr.add_argument(
-        "--min-episodes", type=int, default=0,
+        "--min-episodes",
+        type=int,
+        default=0,
         help="Minimum episodes to include (default 0)",
     )
     p_cr.add_argument(
-        "--all", action="store_true",
+        "--all",
+        action="store_true",
         help="Include all jobs, not just actors",
     )
     p_cr.add_argument("--limit", type=int, default=0, help="Max results (0=all)")
@@ -289,7 +294,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     # list-cache
     p_lc = subs.add_parser("list-cache", help="List cached tconst/nconst IDs")
     p_lc.add_argument(
-        "--persons", action="store_true",
+        "--persons",
+        action="store_true",
         help="List cached person IDs instead of title IDs",
     )
     p_lc.set_defaults(func=cmd_list_cache)
@@ -310,7 +316,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     p_q = subs.add_parser("query", help="Search the index by substring")
     p_q.add_argument("query", help="Search query")
     p_q.add_argument(
-        "--index-file", default="cast-by-person.jsonl",
+        "--index-file",
+        default="cast-by-person.jsonl",
         help="Index file to search (default: cast-by-person.jsonl)",
     )
     p_q.add_argument("--limit", type=int, default=0, help="Max results (0=all)")
@@ -325,15 +332,15 @@ def main(argv: Sequence[str] | None = None) -> None:
     p_cfs.set_defaults(func=cmd_cast_for_show)
 
     # shows-for-person
-    p_sfp = subs.add_parser("shows-for-person", help="Get shows for a person from index")
+    p_sfp = subs.add_parser(
+        "shows-for-person", help="Get shows for a person from index"
+    )
     p_sfp.add_argument("nconst", help="IMDb nconst ID")
     p_sfp.add_argument("--limit", type=int, default=0, help="Max results (0=all)")
     p_sfp.set_defaults(func=cmd_shows_for_person)
 
     # common-cast
-    p_cc2 = subs.add_parser(
-        "common-cast", help="Find cast shared between shows"
-    )
+    p_cc2 = subs.add_parser("common-cast", help="Find cast shared between shows")
     p_cc2.add_argument("tconsts", nargs="+", help="Two or more tconst IDs")
     p_cc2.set_defaults(func=cmd_common_cast)
 
@@ -359,9 +366,18 @@ def main(argv: Sequence[str] | None = None) -> None:
 
     # Index commands don't need a browser
     needs_browser = args.command not in (
-        "rebuild-index", "index-stats", "query", "cast-for-show",
-        "shows-for-person", "common-cast", "title-info", "person-info",
-        "list-titles", "list-persons-index", "list-cache", "clear-cache",
+        "rebuild-index",
+        "index-stats",
+        "query",
+        "cast-for-show",
+        "shows-for-person",
+        "common-cast",
+        "title-info",
+        "person-info",
+        "list-titles",
+        "list-persons-index",
+        "list-cache",
+        "clear-cache",
     )
     if needs_browser:
         get_manager(headless=not args.headed, delay=args.delay)
