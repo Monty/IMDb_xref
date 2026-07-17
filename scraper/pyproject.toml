@@ -1,0 +1,12 @@
+[project]
+name = "imdb-scraper"
+version = "0.1.0"
+description = "Playwright-based IMDb scraper for IMDb_xref"
+requires-python = ">=3.13"
+dependencies = [
+    "playwright>=1.61.0",
+    "pydantic>=2.0",
+]
+
+[dependency-groups]
+dev = []
