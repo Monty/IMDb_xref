@@ -17,10 +17,32 @@ from models import CastMember
 
 CACHE_DIR = Path(__file__).resolve().parent.parent / ".xref_cache"
 INDEX_DIR = Path(__file__).resolve().parent.parent / ".xref_index"
+JOBS_FILE = Path(__file__).resolve().parent.parent / "rg_jobs.rgx"
 
 
 def _ensure_index_dir() -> None:
     INDEX_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _load_allowed_jobs() -> set[str]:
+    """Load allowed job names from rg_jobs.rgx.
+
+    Each non-empty, non-comment line is a job name. Returns a set of lowercase job names.
+    """
+    if not JOBS_FILE.exists():
+        return set()
+    lines = JOBS_FILE.read_text(encoding="utf-8").strip().split("\n")
+    jobs = set()
+    for line in lines:
+        line = line.strip()
+        if line and not line.startswith("#"):
+            jobs.add(line.lower())
+    # Normalize: treat "actress" and "actor" as the same
+    if "actress" in jobs:
+        jobs.add("actor")
+    if "actor" in jobs:
+        jobs.add("actress")
+    return jobs
 
 
 # ---------------------------------------------------------------------------
@@ -33,6 +55,8 @@ def rebuild_index() -> dict[str, int]:
     Returns a dict of {filename: line_count} for each index file built.
     """
     _ensure_index_dir()
+
+    allowed_jobs = _load_allowed_jobs()
 
     titles: dict[str, dict] = {}  # tconst -> {title, year, types, ...}
     persons: dict[str, dict] = {}  # nconst -> {name}
@@ -59,8 +83,14 @@ def rebuild_index() -> dict[str, int]:
         for member in show.get("cast", []):
             nconst = member.get("nconst", "")
             name = member.get("name", "")
+            job = member.get("job", "").lower()
             if not nconst or not name:
                 continue
+
+            # Skip jobs not in rg_jobs.rgx
+            if allowed_jobs and job not in allowed_jobs:
+                continue
+
             persons[nconst] = {"nconst": nconst, "name": name}
 
             row = {
@@ -68,7 +98,7 @@ def rebuild_index() -> dict[str, int]:
                 "name": name,
                 "tconst": tconst,
                 "title": title,
-                "job": member.get("job", ""),
+                "job": job,
                 "character": member.get("character", ""),
                 "episodes": member.get("episodes", 0),
                 "rank": member.get("rank", 0),
