@@ -158,11 +158,12 @@ while IFS= read -r searchTerm; do
             fi
             printf "\nI found %s people named \"%s\"\n" "$matchCount" "$searchTerm"
 
+            jq -r '.[] | "\(.nconst)\t\(.name)"' <<<"$searchResults" >"$TMPFILE"
             pickOptions=()
             tabbedOptions=()
             while IFS= read -r line; do
                 pickOptions+=("$line")
-            done < <(jq -r '.[] | "  \(.nconst)\t\(.name)"' <<<"$searchResults" | tsvPrint)
+            done < <(tsvPrint "$TMPFILE")
             pickOptions+=("Skip \"$searchTerm\"" "Quit")
 
             while IFS= read -r line; do

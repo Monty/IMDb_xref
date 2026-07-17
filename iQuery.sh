@@ -125,13 +125,14 @@ _incremental_search() {
 
         if [[ $matchCount -le $maxMenuSize ]]; then
             printf "  Found %s matches:\n" "$matchCount"
-            jq -r '.[] | "    \(.tconst // .nconst)\t\(.title // .name)"' <<<"$data" | tsvPrint
+            jq -r '.[] | "\(.tconst // .nconst)\t\(.title // .name)"' <<<"$data" >"$TMPFILE"
+            tsvPrint "$TMPFILE"
 
             local pickOptions=()
             local tabbedOptions=()
             while IFS= read -r line; do
                 pickOptions+=("$line")
-            done < <(jq -r '.[] | "\(.tconst // .nconst)\t\(.title // .name)"' <<<"$data" | tsvPrint)
+            done < <(tsvPrint "$TMPFILE")
             pickOptions+=("Keep typing" "Quit")
 
             while IFS= read -r line; do

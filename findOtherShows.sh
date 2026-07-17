@@ -146,11 +146,12 @@ while IFS= read -r searchTerm; do
             fi
             printf "\nI found %s matches for \"%s\"\n" "$matchCount" "$searchTerm"
 
+            jq -r '.[] | "\(.tconst)\t\(.title)\t\(.year // "n/a")\t\(.types | join(", "))"' <<<"$searchResults" >"$TMPFILE"
             pickOptions=()
             tabbedOptions=()
             while IFS= read -r line; do
                 pickOptions+=("$line")
-            done < <(jq -r '.[] | "  \(.tconst)\t\(.title)\t\(.year // "n/a")\t\(.types | join(", "))"' <<<"$searchResults" | tsvPrint)
+            done < <(tsvPrint "$TMPFILE")
             pickOptions+=("Skip \"$searchTerm\"" "Quit")
 
             while IFS= read -r line; do
