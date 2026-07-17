@@ -27,3 +27,31 @@
 - `title.basics.tsv.gz` symlink
 - `title.episode.tsv.gz` symlink
 - `title.principals.tsv.gz` symlink
+
+## [Unreleased] — Phase 2: Index Layer
+
+### Added
+
+- **JSONL index files** (`.xref_index/`)
+  - `titles.jsonl` — one line per title: tconst, title, year, types, genres
+  - `persons.jsonl` — one line per person: nconst, name
+  - `cast-by-person.jsonl` — one line per (person, show) pairing with role details
+  - `cast-by-show.jsonl` — same data sorted by show then person
+- **`scraper/index.py`** — build and query functions:
+  - `rebuild_index()` — aggregates all cached JSON into flat JSONL index
+  - `search_index()` — case-insensitive substring search across any index file
+  - `get_cast_for_show()` — all cast/crew for a given tconst
+  - `get_shows_for_person()` — all shows for a given nconst
+  - `find_common_cast()` — people who appear in all given shows
+  - `get_title_info()` / `get_person_info()` — lookup by ID
+  - `index_stats()` — report on index file sizes
+- **New CLI commands** (no browser needed — instant):
+  - `rebuild-index` — rebuild index from cache
+  - `index-stats` — show index file line counts
+  - `query <term>` — search any index file by substring
+  - `cast-for-show <tconst>` — get cast for a show, with `--actors-only`, `--min-episodes`, `--limit`
+  - `shows-for-person <nconst>` — get shows for a person
+  - `common-cast <tconst>...` — find shared cast between two or more shows
+  - `title-info <tconst>` / `person-info <nconst>` — lookup by ID
+  - `list-titles` / `list-persons-index` — list all indexed entries
+- **Cast deduplication** — same person in same show is collapsed to one entry, preferring "actor" job
