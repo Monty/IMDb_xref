@@ -38,7 +38,7 @@
 
 - **`findCastOf.sh`** — Fixed `tsvPrint` receiving piped data instead of filename in disambiguation menu. Removed redundant TSV cache file creation (scraper `.json` cache is the single source of truth). Added scraper error validation — shows clear message if Playwright/chromium is not installed.
 - **`findOtherShows.sh`** — Fixed `printf "---\t..."` where `---` was interpreted as an option flag. Fixed `tsvPrint` piped data issue.
-- **`findShowsWith.sh`** — Fixed `tsvPrint` piped data issue.
+- **`findShowsWith.sh`** — Fixed `tsvPrint` piped data issue. Fixed `jq` error ("Cannot index number with string 'episodes'") when `.episodes` was `null` — use `// 0` default and `\(. )` interpolation instead of re-indexing `.episodes` inside the conditional.
 - **`saveFilmography.sh`** — Fixed `tsvPrint` piped data issue.
 - **`iQuery.sh`** — Fixed `tsvPrint` piped data issue.
 - **`ensurePrerequisites.function`** — Fixed Playwright chromium browser detection to work on both macOS (`~/Library/Caches/`) and Linux (`~/.cache/`). Loops through `chromium-*/` directories for robustness.
