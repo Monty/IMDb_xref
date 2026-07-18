@@ -38,3 +38,6 @@ node_modules/
 
 # Files added by Claude
 .claude/
+
+# Keep these files
+!rg_jobs.rgx
