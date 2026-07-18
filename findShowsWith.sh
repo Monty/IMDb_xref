@@ -247,8 +247,8 @@ while IFS=$'\t' read -r nconst nconstName; do
         printf "\n==> I found %s %s listing %s as: %s\n" "$jobCount" "$_title" "$nconstName" "$job"
 
         if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y "==> Shall I list $_pron?"; then
-            jq -r 'sort_by(-.episodes, .title) | .[] | "\(.title)\t\(.episodes | if . > 0 then ("\(.episodes) episodes") else "" end)\t\(.character // "")"' <<<"$jobData" |
-                tsvPrint
+            jq -r 'sort_by(-(.episodes // 0), .title) | .[] | "\(.title)\t\((.episodes // 0) | if . > 0 then "\(.) episodes" else "" end)\t\(.character // "")"' <<<"$jobData" >"$TMPFILE"
+            tsvPrint "$TMPFILE"
         fi
     done <<<"$jobs"
 
