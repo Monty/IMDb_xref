@@ -28,11 +28,10 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
     """Search IMDb for titles matching *query*.
 
     Returns a list of SearchResult, each with tconst, title, year, types.
+    Filters out tvEpisode and podcastEpisode results.
     """
     manager = get_manager()
-    page = manager.goto(
-        f"https://www.imdb.com/find/?q={query}&s=tt&exact=true"
-    )
+    page = manager.goto(f"https://www.imdb.com/find/?q={query}&s=tt&exact=true")
 
     results: list[SearchResult] = []
     items = page.query_selector_all("li.ipc-metadata-list-summary-item")
@@ -71,10 +70,12 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
             "TV Pilot": "tvPilot",
             "TV Short": "tvShort",
             "TV Episode": "tvEpisode",
+            "Short": "tvShort",
             "Video Game": "videoGame",
             "Video": "video",
             "Documentary": "documentary",
             "Feature Film": "movie",
+            "Movie": "movie",
         }
         types = []
         for display_name, canonical in type_map.items():
@@ -92,6 +93,11 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
         )
 
     page.close()
+
+    # Filter out low-interest types — episodes and shorts
+    skip_types = {"tvEpisode", "podcastEpisode", "tvShort"}
+    results = [r for r in results if not r.types or not (r.types[0] in skip_types)]
+
     return results
 
 
@@ -103,9 +109,7 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
 def search_person(query: str, limit: int = 25) -> list[Person]:
     """Search IMDb for people matching *query*."""
     manager = get_manager()
-    page = manager.goto(
-        f"https://www.imdb.com/find/?q={query}&s=nm&exact=true"
-    )
+    page = manager.goto(f"https://www.imdb.com/find/?q={query}&s=nm&exact=true")
 
     results: list[Person] = []
     items = page.query_selector_all("li.ipc-metadata-list-summary-item")
@@ -425,10 +429,6 @@ def get_filmography(nconst: str) -> Filmography:
                     episodes=episodes,
                 )
             )
-
-    page.close()
-
-    return Filmography(nconst=nconst, name=name, roles=roles)
 
     page.close()
 
