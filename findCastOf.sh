@@ -242,11 +242,6 @@ while IFS= read -r searchTerm; do
     [[ -n $minEpisodes ]] && castArgs+=("--min-episodes" "$minEpisodes")
     castData=$(_scraper "${castArgs[@]}" 2>/dev/null)
 
-    # Save to cache directory for xrefCast.sh compatibility
-    cacheFile="$cacheDirectory/$tconst"
-    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" >"$cacheFile"
-    jq -r '.[] | "\(.name)\t\(.title)\t\t\(.rank | tostring | if length < 2 then ("0" + .) else . end)\t\(.job)\t\(.character)"' <<<"$castData" >>"$cacheFile"
-
     # Display cast if not in duplicates-only or short mode
     if [[ -z $MULTIPLE_NAMES_ONLY ]] && [[ -z $SHORT ]]; then
         epLabel=""
@@ -254,11 +249,11 @@ while IFS= read -r searchTerm; do
         printf "==> Cast & crew for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
         jq -r 'sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
         tsvPrint "$TMPFILE"
-        cat "$cacheFile" >>"$CAST_CSV"
         waitUntil -k
-    else
-        cat "$cacheFile" >>"$CAST_CSV"
     fi
+
+    # Accumulate cast TSV for duplicates check across shows
+    jq -r '.[] | "\(.name)\t\(.title)\t\t\(.rank | tostring | if length < 2 then ("0" + .) else . end)\t\(.job)\t\(.character)"' <<<"$castData" >>"$CAST_CSV"
 
 done <"$ALL_TERMS"
 
