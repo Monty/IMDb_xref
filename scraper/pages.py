@@ -30,7 +30,9 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
     Returns a list of SearchResult, each with tconst, title, year, types.
     """
     manager = get_manager()
-    page = manager.goto(f"https://www.imdb.com/find/?q={query}&sattytt")
+    page = manager.goto(
+        f"https://www.imdb.com/find/?q={query}&s=tt&exact=true"
+    )
 
     results: list[SearchResult] = []
     items = page.query_selector_all("li.ipc-metadata-list-summary-item")
@@ -101,7 +103,9 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
 def search_person(query: str, limit: int = 25) -> list[Person]:
     """Search IMDb for people matching *query*."""
     manager = get_manager()
-    page = manager.goto(f"https://www.imdb.com/find/?q={query}&sact")
+    page = manager.goto(
+        f"https://www.imdb.com/find/?q={query}&s=nm&exact=true"
+    )
 
     results: list[Person] = []
     items = page.query_selector_all("li.ipc-metadata-list-summary-item")
