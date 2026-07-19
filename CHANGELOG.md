@@ -10,6 +10,9 @@
 
 ### Bugfixes
 
+- **`generateXrefData.sh`** — `.xref_durations` file was not recorded and `.xref_history` was not saved after runs. Restored `SECONDS=0` tracking, `saveDurations`, `trimDurations`, `saveHistory`, and `trimHistory` calls from the original `.gz` script.
+- **`generateXrefData.sh`** — Fixed operator precedence in `processDurations` early-exit check: `A || B && exit` evaluated as `A || (B && exit)`. Wrapped in parens: `(A || B) && exit`.
+- **`findCastOf.sh`** — `saveHistory` was not called before the favorites prompt, so search results were never saved to `.xref_history`. Restored the original `printHistory` + `diff` + `saveHistory` pattern.
 - **`augment_tconstFiles.sh`** — Loop variables (`title`, `orig_title`, `year`, `types`) were not reset between iterations, causing all entries to show the first tconst's data.
 - **`augment_tconstFiles.sh`** — Unindexed tconsts were silently skipped; now fetches `title-basics` from IMDb automatically.
 - **`augment_tconstFiles.sh`** — Original Title column was never populated; now captured from IMDb and supplemented by `.xlate` files.
