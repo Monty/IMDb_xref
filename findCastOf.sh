@@ -282,6 +282,12 @@ fi
 
 # Offer to save to favorites
 touch "$favoritesFile"
+
+# Save search in case we want to redo or add to favorites
+printHistory "$favoritesFile" >"$TMPFILE" 2>/dev/null || true
+[[ -n "$(diff "$TMPFILE" "$ALL_MATCHES" 2>/dev/null)" ]] &&
+    saveHistory "$ALL_MATCHES" "$favoritesFile"
+
 cut -f1 "$ALL_MATCHES" | sort -u >"$SEARCH_LIST"
 rg -IN "^tt" "$favoritesFile" 2>/dev/null | cut -f1 | sort -u >"$TMPFILE" || true
 comm -23 "$SEARCH_LIST" "$TMPFILE" >"$NEW_LIST" 2>/dev/null || true

@@ -10,6 +10,9 @@ source functions/define_colors
 source functions/define_files
 source functions/load_functions
 
+# Keep track of elapsed time
+SECONDS=0
+
 function help() {
     cat <<EOF
 generateXrefData.sh -- Fetch cast data for shows listed in .tconst files.
@@ -37,17 +40,31 @@ EOF
 trap terminate EXIT
 TMPFILE=""
 TCONST_LIST=""
+EVERY_TCONST=""
 
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
-        rm -f "$TMPFILE" "$TCONST_LIST"
+        rm -f "$TMPFILE" "$TCONST_LIST" "$EVERY_TCONST"
     fi
 }
 
 _scraper() {
     uv run --directory scraper python cli.py "$@"
+}
+
+function processDurations() {
+    # If we're not in the primary directory, don't record times
+    [[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]] && exit
+    saveDurations "$SECONDS"
+    # Only keep 10 duration lines for this script
+    trimDurations -m 10
+    # Save the contents of every tconst to use for manual comparison next time
+    [[ -n $useEveryTconst ]] && saveHistory "$EVERY_TCONST"
+    # Keep 20 history files for this script
+    trimHistory -m 20
+    exit
 }
 
 while getopts ":hqrt" opt; do
@@ -73,12 +90,17 @@ shift $((OPTIND - 1))
 
 TMPFILE=$(mktemp)
 TCONST_LIST=$(mktemp)
+EVERY_TCONST=$(mktemp)
 
 # Pick tconst file(s)
 if [[ -z ${TCONST_FILES[*]} ]]; then
     if [[ $# -eq 0 ]]; then
         TCONST_FILES=(*.tconst)
         [[ -z $QUIET ]] && printf "\n==> Searching all .tconst files for IMDb title IDs.\n"
+        # Cache is only enabled if *.tconst is used, which is the usual mode.
+        useEveryTconst="yes"
+        # The history file should contain the contents of every tconst file used
+        head -9999 -- *.tconst | rg -v "^$|#" >"$EVERY_TCONST"
     else
         TCONST_FILES=("$@")
         [[ -z $QUIET ]] && printf "\n==> Searching %s for IMDb title IDs.\n" "${TCONST_FILES[*]}"
@@ -150,5 +172,5 @@ EOF
 [[ -z $QUIET ]] && printf "    ./findCastOf.sh \"Show Name\"\n"
 [[ -z $QUIET ]] && printf "    ./xrefCast.sh \"Actor Name\"\n"
 
-terminate
-exit 0
+# Save durations and history, then exit
+processDurations
