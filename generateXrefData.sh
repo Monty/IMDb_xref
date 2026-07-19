@@ -55,8 +55,8 @@ _scraper() {
 }
 
 function processDurations() {
-    # If we're not in the primary directory, don't record times
-    [[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]] && exit
+    # If we're not in the primary directory or bypassing, don't record times
+    ([[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]]) && exit
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations -m 10
