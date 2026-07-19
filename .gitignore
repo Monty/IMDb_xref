@@ -1,6 +1,9 @@
 ## MAC OS
 .DS_Store
 
+# Python
+__pycache__
+
 # Node
 node_modules/
 
@@ -22,6 +25,7 @@ node_modules/
 # Hide temporary versions of files from git by numbering them
 # or put them in a "Hidden" directory
 *[0-9].awk
+*[0-9].py
 *[0-9].sh
 /Hidden/
 
