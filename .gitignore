@@ -2,7 +2,9 @@
 .DS_Store
 
 # Python
-__pycache__
+.venv/
+__pycache__/
+*.pyc
 
 # Node
 node_modules/
