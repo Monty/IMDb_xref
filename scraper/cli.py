@@ -98,6 +98,7 @@ def cmd_title_basics(args: argparse.Namespace) -> None:
         show = get_show(tconst)
     if show is None:
         show = get_title_basics(tconst)
+        save_show(show)
     _json(show)
 
 

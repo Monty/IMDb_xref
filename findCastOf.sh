@@ -220,8 +220,11 @@ while IFS= read -r searchTerm; do
     fi
 
     # Ensure we have full credits cached; scrape if needed
+    # Check both title info AND cast data — title-basics populates the index
+    # without cast, so we need to verify cast exists too
+    castCheck=$(_scraper cast-for-show "$tconst" 2>/dev/null)
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-    if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]]; then
+    if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]] || [[ -z $castCheck ]] || [[ $castCheck == "[]" ]]; then
         printf "==> Fetching full credits from IMDb...\n"
         scrapeResult=$(_scraper --delay 1 full-credits "$tconst" 2>&1)
         scrapeRC=$?

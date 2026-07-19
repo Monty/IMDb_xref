@@ -179,9 +179,11 @@ while IFS= read -r searchTerm; do
         fi
     fi
 
-    # Ensure we have full credits
+    # Ensure we have full credits with cast data
+    # Check both title info AND cast — title-basics populates the index without cast
+    castCheck=$(_scraper cast-for-show "$tconst" 2>/dev/null)
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-    if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]]; then
+    if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]] || [[ -z $castCheck ]] || [[ $castCheck == "[]" ]]; then
         printf "==> Fetching full credits...\n"
         _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
         _scraper rebuild-index >/dev/null 2>&1

@@ -47,12 +47,13 @@ RESULT=""
 COMMENTS=""
 SEARCH_LIST=""
 TCONST_LIST=""
+CACHE_LIST=""
 
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: %s\n" "$(basename "$0")" >&2
     else
-        rm -f "$RESULT" "$COMMENTS" "$SEARCH_LIST" "$TCONST_LIST"
+        rm -f "$RESULT" "$COMMENTS" "$SEARCH_LIST" "$TCONST_LIST" "$CACHE_LIST"
     fi
 }
 
@@ -88,6 +89,12 @@ RESULT=$(mktemp)
 COMMENTS=$(mktemp)
 SEARCH_LIST=$(mktemp)
 TCONST_LIST=$(mktemp)
+CACHE_LIST=$(mktemp)
+
+# Persistent cache of all augmented tconst data
+AUGMENTED=".xref_cache/augmented"
+mkdir -p .xref_cache
+touch "$AUGMENTED"
 
 if [[ $# -eq 0 ]]; then
     printf "==> [${RED}Error${NO_COLOR}] Please supply a tconst filename.\n\n" >&2
@@ -109,46 +116,104 @@ function copyResults() {
 for file in "$@"; do
     [[ -z $INPLACE ]] && printf "==> %s\n" "$file"
 
+    # Make sure there is no carryover
     true >"$RESULT"
 
-    # Preserve comments
+    # Gather and preserve all non-tconst lines
     rg -Nv "^tt" "$file" >"$COMMENTS"
 
-    # Get unique tconst IDs
+    # Gather all tconst IDs
     rg -N "^tt" "$file" | cut -f1 | sort -u >"$SEARCH_LIST"
 
-    # Check which are in the index
-    indexed=$(_scraper list-titles 2>/dev/null | jq -r '.[].tconst')
-    comm -23 "$SEARCH_LIST" <(echo "$indexed" | sort) >"$TCONST_LIST" 2>/dev/null || true
+    # Build list of cached tconsts
+    cut -f1 "$AUGMENTED" | sort >"$CACHE_LIST"
 
-    # Process each tconst
+    # Figure out which tconsts need looking up (in SEARCH_LIST but not in CACHE_LIST)
+    comm -23 "$SEARCH_LIST" "$CACHE_LIST" >"$TCONST_LIST"
+
+    # Grab the ones already cached using rg batch matching
+    if [[ -s $SEARCH_LIST ]]; then
+        rg -wNz -f "$SEARCH_LIST" "$AUGMENTED" >"$RESULT" 2>/dev/null || true
+    fi
+
+    # Look for corresponding .xlate file to fill/override original titles
+    XLATE=""
+    base=$(basename "$file" .tconst)
+    if [[ -f "${base}.xlate" ]]; then
+        XLATE="${base}.xlate"
+    fi
+
+    # Process tconsts that weren't cached
     while IFS= read -r tconst; do
         [[ -z $tconst ]] && continue
 
-        # Try index first
+        # Reset variables for each iteration
+        title=""
+        orig_title=""
+        year=""
+        types=""
+
+        printf "  Fetching: %s\n" "$tconst"
+
+        # Try index first (from previous title-basics or full-credits scrapes)
         info=$(_scraper title-info "$tconst" 2>/dev/null)
         if [[ -n $info ]] && [[ $info != *"not found"* ]]; then
             title=$(jq -r '.title // ""' <<<"$info")
+            orig_title=$(jq -r '.original_title // ""' <<<"$info")
             year=$(jq -r '.year // ""' <<<"$info")
             types=$(jq -r '(.types // []) | join(",")' <<<"$info")
-            printf "%s\t%s\t%s\t\t%s\n" "$tconst" "$types" "$title" "$year" >>"$RESULT"
-            continue
         fi
 
-        # Fetch from IMDb if requested
-        if [[ -n $FETCH_MISSING ]]; then
-            printf "  Fetching: %s\n" "$tconst"
+        # If not in index, fetch from IMDb via title-basics
+        if [[ -z $title ]]; then
+            info=$(_scraper --delay 1 title-basics "$tconst" 2>/dev/null)
+            if [[ -n $info ]] && [[ $info != *"not found"* ]]; then
+                title=$(jq -r '.title // ""' <<<"$info")
+                orig_title=$(jq -r '.original_title // ""' <<<"$info")
+                year=$(jq -r '.year // ""' <<<"$info")
+                types=$(jq -r '(.types // []) | join(",")' <<<"$info")
+            fi
+        fi
+
+        # If title-basics failed and -f is set, try full-credits
+        if [[ -z $title ]] && [[ -n $FETCH_MISSING ]]; then
             _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
             _scraper rebuild-index >/dev/null 2>&1
             info=$(_scraper title-info "$tconst" 2>/dev/null)
             if [[ -n $info ]] && [[ $info != *"not found"* ]]; then
                 title=$(jq -r '.title // ""' <<<"$info")
+                orig_title=$(jq -r '.original_title // ""' <<<"$info")
                 year=$(jq -r '.year // ""' <<<"$info")
                 types=$(jq -r '(.types // []) | join(",")' <<<"$info")
-                printf "%s\t%s\t%s\t\t%s\n" "$tconst" "$types" "$title" "$year" >>"$RESULT"
             fi
         fi
-    done <"$SEARCH_LIST"
+
+        [[ -n $title ]] && printf "%s\t%s\t%s\t%s\t%s\n" "$tconst" "$types" "$title" "$orig_title" "$year" >>"$RESULT"
+    done <"$TCONST_LIST"
+
+    # Post-process: apply xlate transformation to ALL results for display
+    # xlate col1 = IMDb/foreign title, col2 = English/Netflix title
+    # If primary title matches col1: always show English as primary, IMDb as original
+    # If primary title matches col2 and no original title: put col1 as original
+    if [[ -n $XLATE ]] && [[ -s $RESULT ]]; then
+        tmp=$(mktemp)
+        awk -F'\t' -v OFS='\t' '
+            NR == FNR { xlate1[$1] = $2; xlate2[$2] = $1; next }
+            $3 in xlate1 { $4 = $3; $3 = xlate1[$3] }
+            $4 == "" && $3 in xlate2 { $4 = xlate2[$3] }
+            { print }
+        ' "$XLATE" "$RESULT" >"$tmp"
+        mv "$tmp" "$RESULT"
+    fi
+
+    # Save all results to augmented cache (with xlate transformation applied)
+    # Remove old entries first, then append new ones
+    if [[ -s $RESULT ]]; then
+        tmp=$(mktemp)
+        grep -v -f <(cut -f1 "$RESULT" | sed 's/^/^/') "$AUGMENTED" >"$tmp" 2>/dev/null || true
+        cat "$tmp" "$RESULT" >"$AUGMENTED"
+        rm -f "$tmp"
+    fi
 
     if [[ -z $INPLACE ]]; then
         copyResults

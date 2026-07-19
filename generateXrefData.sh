@@ -111,9 +111,11 @@ while IFS= read -r tconst; do
         rm -f ".xref_cache/${tconst}.json"
     fi
 
-    # Check if already cached
+    # Check if already cached with cast data
+    # title-basics populates the index without cast, so check cast too
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-    if [[ -n $titleInfo ]] && [[ $titleInfo != *"not found"* ]]; then
+    castCheck=$(_scraper cast-for-show "$tconst" 2>/dev/null)
+    if [[ -n $titleInfo ]] && [[ $titleInfo != *"not found"* ]] && [[ -n $castCheck ]] && [[ $castCheck != "[]" ]]; then
         skipped=$((skipped + 1))
         continue
     fi

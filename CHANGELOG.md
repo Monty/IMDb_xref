@@ -1,5 +1,31 @@
 # Changelog
 
+## [Unreleased] — 2026-07-18
+
+### Added
+
+- **`augment_tconstFiles.sh`** — Persistent `.xref_cache/augmented` cache for consolidated title lookups across all `.tconst` files. Batch-processes cached vs. uncached tconsts using `comm` and `rg -f` for speed.
+- **`augment_tconstFiles.sh`** — `.xlate` file integration: uses column 1→column 2 mappings to show English/Netflix titles as primary and foreign/IMDb titles as original.
+- **`scraper/pages.py`** — `get_title_basics` now captures Original Title from IMDb title pages (`div.baseAlt`).
+
+### Bugfixes
+
+- **`augment_tconstFiles.sh`** — Loop variables (`title`, `orig_title`, `year`, `types`) were not reset between iterations, causing all entries to show the first tconst's data.
+- **`augment_tconstFiles.sh`** — Unindexed tconsts were silently skipped; now fetches `title-basics` from IMDb automatically.
+- **`augment_tconstFiles.sh`** — Original Title column was never populated; now captured from IMDb and supplemented by `.xlate` files.
+- **`scraper/pages.py`** — "TV Mini Series" (with space) was not recognized as a type — only "TV Mini-Series" (with hyphen) matched. Now handles both.
+- **`scraper/pages.py`** — `get_title_basics` had no fallback for year when h2 subtitle didn't contain one; now extracts from page title.
+- **`scraper/pages.py`** — Movies without "Movie" in page title had empty type; now defaults to "movie" when no TV type found.
+- **`scraper/cli.py`** — `title-basics` command didn't save to cache; now saves like `full-credits`.
+- **`scraper/index.py`** — `titles.jsonl` didn't include `original_title` field.
+- **`findCastOf.sh`**, **`findOtherShows.sh`**, **`generateXrefData.sh`** — Checked `title-info` to decide whether to scrape full credits, but `title-basics` populates the index without cast data. Now also checks `cast-for-show` before skipping.
+
+### Changed
+
+- **`augment_tconstFiles.sh`** — Rewritten to use `.xref_cache/augmented` for fast lookups. Xlate transformations applied at display time, stored in cache for consolidated reference.
+
+---
+
 ## [Unreleased] — 2025-07-16
 
 ### Added

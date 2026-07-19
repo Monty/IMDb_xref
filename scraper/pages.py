@@ -241,10 +241,11 @@ def get_full_credits(tconst: str) -> Show:
     ym = re.search(r"\b(19\d{2}|20\d{2})\b", page_title)
     if ym:
         year = int(ym.group())
-    if "TV Series" in page_title:
-        types.append("tvSeries")
-    elif "TV Mini-Series" in page_title:
+    # Check Mini-Series first (before Series, since "Mini Series" contains "Series")
+    if "TV Mini Series" in page_title or "TV Mini-Series" in page_title:
         types.append("tvMiniSeries")
+    elif "TV Series" in page_title:
+        types.append("tvSeries")
     elif "TV Movie" in page_title:
         types.append("tvMovie")
     elif "Movie" in page_title or "Feature Film" in page_title:
@@ -316,10 +317,45 @@ def get_title_basics(tconst: str) -> Show:
     if title_el:
         title = title_el.inner_text().strip()
 
+    # Original title is in a div with class "baseAlt" right after h1:
+    # <div class="... baseAlt">Original title: La casa de papel</div>
+    original_title = ""
+    orig_el = page.query_selector("div.baseAlt")
+    if orig_el:
+        orig_text = orig_el.inner_text().strip()
+        m = re.match(r"Original title:\s*(.+)", orig_text)
+        if m:
+            original_title = m.group(1).strip()
+
     year = None
     subtitle = page.query_selector("h2")
     if subtitle:
         ym = re.search(r"\b(19\d{2}|20\d{2})\b", subtitle.inner_text())
+        if ym:
+            year = int(ym.group())
+
+    # Types and year fallback from page title:
+    # "Berlin and the Jewels of Paris (TV Mini Series 2023) - IMDb"
+    # "Money Heist (TV Series 2017–2021) - Full cast & crew - IMDb"
+    types = []
+    page_title = page.title()
+
+    # Check Mini-Series first (before Series, since "Mini Series" contains "Series")
+    if "TV Mini Series" in page_title or "TV Mini-Series" in page_title:
+        types.append("tvMiniSeries")
+    elif "TV Series" in page_title:
+        types.append("tvSeries")
+    elif "TV Movie" in page_title:
+        types.append("tvMovie")
+    elif "Movie" in page_title or "Feature Film" in page_title:
+        types.append("movie")
+    else:
+        # No TV type found — default to movie
+        types.append("movie")
+
+    # Extract year from page title if not found in subtitle
+    if year is None:
+        ym = re.search(r"\b(19\d{2}|20\d{2})\b", page_title)
         if ym:
             year = int(ym.group())
 
@@ -330,7 +366,14 @@ def get_title_basics(tconst: str) -> Show:
 
     page.close()
 
-    return Show(tconst=tconst, title=title, year=year, genres=genres)
+    return Show(
+        tconst=tconst,
+        title=title,
+        original_title=original_title,
+        year=year,
+        types=types,
+        genres=genres,
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -144,6 +144,7 @@ def rebuild_index() -> dict[str, int]:
         titles[tconst] = {
             "tconst": tconst,
             "title": title,
+            "original_title": show.get("original_title", ""),
             "year": show.get("year"),
             "types": show.get("types", []),
             "genres": show.get("genres", []),
