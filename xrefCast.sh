@@ -169,7 +169,12 @@ else
     # Search the index
     while IFS= read -r term; do
         [[ -z $term ]] && continue
-        _scraper query "$term" --index-file cast-by-person.jsonl 2>/dev/null |
+        queryArgs=("query" "$term" "--index-file" "cast-by-person.jsonl")
+        # FULLCAST: if numeric, limit results per term
+        if [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
+            queryArgs+=("--limit" "$FULLCAST")
+        fi
+        _scraper "${queryArgs[@]}" 2>/dev/null |
             jq -r '.[] | "\(.name)\t\(.job)\t\(.title)\t\(.character)"' >>"$TMPFILE"
     done <"$SEARCH_TERMS"
     sort -fu "$TMPFILE" -o "$TMPFILE"
