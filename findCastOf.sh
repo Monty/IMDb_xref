@@ -243,12 +243,17 @@ while IFS= read -r searchTerm; do
     # Get cast data
     castArgs=("cast-for-show" "$tconst" "--actors-only")
     [[ -n $minEpisodes ]] && castArgs+=("--min-episodes" "$minEpisodes")
+    # FULLCAST: if numeric, limit displayed cast members
+    if [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
+        castArgs+=("--limit" "$FULLCAST")
+    fi
     castData=$(_scraper "${castArgs[@]}" 2>/dev/null)
 
     # Display cast if not in duplicates-only or short mode
     if [[ -z $MULTIPLE_NAMES_ONLY ]] && [[ -z $SHORT ]]; then
         epLabel=""
         [[ -n $minEpisodes ]] && epLabel=" (minimum ${minEpisodes} episodes)"
+        [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null && epLabel="$epLabel (top $FULLCAST)"
         printf "==> Cast & crew for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
         jq -r 'sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
         tsvPrint "$TMPFILE"
