@@ -35,13 +35,12 @@ EOF
 
 trap terminate EXIT
 TMPFILE=""
-SEARCH_TERMS=""
 
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
-        rm -f "$TMPFILE" "$SEARCH_TERMS"
+        rm -f "$TMPFILE"
     fi
 }
 
@@ -81,7 +80,6 @@ shift $((OPTIND - 1))
 maxMenuSize="${maxMenuSize:-15}"
 
 TMPFILE=$(mktemp)
-SEARCH_TERMS=$(mktemp)
 
 # Ensure index exists
 _scraper rebuild-index >/dev/null 2>&1
@@ -114,7 +112,7 @@ _incremental_search() {
         matchCount=$(jq 'length' <<<"$data")
 
         if [[ $matchCount -eq 0 ]]; then
-            printf "  No matches for \"%s\"\n" "$input"
+            printf "  No matches for \"%s\"\n" "$input" >&2
             continue
         fi
 
@@ -124,16 +122,15 @@ _incremental_search() {
         fi
 
         if [[ $matchCount -le $maxMenuSize ]]; then
-            printf "  Found %s matches:\n" "$matchCount"
+            printf "  Found %s matches:\n" "$matchCount" >&2
             jq -r '.[] | "\(.tconst // .nconst)\t\(.title // .name)"' <<<"$data" >"$TMPFILE"
-            tsvPrint "$TMPFILE"
 
             local pickOptions=()
             local tabbedOptions=()
             while IFS= read -r line; do
                 pickOptions+=("$line")
             done < <(tsvPrint "$TMPFILE")
-            pickOptions+=("Keep typing" "Quit")
+            pickOptions+=("Keep typing")
 
             while IFS= read -r line; do
                 tabbedOptions+=("$line")
@@ -142,17 +139,16 @@ _incremental_search() {
             PS3="Select (1-${#pickOptions[@]}): "
             select pickMenu in "${pickOptions[@]}"; do
                 if [[ $REPLY -ge 1 ]] 2>/dev/null && [[ $REPLY -le ${#pickOptions[@]} ]]; then
-                    case "$pickMenu" in
-                    "Keep typing") break ;;
-                    "Quit") return 2 ;;
-                    *)
+                    if [[ $REPLY -le ${#tabbedOptions[@]} ]]; then
                         local id name
                         id=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
                         name=$(cut -f2 <<<"${tabbedOptions[REPLY - 1]}")
                         printf '{"id":"%s","name":"%s"}' "$id" "$name"
                         return 0
-                        ;;
-                    esac
+                    else
+                        # "Keep typing"
+                        break
+                    fi
                 else
                     case "$REPLY" in [Qq]*) return 2 ;; esac
                 fi
@@ -163,30 +159,118 @@ _incremental_search() {
     done
 }
 
+# Build search arrays
+searchArray=()
+searchNames=()  # parallel array of display names
+searchString=""
+
+# Intro text
+cat <<EOF
+
+"Add a show" to list every person in a show. "Add a person" to see every show
+they were in. Add multiple people to see all the shows they were in together.
+Add multiple shows to see if any people were in more than one. You can add more
+search terms after executing the search, or switch from a full search to a
+'duplicates only' search.
+
+EOF
+
 # Main loop
 while true; do
-    printf "\n==> Search for a:\n"
-    pickOptions=("Show title" "Person name" "Done searching")
-    PS3="Select (1-${#pickOptions[@]}): "
-    select pickMenu in "${pickOptions[@]}"; do
-        case "$pickMenu" in
-        "Show title")
+    printf "\n==> What would you like to do?\n"
+
+    actionOptions=("Add a show to search for" "Add a person to search for")
+
+    searchArraySize="${#searchArray[@]}"
+    [[ $searchArraySize -eq 1 ]] && actionOptions+=("Remove search term")
+    [[ $searchArraySize -gt 1 ]] &&
+        actionOptions+=("Remove one search term" "Delete all search terms")
+    [[ $searchArraySize -gt 0 ]] &&
+        actionOptions+=("Run full search" "Run 'duplicates only' search")
+    actionOptions+=("List all shows" "Quit")
+
+    PS3="Select (1-${#actionOptions[@]}), or type 'q(uit)': "
+    COLUMNS=80
+    select actionMenu in "${actionOptions[@]}"; do
+        printf "\n"
+        case "$actionMenu" in
+        *show*)
             searchType="titles.jsonl"
             break
             ;;
-        "Person name")
+        *person*)
             searchType="persons.jsonl"
             break
             ;;
-        "Done searching")
-            searchType="done"
-            break
+        *one*)
+            # Remove one search term
+            PS3="Select (1-$searchArraySize), or enter '0' to skip: "
+            select deleteMenu in "${searchNames[@]}"; do
+                if [[ $REPLY -ge 1 ]] 2>/dev/null && [[ $REPLY -le ${#searchNames[@]} ]]; then
+                    printf "Removing: \"%s\"\n" "$deleteMenu"
+                    ((REPLY--)) || true
+                    tempIds=("${searchArray[@]}")
+                    tempNames=("${searchNames[@]}")
+                    searchArray=()
+                    searchNames=()
+                    searchString=""
+                    for i in "${!tempIds[@]}"; do
+                        if [[ $i -ne $REPLY ]]; then
+                            searchArray+=("${tempIds[$i]}")
+                            searchNames+=("${tempNames[$i]}")
+                            searchString+="\"${tempNames[$i]}\" "
+                        fi
+                    done
+                    break
+                else
+                    case "$REPLY" in 0) break ;; esac
+                fi
+            done </dev/tty
+            [[ -n $searchString ]] && printf "\nSearch terms: %s\n" "$searchString"
+            continue 2
             ;;
-        *) continue ;;
+        Remove*)
+            # Remove the only search term
+            printf "Removing %s\n" "$searchString"
+            searchArray=()
+            searchNames=()
+            searchString=""
+            continue 2
+            ;;
+        Delete*)
+            printf "Deleting all search terms...\n"
+            searchArray=()
+            searchNames=()
+            searchString=""
+            continue 2
+            ;;
+        *full*)
+            printf "\n==> Running cross-reference for:\n"
+            printf "%s\n" "${searchArray[@]}"
+            printf "\n"
+            ./xrefCast.sh -n "${searchArray[@]}"
+            continue 2
+            ;;
+        *duplicates*)
+            printf "\n==> Running duplicates-only search for:\n"
+            printf "%s\n" "${searchArray[@]}"
+            printf "\n"
+            ./xrefCast.sh -dn "${searchArray[@]}"
+            continue 2
+            ;;
+        List*)
+            _scraper list-titles 2>/dev/null | jq -r '.[]' | sort -df
+            continue 2
+            ;;
+        Quit)
+            loopOrExitP
+            ;;
+        "")
+            case "$REPLY" in [Qq]*) loopOrExitP ;; esac
+            continue
+            ;;
         esac
     done </dev/tty
-
-    [[ $searchType == "done" ]] && break
 
     result=$(_incremental_search "$searchType" "$searchType")
     rc=$?
@@ -204,21 +288,20 @@ while true; do
     fi
 
     if [[ -n $selectedId ]]; then
-        printf "  Selected: %s (%s)\n" "$selectedName" "$selectedId"
-        printf "%s\n" "$selectedId" >>"$SEARCH_TERMS"
+        # Check not already in array
+        alreadyIn=0
+        for existingId in "${searchArray[@]}"; do
+            [[ "$existingId" == "$selectedId" ]] && alreadyIn=1 && break
+        done
+
+        if [[ $alreadyIn -eq 0 ]]; then
+            searchArray+=("$selectedId")
+            searchNames+=("$selectedName")
+            searchString+="\"${selectedName}\" "
+            printf "\n  Selected: %s (%s)\n" "$selectedName" "$selectedId"
+        else
+            printf "\n  Already in search: %s (%s)\n" "$selectedName" "$selectedId"
+        fi
+        [[ -n $searchString ]] && printf "Search terms: %s\n" "$searchString"
     fi
 done
-
-# Run the cross-reference
-if [[ ! -s $SEARCH_TERMS ]]; then
-    printf "\n==> No search terms selected.\n"
-    loopOrExitP
-fi
-
-printf "\n==> Running cross-reference for:\n"
-cat "$SEARCH_TERMS"
-printf "\n"
-
-./xrefCast.sh -n $(cat "$SEARCH_TERMS")
-
-loopOrExitP
