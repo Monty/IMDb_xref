@@ -193,8 +193,8 @@ numAll=$(cut -f1 "$TMPFILE" | sort -fu | sed -n '$=')
 cp "$TMPFILE" "$ALL_NAMES"
 
 # Find duplicates — names appearing in more than one show
-awk -F "\t" '{if($1==f[1]&&$3!=f[3]) {print f[0]; print $0} split($0,f)}' "$TMPFILE" |
-    sort -fu | sort -f -t$'\t' -k 2,2 -k 1,1 -k 3,3 >"$MULTIPLE_NAMES"
+awk -F "\t" '{if($1==pn && $3!=pt) {print pl; print $0} pl=$0; pn=$1; pt=$3}' "$TMPFILE" |
+    sort -fu | sort -f -t$'\t' -k 1,1 -k 3,3 >"$MULTIPLE_NAMES"
 
 if [[ ! -s $MULTIPLE_NAMES ]]; then
     numMultiple="0"
