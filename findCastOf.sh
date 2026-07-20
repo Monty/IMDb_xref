@@ -241,7 +241,7 @@ while IFS= read -r searchTerm; do
     allNames+=("$showName")
 
     # Get cast data
-    castArgs=("cast-for-show" "$tconst" "--actors-only")
+    castArgs=("cast-for-show" "$tconst")
     [[ -n $minEpisodes ]] && castArgs+=("--min-episodes" "$minEpisodes")
     # FULLCAST: if numeric, limit displayed cast members
     if [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
