@@ -22,6 +22,7 @@
 - **`scraper/cli.py`** — `title-basics` command didn't save to cache; now saves like `full-credits`.
 - **`scraper/index.py`** — `titles.jsonl` didn't include `original_title` field.
 - **`findCastOf.sh`**, **`findOtherShows.sh`**, **`generateXrefData.sh`** — Checked `title-info` to decide whether to scrape full credits, but `title-basics` populates the index without cast data. Now also checks `cast-for-show` before skipping.
+- **`saveFilmography.sh`** — `jq` error ("Cannot index string with string 'job'") when grouping filmography roles by job — `.job` was `null` in some roles. Now uses `.roles[].job // empty` to filter out null jobs.
 
 ### Changed
 

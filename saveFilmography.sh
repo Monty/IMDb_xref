@@ -217,7 +217,7 @@ while IFS= read -r searchTerm; do
     printf "\n==> Filmography for %s (%s roles)\n" "$nconstName" "$roleCount"
 
     # Group by job
-    jobs=$(jq -r '[.[].job] | unique | .[]' <<<"$fgData")
+    jobs=$(jq -r '[.roles[].job // empty] | unique | .[]' <<<"$fgData")
     while IFS= read -r job; do
         [[ -z $job ]] && continue
         jobCount=$(jq --arg j "$job" '[.roles[] | select(.job == $j)] | length' <<<"$fgData")
