@@ -32,6 +32,7 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -d      Duplicates -- Only list cast & crew members found in more than one show.
+    -l      Use $PAGER to list results a page at a time.
     -m      Maximum matches for a show title allowed in menu - defaults to 25.
     -f      File -- Add to specific file rather than the default $favoritesFile.
     -s      Short - don't list details, just ask about adding to favorites.tconst.
@@ -89,7 +90,7 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
-while getopts ":hf:dme:s" opt; do
+while getopts ":hf:dlme:s" opt; do
     case $opt in
     h)
         help
@@ -97,6 +98,7 @@ while getopts ":hf:dme:s" opt; do
         ;;
     f) favoritesFile="$OPTARG" ;;
     d) MULTIPLE_NAMES_ONLY="yes" ;;
+    l) usePager=1 ;;
     m) maxMenuSize="$OPTARG" ;;
     e) minEpisodes="$OPTARG" ;;
     s) SHORT="yes" ;;
@@ -256,7 +258,11 @@ while IFS= read -r searchTerm; do
         [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null && epLabel="$epLabel (top $FULLCAST)"
         printf "==> Cast & crew for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
         jq -r 'sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
-        tsvPrint "$TMPFILE"
+        if [[ -n $usePager ]]; then
+            tsvPrint "$TMPFILE" | ${PAGER:-less}
+        else
+            tsvPrint "$TMPFILE"
+        fi
         waitUntil -k
     fi
 
@@ -278,7 +284,11 @@ if [[ -z $SHORT ]]; then
         # Remove header lines from CAST_CSV before passing to xrefCast
         rg -v "^Person\tShow Title" "$CAST_CSV" >"$TMPFILE" 2>/dev/null || true
         if [[ -s $TMPFILE ]]; then
-            ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+            if [[ -n $usePager ]]; then
+                ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}" | ${PAGER:-less}
+            else
+                ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+            fi
         fi
     else
         printf "\n"

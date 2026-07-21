@@ -25,6 +25,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -l      Use $PAGER to list results a page at a time.
     -m      Maximum matches for a person name allowed in menu - defaults to 10
     -y      Yes -- assume the answer to job category prompts is "Y".
 
@@ -69,12 +70,13 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
-while getopts ":hm:y" opt; do
+while getopts ":hlm:y" opt; do
     case $opt in
     h)
         help
         exit
         ;;
+    l) usePager=1 ;;
     m) maxMenuSize="$OPTARG" ;;
     y) skipPrompts="yes" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
@@ -248,7 +250,11 @@ while IFS=$'\t' read -r nconst nconstName; do
 
         if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y "==> Shall I list $_pron?"; then
             jq -r 'sort_by(-(.episodes // 0), .title) | .[] | "\(.title)\t\((.episodes // 0) | if . > 0 then "\(.) episodes" else "" end)\t\(.character // "")"' <<<"$jobData" >"$TMPFILE"
-            tsvPrint "$TMPFILE"
+            if [[ -n $usePager ]]; then
+                tsvPrint "$TMPFILE" | ${PAGER:-less}
+            else
+                tsvPrint "$TMPFILE"
+            fi
         fi
     done <<<"$jobs"
 

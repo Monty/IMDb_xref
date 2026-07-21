@@ -22,6 +22,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -l      Use $PAGER to list results a page at a time.
     -m      Maximum matches for a show title allowed in menu, defaults to 25.
     -n      Number of principal cast members to process, 0 = all, defaults to 15.
     -e      Minimum episodes for cast members in the source show, defaults to 1.
@@ -72,12 +73,13 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
-while getopts ":hm:n:e:r:" opt; do
+while getopts ":hlm:n:e:r:" opt; do
     case $opt in
     h)
         help
         exit
         ;;
+    l) usePager=1 ;;
     m) maxMenuSize="$OPTARG" ;;
     n) maxCast="$OPTARG" ;;
     e) minEpisodesSource="$OPTARG" ;;
@@ -255,6 +257,10 @@ fi
 
 printf "Person\tJob\tShow Title\tEpisodes\tCharacter Name\tLink\n" >"$TMPFILE"
 rg -v '^---' "$RESULTS" >>"$TMPFILE" 2>/dev/null || true
-tsvPrint -c 1 "$TMPFILE"
+if [[ -n $usePager ]]; then
+    tsvPrint -c 1 "$TMPFILE" | ${PAGER:-less}
+else
+    tsvPrint -c 1 "$TMPFILE"
+fi
 
 loopOrExitP

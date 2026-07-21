@@ -27,7 +27,8 @@
 ### Changed
 
 - **`augment_tconstFiles.sh`** — Rewritten to use `.xref_cache/augmented` for fast lookups. Xlate transformations applied at display time, stored in cache for consolidated reference.
-- **`iQuery.sh`** — Added search term management: dynamic action menu with remove/delete terms, full vs duplicates-only search, "List all shows", duplicate detection, and running search from within the loop without exiting. Fixed menu index bounds when "Keep typing" option shifts array offset. Fixed `_incremental_search` capturing menu display output in result variable — redirected display to stderr so only JSON is captured. Fixed "List all shows" to extract titles and use `$PAGER` with `-l` flag. Fixed `q` not quitting in main menu.
+- **`iQuery.sh`** — Added search term management: dynamic action menu with remove/delete terms, full vs duplicates-only search, "List all shows", duplicate detection, and running search from within the loop without exiting. Fixed menu index bounds when "Keep typing" option shifts array offset. Fixed `_incremental_search` capturing menu display output in result variable — redirected display to stderr so only JSON is captured. Fixed "List all shows" to extract titles and use `$PAGER` with `-l` flag. Fixed `q` not quitting in main menu. Added `-l` pager support to search results.
+- **`findCastOf.sh`**, **`findOtherShows.sh`**, **`findShowsWith.sh`** — Added `-l` flag to pipe results through `${PAGER:-less}`.
 
 ---
 
