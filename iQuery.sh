@@ -25,6 +25,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -l      Use $PAGER to list shows a page at a time.
     -m      Maximum items to be shown in the search menu. (defaults to 15)
 
 EXAMPLES:
@@ -61,13 +62,14 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
-while getopts ":hm:" opt; do
+while getopts ":hlm:" opt; do
     case $opt in
     h)
         help
         exit
         ;;
     m) maxMenuSize="$OPTARG" ;;
+    l) usePager=1 ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
     :)
         printf "Option -$OPTARG requires an argument.\n" >&2
@@ -179,6 +181,7 @@ EOF
 while true; do
     printf "\n==> What would you like to do?\n"
 
+    searchType=""
     actionOptions=("Add a show to search for" "Add a person to search for")
 
     searchArraySize="${#searchArray[@]}"
@@ -194,6 +197,14 @@ while true; do
     select actionMenu in "${actionOptions[@]}"; do
         printf "\n"
         case "$actionMenu" in
+        List*)
+            if [[ -n $usePager ]]; then
+                _scraper list-titles 2>/dev/null | jq -r '.[].title' | sort -df | ${PAGER:-less}
+            else
+                _scraper list-titles 2>/dev/null | jq -r '.[].title' | sort -df
+            fi
+            break
+            ;;
         *show*)
             searchType="titles.jsonl"
             break
@@ -248,18 +259,22 @@ while true; do
             printf "\n==> Running cross-reference for:\n"
             printf "%s\n" "${searchArray[@]}"
             printf "\n"
-            ./xrefCast.sh -n "${searchArray[@]}"
+            if [[ -n $usePager ]]; then
+                ./xrefCast.sh -n "${searchArray[@]}" | ${PAGER:-less}
+            else
+                ./xrefCast.sh -n "${searchArray[@]}"
+            fi
             continue 2
             ;;
         *duplicates*)
             printf "\n==> Running duplicates-only search for:\n"
             printf "%s\n" "${searchArray[@]}"
             printf "\n"
-            ./xrefCast.sh -dn "${searchArray[@]}"
-            continue 2
-            ;;
-        List*)
-            _scraper list-titles 2>/dev/null | jq -r '.[]' | sort -df
+            if [[ -n $usePager ]]; then
+                ./xrefCast.sh -dn "${searchArray[@]}" | ${PAGER:-less}
+            else
+                ./xrefCast.sh -dn "${searchArray[@]}"
+            fi
             continue 2
             ;;
         Quit)
@@ -271,6 +286,8 @@ while true; do
             ;;
         esac
     done </dev/tty
+
+    [[ -z $searchType ]] && continue
 
     result=$(_incremental_search "$searchType" "$searchType")
     rc=$?
