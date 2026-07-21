@@ -255,11 +255,43 @@ def rebuild_index() -> dict[str, int]:
         encoding="utf-8",
     )
 
+    # Write characters.jsonl — unique characters with actor and show info
+    # Filter to actor jobs only with non-empty character field, skip parentheticals
+    char_rows = [
+        r for r in cast_rows
+        if r.get("job") == "actor"
+        and r.get("character", "").strip()
+        and not r.get("character", "").strip().startswith("(")
+    ]
+    # Deduplicate by (character, nconst, tconst), keeping highest episode count
+    seen_chars: dict[tuple[str, str, str], dict] = {}
+    for row in char_rows:
+        key = (row["character"].lower(), row["nconst"], row["tconst"])
+        if key not in seen_chars or row.get("episodes", 0) > seen_chars[key].get("episodes", 0):
+            seen_chars[key] = {
+                "character": row["character"],
+                "nconst": row["nconst"],
+                "name": row["name"],
+                "tconst": row["tconst"],
+                "title": row["title"],
+                "episodes": row.get("episodes", 0),
+            }
+    chars_by_name = sorted(
+        seen_chars.values(), key=lambda r: (r["character"].lower(), r["name"].lower())
+    )
+    chars_path = INDEX_DIR / "characters.jsonl"
+    chars_path.write_text(
+        "\n".join(json.dumps(r, ensure_ascii=False) for r in chars_by_name)
+        + ("\n" if chars_by_name else ""),
+        encoding="utf-8",
+    )
+
     return {
         "titles.jsonl": len(titles),
         "persons.jsonl": len(persons),
         "cast-by-person.jsonl": len(cast_by_person),
         "cast-by-show.jsonl": len(cast_by_show),
+        "characters.jsonl": len(chars_by_name),
     }
 
 
@@ -381,6 +413,7 @@ def index_stats() -> dict:
         "persons.jsonl",
         "cast-by-person.jsonl",
         "cast-by-show.jsonl",
+        "characters.jsonl",
     ]:
         path = INDEX_DIR / name
         if path.exists():

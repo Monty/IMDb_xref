@@ -28,6 +28,8 @@
 
 - **`augment_tconstFiles.sh`** — Rewritten to use `.xref_cache/augmented` for fast lookups. Xlate transformations applied at display time, stored in cache for consolidated reference.
 - **`iQuery.sh`** — Added search term management: dynamic action menu with remove/delete terms, full vs duplicates-only search, "List all shows", duplicate detection, and running search from within the loop without exiting. Fixed menu index bounds when "Keep typing" option shifts array offset. Fixed `_incremental_search` capturing menu display output in result variable — redirected display to stderr so only JSON is captured. Fixed "List all shows" to extract titles and use `$PAGER` with `-l` flag. Fixed `q` not quitting in main menu. Added `-l` pager support to search results.
+- **`scraper/index.py`** — `rebuild_index` now generates `characters.jsonl` with unique character entries (character name, actor, show, episodes). Filters to actor jobs only, excludes parenthetical credits.
+- **`iQuery.sh`** — Added "Add a character to search for" category. Searches `characters.jsonl` and returns character matches showing "character — actor — show". Updated help text to match current string-based search behavior.
 - **`findCastOf.sh`**, **`findOtherShows.sh`**, **`findShowsWith.sh`** — Added `-l` flag to pipe results through `${PAGER:-less}`.
 
 ---
