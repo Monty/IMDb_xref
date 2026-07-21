@@ -131,14 +131,18 @@ _incremental_search() {
             printf "  Found %s matches:\n" "$matchCount" >&2
 
             # Build display format based on index type
-            local jqFormat
+            local jqFormat jqIdFormat dedupData="$data"
             if [[ $indexFile == *characters* ]]; then
-                jqFormat='\(.tconst)\t\(.character) — \(.name) — \(.title)'
+                # Deduplicate: keep first occurrence of each unique character
+                dedupData=$(jq '[group_by(.character) | .[] | .[0]]' <<<"$data")
+                jqFormat='\(.character)'
+                jqIdFormat='.character'
             else
                 jqFormat='\(.tconst // .nconst)\t\(.title // .name)'
+                jqIdFormat='.tconst // .nconst'
             fi
 
-            jq -r ".[] | \"$jqFormat\"" <<<"$data" >"$TMPFILE"
+            jq -r ".[] | \"$jqFormat\"" <<<"$dedupData" >"$TMPFILE"
 
             local pickOptions=()
             local tabbedOptions=()
@@ -149,15 +153,15 @@ _incremental_search() {
 
             while IFS= read -r line; do
                 tabbedOptions+=("$line")
-            done < <(jq -r ".[] | \"$jqFormat\"" <<<"$data")
+            done < <(jq -r ".[] | \"$jqFormat\"" <<<"$dedupData")
 
             PS3="Select (1-${#pickOptions[@]}): "
             select pickMenu in "${pickOptions[@]}"; do
                 if [[ $REPLY -ge 1 ]] 2>/dev/null && [[ $REPLY -le ${#pickOptions[@]} ]]; then
                     if [[ $REPLY -le ${#tabbedOptions[@]} ]]; then
                         local id name
-                        id=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
-                        name=$(cut -f2 <<<"${tabbedOptions[REPLY - 1]}")
+                        name=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
+                        id="$name"
                         printf '{"id":"%s","name":"%s"}' "$id" "$name"
                         return 0
                     else
@@ -319,8 +323,8 @@ while true; do
     # If result is a JSON array (single match), parse differently
     if [[ -z $selectedId ]]; then
         if [[ $searchType == *characters* ]]; then
-            selectedId=$(jq -r '.[0].tconst // empty' <<<"$result" 2>/dev/null)
-            selectedName=$(jq -r '.[0].character // empty' <<<"$result" 2>/dev/null)
+            selectedId=$(jq -r '.[0].character // empty' <<<"$result" 2>/dev/null)
+            selectedName="$selectedId"
         else
             selectedId=$(jq -r '.[0].tconst // .[0].nconst // empty' <<<"$result" 2>/dev/null)
             selectedName=$(jq -r '.[0].title // .[0].name // empty' <<<"$result" 2>/dev/null)
