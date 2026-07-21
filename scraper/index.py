@@ -3,8 +3,8 @@
 Index files live in .xref_index/:
   titles.jsonl         — one line per title (tconst, title, year, types)
   persons.jsonl        — one line per person (nconst, name)
-  cast-by-person.jsonl — one line per (person, show) pairing with role details
-  cast-by-show.jsonl   — same data, sorted by show then person
+  cast.jsonl           — one line per (person, show) pairing with role details
+  characters.jsonl     — one line per unique character with actor and show info
 """
 
 from __future__ import annotations
@@ -233,25 +233,14 @@ def rebuild_index() -> dict[str, int]:
         encoding="utf-8",
     )
 
-    # Write cast-by-person.jsonl (sorted by person name, then title)
-    cbp_path = INDEX_DIR / "cast-by-person.jsonl"
-    cast_by_person = sorted(
+    # Write cast.jsonl (sorted by person name, then title)
+    cast_sorted = sorted(
         cast_rows, key=lambda r: (r["name"].lower(), r["title"].lower(), r["rank"])
     )
-    cbp_path.write_text(
-        "\n".join(json.dumps(r, ensure_ascii=False) for r in cast_by_person)
-        + ("\n" if cast_by_person else ""),
-        encoding="utf-8",
-    )
-
-    # Write cast-by-show.jsonl (sorted by title, then person name)
-    cbs_path = INDEX_DIR / "cast-by-show.jsonl"
-    cast_by_show = sorted(
-        cast_rows, key=lambda r: (r["title"].lower(), r["name"].lower(), r["rank"])
-    )
-    cbs_path.write_text(
-        "\n".join(json.dumps(r, ensure_ascii=False) for r in cast_by_show)
-        + ("\n" if cast_by_show else ""),
+    cast_path = INDEX_DIR / "cast.jsonl"
+    cast_path.write_text(
+        "\n".join(json.dumps(r, ensure_ascii=False) for r in cast_sorted)
+        + ("\n" if cast_sorted else ""),
         encoding="utf-8",
     )
 
@@ -289,8 +278,7 @@ def rebuild_index() -> dict[str, int]:
     return {
         "titles.jsonl": len(titles),
         "persons.jsonl": len(persons),
-        "cast-by-person.jsonl": len(cast_by_person),
-        "cast-by-show.jsonl": len(cast_by_show),
+        "cast.jsonl": len(cast_sorted),
         "characters.jsonl": len(chars_by_name),
     }
 
@@ -323,12 +311,12 @@ def search_index(query: str, index_file: str) -> list[dict]:
 
 def get_cast_for_show(tconst: str) -> list[dict]:
     """Get all cast/crew for a specific tconst from the index."""
-    return [r for r in _read_jsonl("cast-by-show.jsonl") if r["tconst"] == tconst]
+    return [r for r in _read_jsonl("cast.jsonl") if r["tconst"] == tconst]
 
 
 def get_shows_for_person(nconst: str) -> list[dict]:
     """Get all shows a specific person appears in from the index."""
-    return [r for r in _read_jsonl("cast-by-person.jsonl") if r["nconst"] == nconst]
+    return [r for r in _read_jsonl("cast.jsonl") if r["nconst"] == nconst]
 
 
 def find_common_cast(tconsts: list[str]) -> list[dict]:
@@ -344,7 +332,7 @@ def find_common_cast(tconsts: list[str]) -> list[dict]:
 
     person_shows: dict[str, dict] = {}
 
-    for row in _read_jsonl("cast-by-person.jsonl"):
+    for row in _read_jsonl("cast.jsonl"):
         if row["tconst"] not in tconsts:
             continue
         nconst = row["nconst"]
@@ -411,8 +399,7 @@ def index_stats() -> dict:
     for name in [
         "titles.jsonl",
         "persons.jsonl",
-        "cast-by-person.jsonl",
-        "cast-by-show.jsonl",
+        "cast.jsonl",
         "characters.jsonl",
     ]:
         path = INDEX_DIR / name

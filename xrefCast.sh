@@ -169,7 +169,7 @@ else
     # Search the index
     while IFS= read -r term; do
         [[ -z $term ]] && continue
-        queryArgs=("query" "$term" "--index-file" "cast-by-person.jsonl")
+        queryArgs=("query" "$term" "--index-file" "cast.jsonl")
         # FULLCAST: if numeric, limit results per term
         if [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
             queryArgs+=("--limit" "$FULLCAST")

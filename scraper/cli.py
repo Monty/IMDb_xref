@@ -169,7 +169,7 @@ def cmd_index_stats(args: argparse.Namespace) -> None:
 
 
 def cmd_query(args: argparse.Namespace) -> None:
-    index_file = args.index_file or "cast-by-person.jsonl"
+    index_file = args.index_file or "cast.jsonl"
     results = search_index(args.query, index_file)
     if args.limit:
         results = results[: args.limit]
@@ -318,8 +318,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     p_q.add_argument("query", help="Search query")
     p_q.add_argument(
         "--index-file",
-        default="cast-by-person.jsonl",
-        help="Index file to search (default: cast-by-person.jsonl)",
+        default="cast.jsonl",
+        help="Index file to search (default: cast.jsonl)",
     )
     p_q.add_argument("--limit", type=int, default=0, help="Max results (0=all)")
     p_q.set_defaults(func=cmd_query)
