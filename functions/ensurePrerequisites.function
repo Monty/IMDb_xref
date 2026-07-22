@@ -23,7 +23,11 @@ EOF
 
     while getopts ":h" opt; do
         case $opt in
-        h) help; waitUntil -k; return ;;
+        h)
+            help
+            waitUntil -k
+            return
+            ;;
         \?)
             printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
             printf "${YELLOW}-$OPTARG${NO_COLOR} option in: " >&2
@@ -88,8 +92,8 @@ EOT
     # Check common cache dirs for the chromium binary
     pwCache=""
     case "$(uname)" in
-        Darwin) pwCache="${HOME}/Library/Caches/ms-playwright" ;;
-        *)      pwCache="${HOME}/.cache/ms-playwright" ;;
+    Darwin) pwCache="${HOME}/Library/Caches/ms-playwright" ;;
+    *) pwCache="${HOME}/.cache/ms-playwright" ;;
     esac
     pwInstalled="no"
     for dir in "$pwCache"/chromium-*/; do
@@ -98,7 +102,7 @@ EOT
             break
         fi
     done
-    if [[ "$pwInstalled" != "yes" ]]; then
+    if [[ $pwInstalled != "yes" ]]; then
         printf "==> Installing Playwright chromium browser...\n"
         playwright install chromium 2>&1
         tookAction="yes"

@@ -180,7 +180,7 @@ _incremental_search() {
 
 # Build search arrays
 searchArray=()
-searchNames=()  # parallel array of display names
+searchNames=() # parallel array of display names
 searchString=""
 
 # Intro text
@@ -335,7 +335,7 @@ while true; do
         # Check not already in array
         alreadyIn=0
         for existingId in "${searchArray[@]}"; do
-            [[ "$existingId" == "$selectedId" ]] && alreadyIn=1 && break
+            [[ $existingId == "$selectedId" ]] && alreadyIn=1 && break
         done
 
         if [[ $alreadyIn -eq 0 ]]; then
