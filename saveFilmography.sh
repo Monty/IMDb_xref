@@ -85,10 +85,14 @@ HEADER
     # Add person name as IMDb link (strip disambiguation suffix from display)
     jq -r '"# [" + (.name | gsub(" ?\\([IVX]+\\)"; "")) + "](https://www.imdb.com/name/" + .nconst + "/)\n"' <<<"$jsonData" >>"$outputFile"
 
-    # Get unique jobs, sorted with actor/actress first
-    jobs=$(jq -r '
+    # Get unique jobs, filtered by rg_sections.rgx whitelist, sorted with actor/actress first
+    local allowedJobs
+    allowedJobs=$(rg -N '^[^#]' "${DIRNAME}/rg_sections.rgx" 2>/dev/null | tr '\n' '|' | sed 's/|$//')
+    jobs=$(jq -r --arg whitelist "$allowedJobs" '
+        ($whitelist | split("|")) as $allowed |
         [.roles[].job // empty]
         | unique
+        | map(select(. as $j | $allowed | any(test(.; "i"))))
         | map(
             if . == "actor" or . == "actress" then "0_."
             elif . == "director" then "1_."
@@ -194,10 +198,12 @@ HEADER
                 "| \(.year) | [\(.title)](https://www.imdb.com/title/\(.tconst)/) | \(.title_type) | \(.character) | \($epStr) |"
             ' >>"$outputFile"
         else
-            printf "| Year | Title | Type |\n" >>"$outputFile"
-            printf "|------|-------|------|\n" >>"$outputFile"
-            echo "$consolidated" | jq -r '.[] |
-                "| \(.year) | [\(.title)](https://www.imdb.com/title/\(.tconst)/) | \(.title_type) |"
+            printf "| Year | Title | Type | Credit |\n" >>"$outputFile"
+            printf "|------|-------|------|--------|\n" >>"$outputFile"
+            echo "$consolidated" | jq -r --arg dash "-" '.[] |
+                .character as $cr |
+                ($cr | if . == "" or . == null then $dash else . end) as $crStr |
+                "| \(.year) | [\(.title)](https://www.imdb.com/title/\(.tconst)/) | \(.title_type) | \($crStr) |"
             ' >>"$outputFile"
         fi
 
