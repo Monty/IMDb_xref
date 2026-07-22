@@ -71,6 +71,139 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
+# Generate a markdown filmography file from JSON data
+_generate_filmography_md() {
+    local jsonData="$1"
+    local outputFile="$2"
+
+    # Noise patterns to filter from character field (case-insensitive)
+    cat >"$outputFile" <<'HEADER'
+# Filmography
+
+HEADER
+
+    # Add person name as IMDb link (strip disambiguation suffix from display)
+    jq -r '"# [" + (.name | gsub(" ?\\([IVX]+\\)"; "")) + "](https://www.imdb.com/name/" + .nconst + "/)\n"' <<<"$jsonData" >>"$outputFile"
+
+    # Get unique jobs, sorted with actor/actress first
+    jobs=$(jq -r '
+        [.roles[].job // empty]
+        | unique
+        | map(
+            if . == "actor" or . == "actress" then "0_."
+            elif . == "director" then "1_."
+            elif . == "writer" then "2_."
+            elif . == "producer" then "3_."
+            else "4_."
+            end + .
+          )
+        | sort
+        | map(. [3:])
+        | .[]
+    ' <<<"$jsonData")
+
+    while IFS= read -r job; do
+        [[ -z $job ]] && continue
+
+        local jobCapital
+        jobCapital="$(echo "$job" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
+
+        local isActing=0
+        [[ $job == "actor" || $job == "actress" ]] && isActing=1
+
+        # Filter roles for this job, exclude noise
+        local filteredRoles
+        filteredRoles=$(jq --arg j "$job" '
+            .roles[]
+            | select(.job == $j)
+            | select(.character != "" and .character != null)
+            | (.character | ascii_downcase) as $cl |
+            # Filter out noise in character field
+            select(
+              ($cl | startswith("self") | not) and
+              ($cl | startswith("special") | not) and
+              ($cl | startswith("archive") | not) and
+              ($cl | startswith("thanks") | not) and
+              ($cl | startswith("gratuitude") | not) and
+              ($cl | startswith("appearance") | not) and
+              ($cl | startswith("himself") | not) and
+              ($cl | startswith("herself") | not) and
+              ($cl | startswith("presentator") | not) and
+              ($cl | startswith("presenter") | not) and
+              ($cl | startswith("tv ") | not) and
+              ($cl | startswith("movie") | not) and
+              ($cl | startswith("documentary") | not) and
+              ($cl | startswith("completed") | not) and
+              ($cl | startswith("video") | not) and
+              ($cl | startswith("short") | not) and
+              ($cl | startswith("uncredited") | not) and
+              ($cl | startswith("director") | not) and
+              ($cl | startswith("producer") | not) and
+              ($cl | startswith("executive") | not) and
+              ($cl | startswith("written by") | not) and
+              ($cl | startswith("writer") | not) and
+              ($cl | startswith("editor") | not) and
+              ($cl | startswith("cinematographer") | not) and
+              ($cl | startswith("composer") | not) and
+              ($cl | startswith("costume") | not) and
+              ($cl | startswith("sound") | not) and
+              ($cl | startswith("performer") | not)
+            )
+            | {
+                tconst,
+                title: (.title // "Unknown"),
+                year: (.year // "-"),
+                title_type: (.title_type // ""),
+                character: (.character // ""),
+                episodes: (.episodes // 0)
+              }
+        ' -r -c <<<"$jsonData")
+
+        [[ -z $filteredRoles ]] && continue
+
+        # Group by tconst to consolidate multiple characters
+        local consolidated
+        consolidated=$(echo "$filteredRoles" | jq -s '
+            group_by(.tconst)
+            | map({
+                tconst: .[0].tconst,
+                title: .[0].title,
+                year: ([.[].year | select(. != null and . != "" and . != "-")] | if length > 0 then .[0] else "-" end),
+                title_type: .[0].title_type,
+                character: ([.[].character] | unique | join(" / ")),
+                episodes: ([.[].episodes] | add // 0)
+              })
+            | sort_by(-(.year | if . == "-" then 0 else (. | split("–")[-1] | split("-")[-1] | tonumber // 0) end))
+        ')
+
+        [[ -z $consolidated ]] && continue
+
+        local count
+        count=$(echo "$consolidated" | jq 'length')
+
+        # Write section header
+        printf "\n## %s (%s)\n\n" "$jobCapital" "$count" >>"$outputFile"
+
+        # Write table
+        if [[ $isActing -eq 1 ]]; then
+            printf "| Year | Title | Type | Character | Episodes |\n" >>"$outputFile"
+            printf "|------|-------|------|-----------|----------:\n" >>"$outputFile"
+            echo "$consolidated" | jq -r --arg dash "-" '.[] |
+                .episodes as $ep |
+                ($ep | if . > 0 then tostring else $dash end) as $epStr |
+                "| \(.year) | [\(.title)](https://www.imdb.com/title/\(.tconst)/) | \(.title_type) | \(.character) | \($epStr) |"
+            ' >>"$outputFile"
+        else
+            printf "| Year | Title | Type |\n" >>"$outputFile"
+            printf "|------|-------|------|\n" >>"$outputFile"
+            echo "$consolidated" | jq -r '.[] |
+                "| \(.year) | [\(.title)](https://www.imdb.com/title/\(.tconst)/) | \(.title_type) |"
+            ' >>"$outputFile"
+        fi
+
+    done <<<"$jobs"
+}
+
 while getopts ":hm:" opt; do
     case $opt in
     h)
@@ -209,8 +342,12 @@ while IFS= read -r searchTerm; do
         continue
     fi
 
-    # Display summary
-    noSpaceName="${nconstName//[[:space:]]/_}"
+    # Display summary — use name from filmography data (more accurate than search)
+    fgName=$(jq -r '.name // empty' <<<"$fgData")
+    [[ -n $fgName ]] && nconstName="$fgName"
+    # Strip IMDb disambiguation suffix like (I), (II), (III)
+    cleanName=$(echo "$nconstName" | sed 's/ *(I[IVX]*)$//')
+    noSpaceName="${cleanName//[[:space:]]/_}"
     filmographyDir="secondary/filmographies"
     mkdir -p "$filmographyDir"
 
@@ -231,6 +368,11 @@ while IFS= read -r searchTerm; do
     if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
         echo "$fgData" >"$filmographyFile"
         printf "==> Saved.\n"
+
+        # Generate markdown
+        filmographyMd="$filmographyDir/${noSpaceName}-${nconst}.md"
+        _generate_filmography_md "$fgData" "$filmographyMd"
+        printf "==> Also saved ${BLUE}$filmographyMd${NO_COLOR}\n"
     fi
 
     # Offer to add titles to tconst file

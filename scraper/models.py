@@ -47,7 +47,7 @@ class FilmographyRole(BaseModel):
 
     tconst: str
     title: str
-    year: Optional[int] = None
+    year: Optional[str] = None  # e.g. "2024" or "2017–2021"
     title_type: str = ""  # "tvSeries", "movie", "tvEpisode", etc.
     job: str = ""  # "actor", "director", etc.
     character: str = ""

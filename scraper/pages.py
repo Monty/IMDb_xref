@@ -438,9 +438,9 @@ def get_filmography(nconst: str) -> Filmography:
             title_type = ""
 
             for line in lines[1:]:
-                ym = re.search(r"^\b(19\d{2}|20\d{2})\b$", line)
+                ym = re.search(r"^(19\d{2}|20\d{2})([–-](19\d{2}|20\d{2}))?$", line)
                 if ym:
-                    year = int(ym.group())
+                    year = ym.group(0)  # Full year string, e.g. "2017–2021" or "2024"
                 elif re.search(r"episode", line, re.IGNORECASE):
                     ep_m = re.search(r"(\d+)", line)
                     if ep_m:
@@ -448,6 +448,7 @@ def get_filmography(nconst: str) -> Filmography:
                 elif line in (
                     "TV Series",
                     "TV Mini-Series",
+                    "TV Mini Series",
                     "TV Movie",
                     "TV Episode",
                     "Movie",
@@ -456,6 +457,10 @@ def get_filmography(nconst: str) -> Filmography:
                     "TV Pilot",
                 ):
                     title_type = line
+                elif re.match(r"^(completed|short|video)\b", line, re.IGNORECASE):
+                    # Other title descriptors that appear on IMDb
+                    if not title_type:
+                        title_type = line
                 elif not re.search(r"^\d", line):
                     # Not a number — likely character name
                     if not character:
@@ -475,4 +480,23 @@ def get_filmography(nconst: str) -> Filmography:
 
     page.close()
 
-    return Filmography(nconst=nconst, name=name, roles=roles)
+    # Deduplicate by (tconst, job) — merge unique characters, keep highest episode count
+    deduped: dict[tuple[str, str], FilmographyRole] = {}
+    for role in roles:
+        key = (role.tconst, role.job)
+        if key not in deduped:
+            deduped[key] = role
+        else:
+            existing = deduped[key]
+            # Merge unique characters
+            if role.character:
+                # Split on "; " to handle existing merged characters
+                existing_chars = set(c.strip() for c in existing.character.split("; ") if c.strip())
+                new_chars = set(c.strip() for c in role.character.split("; ") if c.strip())
+                all_chars = existing_chars | new_chars
+                existing.character = "; ".join(sorted(all_chars)) if all_chars else existing.character
+            # Keep highest episode count
+            if role.episodes > existing.episodes:
+                existing.episodes = role.episodes
+
+    return Filmography(nconst=nconst, name=name, roles=list(deduped.values()))
