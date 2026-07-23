@@ -71,141 +71,180 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
+# Replacement for _generate_filmography_md() in saveFilmography.sh
+#
+# Fixes over the original:
+#
+#   1. The whitelist filter was a no-op. It read
+#        map(select(. as $j | $allowed | any(test(.; "i"))))
+#      Inside any(), "." is each allowed string and the pattern is also
+#      ".", so every entry was tested against itself and always matched;
+#      $j was bound but never used. Every category got through, including
+#      Self, Thanks and Archive Footage. Now matched whole-string against
+#      $j, so "editor" no longer pulls in "editorial department" either.
+#
+#   2. select(.character != "" and .character != null) dropped every
+#      non-acting section. Directors and writers have no character, so
+#      filteredRoles came back empty and the loop hit continue -- there
+#      was no way to ever emit a Director table. Removed.
+#
+#   3. tonumber // 0 does not catch errors -- "//" only handles null and
+#      false. An ongoing series year like "2024- " splits to " ", and
+#      " " | tonumber throws, aborting the whole jq call. Replaced with
+#      scan(), which cannot throw.
+#
+#   4. The acting separator row was missing its trailing pipe.
+#
+#   5. ${DIRNAME}/rg_sections.rgx was evaluated after the script already
+#      did cd "$DIRNAME", so it was double-relative. Uses the bare name.
+#
+# Also: the large startswith() noise filter is gone. It existed to strip
+# credit text that leaked into the character field because every role was
+# being labelled "actor"; with get_filmography() fixed, the categories are
+# real and rg_sections.rgx does the filtering.
+#
+# Unreleased titles sort to the top of every section, above the newest
+# released one, in the order IMDb lists them. Their Year cell shows the
+# production status instead ("Post-production", "Pre-production (2026)").
+# Set SKIP_UNRELEASED=yes to leave them out entirely.
+#
+# A title counts as unreleased when it carries a status other than
+# "Released" -- IMDb marks some released titles with an explicit
+# "Released", so the presence of a status is not enough on its own.
+#
+# Requires the matching models.py field:
+#     status: str = ""
+# Without it every row reports an empty status, nothing is treated as
+# unreleased, and the output is the same as it would have been before.
+#
+# Bash 3.2 compatible: no mapfile, no associative arrays.
+
 # Generate a markdown filmography file from JSON data
 _generate_filmography_md() {
     local jsonData="$1"
     local outputFile="$2"
 
-    # Noise patterns to filter from character field (case-insensitive)
-    cat >"$outputFile" <<'HEADER'
-# Filmography
+    # Set SKIP_UNRELEASED=yes to omit titles that have not been released.
+    local skipUnreleased="${SKIP_UNRELEASED:-no}"
 
-HEADER
-
-    # Add person name as IMDb link (strip disambiguation suffix from display)
-    jq -r '"# [" + (.name | gsub(" ?\\([IVX]+\\)"; "")) + "](https://www.imdb.com/name/" + .nconst + "/)\n"' <<<"$jsonData" >>"$outputFile"
-
-    # Get unique jobs, filtered by rg_sections.rgx whitelist, sorted with actor/actress first
+    # Job categories to include, one per line, "#" for comments. Missing or
+    # empty file means include everything.
     local allowedJobs
-    allowedJobs=$(rg -N '^[^#]' "${DIRNAME}/rg_sections.rgx" 2>/dev/null | tr '\n' '|' | sed 's/|$//')
+    allowedJobs=$(rg -N '^[^#]' rg_sections.rgx 2>/dev/null | tr '\n' '|')
+    allowedJobs="${allowedJobs%|}"
+    [[ -z $allowedJobs ]] && allowedJobs=".*"
+
+    # Header: name as an IMDb link, disambiguation suffix stripped
+    jq -r '"# [" + (.name | gsub(" ?\\([IVX]+\\)"; "")) +
+           "](https://www.imdb.com/name/" + .nconst + "/)"' \
+        <<<"$jsonData" >"$outputFile"
+
+    # Job sections present in the data, whitelisted, acting first
+    local jobs
     jobs=$(jq -r --arg whitelist "$allowedJobs" '
-        ($whitelist | split("|")) as $allowed |
-        [.roles[].job // empty]
+        ($whitelist | split("|") | map(select(length > 0))) as $allowed
+        | [.roles[].job // empty]
         | unique
-        | map(select(. as $j | $allowed | any(test(.; "i"))))
+        | map(select(. as $j | $allowed | any(. as $a | $j | test("^" + $a + "$"; "i"))))
         | map(
-            if . == "actor" or . == "actress" then "0_."
-            elif . == "director" then "1_."
-            elif . == "writer" then "2_."
-            elif . == "producer" then "3_."
-            else "4_."
-            end + .
+            if . == "actor" or . == "actress" then "0_"
+            elif . == "director" then "1_"
+            elif . == "writer"   then "2_"
+            elif . == "producer" then "3_"
+            else "4_" end + .
           )
         | sort
-        | map(. [3:])
+        | map(.[2:])
         | .[]
     ' <<<"$jsonData")
+
+    local job jobTitle consolidated count hasEps charHeader
 
     while IFS= read -r job; do
         [[ -z $job ]] && continue
 
-        local jobCapital
-        jobCapital="$(echo "$job" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')"
-
-        local isActing=0
-        [[ $job == "actor" || $job == "actress" ]] && isActing=1
-
-        # Filter roles for this job, exclude noise
-        local filteredRoles
-        filteredRoles=$(jq --arg j "$job" '
-            .roles[]
-            | select(.job == $j)
-            | select(.character != "" and .character != null)
-            | (.character | ascii_downcase) as $cl |
-            # Filter out noise in character field
-            select(
-              ($cl | startswith("self") | not) and
-              ($cl | startswith("special") | not) and
-              ($cl | startswith("archive") | not) and
-              ($cl | startswith("thanks") | not) and
-              ($cl | startswith("gratuitude") | not) and
-              ($cl | startswith("appearance") | not) and
-              ($cl | startswith("himself") | not) and
-              ($cl | startswith("herself") | not) and
-              ($cl | startswith("presentator") | not) and
-              ($cl | startswith("presenter") | not) and
-              ($cl | startswith("tv ") | not) and
-              ($cl | startswith("movie") | not) and
-              ($cl | startswith("documentary") | not) and
-              ($cl | startswith("completed") | not) and
-              ($cl | startswith("video") | not) and
-              ($cl | startswith("short") | not) and
-              ($cl | startswith("uncredited") | not) and
-              ($cl | startswith("director") | not) and
-              ($cl | startswith("producer") | not) and
-              ($cl | startswith("executive") | not) and
-              ($cl | startswith("written by") | not) and
-              ($cl | startswith("writer") | not) and
-              ($cl | startswith("editor") | not) and
-              ($cl | startswith("cinematographer") | not) and
-              ($cl | startswith("composer") | not) and
-              ($cl | startswith("costume") | not) and
-              ($cl | startswith("sound") | not) and
-              ($cl | startswith("performer") | not)
-            )
-            | {
-                tconst,
-                title: (.title // "Unknown"),
-                year: (.year // "-"),
-                title_type: (.title_type // ""),
-                character: (.character // ""),
-                episodes: (.episodes // 0)
-              }
-        ' -r -c <<<"$jsonData")
-
-        [[ -z $filteredRoles ]] && continue
-
-        # Group by tconst to consolidate multiple characters
-        local consolidated
-        consolidated=$(echo "$filteredRoles" | jq -s '
-            group_by(.tconst)
+        # One entry per title. Unreleased first in IMDb's own order, then
+        # released newest first, ties broken by position on the page.
+        consolidated=$(jq --arg j "$job" --arg skip "$skipUnreleased" '
+            [ .roles[]
+              | select(.job == $j)
+              | { tconst,
+                  title:      (.title // "Unknown"),
+                  year:       (.year // ""),
+                  title_type: (.title_type // ""),
+                  status:     (.status // ""),
+                  character:  (.character // ""),
+                  episodes:   (.episodes // 0) }
+            ]
+            | to_entries
+            | map(.value + { idx: .key })
+            | map(. + { upcoming: (.status != ""
+                                   and (.status | ascii_downcase) != "released") })
+            | if $skip == "yes" then map(select(.upcoming | not)) else . end
+            | group_by(.tconst)
             | map({
-                tconst: .[0].tconst,
-                title: .[0].title,
-                year: ([.[].year | select(. != null and . != "" and . != "-")] | if length > 0 then .[0] else "-" end),
-                title_type: .[0].title_type,
-                character: ([.[].character] | unique | join(" / ")),
-                episodes: ([.[].episodes] | add // 0)
+                tconst:     .[0].tconst,
+                title:      .[0].title,
+                year:       ([.[].year       | select(. != "")] | if length > 0 then .[0] else "" end),
+                title_type: ([.[].title_type | select(. != "")] | if length > 0 then .[0] else "" end),
+                status:     ([.[].status     | select(. != "")] | if length > 0 then .[0] else "" end),
+                character:  ([.[].character  | select(. != "")] | unique | join(" / ")),
+                episodes:   ([.[].episodes] | max),
+                upcoming:   ([.[].upcoming] | any),
+                idx:        ([.[].idx] | min)
               })
-            | sort_by(-(.year | if . == "-" then 0 else (. | split("–")[-1] | split("-")[-1] | tonumber // 0) end))
-        ')
+            | sort_by([
+                (if .upcoming then 0 else 1 end),
+                (if .upcoming then 0
+                 else -( .year
+                         | [scan("[0-9]{4}")]
+                         | if length > 0 then (.[-1] | tonumber) else 0 end )
+                 end),
+                .idx
+              ])
+        ' <<<"$jsonData")
 
-        [[ -z $consolidated ]] && continue
+        count=$(jq 'length' <<<"$consolidated")
+        [[ -z $count || $count -eq 0 ]] && continue
 
-        local count
-        count=$(echo "$consolidated" | jq 'length')
+        # Episode counts are not just an acting thing -- Self and Archive
+        # Footage carry them too. Show the column when there is data for it.
+        hasEps=$(jq '[.[] | select(.episodes > 0)] | length' <<<"$consolidated")
 
-        # Write section header
-        printf "\n## %s (%s)\n\n" "$jobCapital" "$count" >>"$outputFile"
-
-        # Write table
-        if [[ $isActing -eq 1 ]]; then
-            printf "| Year | Title | Type | Character | Episodes |\n" >>"$outputFile"
-            printf "|------|-------|------|-----------|----------:\n" >>"$outputFile"
-            echo "$consolidated" | jq -r --arg dash "-" '.[] |
-                .episodes as $ep |
-                ($ep | if . > 0 then tostring else $dash end) as $epStr |
-                "| \(.year) | [\(.title)](https://www.imdb.com/title/\(.tconst)/) | \(.title_type) | \(.character) | \($epStr) |"
-            ' >>"$outputFile"
-        else
-            printf "| Year | Title | Type | Credit |\n" >>"$outputFile"
-            printf "|------|-------|------|--------|\n" >>"$outputFile"
-            echo "$consolidated" | jq -r --arg dash "-" '.[] |
-                .character as $cr |
-                ($cr | if . == "" or . == null then $dash else . end) as $crStr |
-                "| \(.year) | [\(.title)](https://www.imdb.com/title/\(.tconst)/) | \(.title_type) | \($crStr) |"
-            ' >>"$outputFile"
+        charHeader="Credit"
+        if [[ $job == "actor" || $job == "actress" ]]; then
+            charHeader="Character"
         fi
+
+        jobTitle=$(printf '%s\n' "$job" |
+            awk '{for (i = 1; i <= NF; i++) $i = toupper(substr($i, 1, 1)) substr($i, 2)} 1')
+
+        printf '\n## %s (%s)\n\n' "$jobTitle" "$count" >>"$outputFile"
+
+        if [[ $hasEps -gt 0 ]]; then
+            printf '| Year | Title | Type | %s | Episodes |\n' "$charHeader" >>"$outputFile"
+            printf '|------|-------|------|-----------|---------:|\n' >>"$outputFile"
+        else
+            printf '| Year | Title | Type | %s |\n' "$charHeader" >>"$outputFile"
+            printf '|------|-------|------|-----------|\n' >>"$outputFile"
+        fi
+
+        jq -r --argjson withEps "$hasEps" '
+            def esc: gsub("\\|"; "&#124;");
+            .[]
+            | (if .upcoming
+               then .status + (if .year != "" then " (" + .year + ")" else "" end)
+               elif .year == "" then "-"
+               else .year end) as $when
+            | "| " + $when
+              + " | [" + (.title | esc) + "](https://www.imdb.com/title/" + .tconst + "/)"
+              + " | " + (if .title_type == "" then "-" else (.title_type | esc) end)
+              + " | " + (if .character  == "" then "-" else (.character  | esc) end)
+              + (if $withEps > 0
+                 then " | " + (if .episodes > 0 then (.episodes | tostring) else "-" end)
+                 else "" end)
+              + " |"
+        ' <<<"$consolidated" >>"$outputFile"
 
     done <<<"$jobs"
 }

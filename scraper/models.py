@@ -52,6 +52,7 @@ class FilmographyRole(BaseModel):
     job: str = ""  # "actor", "director", etc.
     character: str = ""
     episodes: int = 0
+    status: str = ""   # "Pre-production", "Completed", "Released", ...
 
 
 class Filmography(BaseModel):

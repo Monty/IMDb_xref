@@ -380,123 +380,203 @@ def get_title_basics(tconst: str) -> Show:
 # Filmography for a person
 # ---------------------------------------------------------------------------
 
+ROW_SEL = "li.ipc-metadata-list-summary-item"
+
+# Headings inside the credits area that are not job categories.
+SKIP_HEADINGS = {"sponsored", "awards", "trivia", "biography", "photos", "videos"}
+
+# Production status is only kept if models.py has been given the matching
+# field, so this patch can be applied to pages.py before or after that one:
+#     status: str = ""   # "Pre-production", "Completed", ...
+# Without it the status is dropped rather than silently overwriting the
+# title type, which is what the previous version did.
+_SUPPORTS_STATUS = "status" in FilmographyRole.model_fields
+
+_EXTRACT_JS = r"""
+(sec) => {
+  const ROW = 'li.ipc-metadata-list-summary-item';
+  const STATUS = ['development unknown', 'in development', 'pre-production',
+                  'post-production', 'announced', 'filming', 'completed',
+                  'released', 'unknown'];
+  const TYPES = ['tv series', 'tv mini series', 'tv mini-series', 'tv movie',
+                 'tv special', 'tv short', 'tv episode', 'tv pilot', 'movie',
+                 'short', 'video', 'video game', 'podcast series',
+                 'podcast episode', 'documentary', 'music video'];
+  const YEAR = /^\d{4}(\s*[\u2013\u2014-]\s*(\d{4})?)?$/;
+
+  const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+  const isStatus = (t) => STATUS.indexOf(t.toLowerCase()) !== -1;
+  const isType = (t) => TYPES.indexOf(t.toLowerCase()) !== -1;
+
+  const out = [];
+  let job = '';
+
+  for (const el of sec.querySelectorAll('h4, ' + ROW)) {
+    if (el.tagName === 'H4') {
+      job = norm(el.innerText.split('\n')[0]).toLowerCase();
+      continue;
+    }
+    if (!job) continue;
+
+    const link = el.querySelector('a.ipc-metadata-list-summary-item__t')
+              || el.querySelector('a[href*="/title/tt"]');
+    if (!link) continue;
+    const m = (link.getAttribute('href') || '').match(/tt\d{7,9}/);
+    if (!m) continue;
+
+    const tc = el.querySelector('.ipc-metadata-list-summary-item__tc');
+
+    let year = null;
+    let episodes = 0;
+    let titleType = '';
+    let status = '';
+    const credits = [];
+
+    // Claim a fragment as year / episode count / production status.
+    // Returns true if it was consumed, so callers know not to treat it
+    // as a credit.
+    const takeMeta = (t) => {
+      if (/episode/i.test(t)) {
+        const e = t.match(/[\d,]+/);
+        if (e) episodes = parseInt(e[0].replace(/,/g, ''), 10);
+        return true;
+      }
+      if (YEAR.test(t)) { year = t.replace(/\s+/g, ''); return true; }
+      if (isStatus(t)) { status = t; return true; }
+      if (isType(t)) { titleType = t; return true; }
+      return false;
+    };
+
+    // Trailing metadata column: year and episode count.
+    el.querySelectorAll('.ipc-metadata-list-summary-item__cc li.ipc-inline-list__item')
+      .forEach((li) => { takeMeta(norm(li.innerText)); });
+
+    const tagged = el.querySelectorAll(
+      '[data-testid="credit-roles-list"] li.ipc-inline-list__item');
+
+    if (tagged.length) {
+      tagged.forEach((li) => {
+        const t = norm(li.innerText);
+        if (t && credits.indexOf(t) === -1) credits.push(t);
+      });
+    } else if (tc) {
+      // Unreleased layout: credits are plain <span> items, status is an <a>.
+      tc.querySelectorAll('ul li.ipc-inline-list__item').forEach((li) => {
+        const t = norm(li.innerText);
+        if (!t || takeMeta(t)) return;
+        if (li.querySelector('a')) return;
+        if (credits.indexOf(t) === -1) credits.push(t);
+      });
+    }
+
+    if (tc) {
+      // Type, year and status can each appear in a list of their own,
+      // alongside or instead of the tagged credit list.
+      tc.querySelectorAll('ul li.ipc-inline-list__item').forEach((li) => {
+        if (li.closest('[data-testid="credit-roles-list"]')) return;
+        takeMeta(norm(li.innerText));
+      });
+      // IMDb moves the type marker around depending on whether the row
+      // carries a rating, so match on value rather than position: sweep
+      // every leaf node and let takeMeta claim what it recognises.
+      tc.querySelectorAll('span, a, li').forEach((e) => {
+        if (e.children.length) return;
+        if (e === link) return;
+        if (e.closest('.ipc-rating-star-group')) return;
+        takeMeta(norm(e.innerText));
+      });
+    }
+
+    out.push({
+      tconst: m[0],
+      title: norm(link.innerText),
+      year: year,
+      title_type: titleType,
+      status: status,
+      job: job,
+      character: credits.join('; '),
+      episodes: episodes,
+    });
+  }
+  return out;
+}
+"""
+
+
+def _scrape_rows(nconst: str) -> tuple[str, list[dict]]:
+    """Fetch the page and return (name, raw row dicts) before model coercion."""
+    manager = get_manager()
+    page = manager.goto(f"https://www.imdb.com/name/{nconst}/fullcredits")
+
+    name = ""
+    name_el = page.query_selector("h1")
+    if name_el:
+        name = name_el.inner_text().strip().splitlines()[0].strip()
+
+    # The credits section is the leaf <section> holding the rows; outer
+    # sections wrap it and would double-count.
+    section = None
+    for sec in page.query_selector_all("section"):
+        if sec.query_selector_all("section"):
+            continue
+        if sec.query_selector_all(ROW_SEL):
+            section = sec
+            break
+
+    raw: list[dict] = section.evaluate(_EXTRACT_JS) if section is not None else []
+    page.close()
+    return name, raw
+
 
 def get_filmography(nconst: str) -> Filmography:
     """Scrape a person's full credits page to build their filmography.
 
-    The filmography page has sections with h4 headings like "Actress", "Actor",
-    each containing li.ipc-metadata-list-summary-item rows. Each row's text is
-    like: "The Day of the Jackal\n8.1\nTV Series\nNuria\n2024\n10 episodes"
+    Every category (Actor, Writer, Director, Soundtrack, Producer, Editorial
+    Department, Voice Actor - Dubbing, Thanks, Self, Archive Footage, ...)
+    sits inside a single <section>, separated only by <h4> headings, so
+    section membership is positional and headings must be walked with rows.
     """
-    manager = get_manager()
-    page = manager.goto(f"https://www.imdb.com/name/{nconst}/fullcredits")
-
-    # Person name from the page heading
-    name = ""
-    name_el = page.query_selector("h1")
-    if name_el:
-        name = name_el.inner_text().strip()
+    name, raw = _scrape_rows(nconst)
 
     roles: list[FilmographyRole] = []
-
-    # All sections on the page
-    sections = page.query_selector_all("section")
-
-    for section in sections:
-        # Job heading is in h4, not h3
-        heading = section.query_selector("h4")
-        if not heading:
+    for item in raw:
+        if item["job"] in SKIP_HEADINGS:
             continue
-        job = heading.inner_text().strip().lower()
+        fields = {
+            "tconst": item["tconst"],
+            "title": item["title"],
+            "year": item["year"],
+            "title_type": item["title_type"],
+            "job": item["job"],
+            "character": item["character"],
+            "episodes": item["episodes"],
+        }
+        if _SUPPORTS_STATUS:
+            fields["status"] = item["status"]
+        roles.append(FilmographyRole(**fields))
 
-        # Skip non-filmography sections
-        if job in ("sponsored", "awards", "trivia", "biography"):
-            continue
-
-        rows = section.query_selector_all("li.ipc-metadata-list-summary-item")
-        for row in rows:
-            link = row.query_selector('a[href*="/title/tt"]')
-            if not link:
-                continue
-            href = link.get_attribute("href") or ""
-            tm = re.search(r"tt\d{7,8}", href)
-            if not tm:
-                continue
-            tconst = tm.group()
-
-            # Parse from full text:
-            # "The Day of the Jackal\n8.1\nTV Series\nNuria\n2024\n10 episodes"
-            full_text = row.inner_text()
-            lines = [l.strip() for l in full_text.split("\n") if l.strip()]
-
-            # First line is the title
-            title = lines[0] if len(lines) >= 1 else ""
-
-            year = None
-            character = ""
-            episodes = 0
-            title_type = ""
-
-            for line in lines[1:]:
-                ym = re.search(r"^(19\d{2}|20\d{2})([–-](19\d{2}|20\d{2}))?$", line)
-                if ym:
-                    year = ym.group(0)  # Full year string, e.g. "2017–2021" or "2024"
-                elif re.search(r"episode", line, re.IGNORECASE):
-                    ep_m = re.search(r"(\d+)", line)
-                    if ep_m:
-                        episodes = int(ep_m.group(1))
-                elif line in (
-                    "TV Series",
-                    "TV Mini-Series",
-                    "TV Mini Series",
-                    "TV Movie",
-                    "TV Episode",
-                    "Movie",
-                    "Documentary",
-                    "TV Special",
-                    "TV Pilot",
-                ):
-                    title_type = line
-                elif re.match(r"^(completed|short|video)\b", line, re.IGNORECASE):
-                    # Other title descriptors that appear on IMDb
-                    if not title_type:
-                        title_type = line
-                elif not re.search(r"^\d", line):
-                    # Not a number — likely character name
-                    if not character:
-                        character = line
-
-            roles.append(
-                FilmographyRole(
-                    tconst=tconst,
-                    title=title,
-                    year=year,
-                    title_type=title_type,
-                    job=job,
-                    character=character,
-                    episodes=episodes,
-                )
-            )
-
-    page.close()
-
-    # Deduplicate by (tconst, job) — merge unique characters, keep highest episode count
+    # Deduplicate by (tconst, job): merge credits, keep the highest episode count.
     deduped: dict[tuple[str, str], FilmographyRole] = {}
     for role in roles:
         key = (role.tconst, role.job)
-        if key not in deduped:
+        existing = deduped.get(key)
+        if existing is None:
             deduped[key] = role
-        else:
-            existing = deduped[key]
-            # Merge unique characters
-            if role.character:
-                # Split on "; " to handle existing merged characters
-                existing_chars = set(c.strip() for c in existing.character.split("; ") if c.strip())
-                new_chars = set(c.strip() for c in role.character.split("; ") if c.strip())
-                all_chars = existing_chars | new_chars
-                existing.character = "; ".join(sorted(all_chars)) if all_chars else existing.character
-            # Keep highest episode count
-            if role.episodes > existing.episodes:
-                existing.episodes = role.episodes
+            continue
+        if role.character:
+            merged = list(dict.fromkeys(
+                [c.strip() for c in existing.character.split(";") if c.strip()]
+                + [c.strip() for c in role.character.split(";") if c.strip()]
+            ))
+            if merged:
+                existing.character = "; ".join(merged)
+        if role.episodes > existing.episodes:
+            existing.episodes = role.episodes
+        if not existing.year and role.year:
+            existing.year = role.year
+        if not existing.title_type and role.title_type:
+            existing.title_type = role.title_type
+        if _SUPPORTS_STATUS and not existing.status and role.status:
+            existing.status = role.status
 
     return Filmography(nconst=nconst, name=name, roles=list(deduped.values()))
