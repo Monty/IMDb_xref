@@ -6,6 +6,9 @@
 
 - **`scraper/browser.py`** — `WAFChallengeError`, raised by `goto()` when a navigation lands on an AWS WAF interstitial rather than real content. Checks `#challenge-container` and `#captcha-container`, then the page title, and runs after the `#root` wait so a silent JS challenge that clears itself is unaffected. Applies to every navigation, so `search_title` and `search_person` now fail loudly on a challenge too.
 - **`saveFilmography.sh`** — Scraper stderr is captured to a `SCRAPER_ERR` temp file and reported when a fetch fails, showing the last two lines of the traceback. Registered in `terminate()` for cleanup alongside the other temp files.
+- **`scraper/tools/solve_challenge.py`** — Opens IMDb in a non-headless browser sharing the scraper's `browser_state.json`, so a WAF CAPTCHA solved by hand carries over to subsequent headless runs. Reuses `browser._CHALLENGE_TITLES` so it stays in step with what `goto()` treats as a challenge. Run directly (`./scraper/tools/solve_challenge.py`).
+- **`scraper/tools/probe_groups.py`** — Diagnostic that dumps the fullcredits heading/row layout in document order, for checking what changed when IMDb reshuffles the DOM and `get_filmography` starts misattributing jobs. Run directly (`./scraper/tools/probe_groups.py [nconst]`).
+- Both tools use a PEP 723 `uv run --script` shebang (inline `playwright`/`pydantic` deps, no active venv needed) and resolve the scraper package via `Path(__file__).resolve().parents[1]`, so they work from any checkout. Mark executable with `chmod +x scraper/tools/*.py`.
 
 ### Bugfixes
 
