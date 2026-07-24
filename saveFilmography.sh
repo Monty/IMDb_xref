@@ -45,12 +45,13 @@ PERSON_RESULTS=""
 NCONST_TERMS=""
 TMPFILE=""
 FILMOGRAPHY_JSON=""
+SCRAPER_ERR=""
 
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
-        rm -f "$ALL_TERMS" "$PERSON_RESULTS" "$NCONST_TERMS" "$TMPFILE" "$FILMOGRAPHY_JSON"
+        rm -f "$ALL_TERMS" "$PERSON_RESULTS" "$NCONST_TERMS" "$TMPFILE" "$FILMOGRAPHY_JSON" "$SCRAPER_ERR"
     fi
 }
 
@@ -270,6 +271,7 @@ PERSON_RESULTS=$(mktemp)
 NCONST_TERMS=$(mktemp)
 TMPFILE=$(mktemp)
 FILMOGRAPHY_JSON=$(mktemp)
+SCRAPER_ERR=$(mktemp)
 
 # Make sure a search term is supplied
 if [[ $# -eq 0 ]]; then
@@ -371,16 +373,19 @@ while IFS= read -r searchTerm; do
         fi
     fi
 
-    # Fetch filmography if not cached
-    fgData=$(_scraper filmography "$nconst" 2>/dev/null)
-    roleCount=$(jq '.roles | length' <<<"$fgData")
-
-    if [[ $roleCount -eq 0 ]]; then
-        printf "==> Fetching filmography from IMDb...\n"
-        _scraper --delay 1 filmography "$nconst" >/dev/null 2>&1
-        fgData=$(_scraper filmography "$nconst" 2>/dev/null)
-        roleCount=$(jq '.roles | length' <<<"$fgData")
+    # Fetch filmography. The scraper serves from .xref_cache when present and
+    # scrapes on a miss, so one call is enough -- retrying here just doubled
+    # the request rate against IMDb's WAF. Errors are surfaced rather than
+    # discarded; a failed scrape is not the same as a person with no credits.
+    printf "==> Fetching filmography for %s...\n" "$nconst"
+    if ! fgData=$(_scraper filmography "$nconst" 2>"$SCRAPER_ERR"); then
+        printf "\n==> Could not fetch filmography for %s:\n" "$nconstName"
+        tail -n 2 "$SCRAPER_ERR" | sed 's/^/    /'
+        continue
     fi
+
+    roleCount=$(jq '.roles | length' <<<"$fgData" 2>/dev/null)
+    roleCount=${roleCount:-0}
 
     if [[ $roleCount -eq 0 ]]; then
         printf "\n==> No filmography found for %s.\n" "$nconstName"
