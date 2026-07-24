@@ -1,5 +1,40 @@
 # Changelog
 
+## [Unreleased] — 2026-07-22
+
+### Added
+
+- **`scraper/models.py`** — `status` field on `FilmographyRole` ("Pre-production", "Completed", "Released", …). Production status was previously overwritten by title type and lost, which made unreleased titles indistinguishable from undated ones.
+- **`saveFilmography.sh`** — `SKIP_UNRELEASED=yes` omits titles that have not been released.
+
+### Bugfixes
+
+- **`scraper/pages.py`** — `get_filmography` stamped every credit on a page with a single job category. All categories share one `<section>` on IMDb's fullcredits page, separated only by `<h4>` headings, so `query_selector("h4")` returned the first heading and `query_selector_all(ROW)` returned every row: 660 "actor" roles for one person, 572 "writer" for another, with the remaining categories absent. Now walks headings and rows in document order, switching job at each `<h4>`. The same guard already existed in `get_full_credits` and was never applied here.
+- **`scraper/pages.py`** — Row fields were parsed out of `row.inner_text()`. Adjacent inline spans carry no whitespace between them, so values ran together: "a play bybased on the film by", "ReleasedTV Series", "executive producerproducer". Each field is now read from its own element, with credits taken as separate `<li>` items.
+- **`scraper/pages.py`** — Only one row layout was handled. Released titles carry a rating and put credits in `ul[data-testid="credit-roles-list"]`; unreleased titles have no rating, use a plain `<ul>`, and render production status as an `<a>`. Both are now parsed.
+- **`scraper/pages.py`** — Title type was located by position, but IMDb moves the marker depending on whether the row carries a rating. Now matched by value, taking a sample person from 2 of 99 rows typed to 73 of 99.
+- **`saveFilmography.sh`** — The `_generate_filmography_md` job whitelist was a no-op. `map(select(. as $j | $allowed | any(test(.; "i"))))` tested each allowed string against itself inside `any()` and always matched, leaving `$j` unused, so every category passed through including Self, Thanks and Archive Footage. Now matched whole-string against the job.
+- **`saveFilmography.sh`** — `select(.character != "" and .character != null)` dropped every non-acting section. Directors and writers have no character, so `filteredRoles` came back empty and the loop hit `continue`; there was no way to emit a Director table.
+- **`saveFilmography.sh`** — `tonumber // 0` cannot catch a jq error, as `//` only handles `null` and `false`. An ongoing series year such as "2024– " split to " ", and `" " | tonumber` threw, aborting the whole jq call. Replaced with `scan()`.
+- **`saveFilmography.sh`** — Acting table separator row was missing its trailing pipe.
+- **`saveFilmography.sh`** — `${DIRNAME}/rg_sections.rgx` was evaluated after the script had already run `cd "$DIRNAME"`, making the path double-relative. Uses the bare filename.
+
+### Changed
+
+- **`saveFilmography.sh`** — No longer writes JSON to `secondary/filmographies/`. The same data is already cached in `.xref_cache/nm*.json`; Markdown is now the only saved output.
+- **`saveFilmography.sh`** — Unreleased titles sort to the top of each section in IMDb's own order, with the Year cell showing production status ("Post-production", "Pre-production (2026)"). A title counts as unreleased when it carries a status other than "Released" — IMDb marks some released titles with an explicit "Released". Released titles sort newest first, ties broken by position on the page rather than title.
+- **`saveFilmography.sh`** — Episodes column now appears in any section with episode counts, not just acting ones.
+- **`saveFilmography.sh`** — Removed the `startswith()` noise filter. It existed to strip credit text that leaked into the character field because every role was labelled "actor"; the parser fix removes the cause.
+- **`saveFilmography.sh`** — Emits a single H1 (name as IMDb link) instead of `# Filmography` followed by the name.
+- **`rg_sections.rgx`** — Now has effect for the first time, and matches whole-string, so `editor` no longer selects `editorial department`.
+- **`scraper/pages.py`** — Filmography extraction runs in a single `page.evaluate()` rather than per-row round trips, which matters on people with 700+ credits.
+
+### Notes
+
+- Cached `nm*.json` files written before this change carry a single bogus job category throughout and will not self-correct. Delete them and re-scrape, then rebuild the index. Cached `tt*.json` show files are unaffected — `get_full_credits` was never involved.
+
+---
+
 ## [Unreleased] — 2026-07-18
 
 ### Added
