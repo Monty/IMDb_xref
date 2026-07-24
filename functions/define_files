@@ -24,7 +24,7 @@ mkdir -p ~/.config/IMDb_xref
 configFile=~/.config/IMDb_xref/config
 
 # Remove invalid configFile if one exists
-[[ -e $configFile ]] && [[ "$(grep -c YN_PREF "$configFile")" -eq 0 ]] &&
+[[ -e $configFile ]] && [[ "$(rg -c YN_PREF "$configFile")" -eq 0 ]] &&
     rm -f "$configFile"
 
 [[ ! -e $configFile ]] && cat <<EOF >>"$configFile"
