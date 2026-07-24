@@ -18,8 +18,8 @@ Search IMDb for person names or nconst IDs. An nconst ID should be unique,
 but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
-Filmographies are saved as JSON in secondary/filmographies/. You'll have the
-opportunity to review results before committing.
+Filmographies are saved as Markdown in secondary/filmographies/. You'll have
+the opportunity to review results before committing.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -408,16 +408,11 @@ while IFS= read -r searchTerm; do
     done <<<"$jobs"
 
     # Offer to save
-    filmographyFile="$filmographyDir/${noSpaceName}-${nconst}.json"
-    printf "\n==> Save to ${BLUE}$filmographyFile${NO_COLOR}?\n"
+    filmographyMd="$filmographyDir/${noSpaceName}-${nconst}.md"
+    printf "\n==> Save to ${BLUE}$filmographyMd${NO_COLOR}?\n"
     if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
-        echo "$fgData" >"$filmographyFile"
-        printf "==> Saved.\n"
-
-        # Generate markdown
-        filmographyMd="$filmographyDir/${noSpaceName}-${nconst}.md"
         _generate_filmography_md "$fgData" "$filmographyMd"
-        printf "==> Also saved ${BLUE}$filmographyMd${NO_COLOR}\n"
+        printf "==> Saved.\n"
     fi
 
     # Offer to add titles to tconst file
