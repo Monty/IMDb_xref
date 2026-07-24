@@ -16,6 +16,20 @@ DEFAULT_DELAY = 1.5
 STATE_DIR = Path.home() / ".config" / "IMDb_xref"
 STATE_FILE = STATE_DIR / "browser_state.json"
 
+# Markers for AWS WAF interstitials. The silent JS challenge uses
+# #challenge-container and clears itself; the CAPTCHA uses different markup
+# and needs a human, so it has to be detected by title as well.
+_CHALLENGE_SELECTORS = ("#challenge-container", "#captcha-container")
+_CHALLENGE_TITLES = ("confirm you are human", "are you a robot", "access denied")
+
+
+class WAFChallengeError(RuntimeError):
+    """IMDb served a WAF challenge or CAPTCHA instead of real content.
+
+    Raised rather than returning the page, so that an unsolved challenge
+    cannot be mistaken for a valid empty result and cached as one.
+    """
+
 
 class BrowserManager:
     """Manages a Playwright browser instance with cookie persistence."""
@@ -108,6 +122,20 @@ class BrowserManager:
                 page.wait_for_timeout(500)
             except Exception:
                 pass  # Some pages might not have #root; continue anyway
+
+            # A challenge still standing at this point will not resolve on its
+            # own. Fail loudly instead of handing back a shell page.
+            for selector in _CHALLENGE_SELECTORS:
+                if page.query_selector(selector):
+                    raise WAFChallengeError(
+                        f"WAF challenge ({selector}) not cleared for {url}"
+                    )
+            title = (page.title() or "").lower()
+            for marker in _CHALLENGE_TITLES:
+                if marker in title:
+                    raise WAFChallengeError(
+                        f"WAF CAPTCHA served for {url} (page title: {title!r})"
+                    )
 
             self._last_navigation = time.time()
             return page

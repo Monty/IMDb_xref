@@ -58,7 +58,18 @@ def get_filmography(nconst: str) -> Optional[Filmography]:
 
 
 def save_filmography(fg: Filmography) -> Path:
-    """Write a Filmography to cache. Returns the cache file path."""
+    """Write a Filmography to cache. Returns the cache file path.
+
+    Refuses to cache a filmography with no roles. Everyone IMDb has a page
+    for has at least one credit, so an empty result means the scrape failed
+    -- a WAF challenge, a layout change, a truncated page -- and caching it
+    would make that failure permanent and invisible.
+    """
+    if not fg.roles:
+        raise ValueError(
+            f"refusing to cache empty filmography for {fg.nconst} "
+            f"(name: {fg.name!r}) -- the scrape did not return credits"
+        )
     path = _cache_path(fg.nconst)
     path.write_text(fg.model_dump_json(indent=2), encoding="utf-8")
     return path
