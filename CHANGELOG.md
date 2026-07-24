@@ -1,5 +1,31 @@
 # Changelog
 
+## [Unreleased] — 2026-07-24
+
+### Added
+
+- **`scraper/browser.py`** — `WAFChallengeError`, raised by `goto()` when a navigation lands on an AWS WAF interstitial rather than real content. Checks `#challenge-container` and `#captcha-container`, then the page title, and runs after the `#root` wait so a silent JS challenge that clears itself is unaffected. Applies to every navigation, so `search_title` and `search_person` now fail loudly on a challenge too.
+- **`saveFilmography.sh`** — Scraper stderr is captured to a `SCRAPER_ERR` temp file and reported when a fetch fails, showing the last two lines of the traceback. Registered in `terminate()` for cleanup alongside the other temp files.
+
+### Bugfixes
+
+- **`scraper/cache.py`** — `save_filmography` refuses to write a `Filmography` with no roles. An unsolved CAPTCHA was being cached as a valid empty result — `{"name": "Let's confirm you are human", "roles": []}` — and nothing distinguished that from a person with no credits, so the failure would have been served from cache indefinitely.
+- **`saveFilmography.sh`** — A person whose fetch failed triggered three scrapes: the initial cache-miss fetch, a `--delay 1` warm-up call, and a re-read. Four names cost twelve requests in roughly fifteen seconds, which plausibly contributed to IMDb escalating from a silent challenge to a CAPTCHA. The retry block is removed — the scraper already serves from `.xref_cache` and scrapes on a miss, so one call suffices.
+- **`saveFilmography.sh`** — Both scraper invocations discarded stderr, so `WAFChallengeError` was invisible and every failure surfaced as "No filmography found", conflating a failed scrape with a person who genuinely has no credits.
+- **`saveFilmography.sh`** — The progress message used `$nconstName`, which is not assigned until after the role-count check, so failures reported a stale name — two different people both printed as "George Clooney". Uses the nconst instead.
+
+### Changed
+
+- **`saveFilmography.sh`** — "No filmography found" now means only what it says: the scrape succeeded and returned no credits. Fetch failures are reported separately.
+- **`saveFilmography.sh`** — `roleCount` defaults to `0` when `jq` receives empty input, rather than leaving an empty string to be coerced by the arithmetic test.
+
+### Notes
+
+- The scraper cannot clear a WAF CAPTCHA. Solve it once in a non-headless browser sharing `~/.config/IMDb_xref/browser_state.json`, then resume normally. That file is disposable — deleting it forces a clean context and is the first thing to try for unexplained scraping behaviour. The `aws-waf-token` cookie in it has roughly a four-day life; the other `.imdb.com` cookies run considerably longer.
+- Because `save_state()` is only called from `close()`, a run interrupted with Ctrl-C or killed by an unhandled exception discards any freshly issued token, and the next run re-solves the challenge.
+
+---
+
 ## [Unreleased] — 2026-07-22
 
 ### Added
