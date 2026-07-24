@@ -12,11 +12,17 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findShowsWith.sh -- List shows found for a named person in IMDb.
+findShowsWith.sh -- List indexed shows a person appears in.
 
-Search IMDb for person names or nconst IDs. An nconst ID should be unique,
-but a person name can have several or even many matches. Allow user to
-select one match or skip if there are too many.
+Searches your local index -- the shows you've already cross-referenced -- for
+a person and lists which of them they appear in, grouped by job. This answers
+"what else, among the shows I follow, has this person been in?".
+
+Search by nconst ID (unique) or by name (IMDb is queried to resolve the name
+to candidates; the show data itself is read only from the local index). A
+person not yet in the index produces no results -- run ./findCastOf.sh on a
+show they're in to add it, or use ./saveFilmography.sh for their full IMDb
+filmography.
 
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
@@ -31,10 +37,10 @@ OPTIONS:
 
 EXAMPLES:
     ./findShowsWith.sh
-    ./findShowsWith.sh -y "Tom Hanks"
-    ./findShowsWith.sh "George Clooney"
-    ./findShowsWith.sh nm0000123
-    ./findShowsWith.sh nm0000123 "Quentin Tarantino"
+    ./findShowsWith.sh -y "Olivia Colman"
+    ./findShowsWith.sh "Pedro Alonso"
+    ./findShowsWith.sh nm0022261
+    ./findShowsWith.sh nm0022261 "Úrsula Corberó"
 EOF
 }
 
@@ -131,16 +137,24 @@ while IFS= read -r searchTerm; do
 
     if [[ $searchTerm =~ ^nm[0-9]{7,8}$ ]]; then
         nconst="$searchTerm"
-        # Get name from index
+        # Local lookup only: resolve the name from the index. A person is
+        # indexed if they appear in any cached show (or cached filmography).
+        # We deliberately do not scrape a missing person here -- this tool
+        # answers "which shows I already have is this person in?". Use
+        # saveFilmography.sh for a full IMDb filmography.
         personInfo=$(_scraper person-info "$nconst" 2>/dev/null)
-        if [[ -z $personInfo ]] || [[ $personInfo == *"not found"* ]]; then
-            # Scrape filmography
-            _scraper --delay 1 filmography "$nconst" >/dev/null 2>&1
-            _scraper rebuild-index >/dev/null 2>&1
-            personInfo=$(_scraper person-info "$nconst" 2>/dev/null)
+        # person-info prints a plain-text "not found" message (not JSON) when
+        # the nconst is absent, so guard jq against parsing it.
+        if [[ -n $personInfo ]] && [[ $personInfo != *"not found"* ]]; then
+            nconstName=$(jq -r '.name // empty' <<<"$personInfo")
+        else
+            nconstName=""
         fi
-        nconstName=$(jq -r '.name // empty' <<<"$personInfo")
-        [[ -n $nconstName ]] && printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+        if [[ -n $nconstName ]]; then
+            printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+        else
+            printf "==> %s isn't in the index. Run ./findCastOf.sh on a show they're in, or use ./saveFilmography.sh %s\n" "$nconst" "$nconst"
+        fi
     else
         # Search for the person on IMDb
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
@@ -211,25 +225,18 @@ printf "\nFound:\n"
 tsvPrint "$PERSON_RESULTS"
 printf "\n"
 
-# For each person, get their filmography
+# For each person, list the indexed shows they appear in
 while IFS=$'\t' read -r nconst nconstName; do
     [[ -z $nconst ]] && continue
 
-    # Get shows from index (cached filmography)
+    # Get shows from the index (built from cached shows and filmographies).
     showsData=$(_scraper shows-for-person "$nconst" 2>/dev/null)
     showCount=$(jq 'length' <<<"$showsData")
 
     if [[ $showCount -eq 0 ]]; then
-        # Try scraping filmography
-        printf "==> Fetching filmography for %s...\n" "$nconstName"
-        _scraper --delay 1 filmography "$nconst" >/dev/null 2>&1
-        _scraper rebuild-index >/dev/null 2>&1
-        showsData=$(_scraper shows-for-person "$nconst" 2>/dev/null)
-        showCount=$(jq 'length' <<<"$showsData")
-    fi
-
-    if [[ $showCount -eq 0 ]]; then
-        printf "\n==> No shows found for %s.\n" "$nconstName"
+        # Local only: don't scrape. The person resolved to a name but has no
+        # cross-referenced shows in the index yet.
+        printf "\n==> No indexed shows for %s. Run ./findCastOf.sh on a show they're in, or use ./saveFilmography.sh %s\n" "$nconstName" "$nconst"
         continue
     fi
 
@@ -249,7 +256,7 @@ while IFS=$'\t' read -r nconst nconstName; do
         printf "\n==> I found %s %s listing %s as: %s\n" "$jobCount" "$_title" "$nconstName" "$job"
 
         if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y "==> Shall I list $_pron?"; then
-            jq -r 'sort_by(-(.episodes // 0), .title) | .[] | "\(.title)\t\((.episodes // 0) | if . > 0 then "\(.) episodes" else "" end)\t\(.character // "")"' <<<"$jobData" >"$TMPFILE"
+            jq -r 'sort_by(-(.episodes // 0), .title) | .[] | "\(.title)\t\((.episodes // 0) | if . > 0 then "\(.) episodes" else "" end)\t\(.character // "")\t\(.tconst // "")"' <<<"$jobData" >"$TMPFILE"
             if [[ -n $usePager ]]; then
                 tsvPrint "$TMPFILE" | ${PAGER:-less}
             else

@@ -67,25 +67,36 @@ EOF
         exit 1
     fi
 
-    if [[ -n $noHighlighting ]]; then
+    # Render the table once. xsv aligns columns when available; otherwise
+    # elastic_tabs.awk computes a printf format string. Works for up to 9
+    # fields; Unicode chars can throw off column width.
+    _renderTable() {
         if checkForExecutable -q xsv && [[ -z $NO_XSV ]]; then
             xsv table -d "\t" "$tsvFile"
         else
+            local PFMT
             PFMT="$(awk -F "\t" -f elastic_tabs.awk "$tsvFile")"
-            # Works for up to 9 fields. Unicode chars can throw off column width
             awk -F '\t' -v PF="$PFMT" '{printf(PF,$1,$2,$3,$4,$5,$6,$7,$8,$9)}' "$tsvFile"
         fi
+    }
+
+    if [[ -n $noHighlighting ]]; then
+        _renderTable
     else
-        # Use searchFile for highlighting
+        # Highlight the values from one column (default 3) wherever they appear
+        # in the rendered table. rg reads each line of searchFile as a separate
+        # literal pattern (-F), so a title like "S.W.A.T." or "Bill & Ted" is
+        # matched as-is rather than as a regex. Blank and duplicate values are
+        # dropped: a blank line is an empty pattern that matches every row.
         searchFile=$(mktemp)
-        cut -f "${columnNum:-3}" "$tsvFile" | sed 's+[()?]+\\&+g' >"$searchFile"
-        if checkForExecutable -q xsv && [[ -z $NO_XSV ]]; then
-            xsv table -d "\t" "$tsvFile" | rg --color always -f "$searchFile"
+        cut -f "${columnNum:-3}" "$tsvFile" | rg -N '\S' | sort -u >"$searchFile"
+        if [[ -s $searchFile ]]; then
+            _renderTable | rg --color always -F -f "$searchFile"
         else
-            PFMT="$(awk -F "\t" -f elastic_tabs.awk "$tsvFile")"
-            # Works for up to 9 fields. Unicode chars can throw off column width
-            awk -F '\t' -v PF="$PFMT" '{printf(PF,$1,$2,$3,$4,$5,$6,$7,$8,$9)}' "$tsvFile" |
-                rg --color always -f "$searchFile"
+            # No values to highlight (e.g. the requested column is empty or
+            # absent). Print the table plainly rather than nothing -- rg with
+            # an empty pattern file matches no lines and would swallow output.
+            _renderTable
         fi
         rm -f "$searchFile"
     fi

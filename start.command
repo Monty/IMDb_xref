@@ -71,19 +71,20 @@ EOF
     waitUntil -k
     cat <<EOF
 
-4) Find people, then list all shows having them as cast or crew
+4) Find people, then list which of your cached shows they appear in
 
-        Find all shows listing a person based on their name or nconst ID,
-        such as nm0000233 for Quentin Tarantino:
-        https://www.imdb.com/name/nm0000233/
+        Search by a person's name or nconst ID, such as nm0022261 for
+        Pedro Alonso: https://www.imdb.com/name/nm0022261/
 
-==> I found 38 titles listing Quentin Tarantino as: actor
+        Lists only shows already in your index, grouped by job. To add a
+        show first, use option 1. For a person's full IMDb filmography,
+        use option 5.
+
+==> I found 3 titles listing Pedro Alonso as: actor
 ==> Shall I list them? [Y/n]
-Once Upon a Time... In Hollywood    2019
-The Hateful Eight                   2015
-Django Unchained                    2012
-
-==> I found 21 titles listing Quentin Tarantino as: director
+Money Heist                         41 episodes  Berlín  tt6468322
+Berlin and the Jewels of Paris      8 episodes   Berlín  tt16288804
+Berlin and the Lady with an Ermine  8 episodes   Berlín  tt42178219
 EOF
     waitUntil -k
     cat <<EOF
@@ -139,7 +140,7 @@ pickOptions+=("Find shows, then list only cast & crew members they share")
 # 3
 pickOptions+=("Find a show, then list its actors that are in your cached shows")
 # 4
-pickOptions+=("Find people, then list all shows having them as a principal cast or crew member")
+pickOptions+=("Find people, then list which of your cached shows they appear in")
 # 5
 pickOptions+=("Find people, then save a filmography for them")
 # 6
