@@ -9,6 +9,8 @@
 - **`scraper/tools/solve_challenge.py`** — Opens IMDb in a non-headless browser sharing the scraper's `browser_state.json`, so a WAF CAPTCHA solved by hand carries over to subsequent headless runs. Reuses `browser._CHALLENGE_TITLES` so it stays in step with what `goto()` treats as a challenge. Run directly (`./scraper/tools/solve_challenge.py`).
 - **`scraper/tools/probe_groups.py`** — Diagnostic that dumps the fullcredits heading/row layout in document order, for checking what changed when IMDb reshuffles the DOM and `get_filmography` starts misattributing jobs. Run directly (`./scraper/tools/probe_groups.py [nconst]`).
 - Both tools use a PEP 723 `uv run --script` shebang (inline `playwright`/`pydantic` deps, no active venv needed) and resolve the scraper package via `Path(__file__).resolve().parents[1]`, so they work from any checkout. Mark executable with `chmod +x scraper/tools/*.py`.
+- **`findShowsWith.sh`** — Job tables now include the show's tconst as a final column, so each row links to a unique IMDb title. `cast.jsonl` already carried the field; only the display jq needed it.
+- **`findCastOf.sh`, `findShowsWith.sh`, `findOtherShows.sh`** — Each captures scraper stderr to a `SCRAPER_ERR` temp file (same pattern as `saveFilmography.sh`), registered in `terminate()` for cleanup.
 
 ### Bugfixes
 
@@ -16,16 +18,32 @@
 - **`saveFilmography.sh`** — A person whose fetch failed triggered three scrapes: the initial cache-miss fetch, a `--delay 1` warm-up call, and a re-read. Four names cost twelve requests in roughly fifteen seconds, which plausibly contributed to IMDb escalating from a silent challenge to a CAPTCHA. The retry block is removed — the scraper already serves from `.xref_cache` and scrapes on a miss, so one call suffices.
 - **`saveFilmography.sh`** — Both scraper invocations discarded stderr, so `WAFChallengeError` was invisible and every failure surfaced as "No filmography found", conflating a failed scrape with a person who genuinely has no credits.
 - **`saveFilmography.sh`** — The progress message used `$nconstName`, which is not assigned until after the role-count check, so failures reported a stale name — two different people both printed as "George Clooney". Uses the nconst instead.
+- **`findCastOf.sh`, `findShowsWith.sh`, `findOtherShows.sh`** — A title/person search that failed (most often a WAF challenge) discarded stderr and produced empty output, which the scripts reported as "No matches found" — telling the user a show or person didn't exist when the scraper simply couldn't reach IMDb. Each now checks the scraper's exit status: a genuine empty result still says "No matches", but a failure prints the actual error (e.g. `WAFChallengeError`) and skips.
+- **`tsvPrint.function`** — A highlight request on a column with empty cells built a pattern file containing blank lines; a blank line matches every row, so the whole table was highlighted. Blank (and duplicate) patterns are now dropped.
+- **`tsvPrint.function`** — When the highlight column was empty or absent (e.g. the two-column `nconst\tname` results), the pattern file was empty and `rg -f` matched nothing, so the table printed as blank. It now falls back to printing the table unhighlighted.
 
 ### Changed
 
 - **`saveFilmography.sh`** — "No filmography found" now means only what it says: the scrape succeeded and returned no credits. Fetch failures are reported separately.
 - **`saveFilmography.sh`** — `roleCount` defaults to `0` when `jq` receives empty input, rather than leaving an empty string to be coerced by the arithmetic test.
+- **`findShowsWith.sh`** — Now a purely local (index) query. The two fallbacks that scraped a person's filmography and rebuilt the index on a cache miss are removed; a person not in the index yields a clear message pointing to `findCastOf.sh` (to add a show) or `saveFilmography.sh` (for a full filmography). Name search is kept — IMDb is still queried to resolve a name to candidate nconsts — but show data is read only from the index. Help text, comments, and menu wording updated to match; examples changed to people in the cache.
+- **`start.command`** — Menu option 4's help and label rewritten from "list all shows having them as cast or crew" to "list which of your cached shows they appear in", matching the localized `findShowsWith.sh`. Example changed from a global Tarantino listing to Pedro Alonso, with output reflecting the new tconst column.
+- **`tsvPrint.function`** — Column highlighting now matches literally (`rg -F`) instead of building a regex, so titles containing metacharacters (`S.W.A.T.`, `Bill & Ted`, bracketed names) match as written. Replaces a partial `sed` escaping hack that only handled `(`, `)`, `?`.
+- **Modern CLI tooling consistency** — `type -p` → `command -v` (`checkForExecutable.function`); `grep -c`/`grep -cF` → `rg -c`/`rg -cF` in three counting call sites (`explain_functions.sh`, `explain_scripts.sh`, `define_files`); the disambiguation-suffix `sed` → `sd` (`saveFilmography.sh`). Load-bearing `grep -f`/`sed` sites in data pipelines were left unchanged.
+- **`generateXrefData.sh`** — `(..)` subshell guard in `processDurations` changed to `{ ..; }` (SC2235).
+
+### Removed
+
+- **`xrefCast.sh`** — The `-i`/`INFO` flag, which was accepted and documented but read nowhere. In `big_IMDb_xref` it printed per-file provenance; index-based queries have no such files. Removed the option, its help line, and the getopts entry.
+- **`iQuery.sh`** — `jqIdFormat`, assigned in both branches and never read (a refactor orphan).
+- **`generateXrefData.sh`** — The dead `TEST_MODE="yes"` assignment. The `-t` flag's real effect (using `tconst.example`) is unchanged; a comment notes the `big_IMDb_xref` test-diff behaviour it once drove was not carried over.
 
 ### Notes
 
 - The scraper cannot clear a WAF CAPTCHA. Solve it once in a non-headless browser sharing `~/.config/IMDb_xref/browser_state.json`, then resume normally. That file is disposable — deleting it forces a clean context and is the first thing to try for unexplained scraping behaviour. The `aws-waf-token` cookie in it has roughly a four-day life; the other `.imdb.com` cookies run considerably longer.
 - Because `save_state()` is only called from `close()`, a run interrupted with Ctrl-C or killed by an unhandled exception discards any freshly issued token, and the next run re-solves the challenge.
+- Two SC2034 warnings are suppressed rather than fixed, with explanatory comments: `pickMenu` in `iQuery.sh` (the `select` matches on `$REPLY` and a parallel array, so the bound label is unused but syntactically required) and SC2094 in `findCastOf.sh` (a false positive — `printHistory` reads from `$histDirectory`, not its argument). The `findCastOf.sh` comment also flags a latent concern for later review: `printHistory` there is passed a path where it expects a basename suffix.
+- Deferred to a later review pass: the interactive tests in `tests/` have drifted — they use pre-loaded sample shows (The Crown, The Durrells) that no longer exist on a fresh checkout, `test-xrefCast.sh` still invokes the removed `-i` flag, `test-findCastOf.sh` invokes a non-existent `-s` flag, and `test-findShowsWith.sh` exercises global lookups that are now local. Also outstanding: restoring `skipEpisodes` handling (still unread by the current pipeline), the `channel="chrome"` launch option to reduce WAF CAPTCHAs, and refreshing the `Contrib/` example lists.
 
 ---
 
