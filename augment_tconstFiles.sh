@@ -85,6 +85,18 @@ while getopts ":haiyf" opt; do
 done
 shift $((OPTIND - 1))
 
+# bash getopts (POSIX-style) stops at the first non-option operand, so an
+# option placed after a filename -- "file -i" -- is left in "$@" and would be
+# treated as a filename. Catch that and point at the fix rather than failing
+# obscurely later (e.g. basename choking on "-i").
+for arg in "$@"; do
+    if [[ $arg == -* ]]; then
+        printf "==> [${RED}Error${NO_COLOR}] Option '%s' must come before the filename(s).\n" "$arg" >&2
+        printf "    Put options first, or use -- to end option parsing.\n\n" >&2
+        exit 1
+    fi
+done
+
 RESULT=$(mktemp)
 COMMENTS=$(mktemp)
 SEARCH_LIST=$(mktemp)
@@ -115,6 +127,7 @@ function copyResults() {
 
 for file in "$@"; do
     [[ -z $INPLACE ]] && printf "==> %s\n" "$file"
+    fetchFailed=""
 
     # Make sure there is no carryover
     true >"$RESULT"
@@ -188,7 +201,20 @@ for file in "$@"; do
             fi
         fi
 
-        [[ -n $title ]] && printf "%s\t%s\t%s\t%s\t%s\n" "$tconst" "$types" "$title" "$orig_title" "$year" >>"$RESULT"
+        if [[ -n $title ]]; then
+            printf "%s\t%s\t%s\t%s\t%s\n" "$tconst" "$types" "$title" "$orig_title" "$year" >>"$RESULT"
+        else
+            # Fetch failed (WAF challenge, network error, delisted title).
+            # Never drop the tconst: fall back to whatever the input already
+            # had for it -- a full row if the file carried one, otherwise the
+            # bare tconst -- and warn so the miss is visible rather than
+            # silently deleting data on an in-place overwrite.
+            original=$(rg -N "^${tconst}\b" "$file" | head -n 1)
+            [[ -z $original ]] && original="$tconst"
+            printf "%s\n" "$original" >>"$RESULT"
+            printf "  ${YELLOW}Warning${NO_COLOR}: couldn't look up %s -- kept existing entry\n" "$tconst" >&2
+            fetchFailed="yes"
+        fi
     done <"$TCONST_LIST"
 
     # Post-process: apply xlate transformation to ALL results for display
@@ -206,16 +232,42 @@ for file in "$@"; do
         mv "$tmp" "$RESULT"
     fi
 
-    # Save all results to augmented cache (with xlate transformation applied)
-    # Remove old entries first, then append new ones
+    # IMDb only reports an original title when it differs from the primary; the
+    # bulk dataset (and our .csv files) instead repeat the primary. After any
+    # xlate step has had its chance to fill $4 from a foreign title, copy the
+    # primary ($3) into any original-title column ($4) that is still empty, so
+    # re-augmenting doesn't blank that column on English-language entries.
+    # Only touches full (>=4-field) rows, leaving bare-tconst fallbacks alone.
     if [[ -s $RESULT ]]; then
         tmp=$(mktemp)
-        # Match each tconst as an exact first field: anchor with ^ and the
-        # trailing tab. Anchoring with ^ alone treats the tconst as a prefix,
-        # so re-augmenting tt123 would also evict tt1234 from the cache.
-        grep -v -f <(awk -F'\t' '{printf "^%s\t\n", $1}' "$RESULT") "$AUGMENTED" >"$tmp" 2>/dev/null || true
-        cat "$tmp" "$RESULT" >"$AUGMENTED"
-        rm -f "$tmp"
+        awk -F'\t' -v OFS='\t' 'NF >= 4 && $4 == "" { $4 = $3 } { print }' "$RESULT" >"$tmp"
+        mv "$tmp" "$RESULT"
+    fi
+
+    # Save results to the augmented cache, but only rows that actually have
+    # data (a tab-separated title). A bare tconst preserved after a failed
+    # fetch must not poison the cache with a title-less entry.
+    # Remove old entries first, then append the new complete ones.
+    if [[ -s $RESULT ]]; then
+        tmp=$(mktemp)
+        complete=$(mktemp)
+        rg -N '\t' "$RESULT" >"$complete" || true
+        if [[ -s $complete ]]; then
+            # Match each tconst as an exact first field: anchor with ^ and the
+            # trailing tab. Anchoring with ^ alone treats the tconst as a
+            # prefix, so re-augmenting tt123 would also evict tt1234.
+            grep -v -f <(awk -F'\t' '{printf "^%s\t\n", $1}' "$complete") "$AUGMENTED" >"$tmp" 2>/dev/null || true
+            cat "$tmp" "$complete" >"$AUGMENTED"
+        fi
+        rm -f "$tmp" "$complete"
+    fi
+
+    # If any lookup failed, say so once, clearly -- especially important before
+    # an in-place overwrite so a WAF challenge or outage is not mistaken for
+    # "these titles no longer exist".
+    if [[ -n $fetchFailed ]]; then
+        printf "\n==> ${YELLOW}Note${NO_COLOR}: some titles couldn't be looked up (kept their existing entries).\n" >&2
+        printf "    A WAF challenge is the usual cause -- see scraper/tools/solve_challenge.py -- then rerun.\n" >&2
     fi
 
     if [[ -z $INPLACE ]]; then

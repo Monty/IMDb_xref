@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased] — 2026-07-25
+
+### Bugfixes
+
+- **`augment_tconstFiles.sh`** — A failed title lookup silently dropped the tconst: `[[ -n $title ]] && printf ...` wrote nothing when the fetch returned empty. With a WAF challenge failing every uncached fetch, augmenting a 15-line file kept only the 3 already-cached entries and, in `-i` mode, overwrote the input — destroying the other 12. A failed lookup now falls back to the tconst's existing line from the input (the full row if the file carried one, otherwise the bare tconst), warns per line, and prints a summary pointing at `solve_challenge.py`. No line is ever dropped.
+- **`augment_tconstFiles.sh`** — A tconst preserved after a failed fetch is no longer written to the `augmented` cache, so a title-less fallback entry can't poison it. Only complete (tab-bearing) rows are cached.
+- **`augment_tconstFiles.sh`** — An option placed after the filename (`file -i`) was left in `"$@"` by `getopts` and treated as a filename, producing an obscure `basename: illegal option` error and pulling in unintended files. A guard after `getopts` now catches a leftover `-`-prefixed operand and prints a clear message ("Option '-i' must come before the filename(s). Put options first, or use -- to end option parsing."). Standard POSIX getopts parsing is unchanged; only the error is improved, and `--` still works as the escape hatch.
+
+### Changed
+
+- **`augment_tconstFiles.sh`** — When IMDb reports no separate original title (i.e. it equals the primary), the original-title column is now filled with the primary rather than left empty, matching the bulk-dataset convention the older files and the `_episode_count.csv` files use. Applied after any `.xlate` step, so foreign originals filled from an xlate file (e.g. `Money Heist` → `La casa de papel`) and genuinely different originals are preserved; only still-empty columns on English-language entries are filled. This stops re-augmenting from blanking that column on every English title, leaving real IMDb changes (e.g. type reclassifications) as the only diff.
+
+### Notes
+
+- Re-augmenting an existing file now surfaces genuine IMDb changes accumulated over time — e.g. titles reclassified from `short` or `tvSpecial` to `movie`. These are correct current data from IMDb, not scraper errors; the original-title fix above keeps them from being buried under spurious blank-original diffs.
+
+---
+
 ## [Unreleased] — 2026-07-24
 
 ### Added
