@@ -29,7 +29,7 @@ while true; do
     printf "==> Verify script lists details, asks about adding 1 show to favorites\n\n"
 
     printf "==> Removing $favoritesFile\n\n"
-    rm -f $favoritesFile
+    rm -f "$favoritesFile"
     if waitUntil "$YN_PREF" -Y 'Run ./findCastOf.sh tt1606375?'; then
         ./findCastOf.sh tt1606375
     fi
@@ -40,7 +40,7 @@ while true; do
     printf "\n==> Verify -s doesn't list details, asks about adding to favorites\n\n"
 
     printf "\n==> Removing $favoritesFile\n\n"
-    rm -f $favoritesFile
+    rm -f "$favoritesFile"
     if waitUntil "$YN_PREF" -Y 'Run ./findCastOf.sh -s tt1606375?'; then
         ./findCastOf.sh -s tt1606375
     fi
@@ -102,8 +102,8 @@ while true; do
         ./findCastOf.sh "The Bletchley Circle" "Ocean's Eleven"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -f Dramas.tconst tt1606375'; then
-        ./findCastOf.sh -f Dramas.tconst tt1606375
+    if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh -f Contrib/Acorn.tconst tt1606375'; then
+        ./findCastOf.sh -f Contrib/Acorn.tconst tt1606375
     fi
     if waitUntil "$YN_PREF" -Y '\nRun ./findCastOf.sh'; then
         ./findCastOf.sh

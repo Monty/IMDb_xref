@@ -210,7 +210,10 @@ for file in "$@"; do
     # Remove old entries first, then append new ones
     if [[ -s $RESULT ]]; then
         tmp=$(mktemp)
-        grep -v -f <(cut -f1 "$RESULT" | sed 's/^/^/') "$AUGMENTED" >"$tmp" 2>/dev/null || true
+        # Match each tconst as an exact first field: anchor with ^ and the
+        # trailing tab. Anchoring with ^ alone treats the tconst as a prefix,
+        # so re-augmenting tt123 would also evict tt1234 from the cache.
+        grep -v -f <(awk -F'\t' '{printf "^%s\t\n", $1}' "$RESULT") "$AUGMENTED" >"$tmp" 2>/dev/null || true
         cat "$tmp" "$RESULT" >"$AUGMENTED"
         rm -f "$tmp"
     fi

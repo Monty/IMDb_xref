@@ -26,44 +26,38 @@ waitUntil -k
 clear
 
 while true; do
-    if waitUntil "$YN_PREF" -Y 'Run ./findShowsWith.sh nm0000233'; then
-        ./findShowsWith.sh nm0000233
+    if waitUntil "$YN_PREF" -Y 'Run ./findShowsWith.sh nm0022261 (Pedro Alonso, cached)'; then
+        ./findShowsWith.sh nm0022261
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh -y "Olivia Colman"'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh -y "Olivia Colman" (cached, name search)'; then
         ./findShowsWith.sh -y "Olivia Colman"
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh nm0000123'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "Claire Foy" (cached)'; then
+        ./findShowsWith.sh "Claire Foy"
+    fi
+
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh nm0022261 "Claire Foy" (mixed nconst + name)'; then
+        ./findShowsWith.sh nm0022261 "Claire Foy"
+    fi
+
+    printf "\n==> Verify a person not in the index reports the pointer message,\n"
+    printf "    not an error, and does not scrape (findShowsWith is local).\n"
+
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh nm0000123 (George Clooney, NOT cached)'; then
         ./findShowsWith.sh nm0000123
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "George Clooney"'; then
-        ./findShowsWith.sh "George Clooney"
-    fi
-
-    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh nm0000123 "Quentin Tarantino"'; then
-        ./findShowsWith.sh nm0000123 "Quentin Tarantino"
-    fi
-
-    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh nm0000123 "Alfred Hitchcock"'; then
-        ./findShowsWith.sh nm0000123 "Alfred Hitchcock"
-    fi
-
-    if waitUntil "$YN_PREF" -Y \
-        '\nRun ./findShowsWith.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"'; then
-        ./findShowsWith.sh nm0000123 "Quentin Tarantino" nm0000233 "Alfred Hitchcock"
-    fi
-
-    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "Robert Downey"'; then
-        ./findShowsWith.sh "Robert Downey"
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh "Quentin Tarantino" (NOT cached, name search)'; then
+        ./findShowsWith.sh "Quentin Tarantino"
     fi
 
     if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh'; then
         ./findShowsWith.sh
     fi
 
-    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh nm9999999'; then
+    if waitUntil "$YN_PREF" -Y '\nRun ./findShowsWith.sh nm9999999 (invalid nconst)'; then
         ./findShowsWith.sh nm9999999
     fi
 

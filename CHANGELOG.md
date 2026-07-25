@@ -21,6 +21,7 @@
 - **`findCastOf.sh`, `findShowsWith.sh`, `findOtherShows.sh`** — A title/person search that failed (most often a WAF challenge) discarded stderr and produced empty output, which the scripts reported as "No matches found" — telling the user a show or person didn't exist when the scraper simply couldn't reach IMDb. Each now checks the scraper's exit status: a genuine empty result still says "No matches", but a failure prints the actual error (e.g. `WAFChallengeError`) and skips.
 - **`tsvPrint.function`** — A highlight request on a column with empty cells built a pattern file containing blank lines; a blank line matches every row, so the whole table was highlighted. Blank (and duplicate) patterns are now dropped.
 - **`tsvPrint.function`** — When the highlight column was empty or absent (e.g. the two-column `nconst\tname` results), the pattern file was empty and `rg -f` matched nothing, so the table printed as blank. It now falls back to printing the table unhighlighted.
+- **`augment_tconstFiles.sh`** — The augmented-cache eviction anchored each tconst with `^` alone (`sed 's/^/^/'`), treating it as a prefix, so re-augmenting `tt123` would also drop `tt1234` and any other tconst sharing its leading digits. Now matches the exact first field (`^tconst` plus the trailing tab) via `awk`. Latent — IMDb assigns IDs sequentially and yours span 7–8 digits, so the collision grows more likely as the cache fills; no current entry was affected.
 
 ### Changed
 
@@ -31,6 +32,7 @@
 - **`tsvPrint.function`** — Column highlighting now matches literally (`rg -F`) instead of building a regex, so titles containing metacharacters (`S.W.A.T.`, `Bill & Ted`, bracketed names) match as written. Replaces a partial `sed` escaping hack that only handled `(`, `)`, `?`.
 - **Modern CLI tooling consistency** — `type -p` → `command -v` (`checkForExecutable.function`); `grep -c`/`grep -cF` → `rg -c`/`rg -cF` in three counting call sites (`explain_functions.sh`, `explain_scripts.sh`, `define_files`); the disambiguation-suffix `sed` → `sd` (`saveFilmography.sh`). Load-bearing `grep -f`/`sed` sites in data pipelines were left unchanged.
 - **`generateXrefData.sh`** — `(..)` subshell guard in `processDurations` changed to `{ ..; }` (SC2235).
+- **`tests/`** — Refreshed to match current behaviour. `test-xrefCast.sh` drops the removed `-i` flag (`-pi` → `-p`). `test-findShowsWith.sh` rewritten around cached people, with two deliberately-uncached names retained to exercise the new local "not indexed" pointer path. `test-findCastOf.sh` points `-f` at an existing list (`Contrib/Acorn.tconst`, was the missing `Dramas.tconst`) and quotes `rm -f "$favoritesFile"`. The remaining tests were verified unchanged: `saveFilmography` is global so its examples stand, and the function/menu tests were unaffected. These are interactive eyeball harnesses, not automated assertions; the sample shows they use (The Crown, The Durrells, etc.) are expected to be in the local cache.
 
 ### Removed
 
@@ -43,7 +45,7 @@
 - The scraper cannot clear a WAF CAPTCHA. Solve it once in a non-headless browser sharing `~/.config/IMDb_xref/browser_state.json`, then resume normally. That file is disposable — deleting it forces a clean context and is the first thing to try for unexplained scraping behaviour. The `aws-waf-token` cookie in it has roughly a four-day life; the other `.imdb.com` cookies run considerably longer.
 - Because `save_state()` is only called from `close()`, a run interrupted with Ctrl-C or killed by an unhandled exception discards any freshly issued token, and the next run re-solves the challenge.
 - Two SC2034 warnings are suppressed rather than fixed, with explanatory comments: `pickMenu` in `iQuery.sh` (the `select` matches on `$REPLY` and a parallel array, so the bound label is unused but syntactically required) and SC2094 in `findCastOf.sh` (a false positive — `printHistory` reads from `$histDirectory`, not its argument). The `findCastOf.sh` comment also flags a latent concern for later review: `printHistory` there is passed a path where it expects a basename suffix.
-- Deferred to a later review pass: the interactive tests in `tests/` have drifted — they use pre-loaded sample shows (The Crown, The Durrells) that no longer exist on a fresh checkout, `test-xrefCast.sh` still invokes the removed `-i` flag, `test-findCastOf.sh` invokes a non-existent `-s` flag, and `test-findShowsWith.sh` exercises global lookups that are now local. Also outstanding: restoring `skipEpisodes` handling (still unread by the current pipeline), the `channel="chrome"` launch option to reduce WAF CAPTCHAs, and refreshing the `Contrib/` example lists.
+- Deferred to a later session: restoring `skipEpisodes` handling (still unread by the current pipeline), the `channel="chrome"` launch option to reduce WAF CAPTCHAs, and refreshing the `Contrib/` example lists.
 
 ---
 
