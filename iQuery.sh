@@ -131,15 +131,13 @@ _incremental_search() {
             printf "  Found %s matches:\n" "$matchCount" >&2
 
             # Build display format based on index type
-            local jqFormat jqIdFormat dedupData="$data"
+            local jqFormat dedupData="$data"
             if [[ $indexFile == *characters* ]]; then
                 # Deduplicate: keep first occurrence of each unique character
                 dedupData=$(jq '[group_by(.character) | .[] | .[0]]' <<<"$data")
                 jqFormat='\(.character)'
-                jqIdFormat='.character'
             else
                 jqFormat='\(.tconst // .nconst)\t\(.title // .name)'
-                jqIdFormat='.tconst // .nconst'
             fi
 
             jq -r ".[] | \"$jqFormat\"" <<<"$dedupData" >"$TMPFILE"
@@ -156,6 +154,9 @@ _incremental_search() {
             done < <(jq -r ".[] | \"$jqFormat\"" <<<"$dedupData")
 
             PS3="Select (1-${#pickOptions[@]}): "
+            # pickMenu is unused: this select matches on $REPLY against the
+            # parallel tabbedOptions array, not on the chosen label.
+            # shellcheck disable=SC2034
             select pickMenu in "${pickOptions[@]}"; do
                 if [[ $REPLY -ge 1 ]] 2>/dev/null && [[ $REPLY -le ${#pickOptions[@]} ]]; then
                     if [[ $REPLY -le ${#tabbedOptions[@]} ]]; then

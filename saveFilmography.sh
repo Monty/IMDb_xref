@@ -395,8 +395,12 @@ while IFS= read -r searchTerm; do
     # Display summary — use name from filmography data (more accurate than search)
     fgName=$(jq -r '.name // empty' <<<"$fgData")
     [[ -n $fgName ]] && nconstName="$fgName"
-    # Strip IMDb disambiguation suffix like (I), (II), (III)
-    cleanName=$(echo "$nconstName" | sed 's/ *(I[IVX]*)$//')
+    # Strip an IMDb disambiguation suffix like "(I)", "(II)" from the
+    # filename. A person's own credits page (h1) has a clean name, so this is
+    # a no-op when searching by nconst; the suffix only arrives via name
+    # search, where IMDb tags same-named people. Cosmetic -- the nconst in the
+    # filename already prevents collisions.
+    cleanName=$(sd ' *\(I[IVX]*\)$' '' <<<"$nconstName")
     noSpaceName="${cleanName//[[:space:]]/_}"
     filmographyDir="secondary/filmographies"
     mkdir -p "$filmographyDir"

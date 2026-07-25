@@ -56,7 +56,7 @@ _scraper() {
 
 function processDurations() {
     # If we're not in the primary directory or bypassing, don't record times
-    ([[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]]) && exit
+    { [[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]]; } && exit
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations -m 10
@@ -76,7 +76,8 @@ while getopts ":hqrt" opt; do
     q) QUIET="yes" ;;
     r) REFRESH="yes" ;;
     t)
-        TEST_MODE="yes"
+        # Use the small example list. (big_IMDb_xref also diffed output against
+        # saved results here; that regression check was not carried over.)
         TCONST_FILES=("tconst.example")
         ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;

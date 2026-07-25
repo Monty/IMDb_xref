@@ -59,13 +59,14 @@ ALL_MATCHES=""
 CAST_CSV=""
 SEARCH_LIST=""
 NEW_LIST=""
+SCRAPER_ERR=""
 
 function terminate() {
     trimHistory -m 20 "$favoritesFile"
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
-        rm -f "$ALL_TERMS" "$ALL_MATCHES" "$CAST_CSV" "$SEARCH_LIST" "$NEW_LIST"
+        rm -f "$ALL_TERMS" "$ALL_MATCHES" "$CAST_CSV" "$SEARCH_LIST" "$NEW_LIST" "$SCRAPER_ERR"
         rm -f "${CAST_CSV}.header"
     fi
 }
@@ -118,6 +119,7 @@ CAST_CSV=$(mktemp)
 SEARCH_LIST=$(mktemp)
 NEW_LIST=$(mktemp)
 TMPFILE=$(mktemp)
+SCRAPER_ERR=$(mktemp)
 
 # Make sure a search term is supplied
 if [[ $# -eq 0 ]]; then
@@ -170,8 +172,15 @@ while IFS= read -r searchTerm; do
     else
         # Search for the title on IMDb
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
-        searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>/dev/null)
-        matchCount=$(jq 'length' <<<"$searchResults")
+        # Capture stderr so a scraper failure (e.g. a WAF challenge) is
+        # reported instead of being silently reinterpreted as "no matches".
+        if ! searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>"$SCRAPER_ERR"); then
+            printf "==> Couldn't search IMDb for \"%s\":\n" "$searchTerm"
+            tail -n 2 "$SCRAPER_ERR" | sed 's/^/    /'
+            continue
+        fi
+        matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)
+        matchCount=${matchCount:-0}
 
         if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"
@@ -316,6 +325,11 @@ if [[ -s $NEW_LIST ]]; then
     rg -f "$NEW_LIST" "$ALL_MATCHES" >"$TMPFILE" 2>/dev/null || true
     tsvPrint "$TMPFILE"
     if waitUntil "$YN_PREF" -Y "\n==> Shall I add $_pron to $favoritesFile?"; then
+        # SC2094 is a false positive: printHistory reads from $histDirectory,
+        # not from its argument, so this does not read and write the same file.
+        # NOTE: printHistory expects an appendName (a basename suffix), but gets
+        # a path here -- worth revisiting whether this appends what's intended.
+        # shellcheck disable=SC2094
         printHistory "$favoritesFile" >>"$favoritesFile" 2>/dev/null || true
         ./augment_tconstFiles.sh -ay "$favoritesFile" 2>/dev/null || true
         printf "\n"

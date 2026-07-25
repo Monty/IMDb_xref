@@ -45,6 +45,7 @@ SHOW_NAMES=""
 CAST_CSV=""
 OTHERS_CSV=""
 RESULTS=""
+SCRAPER_ERR=""
 
 function terminate() {
     trimHistory -m 20 "$favoritesFile"
@@ -52,7 +53,7 @@ function terminate() {
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
         rm -f "$ALL_TERMS" "$TCONST_LIST" "$SHOW_NAMES"
-        rm -f "$CAST_CSV" "$OTHERS_CSV" "$RESULTS" "$TMPFILE"
+        rm -f "$CAST_CSV" "$OTHERS_CSV" "$RESULTS" "$TMPFILE" "$SCRAPER_ERR"
     fi
 }
 
@@ -104,6 +105,7 @@ CAST_CSV=$(mktemp)
 OTHERS_CSV=$(mktemp)
 RESULTS=$(mktemp)
 TMPFILE=$(mktemp)
+SCRAPER_ERR=$(mktemp)
 
 # Make sure a search term is supplied
 if [[ $# -eq 0 ]]; then
@@ -132,8 +134,15 @@ while IFS= read -r searchTerm; do
         tconst="$searchTerm"
     else
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
-        searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>/dev/null)
-        matchCount=$(jq 'length' <<<"$searchResults")
+        # Capture stderr so a scraper failure (e.g. a WAF challenge) is
+        # reported instead of being silently reinterpreted as "no matches".
+        if ! searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>"$SCRAPER_ERR"); then
+            printf "==> Couldn't search IMDb for \"%s\":\n" "$searchTerm"
+            tail -n 2 "$SCRAPER_ERR" | sed 's/^/    /'
+            continue
+        fi
+        matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)
+        matchCount=${matchCount:-0}
 
         if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"

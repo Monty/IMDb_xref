@@ -50,12 +50,13 @@ TMPFILE=""
 ALL_TERMS=""
 PERSON_RESULTS=""
 NCONST_TERMS=""
+SCRAPER_ERR=""
 
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
-        rm -f "$ALL_TERMS" "$PERSON_RESULTS" "$NCONST_TERMS" "$TMPFILE"
+        rm -f "$ALL_TERMS" "$PERSON_RESULTS" "$NCONST_TERMS" "$TMPFILE" "$SCRAPER_ERR"
     fi
 }
 
@@ -98,6 +99,7 @@ ALL_TERMS=$(mktemp)
 PERSON_RESULTS=$(mktemp)
 NCONST_TERMS=$(mktemp)
 TMPFILE=$(mktemp)
+SCRAPER_ERR=$(mktemp)
 
 # Make sure a search term is supplied
 if [[ $# -eq 0 ]]; then
@@ -158,8 +160,15 @@ while IFS= read -r searchTerm; do
     else
         # Search for the person on IMDb
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
-        searchResults=$(_scraper --delay 1 search-person "$searchTerm" 2>/dev/null)
-        matchCount=$(jq 'length' <<<"$searchResults")
+        # Capture stderr so a scraper failure (e.g. a WAF challenge) is
+        # reported instead of being silently reinterpreted as "no matches".
+        if ! searchResults=$(_scraper --delay 1 search-person "$searchTerm" 2>"$SCRAPER_ERR"); then
+            printf "==> Couldn't search IMDb for \"%s\":\n" "$searchTerm"
+            tail -n 2 "$SCRAPER_ERR" | sed 's/^/    /'
+            continue
+        fi
+        matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)
+        matchCount=${matchCount:-0}
 
         if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"

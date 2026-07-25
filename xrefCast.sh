@@ -24,7 +24,6 @@ OPTIONS:
     -p      Principal -- Only print principal cast section.
     -d      Duplicates -- Only list cast & crew found in more than one show
     -f      File -- Query a specific file rather than the index.
-    -i      Print info about any files that are searched.
     -n      No menu - don't bring up the top-level menu upon exiting.
 
 EXAMPLES:
@@ -67,7 +66,7 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
-while getopts ":f:hpdin" opt; do
+while getopts ":f:hpdn" opt; do
     case $opt in
     h)
         help
@@ -76,7 +75,6 @@ while getopts ":f:hpdin" opt; do
     p) PRINCIPAL_CAST_ONLY="yes" ;;
     d) MULTIPLE_NAMES_ONLY="yes" ;;
     f) SEARCH_FILE="$OPTARG" ;;
-    i) INFO="yes" ;;
     n) noLoop="yes" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
     :)
