@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased] — 2026-07-26
+
+### Bugfixes
+
+- **`saveFilmography.sh`** — A failed person search (e.g. a WAF challenge) was silently reported as "No matches found": the `search-person` call used `2>/dev/null` and ignored the exit code, so an empty result from a blocked fetch looked identical to a genuine no-match. It now captures stderr, checks the exit code, and on failure prints "Couldn't search IMDb" with the underlying error — the same masking fix applied to the other search scripts last week, which had reached this script's *filmography* fetch but not its *person-search*. Surfaced by running `saveFilmography.sh "Jacques Spiesser"` against a live WAF block, which reported "No matches" while `waf_check.py` confirmed the CAPTCHA was up.
+
+### Added
+
+- **`functions/reportSearchError.function`** — Shared helper for reporting a failed IMDb search, used by `findCastOf.sh`, `findShowsWith.sh`, `findOtherShows.sh`, and `saveFilmography.sh`. Replaces the duplicated `tail -n 2 ... sed` blocks, which dumped two raw traceback lines (including a stray `)` from the multi-line `raise` and a long URL). For a WAF challenge it now prints the same concise wording as `waf_check.py` ("IMDb is serving a WAF CAPTCHA. Run solve_challenge.py..."); for any other error it prints just the final, most-specific line. Consolidating into one function also means future wording changes happen in one place.
+
+- **`findCastOf.sh`** — New `-a` (actors only) switch. Lists only acting roles (`actor`/`actress`), omitting crew such as directors and writers. Crew rows can carry long stacked "(as ...)" credit variants that wrap the terminal display, and actor is the predominant lookup (character names are more memorable than actor names, especially foreign ones). The header reads "Cast for" with `-a` and "Cast & crew for" without. Display-only: the cross-show duplicates check and favorites saving still operate on the full cast. The acting-role match (`^act(or|ress)$`) is hardcoded rather than read from `rg_jobs.rgx`, since that file is the general jobs whitelist, not an actors list, and "actors only" has a fixed meaning.
+- **`scraper/tools/waf_check.py`** — Probe that forces a live IMDb fetch (via `goto` on an uncached title, The Shawshank Redemption) to detect a WAF CAPTCHA independent of the cache; a cached-title probe would report "clear" even while the WAF is up. Exits 0 (clear) / 1 (blocked) / 2 (error); `--quiet` for scripting. Run before an interactive session; if blocked, solve via `solve_challenge.py` and re-check.
+
+### Notes
+
+- Investigated the recurring WAF CAPTCHA on the interactive path. Evidence points to cold-session re-initialization as the trigger, not request volume or browser fingerprint: two long continuous batch runs (560 shows 7/19, full rebuild 7/26) sailed through hundreds of sequential fetches with no challenge, while single interactive lookups get challenged even 45 minutes after activity. A diagnostic (`scraper/tools/waf_experiment.py`) confirmed that real Chrome via `channel="chrome"` still gets challenged on a cold start, ruling out the cheap fingerprint fix. The durable fix would be a persistent-browser daemon keeping one warm session across commands — deferred, as the current workaround (run `waf_check.py`, solve if needed) is adequate for weekly interactive use.
+
+---
+
 ## [Unreleased] — 2026-07-25
 
 ### Bugfixes
