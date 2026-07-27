@@ -511,7 +511,11 @@ if [[ -z $BYPASS_PROCESSING ]]; then
         rg -v -f "$TEMPFILE" >>"$NCONST_LIST"
 
     # Create a perl script to globally convert a show tconst to a show title
-    cut -f 1,5 "$RAW_SHOWS" |
+    # Strip IMDb's \N NULL marker from titles first: interpolated raw into the
+    # generated s{...}{...} replacement, a stray \N makes perl read \N{ as a
+    # malformed named-Unicode escape ("Missing braces on \N{}") and abort.
+    # Mirrors the same guard used on the principals/credits path above.
+    cut -f 1,5 "$RAW_SHOWS" | perl -p -e 's+\\N++g;' |
         perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{'\''@F[1]};";' >"$TCONST_SHOWS_PL"
 
     # Create a perl script to convert an episode tconst to its parent show title
