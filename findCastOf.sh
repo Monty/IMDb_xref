@@ -36,6 +36,7 @@ OPTIONS:
     -m      Maximum matches for a show title allowed in menu - defaults to 25.
     -f      File -- Add to specific file rather than the default $favoritesFile.
     -s      Short - don't list details, just ask about adding to favorites.tconst.
+    -a      Actors only -- omit crew (director, writer, etc.), list only cast.
     -e NNN  Minimum episodes -- Only show cast members with at least NNN episodes.
             Default 0 (show all). Use -e 10 to show only series regulars.
 
@@ -44,6 +45,7 @@ EXAMPLES:
     ./findCastOf.sh -d
     ./findCastOf.sh "The Crown"
     ./findCastOf.sh tt1606375
+    ./findCastOf.sh -a tt1548331
     ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"
     ./findCastOf.sh -d "The Night Manager" "The Crown" "The Durrells"
     ./findCastOf.sh -e 10 "The Crown"
@@ -91,7 +93,7 @@ _scraper() {
     uv run --directory scraper python cli.py "$@"
 }
 
-while getopts ":hf:dlme:s" opt; do
+while getopts ":hf:dlme:sa" opt; do
     case $opt in
     h)
         help
@@ -103,6 +105,7 @@ while getopts ":hf:dlme:s" opt; do
     m) maxMenuSize="$OPTARG" ;;
     e) minEpisodes="$OPTARG" ;;
     s) SHORT="yes" ;;
+    a) ACTORS_ONLY="yes" ;;
     \?) printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2 ;;
     :)
         printf "Option -$OPTARG requires an argument.\n" >&2
@@ -175,8 +178,7 @@ while IFS= read -r searchTerm; do
         # Capture stderr so a scraper failure (e.g. a WAF challenge) is
         # reported instead of being silently reinterpreted as "no matches".
         if ! searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>"$SCRAPER_ERR"); then
-            printf "==> Couldn't search IMDb for \"%s\":\n" "$searchTerm"
-            tail -n 2 "$SCRAPER_ERR" | sed 's/^/    /'
+            reportSearchError "$searchTerm" "$SCRAPER_ERR"
             continue
         fi
         matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)
@@ -265,8 +267,16 @@ while IFS= read -r searchTerm; do
         epLabel=""
         [[ -n $minEpisodes ]] && epLabel=" (minimum ${minEpisodes} episodes)"
         [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null && epLabel="$epLabel (top $FULLCAST)"
-        printf "==> Cast & crew for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
-        jq -r 'sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
+        # With -a, list only acting roles and label accordingly; crew (director,
+        # writer, etc.) often carry long stacked "(as ...)" credits that wrap the
+        # display, and actor is the predominant lookup.
+        if [[ -n $ACTORS_ONLY ]]; then
+            printf "==> Cast for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
+            jq -r 'map(select(.job | test("^act(or|ress)$"; "i"))) | sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
+        else
+            printf "==> Cast & crew for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
+            jq -r 'sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
+        fi
         if [[ -n $usePager ]]; then
             tsvPrint "$TMPFILE" | ${PAGER:-less}
         else
