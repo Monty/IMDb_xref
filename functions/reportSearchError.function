@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+#
+# reportSearchError -- print a concise message when an IMDb search fails.
+#
+# USAGE:
+#   reportSearchError "$searchTerm" "$SCRAPER_ERR"
+#
+# A scraper search can fail for two main reasons: an AWS WAF CAPTCHA blocking
+# the request, or some other error. The raw Python traceback in $SCRAPER_ERR is
+# noisy (stray parens from multi-line raises, a long URL). This surfaces the
+# useful part: for a WAF challenge, the same short wording waf_check.py uses;
+# otherwise the final, most-specific line of the error.
+#
+# The caller is expected to `continue`/skip after calling this.
+
+function reportSearchError() {
+    local searchTerm="$1"
+    local errFile="$2"
+
+    printf "==> Couldn't search IMDb for \"%s\":\n" "$searchTerm"
+
+    if [[ -s $errFile ]] && rg -q "WAFChallengeError|captcha-container|challenge-container" "$errFile"; then
+        printf "    IMDb is serving a WAF CAPTCHA.\n"
+        printf "    Run scraper/tools/solve_challenge.py, then try again.\n"
+    elif [[ -s $errFile ]]; then
+        # Fall back to the last non-blank line -- the most specific error,
+        # without the surrounding traceback noise.
+        rg -Nv '^\s*$' "$errFile" | tail -n 1 | sed 's/^/    /'
+    else
+        printf "    (no error detail captured)\n"
+    fi
+}
