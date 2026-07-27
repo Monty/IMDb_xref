@@ -319,8 +319,14 @@ while IFS= read -r searchTerm; do
     else
         # Search for the person on IMDb
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
-        searchResults=$(_scraper --delay 1 search-person "$searchTerm" 2>/dev/null)
-        matchCount=$(jq 'length' <<<"$searchResults")
+        # Capture stderr so a scraper failure (e.g. a WAF challenge) is
+        # reported instead of being silently reinterpreted as "no matches".
+        if ! searchResults=$(_scraper --delay 1 search-person "$searchTerm" 2>"$SCRAPER_ERR"); then
+            reportSearchError "$searchTerm" "$SCRAPER_ERR"
+            continue
+        fi
+        matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)
+        matchCount=${matchCount:-0}
 
         if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"

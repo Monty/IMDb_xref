@@ -163,8 +163,7 @@ while IFS= read -r searchTerm; do
         # Capture stderr so a scraper failure (e.g. a WAF challenge) is
         # reported instead of being silently reinterpreted as "no matches".
         if ! searchResults=$(_scraper --delay 1 search-person "$searchTerm" 2>"$SCRAPER_ERR"); then
-            printf "==> Couldn't search IMDb for \"%s\":\n" "$searchTerm"
-            tail -n 2 "$SCRAPER_ERR" | sed 's/^/    /'
+            reportSearchError "$searchTerm" "$SCRAPER_ERR"
             continue
         fi
         matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)
