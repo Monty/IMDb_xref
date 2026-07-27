@@ -5,6 +5,8 @@
 ### Bugfixes
 
 - **`saveFilmography.sh`** — A failed person search (e.g. a WAF challenge) was silently reported as "No matches found": the `search-person` call used `2>/dev/null` and ignored the exit code, so an empty result from a blocked fetch looked identical to a genuine no-match. It now captures stderr, checks the exit code, and on failure prints "Couldn't search IMDb" with the underlying error — the same masking fix applied to the other search scripts last week, which had reached this script's *filmography* fetch but not its *person-search*. Surfaced by running `saveFilmography.sh "Jacques Spiesser"` against a live WAF block, which reported "No matches" while `waf_check.py` confirmed the CAPTCHA was up.
+- **`findCastOf.sh`** — The full-credits fetch failure message was misleading: any scrape failure printed "Scraper failed. Make sure Playwright is installed: playwright install chromium", a diagnosis left over from when that was the common failure. The common failure is now a WAF CAPTCHA, so the message sent you to reinstall Playwright when the actual fix is `solve_challenge.py`. It now routes through `reportSearchError`, which detects a WAF challenge and says so (with the correct remedy) or otherwise prints the specific error. Surfaced by `./findCastOf.sh tt32868688` reporting the Playwright message during a live WAF block.
+- **`functions/reportSearchError.function`** — Generalized to also handle non-search failures: it now accepts an optional header template (defaulting to the search wording) and accepts the captured output as either a file path or a string, so the full-credits fetch path can reuse the same WAF-aware reporting.
 
 ### Added
 
@@ -16,6 +18,7 @@
 ### Notes
 
 - Investigated the recurring WAF CAPTCHA on the interactive path. Evidence points to cold-session re-initialization as the trigger, not request volume or browser fingerprint: two long continuous batch runs (560 shows 7/19, full rebuild 7/26) sailed through hundreds of sequential fetches with no challenge, while single interactive lookups get challenged even 45 minutes after activity. A diagnostic (`scraper/tools/waf_experiment.py`) confirmed that real Chrome via `channel="chrome"` still gets challenged on a cold start, ruling out the cheap fingerprint fix. The durable fix would be a persistent-browser daemon keeping one warm session across commands — deferred, as the current workaround (run `waf_check.py`, solve if needed) is adequate for weekly interactive use.
+- Known, not yet fixed: `findOtherShows.sh` (line ~198) fetches full-credits with `>/dev/null 2>&1` and never checks the result, so a WAF failure there fails *silently* — the show ends up with no cast and no explanation. Same class as the `findCastOf` misleading-message bug but the opposite symptom (silent vs. wrong). Fixing it means capturing and checking the result like `findCastOf` does, then routing through `reportSearchError`. Deferred.
 
 ---
 

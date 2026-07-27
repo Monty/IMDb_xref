@@ -1,31 +1,53 @@
 #!/usr/bin/env bash
 #
-# reportSearchError -- print a concise message when an IMDb search fails.
+# reportSearchError -- print a concise message when an IMDb scraper call fails.
 #
 # USAGE:
 #   reportSearchError "$searchTerm" "$SCRAPER_ERR"
+#   reportSearchError "$searchTerm" "$SCRAPER_ERR" "==> [Error] Couldn't fetch credits for \"%s\":"
 #
-# A scraper search can fail for two main reasons: an AWS WAF CAPTCHA blocking
-# the request, or some other error. The raw Python traceback in $SCRAPER_ERR is
-# noisy (stray parens from multi-line raises, a long URL). This surfaces the
-# useful part: for a WAF challenge, the same short wording waf_check.py uses;
-# otherwise the final, most-specific line of the error.
+# A scraper call can fail for two main reasons: an AWS WAF CAPTCHA blocking the
+# request, or some other error. The raw Python traceback is noisy (stray parens
+# from multi-line raises, a long URL). This surfaces the useful part: for a WAF
+# challenge, the same short wording waf_check.py uses; otherwise the final,
+# most-specific line of the error.
 #
-# The caller is expected to `continue`/skip after calling this.
+# Args:
+#   $1  the term/id being looked up (interpolated into the header via %s)
+#   $2  file OR string containing the captured stderr/output to inspect
+#   $3  optional printf header template (must contain one %s); defaults to
+#       the person/title search wording.
+#
+# The caller is expected to continue/skip/loop after calling this.
 
 function reportSearchError() {
     local searchTerm="$1"
-    local errFile="$2"
+    local errSource="$2"
+    local headerFmt="$3"
+    local errText=""
 
-    printf "==> Couldn't search IMDb for \"%s\":\n" "$searchTerm"
+    # Default header: the person/title search wording.
+    if [[ -z $headerFmt ]]; then
+        headerFmt='==> Couldn'\''t search IMDb for "%s":'
+    fi
 
-    if [[ -s $errFile ]] && rg -q "WAFChallengeError|captcha-container|challenge-container" "$errFile"; then
+    # Accept either a file path or a literal string of captured output.
+    if [[ -f $errSource ]]; then
+        errText=$(cat "$errSource")
+    else
+        errText="$errSource"
+    fi
+
+    # shellcheck disable=SC2059  # headerFmt is our own template, one %s
+    printf "$headerFmt\n" "$searchTerm"
+
+    if [[ -n $errText ]] && rg -q "WAFChallengeError|captcha-container|challenge-container" <<<"$errText"; then
         printf "    IMDb is serving a WAF CAPTCHA.\n"
         printf "    Run scraper/tools/solve_challenge.py, then try again.\n"
-    elif [[ -s $errFile ]]; then
+    elif [[ -n $errText ]]; then
         # Fall back to the last non-blank line -- the most specific error,
         # without the surrounding traceback noise.
-        rg -Nv '^\s*$' "$errFile" | tail -n 1 | sed 's/^/    /'
+        rg -Nv '^\s*$' <<<"$errText" | tail -n 1 | sed 's/^/    /'
     else
         printf "    (no error detail captured)\n"
     fi

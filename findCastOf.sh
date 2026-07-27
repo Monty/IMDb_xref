@@ -242,8 +242,7 @@ while IFS= read -r searchTerm; do
         scrapeResult=$(_scraper --delay 1 full-credits "$tconst" 2>&1)
         scrapeRC=$?
         if [[ $scrapeRC -ne 0 ]] || ! echo "$scrapeResult" | jq . >/dev/null 2>&1; then
-            printf "==> [${RED}Error${NO_COLOR}] Scraper failed. Make sure Playwright is installed:\n"
-            printf "    playwright install chromium\n"
+            reportSearchError "$tconst" "$scrapeResult" "==> [${RED}Error${NO_COLOR}] Couldn't fetch credits for \"%s\":"
             loopOrExitP
         fi
         _scraper rebuild-index >/dev/null 2>&1
