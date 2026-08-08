@@ -130,8 +130,17 @@ tconst=""
 while IFS= read -r searchTerm; do
     [[ -z $searchTerm ]] && continue
 
+    # Reset per term. needConfirm gates the "Does that look correct?" prompt:
+    # set on the two paths that resolve a tconst with no user interaction -- a
+    # typed tconst ID, or a name with exactly one match. The multi-match menu is
+    # its own confirmation. Resetting tconst also stops a menu "Skip" from
+    # reusing the previous term's tconst.
+    needConfirm=""
+    tconst=""
+
     if [[ $searchTerm =~ ^tt[0-9]{7,8}$ ]]; then
         tconst="$searchTerm"
+        needConfirm="yes"
     else
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
         # Capture stderr so a scraper failure (e.g. a WAF challenge) is
@@ -186,6 +195,7 @@ while IFS= read -r searchTerm; do
             done </dev/tty
         else
             tconst=$(jq -r '.[0].tconst' <<<"$searchResults")
+            needConfirm="yes"
         fi
     fi
 
@@ -199,7 +209,25 @@ while IFS= read -r searchTerm; do
         _scraper rebuild-index >/dev/null 2>&1
     fi
 
-    showName=$(jq -r '.title' <<<"$(_scraper title-info "$tconst" 2>/dev/null)")
+    titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
+    showName=$(jq -r '.title' <<<"$titleInfo")
+
+    # Confirm the resolved title before using it, mirroring big_IMDb_xref's gate.
+    # The multi-match menu already confirmed via selection, so it skips this.
+    if [[ -n $needConfirm ]]; then
+        printf "imdb.com/title/%s\t%s\t%s\t%s\t%s\n" \
+            "$tconst" \
+            "$(jq -r '.types[0] // ""' <<<"$titleInfo")" \
+            "$showName" \
+            "$(jq -r '.original_title // ""' <<<"$titleInfo")" \
+            "$(jq -r '.year // ""' <<<"$titleInfo")" >"$TMPFILE"
+        printf "\nThese are the results I can process:\n"
+        tsvPrint "$TMPFILE"
+        if ! waitUntil "$YN_PREF" -Y "Does that look correct?"; then
+            continue
+        fi
+    fi
+
     printf "%s\t%s\n" "$tconst" "$showName" >>"$SHOW_NAMES"
     printf "%s\n" "$tconst" >>"$TCONST_LIST"
 done <"$ALL_TERMS"

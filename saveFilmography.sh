@@ -309,12 +309,20 @@ printf "\n"
 while IFS= read -r searchTerm; do
     [[ -z $searchTerm ]] && continue
 
+    # needConfirm gates the "Does that look correct?" prompt: set on the paths
+    # that resolve a person with no user interaction (an nconst ID, or a name
+    # with exactly one match). The multi-match menu is its own confirmation.
+    needConfirm=""
+    nconst=""
+    nconstName=""
+
     if [[ $searchTerm =~ ^nm[0-9]{7,8}$ ]]; then
         nconst="$searchTerm"
         personInfo=$(_scraper person-info "$nconst" 2>/dev/null)
         if [[ -n $personInfo ]] && [[ $personInfo != *"not found"* ]]; then
             nconstName=$(jq -r '.name // empty' <<<"$personInfo")
             printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+            needConfirm="yes"
         fi
     else
         # Search for the person on IMDb
@@ -376,6 +384,19 @@ while IFS= read -r searchTerm; do
             nconst=$(jq -r '.[0].nconst' <<<"$searchResults")
             nconstName=$(jq -r '.[0].name' <<<"$searchResults")
             printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+            needConfirm="yes"
+        fi
+    fi
+
+    # Confirm the resolved person before using it, mirroring big_IMDb_xref's
+    # gate. Skipped for the multi-match menu path, which already confirmed via
+    # selection. Answering "no" skips this person.
+    if [[ -n $needConfirm ]] && [[ -n $nconst ]]; then
+        printf "imdb.com/name/%s\t%s\n" "$nconst" "$nconstName" >"$TMPFILE"
+        printf "\nThese are the results I can process:\n"
+        tsvPrint "$TMPFILE"
+        if ! waitUntil "$YN_PREF" -Y "Does that look correct?"; then
+            continue
         fi
     fi
 

@@ -228,9 +228,12 @@ if [[ ! -s $PERSON_RESULTS ]]; then
     loopOrExitP
 fi
 
-# Found results, show them
-printf "\nFound:\n"
+# Found results, confirm before processing (mirrors big_IMDb_xref's gate).
+printf "\nThese are the results I can process:\n"
 tsvPrint "$PERSON_RESULTS"
+if ! waitUntil "$YN_PREF" -Y "Does that look correct?"; then
+    loopOrExitP
+fi
 printf "\n"
 
 # For each person, list the indexed shows they appear in

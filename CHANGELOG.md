@@ -6,9 +6,16 @@
 
 - **`findCastOf.sh`** — A `Does that look correct? [Y/n]` confirmation before a resolved title is used, mirroring the gate in `big_IMDb_xref`. It fires on the two paths that resolve a tconst with no user interaction — a typed tconst ID (`tt…`) and a show name that matches exactly one title — printing the resolved `imdb.com/title/<tconst>  <type>  <title>  <original-title>  <year>` line, so a mistyped ID that silently lands on the wrong show is caught before the cast is listed or saved to favorites. Answering "no" skips that term. The multi-match name path already confirms through its selection menu and is exempt (tracked via a per-term `needConfirm` flag). The prompt runs *after* the full-credits fetch, so a brand-new, un-indexed ID is fetched once before it can be rejected; anything already in the index confirms instantly. The `original-title` column comes from `title-info` and is blank when the scraper didn't capture one (e.g. Magellan), so it won't always match `big_IMDb_xref`'s bulk-dataset original title.
 
+- **`findShowsWith.sh`** — Same gate in batch form: after all search terms resolve, it prints `These are the results I can process:` with the resolved people and asks `Does that look correct?` before listing their shows; "no" restarts. Mirrors the twin's confirmation in `big_IMDb_xref`.
+
+- **`saveFilmography.sh`** — Same gate per-term: a person resolved from an nconst ID or a single name match is shown as `imdb.com/name/<nconst>  <name>` and confirmed before the filmography is fetched; "no" skips that person. The multi-match menu is exempt (it already confirmed via selection).
+
+- **`findOtherShows.sh`** — Same per-term title confirmation as `findCastOf.sh` (ID and single-match paths; multi-match menu exempt), shown before the show enters the cross-reference set.
+
 ### Bugfixes
 
 - **`findCastOf.sh`** — Reset `tconst` at the top of each search-term loop. A menu "Skip" broke out of the `select` without setting `tconst`, leaving the previous term's value in place; the following `[[ -z $tconst ]] && continue` guard then passed and processed a stale tconst. The per-term reset closes that.
+- **`findOtherShows.sh`** — Same per-term `tconst` reset as `findCastOf.sh`, closing the identical stale-tconst-after-menu-`Skip` path.
 
 ---
 
