@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased] — 2026-08-07
+
+### Added
+
+- **`findCastOf.sh`** — A `Does that look correct? [Y/n]` confirmation before a resolved title is used, mirroring the gate in `big_IMDb_xref`. It fires on the two paths that resolve a tconst with no user interaction — a typed tconst ID (`tt…`) and a show name that matches exactly one title — printing the resolved `imdb.com/title/<tconst>  <type>  <title>  <original-title>  <year>` line, so a mistyped ID that silently lands on the wrong show is caught before the cast is listed or saved to favorites. Answering "no" skips that term. The multi-match name path already confirms through its selection menu and is exempt (tracked via a per-term `needConfirm` flag). The prompt runs *after* the full-credits fetch, so a brand-new, un-indexed ID is fetched once before it can be rejected; anything already in the index confirms instantly. The `original-title` column comes from `title-info` and is blank when the scraper didn't capture one (e.g. Magellan), so it won't always match `big_IMDb_xref`'s bulk-dataset original title.
+
+### Bugfixes
+
+- **`findCastOf.sh`** — Reset `tconst` at the top of each search-term loop. A menu "Skip" broke out of the `select` without setting `tconst`, leaving the previous term's value in place; the following `[[ -z $tconst ]] && continue` guard then passed and processed a stale tconst. The per-term reset closes that.
+
+---
+
 ## [Unreleased] — 2026-07-26
 
 ### Bugfixes

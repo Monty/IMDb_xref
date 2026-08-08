@@ -170,8 +170,18 @@ allNames=()
 while IFS= read -r searchTerm; do
     [[ -z $searchTerm ]] && continue
 
+    # Reset per term. needConfirm gates the "Does that look correct?" prompt:
+    # set it on the two paths that resolve a tconst with no user interaction --
+    # a typed tconst ID, or a name that yields exactly one match. The multi-match
+    # menu below is its own confirmation, so it leaves needConfirm unset.
+    # Resetting tconst also stops a menu "Skip" from reusing the previous
+    # term's tconst.
+    needConfirm=""
+    tconst=""
+
     if [[ $searchTerm =~ ^tt[0-9]{7,8}$ ]]; then
         tconst="$searchTerm"
+        needConfirm="yes"
     else
         # Search for the title on IMDb
         printf "==> Searching IMDb for \"%s\"...\n" "$searchTerm"
@@ -229,6 +239,7 @@ while IFS= read -r searchTerm; do
             [[ -z $tconst ]] && continue
         else
             tconst=$(jq -r '.[0].tconst' <<<"$searchResults")
+            needConfirm="yes"
         fi
     fi
 
@@ -248,7 +259,27 @@ while IFS= read -r searchTerm; do
         _scraper rebuild-index >/dev/null 2>&1
     fi
 
-    showName=$(jq -r '.title' <<<"$(_scraper title-info "$tconst" 2>/dev/null)")
+    titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
+    showName=$(jq -r '.title' <<<"$titleInfo")
+
+    # Confirm the resolved title before using it, mirroring big_IMDb_xref's gate.
+    # Guards against a mistyped tconst -- or a single-match name -- silently
+    # resolving to the wrong show. The multi-match menu already confirmed via
+    # selection, so it leaves needConfirm unset and skips this.
+    if [[ -n $needConfirm ]]; then
+        printf "imdb.com/title/%s\t%s\t%s\t%s\t%s\n" \
+            "$tconst" \
+            "$(jq -r '.types[0] // ""' <<<"$titleInfo")" \
+            "$showName" \
+            "$(jq -r '.original_title // ""' <<<"$titleInfo")" \
+            "$(jq -r '.year // ""' <<<"$titleInfo")" >"$TMPFILE"
+        printf "\nThese are the results I can process:\n"
+        tsvPrint "$TMPFILE"
+        if ! waitUntil "$YN_PREF" -Y "Does that look correct?"; then
+            continue
+        fi
+    fi
+
     printf "%s\t%s\n" "$tconst" "$showName" >>"$ALL_MATCHES"
     allNames+=("$showName")
 
