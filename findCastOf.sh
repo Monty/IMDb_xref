@@ -375,32 +375,16 @@ printHistory "$favoritesFile" >"$TMPFILE"
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
 comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 
-# Use maxCast to limit size of result, but only if -ge 10
+# maxCast caps how many billing-order rows we display, but only if -ge 10
 maxCast=0
 
-if [[ -n $FULLCAST ]]; then
-    # Used to debug possibly missing data from the .tsv.gz files
-
-    # Is FULLCAST an integer?
-    if [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
-        maxCast="$FULLCAST"
-    fi
-
-    # Cache the TCONST_LIST from the "Full Cast & Crew" page
-    while IFS='' read -r line; do
-        printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" \
-            >"$cacheDirectory/$line"
-        source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
-        printf "Reading https://www.imdb.com/title/$line\n"
-        curl -s "$source" -o "$TMPFILE"
-        awk -f getFullcredits.awk "$TMPFILE" |
-            sort -f -t$'\t' --key=5,5 --key=4,4n --key=1,1 \
-                >>"$cacheDirectory/$line"
-    done <"$TCONST_LIST"
-    printf "\n"
-    # Recompute which tconst IDs are cached and which aren't
-    ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
-    comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
+# FULLCAST is now only a display cap. The live-fetch path it used to drive --
+# curl the fullcredits page and parse it with getFullcredits.awk -- is retired:
+# IMDb 403s a bot User-Agent, WAF-challenges a browser one, and the fullcredits
+# page is React-rendered now, so the awk matched nothing and left header-only
+# cache files that masked the real data. Cast is read from the .gz files below.
+if [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
+    maxCast="$FULLCAST"
 fi
 
 # If everything is cached, skip searching entirely
@@ -483,19 +467,19 @@ while read -r line; do
     fi
     cat "$cacheFile" >>"$TMPFILE"
     if [[ -z $MULTIPLE_NAMES_ONLY ]] && [[ -z $SHORT ]]; then
-        if [[ -n "$(rg -c "Person\tShow Title\tEpisode " "$cacheFile")" ]]; then
-            showName="$(tail -1 "$cacheFile" | cut -f 2)"
-            awk -F "\t" '{printf("%s\t%s\t%s\t%s\n",$1,$5,$2,$6)}' "$cacheFile" |
-                rg "$showName" >"$CAST_CSV"
-            if [[ $maxCast -ge 10 ]]; then
-                printf "==> Top $maxCast cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
-                tsvPrint "$CAST_CSV" | head -"$maxCast"
-            else
-                printf "==> All cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
-                tsvPrint "$CAST_CSV"
-            fi
+        # Cast is read from the .gz pipeline cache (Person|Show|Episode|Rank|Job|
+        # Character, no header row). One row per episode, so a person recurs once
+        # per episode they appear in; collapse to unique Name|Job|Show|Role rows
+        # in IMDb billing order (lowest Rank first). Character-name variants
+        # (e.g. "Simon Magellan" vs "SimonMagellan") intentionally stay separate.
+        sort -f -t$'\t' --key=4,4n "$cacheFile" |
+            awk -F "\t" '!seen[$1 FS $5 FS $2 FS $6]++ {printf("%s\t%s\t%s\t%s\n",$1,$5,$2,$6)}' >"$CAST_CSV"
+        if [[ $maxCast -ge 10 ]]; then
+            printf "==> Top $maxCast cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
+            tsvPrint "$CAST_CSV" | head -"$maxCast"
         else
-            ./xrefCast.sh -f "$cacheFile" -pn "$showName"
+            printf "==> All cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
+            tsvPrint "$CAST_CSV"
         fi
         waitUntil -k
     fi
