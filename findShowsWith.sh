@@ -250,15 +250,10 @@ fi
 cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
 rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz | cut -f 1,3,4 >"$POSSIBLE_MATCHES"
 
-if [[ -n $FULLCAST ]]; then
-    # Used to debug possibly missing data from the .tsv.gz files
-    true >"$POSSIBLE_MATCHES"
-    while read -r nconstID; do
-        source="https://www.imdb.com/name/$nconstID/fullcredits?ref_=nm_flmg_sort_text_view"
-        curl -s "$source" -o "$TMPFILE"
-        awk -f getFilmography.awk "$TMPFILE" >>"$POSSIBLE_MATCHES"
-    done <"$NCONST_TERMS"
-fi
+# Filmography data comes from the local title.principals.tsv.gz read above. The
+# FULLCAST live-fetch path (curl the person's fullcredits page, parse with
+# getFilmography.awk) is retired -- IMDb 403s a bot User-Agent, WAF-challenges a
+# browser one, and the page is React-rendered now, so the awk parsed nothing.
 
 while read -r line; do
     nconstID="$line"

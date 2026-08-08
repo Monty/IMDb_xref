@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased] — 2026-08-07
+
+### Changed
+
+- **`findOtherShows.sh`** — Cast is now built from the local `.gz` datasets instead of a live fetch. Each show's cache is joined from `title.principals.tsv.gz` (ordering, nconst, category, characters) and `name.basics.tsv.gz` (nconst → name) into the same 8-column format the cross-show lookup already reads (Person, Show Title, Episode Title, Rank, Job, Character Name, nconst ID, tconst ID), so nothing downstream changed. Per the chosen scope, the cross-reference still runs against *cached* shows only (`.xref_cache/tt*`), not the whole `.gz`. Cast rows are labeled `actor` uniformly (matching the retired `getFullcredits.awk`, which hard-coded it) so the downstream `rg actor` cross-show filter keeps actresses; the join uses a `FILENAME`-keyed awk over real temp files, so a missing name can never blank the whole cache.
+
+### Removed
+
+- **`findShowsWith.sh`**, **`saveFilmography.sh`** — The `FULLCAST` live-fetch block (curl the person's `fullcredits` page, parse with `getFilmography.awk`) that overwrote the local `title.principals.tsv.gz` filmography as a debug detour. It's the same dead React/WAF path retired in `findCastOf.sh`; the `.gz` read these scripts already do is now the only source, and `getFilmography.awk` is unused by them.
+
+- **`findOtherShows.sh`** — The `curl` + `getFullcredits.awk` fetch that had been its only cast source. `getFullcredits.awk` is now unused anywhere in the branch.
+
+### Notes
+
+- **Cross-show coupling.** `findOtherShows.sh` finds a person in another show by matching their nconst *inside that show's cache file*, so it only sees shows cached in the 8-column format — in practice, shows cached by `findOtherShows.sh` itself. `findCastOf.sh` writes a 6-column, name-only cache with no nconst IDs, so a show cached only by `findCastOf.sh` contributes nothing to the cross-reference. Run `findOtherShows.sh` on the shows you want in the corpus. Making `findCastOf.sh` also emit the 8-column cache would unify them if that ever becomes worthwhile.
+
+---
+
 ## [Unreleased] — 2026-07-27
 
 ### Changed

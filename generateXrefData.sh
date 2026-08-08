@@ -40,8 +40,9 @@
 #
 #   Set DEBUG environment variable to enable 'breakpoint' function, and
 #   to save secondary files
-#
+
 # shellcheck disable=SC2317     # Command appears to be unreachable
+# shellcheck disable=SC2329     # This function is never invoked
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")

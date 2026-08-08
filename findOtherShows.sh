@@ -315,13 +315,37 @@ sed 's+imdb.com/title/++' "$TMPFILE" >"$ALL_MATCHES"
 cut -f 1,3 "$ALL_MATCHES" | sort -f -t$'\t' --key=2 >"$SHOW_NAMES"
 cut -f 1 "$SHOW_NAMES" | sort >"$TCONST_LIST"
 
-# Cache the TCONST_LIST from the "Full Cast & Crew" page
+# Build each show's cast cache from the local .gz datasets instead of the old
+# live fetch. IMDb's fullcredits page is React-rendered now (curl 403s / hits a
+# WAF challenge, and getFullcredits.awk parsed nothing), so cast is joined from
+# title.principals.tsv.gz (ordering, nconst, category, characters) and
+# name.basics.tsv.gz (nconst -> name). Same 8-column cache format the cross-show
+# lookup below reads: Person, Show Title, Episode Title, Rank, Job, Character
+# Name, nconst ID, tconst ID.
 while IFS='' read -r line; do
     printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" \
         >"$cacheDirectory/$line"
-    source="https://www.imdb.com/title/$line/fullcredits?ref_=tt_ql_1"
-    curl -s "$source" -o "$TMPFILE"
-    awk -f getFullcredits.awk "$TMPFILE" |
+    showTitle="$(rg -N "^$line\t" "$SHOW_NAMES" | cut -f 2)"
+    # Principals for this show, then an nconst -> name map for just its people.
+    # Real temp files (not process substitution) and a FILENAME-based awk join,
+    # so an empty name map can never be mistaken for principal rows.
+    rg -Nz "^$line\t" title.principals.tsv.gz >"$POSSIBLE_MATCHES"
+    cut -f 3 "$POSSIBLE_MATCHES" | sort -u >"$MATCH_COUNTS"
+    rg -wNz -f "$MATCH_COUNTS" name.basics.tsv.gz | cut -f 1,2 >"$TMPFILE"
+    awk -F '\t' -v show="$showTitle" -v names="$TMPFILE" '
+        FILENAME == names { name[$1] = $2; next }
+        {
+            chars = $6
+            gsub(/\\N/, "", chars)
+            gsub(/[]["]/, "", chars)
+            gsub(/,/, ", ", chars)
+            # Label all cast "actor" (as the old getFullcredits.awk did) so the
+            # downstream "rg actor" cross-show filter keeps actresses too.
+            job = $4
+            if (job == "actress") job = "actor"
+            printf "%s\t%s\t\t%s\t%s\t%s\t%s\t%s\n", name[$3], show, $2, job, chars, $3, $1
+        }
+    ' "$TMPFILE" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=5,5 --key=4,4n --key=1,1 \
             >>"$cacheDirectory/$line"
     if [[ $maxCast -gt 0 ]]; then
