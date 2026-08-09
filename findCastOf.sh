@@ -160,7 +160,6 @@ done
 
 printf "==> Searching for:\n"
 cat "$ALL_TERMS"
-printf "\n"
 
 # Ensure index exists and is up to date
 _scraper rebuild-index >/dev/null 2>&1
@@ -301,11 +300,17 @@ while IFS= read -r searchTerm; do
         # writer, etc.) often carry long stacked "(as ...)" credits that wrap the
         # display, and actor is the predominant lookup.
         if [[ -n $ACTORS_ONLY ]]; then
-            printf "==> Cast for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
-            jq -r 'map(select(.job | test("^act(or|ress)$"; "i"))) | sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
+            printf "==> Cast for \"%s\"%s:\n" "$showName" "$epLabel"
+            {
+                printf "Person\tJob\tCharacter Name\tEpisodes\tLink\n"
+                jq -r 'map(select(.job | test("^act(or|ress)$"; "i"))) | sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(if .episodes > 0 then "\(.episodes) episodes" else "n/a" end)\t\(if .nconst then "imdb.com/name/\(.nconst)" else "" end)"' <<<"$castData"
+            } >"$TMPFILE"
         else
-            printf "==> Cast & crew for \"%s\"%s (Name|Job|Role|Episodes):\n" "$showName" "$epLabel"
-            jq -r 'sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(.episodes) episodes"' <<<"$castData" >"$TMPFILE"
+            printf "==> Cast & crew for \"%s\"%s:\n" "$showName" "$epLabel"
+            {
+                printf "Person\tJob\tCharacter Name\tEpisodes\tLink\n"
+                jq -r 'sort_by(-.episodes, .rank) | .[] | "\(.name)\t\(.job)\t\(.character)\t\(if .episodes > 0 then "\(.episodes) episodes" else "n/a" end)\t\(if .nconst then "imdb.com/name/\(.nconst)" else "" end)"' <<<"$castData"
+            } >"$TMPFILE"
         fi
         if [[ -n $usePager ]]; then
             tsvPrint "$TMPFILE" | ${PAGER:-less}

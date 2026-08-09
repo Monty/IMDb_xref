@@ -56,8 +56,16 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
         # Year and type from the full text of the item
         full_text = item.inner_text()
 
+        # IMDb's find rows concatenate the inline metadata with no separators
+        # in inner_text, so the year runs straight into the runtime ("19921h
+        # 39m", "20064h"). A trailing \b then fails whenever a runtime follows,
+        # which is why feature films and video games came back n/a while rows
+        # whose year is followed by "-" or a newline (episodes, podcasts) or
+        # sits in the title resolved. Anchor on a non-digit lookbehind and drop
+        # the trailing boundary so the year is claimed regardless of what abuts
+        # it.
         year = None
-        year_m = re.search(r"\b(19\d{2}|20\d{2})\b", full_text)
+        year_m = re.search(r"(?<!\d)(19\d{2}|20\d{2})", full_text)
         if year_m:
             year = int(year_m.group())
 
@@ -70,6 +78,12 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
             "TV Pilot": "tvPilot",
             "TV Short": "tvShort",
             "TV Episode": "tvEpisode",
+            # Podcast rows must be matched before the loose "Video" key below:
+            # a title like "Tiempos de Videoclub" contains "Video", which would
+            # otherwise mis-tag a podcast episode as a video and let it through
+            # the skip filter.
+            "Podcast Series": "podcastSeries",
+            "Podcast Episode": "podcastEpisode",
             "Short": "tvShort",
             "Video Game": "videoGame",
             "Video": "video",
@@ -95,7 +109,7 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
     page.close()
 
     # Filter out low-interest types — episodes and shorts
-    skip_types = {"tvEpisode", "podcastEpisode", "tvShort"}
+    skip_types = {"tvEpisode", "podcastEpisode", "podcastSeries", "tvShort"}
     results = [r for r in results if not r.types or not (r.types[0] in skip_types)]
 
     return results

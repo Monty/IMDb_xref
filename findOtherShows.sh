@@ -121,7 +121,6 @@ fi
 
 printf "==> Searching for:\n"
 cat "$ALL_TERMS"
-printf "\n"
 
 _scraper rebuild-index >/dev/null 2>&1
 
@@ -297,7 +296,7 @@ printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_C
 } >"$CAST_SPREADSHEET"
 
 if [[ $maxCast -gt 0 ]]; then
-    printf "==> Top $maxCast cast members that appear in other cached shows (Name|Job|Show|Episodes|Role|Link):\n"
+    printf "==> Top $maxCast cast members that appear in other cached shows:\n"
 else
     printf "==> Cast members that appear in other cached shows:\n"
 fi

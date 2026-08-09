@@ -131,7 +131,6 @@ done
 
 printf "==> Searching for:\n"
 cat "$ALL_TERMS"
-printf "\n"
 
 # Process each search term
 while IFS= read -r searchTerm; do
@@ -241,9 +240,9 @@ tsvPrint "$PERSON_RESULTS"
 if ! waitUntil "$YN_PREF" -Y "Does that look correct?"; then
     loopOrExitP
 fi
-printf "\n"
 
 # For each person, list the indexed shows they appear in
+firstGroup="yes"
 while IFS=$'\t' read -r nconst nconstName _; do
     [[ -z $nconst ]] && continue
 
@@ -271,10 +270,15 @@ while IFS=$'\t' read -r nconst nconstName _; do
         _title="title"
         _pron="it"
         [[ $jobCount -gt 1 ]] && _title="titles" && _pron="them"
-        printf "\n==> I found %s %s listing %s as: %s\n" "$jobCount" "$_title" "$nconstName" "$job"
+        [[ -z $firstGroup ]] && printf "\n"
+        firstGroup=""
+        printf "==> I found %s %s listing %s as: %s\n" "$jobCount" "$_title" "$nconstName" "$job"
 
         if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y "==> Shall I list $_pron?"; then
-            jq -r 'sort_by(-(.episodes // 0), .title) | .[] | "\(.title)\t\((.episodes // 0) | if . > 0 then "\(.) episodes" else "" end)\t\(.character // "")\t\(.tconst // "")"' <<<"$jobData" >"$TMPFILE"
+            {
+                printf "Show Title\tEpisodes\tCharacter Name\tLink\n"
+                jq -r 'sort_by(-(.episodes // 0), .title) | .[] | "\(.title)\t\((.episodes // 0) | if . > 0 then "\(.) episodes" else "" end)\t\(.character // "")\t\(if .tconst then "imdb.com/title/\(.tconst)" else "" end)"' <<<"$jobData"
+            } >"$TMPFILE"
             if [[ -n $usePager ]]; then
                 tsvPrint "$TMPFILE" | ${PAGER:-less}
             else

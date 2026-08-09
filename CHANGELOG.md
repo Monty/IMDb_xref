@@ -1,5 +1,25 @@
 # Changelog
 
+## [Unreleased] — 2026-08-09
+
+### Bugfixes
+
+- **`scraper/pages.py` (`search_title`)** — Resolve the missing year (`n/a`) on feature-film and video-game title-search results. IMDb's find rows concatenate the inline metadata in `inner_text` with no separators, so the year abuts the runtime (`19921h 39m`, `20064h`); the extractor's trailing `\b` then failed whenever a digit-leading runtime followed — so exactly the rows carrying a runtime (movies, games) lost their year, while episode/podcast rows (year followed by `–` or a newline) and title-embedded years happened to survive. Changed `\b(19\d{2}|20\d{2})\b` to `(?<!\d)(19\d{2}|20\d{2})` (non-digit lookbehind, no trailing boundary). Diagnosed and verified against the five live `Reservoir Dogs` rows via `probe_find_year.py` + an offline `verify_find_year.py` regex check in the `Systems/Claude/IMDb/` scratch dir.
+
+- **`scraper/pages.py` (`search_title`)** — Filter podcast results out of title search. IMDb podcast rows (`Podcast Episode`, `Podcast Series`) weren't in `type_map`, so they were never tagged and the `skip_types` filter never dropped them — a podcast episode surfaced as a pickable "show". Worse, a podcast whose title contains "Video" (e.g. "Tiempos de Videoclub") was mis-tagged `video` by the loose substring match and shown as a video. Added both podcast keys — positioned before the `Video`/`Video Game` keys so they win the first-match, since the substring test also scans the title — and added `podcastSeries` to `skip_types`. Verified against the live `Reservoir Dogs` rows via `verify_podcast_filter.py`.
+
+### Changed
+
+- **`findCastOf.sh`** — Show `n/a` instead of `0 episodes` in the cast listing for titles with no episode counts (movies, where every member is 0). Both jq blocks (actors-only and full cast) now emit `\(if .episodes > 0 then "\(.episodes) episodes" else "n/a" end)`; series output is unchanged.
+
+- **`findCastOf.sh`, `findShowsWith.sh`, `findOtherShows.sh`** — Add a column-header row to the cast/show listings and drop the now-redundant `(Name|Job|…)` column descriptions from the `==>` lines, mirroring the header `findOtherShows.sh` already carried. `findCastOf` gains a `Person  Job  Character Name  Episodes` header (both `-a` and full-cast paths); `findShowsWith` gains a `Show Title  Episodes  Character Name  Link` header, and its last column is now `imdb.com/title/<tconst>` to match `findOtherShows`' Link column (was a bare tconst); `findOtherShows` drops its own `(Name|Job|Show|Episodes|Role|Link)` description now that the header labels the columns. Each header is prepended into the `tsvPrint` file so it inherits the column alignment.
+
+- **`findCastOf.sh`, `findShowsWith.sh`, `findOtherShows.sh`** — Tidy the confirm-gate spacing. Drop the search-echo's trailing blank so exactly one blank line — the confirm's own leading `\n` — precedes `These are the results I can process:` (was two). In `findShowsWith`, also drop the dedicated blank after `Does that look correct?` and gate the `==> I found …` separator on a `firstGroup` flag, so the first job group sits flush against the prompt (matching the other two scripts) while later groups keep their separating blank.
+
+- **`findCastOf.sh`** — Add a `Link` column (`imdb.com/name/<nconst>`) to the cast/crew listing, matching the Link columns now in `findShowsWith.sh` and `findOtherShows.sh`. Both blocks (`-a` and full cast) gain it; the per-row link falls back to empty for any member without an nconst.
+
+---
+
 ## [Unreleased] — 2026-08-08
 
 ### Bugfixes
