@@ -262,13 +262,15 @@ while IFS= read -r actorLine; do
     if [[ $otherCount -gt 0 ]]; then
         # Anchor each person on the show you searched (linked to the person),
         # then their other shows (linked to each title) -- mirrors big_IMDb_xref.
-        jq -r --arg tc "$tconst" \
-            '[.[] | select(.tconst == $tc) | select(.job == "actor")][0] // empty
-             | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/name/\(.nconst)"' \
-            <<<"$actorShows" >>"$RESULTS"
-        jq -r '.[] | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/title/\(.tconst)"' \
-            <<<"$otherShows" >>"$RESULTS"
-        printf '%s\n' "---" >>"$RESULTS"
+        {
+            jq -r --arg tc "$tconst" \
+                '[.[] | select(.tconst == $tc) | select(.job == "actor")][0] // empty
+                 | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/name/\(.nconst)"' \
+                <<<"$actorShows"
+            jq -r '.[] | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/title/\(.tconst)"' \
+                <<<"$otherShows"
+            printf '%s\n' "---"
+        } >>"$RESULTS"
     fi
 done < <(jq -c '.[]' <<<"$castData")
 

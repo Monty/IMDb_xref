@@ -8,6 +8,10 @@
 
 - **`findOtherShows.sh`** — Fix the `ShowsWithActorsFrom-*.csv` layout to match `big_IMDb_xref`: add the header row, anchor each person on the searched show (their source-show row first, linked to the person via `imdb.com/name/<nconst>`, then their other shows linked to each title), and drop the stray blank line. The `.csv` and the on-screen listing are now built from one table so they always agree.
 
+### Changed
+
+- **`findOtherShows.sh`** — Group the three per-person result writes (source-show row, other-show rows, `---` separator) under a single `{ …; } >>"$RESULTS"` redirect instead of three individual appends (SC2129). No behavior change.
+
 ---
 
 ## [Unreleased] — 2026-08-07

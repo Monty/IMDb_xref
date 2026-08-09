@@ -153,7 +153,10 @@ while IFS= read -r searchTerm; do
             nconstName=""
         fi
         if [[ -n $nconstName ]]; then
-            printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+            # person-info doesn't carry professions/known_for_title, so those
+            # columns are left empty here -- the confirm line still shows
+            # nconst + name for this path.
+            printf "%s\t%s\t%s\t%s\n" "$nconst" "$nconstName" "" "" >>"$PERSON_RESULTS"
         else
             printf "==> %s isn't in the index. Run ./findCastOf.sh on a show they're in, or use ./saveFilmography.sh %s\n" "$nconst" "$nconst"
         fi
@@ -192,7 +195,7 @@ while IFS= read -r searchTerm; do
 
             while IFS= read -r line; do
                 tabbedOptions+=("$line")
-            done < <(jq -r '.[] | "\(.nconst)\t\(.name)"' <<<"$searchResults")
+            done < <(jq -r '.[] | "\(.nconst)\t\(.name)\t\(.professions // "")\t\(.known_for_title // "")"' <<<"$searchResults")
 
             PS3="Select a number from 1-${#pickOptions[@]}, or type 'q(uit)': "
             COLUMNS=40
@@ -204,6 +207,8 @@ while IFS= read -r searchTerm; do
                     *)
                         nconst=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
                         nconstName=$(cut -f2 <<<"${tabbedOptions[REPLY - 1]}")
+                        professions=$(cut -f3 <<<"${tabbedOptions[REPLY - 1]}")
+                        knownFor=$(cut -f4 <<<"${tabbedOptions[REPLY - 1]}")
                         break
                         ;;
                     esac
@@ -212,11 +217,13 @@ while IFS= read -r searchTerm; do
                 fi
             done </dev/tty
             [[ -z $nconst ]] && continue
-            printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+            printf "%s\t%s\t%s\t%s\n" "$nconst" "$nconstName" "$professions" "$knownFor" >>"$PERSON_RESULTS"
         else
             nconst=$(jq -r '.[0].nconst' <<<"$searchResults")
             nconstName=$(jq -r '.[0].name' <<<"$searchResults")
-            printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
+            professions=$(jq -r '.[0].professions // ""' <<<"$searchResults")
+            knownFor=$(jq -r '.[0].known_for_title // ""' <<<"$searchResults")
+            printf "%s\t%s\t%s\t%s\n" "$nconst" "$nconstName" "$professions" "$knownFor" >>"$PERSON_RESULTS"
         fi
     fi
 
@@ -237,7 +244,7 @@ fi
 printf "\n"
 
 # For each person, list the indexed shows they appear in
-while IFS=$'\t' read -r nconst nconstName; do
+while IFS=$'\t' read -r nconst nconstName _; do
     [[ -z $nconst ]] && continue
 
     # Get shows from the index (built from cached shows and filmographies).
