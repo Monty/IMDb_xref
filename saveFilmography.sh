@@ -315,6 +315,8 @@ while IFS= read -r searchTerm; do
     needConfirm=""
     nconst=""
     nconstName=""
+    professions=""
+    knownFor=""
 
     if [[ $searchTerm =~ ^nm[0-9]{7,8}$ ]]; then
         nconst="$searchTerm"
@@ -359,7 +361,7 @@ while IFS= read -r searchTerm; do
 
             while IFS= read -r line; do
                 tabbedOptions+=("$line")
-            done < <(jq -r '.[] | "\(.nconst)\t\(.name)"' <<<"$searchResults")
+            done < <(jq -r '.[] | "\(.nconst)\t\(.name)\t\(.professions // "")\t\(.known_for_title // "")"' <<<"$searchResults")
 
             PS3="Select (1-${#pickOptions[@]}): "
             COLUMNS=40
@@ -371,6 +373,8 @@ while IFS= read -r searchTerm; do
                     *)
                         nconst=$(cut -f1 <<<"${tabbedOptions[REPLY - 1]}")
                         nconstName=$(cut -f2 <<<"${tabbedOptions[REPLY - 1]}")
+                        professions=$(cut -f3 <<<"${tabbedOptions[REPLY - 1]}")
+                        knownFor=$(cut -f4 <<<"${tabbedOptions[REPLY - 1]}")
                         break
                         ;;
                     esac
@@ -383,6 +387,8 @@ while IFS= read -r searchTerm; do
         else
             nconst=$(jq -r '.[0].nconst' <<<"$searchResults")
             nconstName=$(jq -r '.[0].name' <<<"$searchResults")
+            professions=$(jq -r '.[0].professions // ""' <<<"$searchResults")
+            knownFor=$(jq -r '.[0].known_for_title // ""' <<<"$searchResults")
             printf "%s\t%s\n" "$nconst" "$nconstName" >>"$PERSON_RESULTS"
             needConfirm="yes"
         fi
@@ -392,7 +398,7 @@ while IFS= read -r searchTerm; do
     # gate. Skipped for the multi-match menu path, which already confirmed via
     # selection. Answering "no" skips this person.
     if [[ -n $needConfirm ]] && [[ -n $nconst ]]; then
-        printf "imdb.com/name/%s\t%s\n" "$nconst" "$nconstName" >"$TMPFILE"
+        printf "%s\t%s\t%s\t%s\n" "$nconst" "$nconstName" "$professions" "$knownFor" >"$TMPFILE"
         printf "\nThese are the results I can process:\n"
         tsvPrint "$TMPFILE"
         if ! waitUntil "$YN_PREF" -Y "Does that look correct?"; then

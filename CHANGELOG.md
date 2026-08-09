@@ -12,6 +12,8 @@
 
 - **`findOtherShows.sh`** — Group the three per-person result writes (source-show row, other-show rows, `---` separator) under a single `{ …; } >>"$RESULTS"` redirect instead of three individual appends (SC2129). No behavior change.
 
+- **`saveFilmography.sh`** — Enrich the per-term `Does that look correct?` confirm line to match the picker: it now shows `nconst  name  professions  known_for` instead of just `imdb.com/name/<nconst>  name`. The single-match path captures `professions`/`known_for_title` from `searchResults`, the multi-match menu's `tabbedOptions` is widened to the same four fields (captured on selection), and both are reset per term so the nconst-ID path — where `person-info` carries neither — confirms with those two columns blank. Mirrors the enrichment already in `findShowsWith.sh`. (`saveFilmography.sh` confirms per-term from a scratch file, not from `PERSON_RESULTS`, which stays write-only/vestigial here.)
+
 ---
 
 ## [Unreleased] — 2026-08-07
