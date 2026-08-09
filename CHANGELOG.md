@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased] — 2026-08-08
+
+### Bugfixes
+
+- **Person picker** (`findShowsWith.sh`, `saveFilmography.sh`, and the scraper) — Show profession and "known for" columns in the name-match menu so same-named people can be told apart; `$XR` previously showed only `nconst` + name, unlike `$XRM`. `search_person` now lifts the raw profession line (e.g. `Sound Department · Writer · Editorial Department`) and the known-for title (e.g. `Money Heist (2017–2021)`) out of each find-page result — told apart by the year-in-parens, either may be absent — into new `Person.professions` / `Person.known_for_title` fields, and both pickers display them. Professions are shown raw (not normalized to `rg_jobs.rgx`), since the verbose labels disambiguate best. Near-name matches like `Pedro C. Alonso` are intentionally kept.
+
+- **`findOtherShows.sh`** — Fix the `ShowsWithActorsFrom-*.csv` layout to match `big_IMDb_xref`: add the header row, anchor each person on the searched show (their source-show row first, linked to the person via `imdb.com/name/<nconst>`, then their other shows linked to each title), and drop the stray blank line. The `.csv` and the on-screen listing are now built from one table so they always agree.
+
+---
+
 ## [Unreleased] — 2026-08-07
 
 ### Added
