@@ -182,7 +182,7 @@ while IFS= read -r searchTerm; do
             fi
             printf "\nI found %s people named \"%s\"\n" "$matchCount" "$searchTerm"
 
-            jq -r '.[] | "\(.nconst)\t\(.name)"' <<<"$searchResults" >"$TMPFILE"
+            jq -r '.[] | "\(.nconst)\t\(.name)\t\(.professions // "")\t\(.known_for_title // "")"' <<<"$searchResults" >"$TMPFILE"
             pickOptions=()
             tabbedOptions=()
             while IFS= read -r line; do
