@@ -127,7 +127,31 @@ def search_person(query: str, limit: int = 25) -> list[Person]:
         h4 = item.query_selector("h4")
         name = h4.inner_text().strip() if h4 else ""
 
-        results.append(Person(nconst=nconst, name=name))
+        # The result also shows a raw profession line ("Actor · Writer ·
+        # Director") and a "known for" title carrying a year ("Money Heist
+        # (2017–2021)"). Both help disambiguate same-named people in the
+        # picker, and neither is always present. Tell them apart by the
+        # year-in-parens: the known-for line has one, professions don't.
+        professions = ""
+        known_for_title = ""
+        for line in item.inner_text().split("\n"):
+            line = line.strip()
+            if not line or line == name:
+                continue
+            if re.search(r"\(\d{4}", line):
+                if not known_for_title:
+                    known_for_title = line
+            elif not professions:
+                professions = line
+
+        results.append(
+            Person(
+                nconst=nconst,
+                name=name,
+                professions=professions,
+                known_for_title=known_for_title,
+            )
+        )
 
         if len(results) >= limit:
             break

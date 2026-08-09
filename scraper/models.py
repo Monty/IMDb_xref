@@ -40,6 +40,11 @@ class Person(BaseModel):
     nconst: str  # "nm1234567"
     name: str
     known_for: list[str] = Field(default_factory=list)  # list of tconst IDs
+    # Disambiguation hints lifted from the find-page result and shown in the
+    # picker so same-named people can be told apart. Raw IMDb text; either may
+    # be empty.
+    professions: str = ""  # e.g. "Actor · Writer · Director"
+    known_for_title: str = ""  # e.g. "Money Heist (2017–2021)"
 
 
 class FilmographyRole(BaseModel):

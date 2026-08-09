@@ -251,20 +251,23 @@ fi
 # For each cast member, find their other shows
 true >"$RESULTS"
 while IFS= read -r actorLine; do
-    actorName=$(jq -r '.name' <<<"$actorLine")
     actorNconst=$(jq -r '.nconst' <<<"$actorLine")
 
-    # Get all shows for this actor from index
+    # Get all shows for this actor from the index
     actorShows=$(_scraper shows-for-person "$actorNconst" 2>/dev/null)
-    # Filter to only shows in our index (cached shows)
-    relevantShows=$(jq --arg tc "$tconst" '[.[] | select(.tconst != $tc) | select(.job == "actor")]' <<<"$actorShows")
-    relevantCount=$(jq 'length' <<<"$relevantShows")
+    # Other cached shows they're in (excluding the one we searched)
+    otherShows=$(jq --arg tc "$tconst" '[.[] | select(.tconst != $tc) | select(.job == "actor")]' <<<"$actorShows")
+    otherCount=$(jq 'length' <<<"$otherShows")
 
-    if [[ $relevantCount -gt 0 ]]; then
-        # Add source show info + other shows
-        jq -r --arg name "$actorName" --arg job "actor" \
-            '.[] | "\(.name // $name)\t\(.job // $job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/title/\(.tconst)"' \
-            <<<"$relevantShows" >>"$RESULTS"
+    if [[ $otherCount -gt 0 ]]; then
+        # Anchor each person on the show you searched (linked to the person),
+        # then their other shows (linked to each title) -- mirrors big_IMDb_xref.
+        jq -r --arg tc "$tconst" \
+            '[.[] | select(.tconst == $tc) | select(.job == "actor")][0] // empty
+             | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/name/\(.nconst)"' \
+            <<<"$actorShows" >>"$RESULTS"
+        jq -r '.[] | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/title/\(.tconst)"' \
+            <<<"$otherShows" >>"$RESULTS"
         printf '%s\n' "---" >>"$RESULTS"
     fi
 done < <(jq -c '.[]' <<<"$castData")
@@ -283,7 +286,13 @@ fi
 showName=$(cut -f2 <"$SHOW_NAMES")
 CAST_SPREADSHEET="ShowsWithActorsFrom-${showName//[[:space:]]/_}.csv"
 printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_COLOR}\n"
-rg -v '^---' "$TMPFILE" >"$CAST_SPREADSHEET" 2>/dev/null || cp "$TMPFILE" "$CAST_SPREADSHEET"
+
+# Build the table once (header + data rows, no --- separators) and use it for
+# both the .csv and the on-screen listing, so they match and carry the header.
+{
+    printf "Person\tJob\tShow Title\tEpisodes\tCharacter Name\tLink\n"
+    rg -v '^---' "$RESULTS"
+} >"$CAST_SPREADSHEET"
 
 if [[ $maxCast -gt 0 ]]; then
     printf "==> Top $maxCast cast members that appear in other cached shows (Name|Job|Show|Episodes|Role|Link):\n"
@@ -291,12 +300,10 @@ else
     printf "==> Cast members that appear in other cached shows:\n"
 fi
 
-printf "Person\tJob\tShow Title\tEpisodes\tCharacter Name\tLink\n" >"$TMPFILE"
-rg -v '^---' "$RESULTS" >>"$TMPFILE" 2>/dev/null || true
 if [[ -n $usePager ]]; then
-    tsvPrint -c 1 "$TMPFILE" | ${PAGER:-less}
+    tsvPrint -c 1 "$CAST_SPREADSHEET" | ${PAGER:-less}
 else
-    tsvPrint -c 1 "$TMPFILE"
+    tsvPrint -c 1 "$CAST_SPREADSHEET"
 fi
 
 loopOrExitP
