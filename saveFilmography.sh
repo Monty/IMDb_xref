@@ -303,7 +303,6 @@ done
 
 printf "==> Searching for:\n"
 cat "$ALL_TERMS"
-printf "\n"
 
 # Process each search term
 while IFS= read -r searchTerm; do

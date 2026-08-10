@@ -18,6 +18,8 @@
 
 - **`findCastOf.sh`** — Add a `Link` column (`imdb.com/name/<nconst>`) to the cast/crew listing, matching the Link columns now in `findShowsWith.sh` and `findOtherShows.sh`. Both blocks (`-a` and full cast) gain it; the per-row link falls back to empty for any member without an nconst.
 
+- **`saveFilmography.sh`** — Drop the search-echo's trailing blank after the term list, matching the confirm-gate spacing fix applied to the other three search scripts (its per-term confirm already owns the single blank before `These are the results`).
+
 ---
 
 ## [Unreleased] — 2026-08-08
