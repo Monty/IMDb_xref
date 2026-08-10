@@ -40,12 +40,13 @@ TMPFILE=""
 SEARCH_TERMS=""
 ALL_NAMES=""
 MULTIPLE_NAMES=""
+XREF_DUPS=""
 
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
-        rm -f "$TMPFILE" "$SEARCH_TERMS" "$ALL_NAMES" "$MULTIPLE_NAMES"
+        rm -f "$TMPFILE" "$SEARCH_TERMS" "$ALL_NAMES" "$MULTIPLE_NAMES" "$XREF_DUPS"
     fi
 }
 
@@ -89,6 +90,7 @@ TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
 ALL_NAMES=$(mktemp)
 MULTIPLE_NAMES=$(mktemp)
+XREF_DUPS=$(mktemp)
 
 # If a SEARCH_FILE was specified, use it directly
 if [[ -n $SEARCH_FILE ]]; then
@@ -149,7 +151,6 @@ sort -fu "$TMPFILE" >"$SEARCH_TERMS"
 # Let us know what we're searching for
 printf "==> Searching for:\n"
 cat "$SEARCH_TERMS"
-printf "\n"
 
 # Search the index or file
 true >"$TMPFILE"
@@ -173,7 +174,7 @@ else
             queryArgs+=("--limit" "$FULLCAST")
         fi
         _scraper "${queryArgs[@]}" 2>/dev/null |
-            jq -r '.[] | "\(.name)\t\(.job)\t\(.title)\t\(.character)"' >>"$TMPFILE"
+            jq -r '.[] | "\(.name)\t\(.job)\t\(.title)\t\(.character)\t\(.episodes)\t\(.rank)"' >>"$TMPFILE"
     done <"$SEARCH_TERMS"
     sort -fu "$TMPFILE" -o "$TMPFILE"
 fi
@@ -187,17 +188,52 @@ fi
 
 numAll=$(cut -f1 "$TMPFILE" | sort -fu | sed -n '$=')
 
-# Save ALL_NAMES
-cp "$TMPFILE" "$ALL_NAMES"
+# Save ALL_NAMES with a column header (display columns only; the query carries
+# episodes/rank in fields 5-6 for the cross-reference ordering below)
+{
+    printf "Person\tJob\tShow Title\tCharacter Name\n"
+    cut -f1-4 "$TMPFILE"
+} >"$ALL_NAMES"
 
-# Find duplicates — names appearing in more than one show
-awk -F "\t" '{if($1==pn && $3!=pt) {print pl; print $0} pl=$0; pn=$1; pt=$3}' "$TMPFILE" |
-    sort -fu | sort -f -t$'\t' -k 1,1 -k 3,3 >"$MULTIPLE_NAMES"
+# Find cross-show people. Consider only credited acting roles -- drop crew
+# (non-actor jobs) and uncredited parts, which overlap coincidentally and bury
+# the recognizable cast. TMPFILE is name-sorted, so same-name rows are adjacent
+# for this scan; columns 5,6 carry episodes,rank.
+awk -F "\t" '
+    $2 == "actor" && $4 !~ /\(uncredited\)/ {
+        if ($1 == pn && $3 != pt) {
+            print pl
+            print $0
+        }
+        pl = $0
+        pn = $1
+        pt = $3
+    }
+' "$TMPFILE" | sort -fu >"$XREF_DUPS"
 
-if [[ ! -s $MULTIPLE_NAMES ]]; then
+# Order by prominence: persons by their most prominent role (most episodes,
+# then best-billed), each person's rows kept together. First pass learns each
+# person's best episodes/rank; the second emits sort keys, then we strip back
+# to the four display columns. A header row is written first, then the
+# prominence-ordered rows are appended.
+printf "Person\tJob\tShow Title\tCharacter Name\n" >"$MULTIPLE_NAMES"
+awk -F "\t" '
+    NR == FNR {
+        e = $5 + 0
+        r = $6 + 0
+        if (e > bestEp[$1]) bestEp[$1] = e
+        if (!($1 in bestRk) || r < bestRk[$1]) bestRk[$1] = r
+        next
+    }
+    { printf "%06d\t%06d\t%s\t%s\n", 999999 - bestEp[$1], bestRk[$1], $1, $0 }
+' "$XREF_DUPS" "$XREF_DUPS" |
+    sort -t$'\t' -k1,1n -k2,2n -k3,3f -k6,6f |
+    cut -f4-7 >>"$MULTIPLE_NAMES"
+
+if [[ ! -s $XREF_DUPS ]]; then
     numMultiple="0"
 else
-    numMultiple=$(cut -f1 "$TMPFILE" | sort -f | uniq -d | sed -n '$=')
+    numMultiple=$(cut -f1 "$XREF_DUPS" | sort -fu | sed -n '$=')
 fi
 
 # If interactive and we have duplicates, ask user
@@ -210,7 +246,7 @@ fi
 
 # Print all results unless duplicates-only
 if [[ -z $MULTIPLE_NAMES_ONLY ]]; then
-    printf "\n==> Results in alphabetical order (Name|Job|Show|Role):\n"
+    printf "\n==> Results in alphabetical order:\n"
     tsvPrint -n "$ALL_NAMES"
 fi
 
@@ -222,7 +258,7 @@ if [[ $numMultiple -eq 0 ]]; then
         printf "\n==> No cast or crew members listed in more than one show.\n"
     fi
 else
-    printf "\n==> Cast & crew listed in more than one show (Name|Job|Show|Role):\n"
+    printf "\n==> Cast & crew listed in more than one show:\n"
     tsvPrint -n "$MULTIPLE_NAMES"
 fi
 

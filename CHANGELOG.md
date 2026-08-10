@@ -8,6 +8,8 @@
 
 - **`scraper/pages.py` (`search_title`)** — Filter podcast results out of title search. IMDb podcast rows (`Podcast Episode`, `Podcast Series`) weren't in `type_map`, so they were never tagged and the `skip_types` filter never dropped them — a podcast episode surfaced as a pickable "show". Worse, a podcast whose title contains "Video" (e.g. "Tiempos de Videoclub") was mis-tagged `video` by the loose substring match and shown as a video. Added both podcast keys — positioned before the `Video`/`Video Game` keys so they win the first-match, since the substring test also scans the title — and added `podcastSeries` to `skip_types`. Verified against the live `Reservoir Dogs` rows via `verify_podcast_filter.py`.
 
+- **`scraper/cli.py` (`cmd_query`)** — Sort cast results by prominence (most episodes, then best billing) before applying `--limit`, so a capped query keeps the billed principals instead of whoever sorts first alphabetically. With `FULLCAST=50` set, `xrefCast` was returning each show's first 50 cast *by name*, which dropped leads like Olivia Colman and made `-d` cross-referencing miss obvious overlaps. Only affects rows carrying a `rank` field (`cast.jsonl`).
+
 ### Changed
 
 - **`findCastOf.sh`** — Show `n/a` instead of `0 episodes` in the cast listing for titles with no episode counts (movies, where every member is 0). Both jq blocks (actors-only and full cast) now emit `\(if .episodes > 0 then "\(.episodes) episodes" else "n/a" end)`; series output is unchanged.
@@ -19,6 +21,8 @@
 - **`findCastOf.sh`** — Add a `Link` column (`imdb.com/name/<nconst>`) to the cast/crew listing, matching the Link columns now in `findShowsWith.sh` and `findOtherShows.sh`. Both blocks (`-a` and full cast) gain it; the per-row link falls back to empty for any member without an nconst.
 
 - **`saveFilmography.sh`** — Drop the search-echo's trailing blank after the term list, matching the confirm-gate spacing fix applied to the other three search scripts (its per-term confirm already owns the single blank before `These are the results`).
+
+- **`xrefCast.sh`** — Better cross-reference (`-d`) output. Restrict it to credited acting roles — drop crew (non-actor jobs) and `(uncredited)` parts, which overlap coincidentally and bury the recognizable cast. Order the cross-show list by prominence (each person by their most-episodes / best-billed role, rows grouped) instead of alphabetically, so the leads lead; `episodes`/`rank` are now carried through the query to drive that ordering. Also dropped the search-echo's trailing blank for confirm-gate spacing consistency with the other scripts, and replaced the `(Name|Job|Show|Role)` descriptions on both listing headers with a `Person / Job / Show Title / Character Name` header row.
 
 ---
 

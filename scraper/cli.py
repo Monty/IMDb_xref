@@ -171,6 +171,11 @@ def cmd_index_stats(args: argparse.Namespace) -> None:
 def cmd_query(args: argparse.Namespace) -> None:
     index_file = args.index_file or "cast.jsonl"
     results = search_index(args.query, index_file)
+    # Prioritize prominent cast (most episodes, then best-billed) so a --limit
+    # keeps the principals rather than whoever sorts first alphabetically. Only
+    # applies to rows that carry ranking fields (i.e. cast.jsonl).
+    if results and "rank" in results[0]:
+        results.sort(key=lambda r: (-r.get("episodes", 0), r.get("rank", 0)))
     if args.limit:
         results = results[: args.limit]
     _json(results)
