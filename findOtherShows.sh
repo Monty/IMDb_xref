@@ -321,10 +321,11 @@ cut -f 1 "$SHOW_NAMES" | sort >"$TCONST_LIST"
 # title.principals.tsv.gz (ordering, nconst, category, characters) and
 # name.basics.tsv.gz (nconst -> name). Same 8-column cache format the cross-show
 # lookup below reads: Person, Show Title, Episode Title, Rank, Job, Character
-# Name, nconst ID, tconst ID.
+# Name, nconst ID, tconst ID. Written headerless -- this branch labels columns
+# inline in the output line, e.g. (Name|Job|Show|Rank|Role|Link). A header row
+# here would be read back as data by findCastOf.sh, which displays the cache
+# directly and would print it as a phantom cast member.
 while IFS='' read -r line; do
-    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\tnconst ID\ttconst ID\n" \
-        >"$cacheDirectory/$line"
     showTitle="$(rg -N "^$line\t" "$SHOW_NAMES" | cut -f 2)"
     # Principals for this show, then an nconst -> name map for just its people.
     # Real temp files (not process substitution) and a FILENAME-based awk join,
@@ -347,7 +348,7 @@ while IFS='' read -r line; do
         }
     ' "$TMPFILE" "$POSSIBLE_MATCHES" |
         sort -f -t$'\t' --key=5,5 --key=4,4n --key=1,1 \
-            >>"$cacheDirectory/$line"
+            >"$cacheDirectory/$line"
     if [[ $maxCast -gt 0 ]]; then
         cut -f 7 "$cacheDirectory/$line" | rg "^nm" | head -"$maxCast" \
             >>"$NCONST_LIST"
