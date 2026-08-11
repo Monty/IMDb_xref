@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] — 2026-08-10
+
+### Changed
+
+- **`README.md`** — Compatibility section dropped Linux/Windows claims per Monty — macOS only now. Added a **Branches** section: this repo never mentioned the `bulk-download` sibling exists, how to switch to it, or the offline/principal-cast-only/re-download-for-freshness tradeoff on that branch. Clone instructions now include `git checkout live-fetch` directly (not just mentioned later in prose), and picked up the Xcode command-line-tools pop-up note that only `big_IMDb_xref`'s README had — not branch-specific, applies here too. `-h` help text across `findCastOf.sh`, `findOtherShows.sh`, `findShowsWith.sh`, `saveFilmography.sh`, `xrefCast.sh`, `iQuery.sh`, and `generateXrefData.sh` audited against `big_IMDb_xref`'s for cross-branch contamination; none found — each already describes only its own branch's mechanism.
+
 ## [Unreleased] — 2026-08-09
 
 ### Bugfixes

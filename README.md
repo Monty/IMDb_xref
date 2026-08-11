@@ -16,6 +16,7 @@ shared actors, explore filmographies, and discover connections between shows.
 - [Motivation](#motivation)
   - [A simpler solution](#a-simpler-solution)
 - [Download IMDb_xref](#download-imdb_xref)
+- [Branches](#branches)
 - [Quickstart](#quickstart)
   - [Understanding query results](#understanding-query-results)
   - [Cross-reference saved shows](#cross-reference-saved-shows)
@@ -81,7 +82,28 @@ into a terminal window:
 ```sh
 git clone https://github.com/Monty/IMDb_xref.git
 cd IMDb_xref
+git checkout live-fetch
 ```
+
+If you get a pop-up saying: 'The "git" command requires the command line
+developer tools. Would you like to install the tools now?', click the
+"[Install](docs/Screenshots/Install_Dev-Tools.png?raw=true)" button, not the
+"Get Xcode" button.
+
+## Branches
+
+This repo has two branches with the same commands but different data sources:
+
+- **`live-fetch`** (this branch) — Uses Playwright to scrape IMDb
+  on demand. Complete, always-current results, but each new show or person
+  costs a few seconds to fetch, and IMDb's WAF can occasionally throw a
+  captcha you'll need to solve.
+- **`bulk-download`** — Uses IMDb's downloadable `.tsv.gz` datasets instead.
+  Fast, fully offline queries once downloaded, but data is limited to
+  principal cast & crew (10 per title) and only as current as your last
+  `generateXrefData.sh` download.
+
+To switch, run `git checkout bulk-download` from the repo root.
 
 ## Quickstart
 
@@ -199,8 +221,8 @@ actress, cinematographer, director, editor, producer, writer).
 
 ## Compatibility
 
-Tested on macOS (Apple Silicon) and Linux. Requires Bash, rg, jq, uv, Python
-3.13+, and Playwright. May work in Windows 11 with WSL2 installed.
+Tested on macOS (Apple Silicon). Requires Bash, rg, jq, uv, Python 3.13+, and
+Playwright.
 
 ## Suggestions
 
