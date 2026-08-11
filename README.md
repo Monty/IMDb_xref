@@ -225,12 +225,17 @@ into a terminal window.
 Run `./demo.command` to see the types of information returned from those queries
 and more.
 
-Running scripts directly like this gives you finer control over the cast &
-crew display cap than `start.command` does. `start.command` always sets
-`FULLCAST` to 20 unless you've already exported it yourself. Called directly,
-`findCastOf.sh` and `xrefCast.sh` only apply a cap if you've exported
-`FULLCAST` — leave it unset and you'll see every principal cast & crew
-member, no cap at all.
+Running scripts directly like this gives you finer control over how much cast
+& crew data you see than `start.command` does, but the two scripts treat
+`FULLCAST` differently:
+
+- `findCastOf.sh` caps the billing-order list at `FULLCAST` if it's set to 10
+  or more. Leave it unset and you'll see every principal cast & crew member.
+  (`start.command` always sets it to 20 unless you've exported it yourself.)
+- `xrefCast.sh` uses `FULLCAST` to search your `.xref_cache` shows instead of
+  `Credits-Person.csv`, capping by billing rank. This has **no effect until
+  you've cached some shows** by running `findCastOf.sh` — in a fresh clone the
+  variable is silently ignored.
 
 ### Generate additional data
 
