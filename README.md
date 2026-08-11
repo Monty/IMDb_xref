@@ -19,6 +19,7 @@ example, [shows with episode titles](docs/OutputFiles/Shows-Episodes.tsv),
 - [Motivation](#motivation)
   - [A simpler solution](#a-simpler-solution)
 - [Download IMDb_xref](#download-imdb_xref)
+- [Branches](#branches)
 - [Automated quickstart](#automated-quickstart)
   - [Understanding query results](#understanding-query-results)
   - [Cross-reference saved shows](#cross-reference-saved-shows)
@@ -88,12 +89,28 @@ into a terminal window:
 ```sh
 git clone https://github.com/Monty/IMDb_xref.git
 cd IMDb_xref
+git checkout bulk-download
 ```
 
 If you get a pop-up saying: 'The "git" command requires the command line
 developer tools. Would you like to install the tools now?', click the
 "[Install](docs/Screenshots/Install_Dev-Tools.png?raw=true)" button, not the
 "Get Xcode" button.
+
+## Branches
+
+This repo has two branches with the same commands but different data sources:
+
+- **`bulk-download`** (this branch) — Uses IMDb's downloadable `.tsv.gz`
+  datasets. Fast, fully offline queries once downloaded, but data is limited
+  to principal cast & crew (10 per title), and only as current as your last
+  `generateXrefData.sh` download.
+- **`live-fetch`** — Uses Playwright to scrape IMDb on demand for complete,
+  always-current results, at the cost of a few seconds per new show or person
+  fetched (and IMDb's WAF can occasionally throw a captcha you'll need to
+  solve).
+
+To switch, run `git checkout live-fetch` from the repo root.
 
 ## Automated quickstart
 
@@ -264,8 +281,7 @@ type, you will be asked if you want to display those results.
 
 ## Compatibility
 
-Tested on macOS and Linux. It may work in Windows 10 if [Windows Subsystem for
-Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) is installed.
+Tested on macOS.
 
 ## Suggestions
 

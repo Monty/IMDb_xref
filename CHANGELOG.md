@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] — 2026-08-10
+
+### Fixed
+
+- **`README.md`** — Dropped Linux/Windows Compatibility claims per Monty — macOS only now. Screenshots left as-is pending a refresh with newer example shows. ("Top 50 cast & crew members" wording was checked against `start.command`'s `${FULLCAST:-20}` fallback and initially miscorrected to "top 20" — reverted: `~/.zshenv` exports `FULLCAST=50`, so 50 is correct for actual usage.) Added a **Branches** section: this repo never mentioned the `live-fetch` sibling exists, how to switch to it, or the offline/principal-cast-only/re-download-for-freshness tradeoff that defines `bulk-download`. Clone instructions now include `git checkout bulk-download` directly rather than mentioning the switch only in later prose.
+
 ## [Unreleased] — 2026-08-07
 
 ### Changed
