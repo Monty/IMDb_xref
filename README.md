@@ -57,7 +57,7 @@ Suppose you're a fan of the PBS series "The Crown". You start watching "The
 Night Manager". You recognize the actress who played Princess Diana in "The
 Crown" but aren't sure of her name.
 
-Run `start.command`, select `1) Find shows, then list their top 50 cast & crew members`. Enter **`The Crown`**, enter **`The Night Manager`**, enter a blank
+Run `start.command`, select `1) Find shows, then list their top 20 cast & crew members`. Enter **`The Crown`**, enter **`The Night Manager`**, enter a blank
 line. *It will find 5 shows titled The Crown - select #5, the tvSeries.* *It will find 2 shows titled The Night Manager - select #2, the one dated 2016.* It will
 display the cast of "The Crown", the cast of "The Night Manager", and finally,
 the principal cast members who appear in more than one show. You can easily see
@@ -124,7 +124,12 @@ compressed IMDb data files, and open the top-level menu shown below.
 
 ![Top-level menu](docs/Screenshots/startMenu.png?raw=true)
 
-Select #1 `Find shows, then list their top 50 cast & crew members`. Enter
+The menu numbers reflect how many cast & crew members will be listed per show
+(20 by default). Set `export FULLCAST=N` before running `start.command` to
+change it, or `FULLCAST=0` to show every principal cast & crew member with no
+cap.
+
+Select #1 `Find shows, then list their top 20 cast & crew members`. Enter
 the title of a movie or TV show you like. If you know another show starring some
 of the same actors, enter that on the next line. Then enter a blank line.
 
@@ -134,13 +139,14 @@ The "Searching for" section lists the search terms used, one per line. If you
 get unexpected results in a complex query, check it to see if you mistyped a
 search term.
 
-The "Top 50 cast & crew members in IMDb billing order" section contains all rows with a match for **any**
+The "Top 20 cast & crew members in IMDb billing order" section (or however
+many `FULLCAST` is set to) contains all rows with a match for **any**
 term. It can be quite long for complex queries.
 
 The "... listed in more than one" section contains only rows with names
 found in more than one show. It can be empty.
 
-Selecting #2 `Find shows, then list only cast & crew members they share` will hide the "Top 50 cast & crew members" section. Running identical queries
+Selecting #2 `Find shows, then list only cast & crew members they share` will hide the "Top 20 cast & crew members" section. Running identical queries
 using #1 and #2 will give you an understanding of when each is useful.
 
 Menu selections #4 and #5 search for cast and crew members instead of
@@ -218,6 +224,13 @@ into a terminal window.
 
 Run `./demo.command` to see the types of information returned from those queries
 and more.
+
+Running scripts directly like this gives you finer control over the cast &
+crew display cap than `start.command` does. `start.command` always sets
+`FULLCAST` to 20 unless you've already exported it yourself. Called directly,
+`findCastOf.sh` and `xrefCast.sh` only apply a cap if you've exported
+`FULLCAST` — leave it unset and you'll see every principal cast & crew
+member, no cap at all.
 
 ### Generate additional data
 
