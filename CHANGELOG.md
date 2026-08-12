@@ -8,6 +8,8 @@
 
 ### Changed
 
+- **`functions/saveHistory.function`**, **`functions/trimHistory.function`** — Drop the `.sh` extension from history filenames (`240620.112822-generateXrefData.sh` → `240620.112822-generateXrefData`). These are data files, and the extension made them turn up in searches for shell scripts. Both functions had to change together: `trimHistory` globs `*-"$appendName"`, so stripping in only one place would have left the trim silently matching nothing and history growing without bound. Callers that pass an explicit `appendName` (`$favoritesFile`) are unaffected.
+
 - **`xrefCast.sh`** — The `-f SEARCH_FILE` branch no longer passes `--color always` when selecting matching rows. It was embedding ANSI escapes into the data *before* `sort` and before the table was rendered, so the invisible bytes threw off `xsv`'s column-width calculation and would have defeated the new `-F` literal matching in `tsvPrint -p`. The `rg` call still filters rows as before; coloring now happens once, at display time, for both the index and file paths.
 
 ### Fixed
