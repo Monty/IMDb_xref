@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] — 2026-08-11
+
+### Changed
+
+- **`functions/saveHistory.function`**, **`functions/trimHistory.function`** — Drop the `.sh` extension from history filenames (`240620.112822-generateXrefData.sh` → `240620.112822-generateXrefData`). These are data files, and the extension made them turn up in searches for shell scripts. Both functions had to change together: `trimHistory` globs `*-"$appendName"`, so stripping in only one place would have left the trim silently matching nothing and history growing without bound. Callers that pass an explicit `appendName` (`$favoritesFile`) are unaffected. Same change applied to the `live-fetch` branch, where these two functions are identical.
+
 ## [Unreleased] — 2026-08-10
 
 ### Fixed

@@ -13,7 +13,7 @@ Only keep the last maxFiles history files of any script so the number of files
 doesn't grow without bounds -- maxFiles defaults to 10.
 
 If there is a appendName parameter, use it instead of (basename "\$0") as
-the histFile.
+the histFile. A trailing ".sh" is stripped to match what saveHistory writes.
 
 USAGE:
     trimHistory [OPTIONS...] [appendName]
@@ -53,7 +53,9 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    appendName="${1:-$(basename "$0")}"
+    # Must strip .sh exactly as saveHistory does, or this glob won't match the
+    # files it writes and history would grow without bound.
+    appendName="${1:-$(basename "$0" .sh)}"
     maxFiles="${maxFiles:-10}"
     histFiles=("$histDirectory"/*-"$appendName")
     numFiles=${#histFiles[@]}

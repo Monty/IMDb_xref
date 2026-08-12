@@ -14,7 +14,8 @@ differences from a prior version. The file can contain anything - but file
 sizes or other data that can be compared programmatically are more useful.
 
 If there is a appendName parameter, use it instead of (basename "\$0") as
-the histFile.
+the histFile. A trailing ".sh" is stripped from the script name so history
+files don't turn up in searches for shell scripts.
 
 USAGE:
     saveHistory [OPTIONS...] FILE [appendName]
@@ -49,7 +50,10 @@ EOF
     done
     shift $((OPTIND - 1))
 
-    appendName="${2:-$(basename "$0")}"
+    # Strip any .sh extension: these are data files, and keeping the extension
+    # made them match searches for shell scripts. trimHistory must strip it the
+    # same way or its glob won't find what this writes.
+    appendName="${2:-$(basename "$0" .sh)}"
     histFile="$1"
 
     if [[ -z $histFile ]]; then
