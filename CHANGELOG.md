@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] — 2026-08-11
+
+### Added
+
+- **`demo.command`**, **`Contrib/demo_cache/`** — Ship the demo's example shows with the repo and seed `.xref_cache` from them at startup, instead of relying on data the user may not have. Every question in the demo queries the local index, which is built from `.xref_cache`; in a fresh clone that is empty, so the demo answered "I didn't find any matching records" five times and looked broken. Scraping the shows live at demo time was rejected as the fix: it is slow, and a new user has no cookies in `~/.config/IMDb_xref/browser_state.json` — precisely the state in which IMDb's WAF is most likely to serve a CAPTCHA, which would land in the first thirty seconds of someone's first run. The committed cache files make the demo offline, instant, and identical for everyone. `Contrib/` was chosen because `cleanupEverything.sh` deletes `.xref_*` but does not touch `Contrib/`, so the demo still works after a full cleanup. Seeding never overwrites an existing cache entry, so a user who has already scraped these shows keeps their fresher copy, and `rebuild-index` runs only if something was actually copied.
+
+### Fixed
+
+- **`generateXrefData.sh`** — Stop discarding scraper stderr. The fetch loop ran `full-credits ... 2>/dev/null` and tested only whether the result was non-empty, so any failure — above all a WAF CAPTCHA, which `browser.py` raises as `WAFChallengeError` precisely so it can't be mistaken for an empty result — was swallowed: the loop continued, `fetched` stayed at 0, and the script printed a cheerful `==> Done.` before rebuilding an empty index. A blocked scrape was therefore indistinguishable from an unseeded repo or a genuine no-results run, and the only visible symptom appeared much later as `xrefCast.sh`/`demo.command` reporting "I didn't find any matching records". Now: stderr is captured to a tempfile, the result is validated as JSON, and failures are reported through `reportSearchError` (the same handler `findCastOf.sh` already used), which recognizes a WAF challenge and points at `scraper/tools/solve_challenge.py`. Errors print even under `-q`, since silence is the bug. A CAPTCHA additionally breaks out of the loop rather than continuing — every later fetch would fail too, and repeated automated hits are part of what escalates a silent challenge into a CAPTCHA (per `waf_check.py`). Added a `Failed:` line to the summary, suppressed the "Ready to query" sign-off when anything failed, and made the script exit non-zero in that case so a caller (e.g. a demo seeding step) can distinguish a partial scrape from a clean one.
+- **`generateXrefData.sh`** — `processDurations` now takes an optional exit status (`processDurations 1`) and passes it to both its `exit` calls. It previously always exited 0 from inside the function, which would have made the new failure path's `exit 1` unreachable dead code.
+
 ## [Unreleased] — 2026-08-10
 
 ### Changed
