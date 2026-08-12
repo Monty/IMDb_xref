@@ -188,6 +188,13 @@ while IFS= read -r searchTerm; do
         # reported instead of being silently reinterpreted as "no matches".
         if ! searchResults=$(_scraper --delay 1 search-title "$searchTerm" 2>"$SCRAPER_ERR"); then
             reportSearchError "$searchTerm" "$SCRAPER_ERR"
+            # A CAPTCHA blocks every later search too; repeating it for each
+            # remaining term just prints the same error N times and keeps
+            # hitting IMDb. Stop here.
+            if isWAFChallenge "$SCRAPER_ERR"; then
+                printf "    Skipping any remaining search terms.\n"
+                break
+            fi
             continue
         fi
         matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)

@@ -166,7 +166,7 @@ while IFS= read -r tconst; do
         processed=$((processed + 1))
         # A CAPTCHA blocks every later fetch too, and continuing to hammer IMDb
         # is part of what escalates a silent challenge into a CAPTCHA. Stop.
-        if rg -q "WAFChallengeError|captcha-container|challenge-container" "$SCRAPER_ERR"; then
+        if isWAFChallenge "$SCRAPER_ERR"; then
             wafBlocked="yes"
             break
         fi

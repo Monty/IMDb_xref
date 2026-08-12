@@ -19,6 +19,33 @@
 #       the person/title search wording.
 #
 # The caller is expected to continue/skip/loop after calling this.
+#
+# See also isWAFChallenge below: a WAF CAPTCHA blocks every later request too,
+# so a caller looping over search terms should stop rather than repeat the same
+# failure for each remaining term (and keep hitting IMDb, which is part of what
+# escalates a silent challenge into a CAPTCHA in the first place).
+
+# Markers for a WAF challenge in captured scraper output. Kept beside
+# reportSearchError so the wording and the detection stay in step.
+_WAF_MARKERS="WAFChallengeError|captcha-container|challenge-container"
+
+# isWAFChallenge -- true if captured output shows IMDb served a WAF challenge.
+#
+# USAGE:
+#   isWAFChallenge "$SCRAPER_ERR"    # file path
+#   isWAFChallenge "$scrapeResult"   # or a literal string
+function isWAFChallenge() {
+    local errSource="$1" errText=""
+
+    [[ -z $errSource ]] && return 1
+    if [[ -f $errSource ]]; then
+        errText=$(cat "$errSource")
+    else
+        errText="$errSource"
+    fi
+
+    [[ -n $errText ]] && rg -q "$_WAF_MARKERS" <<<"$errText"
+}
 
 function reportSearchError() {
     local searchTerm="$1"
@@ -41,7 +68,7 @@ function reportSearchError() {
     # shellcheck disable=SC2059  # headerFmt is our own template, one %s
     printf "$headerFmt\n" "$searchTerm"
 
-    if [[ -n $errText ]] && rg -q "WAFChallengeError|captcha-container|challenge-container" <<<"$errText"; then
+    if [[ -n $errText ]] && rg -q "$_WAF_MARKERS" <<<"$errText"; then
         printf "    IMDb is serving a WAF CAPTCHA.\n"
         printf "    Run scraper/tools/solve_challenge.py, then try again.\n"
     elif [[ -n $errText ]]; then
