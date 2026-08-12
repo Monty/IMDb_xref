@@ -90,7 +90,7 @@ _scraper rebuild-index >/dev/null 2>&1
 # Check if index has data
 titleCount=$(_scraper list-titles 2>/dev/null | jq 'length')
 personCount=$(_scraper list-persons-index 2>/dev/null | jq 'length')
-charFile=".xref_index/characters.jsonl"
+charFile="$indexDirectory/characters.jsonl"
 charCount=0
 [[ -f $charFile ]] && charCount=$(rg -c '.' "$charFile" 2>/dev/null || echo 0)
 

@@ -138,7 +138,7 @@ while IFS= read -r tconst; do
 
     if [[ -n $REFRESH ]]; then
         # Force re-scrape
-        rm -f ".xref_cache/${tconst}.json"
+        rm -f "$cacheDirectory/${tconst}.json"
     fi
 
     # Check if already cached with cast data

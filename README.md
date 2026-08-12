@@ -194,8 +194,8 @@ still open the top-level menu when it exits. Set `NO_MENUS=yes` to skip this.
 ## How it works
 
 IMDb_xref uses Playwright to scrape IMDb's fullcredits and filmography pages,
-storing results as JSON in `.xref_cache/`. A flat JSONL index in `.xref_index/`
-is built from the cache for fast local queries.
+storing results as JSON in `.xref_live_cache/`. A flat JSONL index in
+`.xref_live_index/` is built from the cache for fast local queries.
 
 **First query for a show:** scrapes IMDb (~2-3 seconds with rate limiting),
 caches the result, rebuilds the index.

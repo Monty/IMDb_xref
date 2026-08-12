@@ -1,10 +1,15 @@
 """Build and query flat JSONL index files from cached JSON data.
 
-Index files live in .xref_index/:
+Index files live in .xref_live_index/:
   titles.jsonl         — one line per title (tconst, title, year, types)
   persons.jsonl        — one line per person (nconst, name)
   cast.jsonl           — one line per (person, show) pairing with role details
   characters.jsonl     — one line per unique character with actor and show info
+
+The .xref_live_* prefix keeps this branch's state separate from the
+bulk-download branch's .xref_bulk_* files. NOTE: functions/define_files sets
+cacheDirectory and indexDirectory to these same names for the shell scripts and
+must be changed with them.
 """
 
 from __future__ import annotations
@@ -15,8 +20,8 @@ from typing import Optional
 
 from models import CastMember
 
-CACHE_DIR = Path(__file__).resolve().parent.parent / ".xref_cache"
-INDEX_DIR = Path(__file__).resolve().parent.parent / ".xref_index"
+CACHE_DIR = Path(__file__).resolve().parent.parent / ".xref_live_cache"
+INDEX_DIR = Path(__file__).resolve().parent.parent / ".xref_live_index"
 JOBS_FILE = Path(__file__).resolve().parent.parent / "rg_jobs.rgx"
 
 

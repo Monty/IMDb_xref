@@ -48,17 +48,26 @@ EOF
 # Each one represents and can be used to reconstruct a single search
 favoritesFile="favorites.tconst"
 
-durationFile=".xref_durations"
+durationFile=".xref_live_durations"
 [[ ! -e $durationFile ]] && touch "$durationFile"
 
-numRecordsFile=".xref_numRecords"
+numRecordsFile=".xref_live_numRecords"
 [[ ! -e $numRecordsFile ]] && touch "$numRecordsFile"
 
-# Cleared by downloadIMDbFiles
-cacheDirectory=".xref_cache"
+# All state on this branch is prefixed .xref_live_* so it can't be confused
+# with -- or deleted by -- the bulk-download branch's .xref_bulk_* files if
+# someone switches branches in the same working directory. The two caches hold
+# incompatible formats (JSON here, TSV there), and this branch's cache is
+# expensive to rebuild: it's scraped from IMDb subject to rate limits and WAF
+# challenges, where bulk-download's regenerates from local .gz files in seconds.
+# NOTE: scraper/cache.py and scraper/index.py hardcode these same two directory
+# names in Python and must be changed with them.
+cacheDirectory=".xref_live_cache"
 mkdir -p "$cacheDirectory"
 
-histDirectory=".xref_history"
+indexDirectory=".xref_live_index"
+
+histDirectory=".xref_live_history"
 mkdir -p "$histDirectory"
 
 # No longer needed — scraper replaces .gz files

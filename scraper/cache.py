@@ -1,8 +1,13 @@
 """File-based JSON cache for scraped IMDb data.
 
-Cache files live in .xref_cache/ in the project root, one JSON file per ID:
-  .xref_cache/tt6468322.json   — show data
-  .xref_cache/nm1234567.json   — person/filmography data
+Cache files live in .xref_live_cache/ in the project root, one JSON file per ID:
+  .xref_live_cache/tt6468322.json   — show data
+  .xref_live_cache/nm1234567.json   — person/filmography data
+
+The .xref_live_* prefix keeps this branch's state separate from the
+bulk-download branch's .xref_bulk_* files, whose cache holds TSV in the same
+filenames. NOTE: functions/define_files sets cacheDirectory to this same name
+for the shell scripts and must be changed with it.
 """
 
 from __future__ import annotations
@@ -13,7 +18,7 @@ from typing import Any, Optional
 
 from models import Filmography, Show
 
-CACHE_DIR = Path(__file__).resolve().parent.parent / ".xref_cache"
+CACHE_DIR = Path(__file__).resolve().parent.parent / ".xref_live_cache"
 
 
 def _ensure_dir() -> None:

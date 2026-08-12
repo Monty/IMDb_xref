@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Internal function: Save the duration of scriptName in .xref_durations
+# Internal function: Save the duration of scriptName in .xref_live_durations
 #
 # Duration files are tab separated -- used to record script durations for predictions and stats
 #

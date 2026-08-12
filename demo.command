@@ -19,14 +19,14 @@ _scraper() {
 }
 
 # Seed the demo's data. Every question below queries the local index, which is
-# built from .xref_cache -- empty in a fresh clone, so an unseeded demo answers
+# built from .xref_live_cache -- empty in a fresh clone, so an unseeded demo answers
 # "I didn't find any matching records" five times over. Scraping these shows
 # live at demo time isn't a fix: it's slow, and a new user has no cookies in
 # ~/.config/IMDb_xref/browser_state.json, which is exactly when IMDb's WAF is
 # most likely to serve a CAPTCHA. So the four shows ship with the repo instead,
 # making the demo offline, instant, and identical for everyone.
 #
-# Contrib/ is used because cleanupEverything.sh deletes .xref_* but leaves
+# Contrib/ is used because cleanupEverything.sh deletes .xref_live_* but leaves
 # Contrib/ alone -- so the demo still works after a full cleanup.
 # Existing cache entries are never overwritten: a user who has already scraped
 # these shows keeps their fresher copy.

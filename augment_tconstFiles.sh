@@ -104,8 +104,8 @@ TCONST_LIST=$(mktemp)
 CACHE_LIST=$(mktemp)
 
 # Persistent cache of all augmented tconst data
-AUGMENTED=".xref_cache/augmented"
-mkdir -p .xref_cache
+AUGMENTED="$cacheDirectory/augmented"
+mkdir -p "$cacheDirectory"
 touch "$AUGMENTED"
 
 if [[ $# -eq 0 ]]; then

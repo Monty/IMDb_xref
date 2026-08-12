@@ -412,7 +412,7 @@ while IFS= read -r searchTerm; do
         fi
     fi
 
-    # Fetch filmography. The scraper serves from .xref_cache when present and
+    # Fetch filmography. The scraper serves from .xref_live_cache when present and
     # scrapes on a miss, so one call is enough -- retrying here just doubled
     # the request rate against IMDb's WAF. Errors are surfaced rather than
     # discarded; a failed scrape is not the same as a person with no credits.
