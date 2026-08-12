@@ -160,7 +160,7 @@ if [[ $USE_FILE == "yes" ]]; then
     PTAB='%s\t%s\t%s\t%s\n'
     if [[ -n "$(rg -wNzSI -c -f "$SEARCH_TERMS" "$SEARCH_FILE")" ]]; then
         awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$SEARCH_FILE" |
-            rg -wNzSI --color always -f "$SEARCH_TERMS" |
+            rg -wNzSI -f "$SEARCH_TERMS" |
             perl -p -e 's+\tactress\t+\tactor\t+;' |
             sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
     fi
@@ -247,7 +247,7 @@ fi
 # Print all results unless duplicates-only
 if [[ -z $MULTIPLE_NAMES_ONLY ]]; then
     printf "\n==> Results in alphabetical order:\n"
-    tsvPrint -n "$ALL_NAMES"
+    tsvPrint -p "$SEARCH_TERMS" "$ALL_NAMES"
 fi
 
 [[ -n $PRINCIPAL_CAST_ONLY ]] && loopOrExitP
@@ -259,7 +259,7 @@ if [[ $numMultiple -eq 0 ]]; then
     fi
 else
     printf "\n==> Cast & crew listed in more than one show:\n"
-    tsvPrint -n "$MULTIPLE_NAMES"
+    tsvPrint -p "$SEARCH_TERMS" "$MULTIPLE_NAMES"
 fi
 
 loopOrExitP

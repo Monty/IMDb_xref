@@ -3,7 +3,7 @@
 # Internal function: Print tsv rows with optional column value highlighting
 
 function tsvPrint() {
-    local OPTIND columnNum noHighlighting tsvFile searchFile
+    local OPTIND columnNum noHighlighting patternFile tsvFile searchFile
 
     help() {
         cat <<EOF
@@ -25,15 +25,19 @@ OPTIONS:
     -h      Print this message.
     -c      Column - column with values to highlight. Defaults to column 3.
     -n      No highlighting
+    -p      Patterns file - highlight these terms wherever they appear, in any
+            column. Unlike -c, every row is printed whether it matches or not,
+            so header rows and context survive. Takes precedence over -c/-n.
 
 EXAMPLES:
     tsvPrint "$ALL_MATCHES"
     tsvPrint -c 2 "$FINAL_RESULTS"
     tsvPrint -n "$POSSIBLE_MATCHES"
+    tsvPrint -p "$SEARCH_TERMS" "$ALL_NAMES"
 EOF
     }
 
-    while getopts ":hc:n" opt; do
+    while getopts ":hc:np:" opt; do
         case $opt in
         h)
             help
@@ -45,6 +49,9 @@ EOF
             ;;
         n)
             noHighlighting="yes"
+            ;;
+        p)
+            patternFile="$OPTARG"
             ;;
         \?)
             printf "\n==> [${YELLOW}Warning${NO_COLOR}] Invalid " >&2
@@ -80,7 +87,17 @@ EOF
         fi
     }
 
-    if [[ -n $noHighlighting ]]; then
+    if [[ -n $patternFile ]]; then
+        # Highlight caller-supplied terms (e.g. what the user searched for)
+        # wherever they appear, rather than one fixed column. --passthru keeps
+        # non-matching lines -- header rows above all -- which a plain rg
+        # filter would silently drop.
+        if [[ -s $patternFile ]]; then
+            _renderTable | rg --passthru --color always -F -f "$patternFile"
+        else
+            _renderTable
+        fi
+    elif [[ -n $noHighlighting ]]; then
         _renderTable
     else
         # Highlight the values from one column (default 3) wherever they appear
