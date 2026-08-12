@@ -232,7 +232,7 @@ Running scripts directly like this gives you finer control over how much cast
 - `findCastOf.sh` caps the billing-order list at `FULLCAST` if it's set to 10
   or more. Leave it unset and you'll see every principal cast & crew member.
   (`start.command` always sets it to 20 unless you've exported it yourself.)
-- `xrefCast.sh` uses `FULLCAST` to search your `.xref_cache` shows instead of
+- `xrefCast.sh` uses `FULLCAST` to search your `.xref_bulk_cache` shows instead of
   `Credits-Person.csv`, capping by billing rank. This has **no effect until
   you've cached some shows** by running `findCastOf.sh` — in a fresh clone the
   variable is silently ignored.

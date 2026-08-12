@@ -18,7 +18,7 @@ Loading **define_colors** will render that text with colors. Not loading
 
 **define_files** -- Defines standard files required by other scripts, and
 creates them if they don't exist. For example: `configFile=".xref_config"`and
-`durationFile=".xref_durations"`
+`durationFile=".xref_bulk_durations"`
 
 ### Standard functions
 

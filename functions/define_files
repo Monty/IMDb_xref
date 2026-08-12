@@ -48,17 +48,23 @@ EOF
 # Each one represents and can be used to reconstruct a single search
 favoritesFile="favorites.tconst"
 
-durationFile=".xref_durations"
+durationFile=".xref_bulk_durations"
 [[ ! -e $durationFile ]] && touch "$durationFile"
 
-numRecordsFile=".xref_numRecords"
+numRecordsFile=".xref_bulk_numRecords"
 [[ ! -e $numRecordsFile ]] && touch "$numRecordsFile"
 
+# All state on this branch is prefixed .xref_bulk_* so it can't be confused
+# with -- or deleted by -- the live-fetch branch's .xref_live_* files if someone
+# switches branches in the same working directory. The two caches use the same
+# tconst filenames for incompatible formats (TSV here, JSON there), which used
+# to produce garbage output; more seriously, downloadIMDbFiles.sh clears this
+# cache wholesale, and live-fetch's is slow and WAF-limited to rebuild.
 # Cleared by downloadIMDbFiles
-cacheDirectory=".xref_cache"
+cacheDirectory=".xref_bulk_cache"
 mkdir -p "$cacheDirectory"
 
-histDirectory=".xref_history"
+histDirectory=".xref_bulk_history"
 mkdir -p "$histDirectory"
 
 gzFiles=(name.basics.tsv.gz title.basics.tsv.gz title.episode.tsv.gz

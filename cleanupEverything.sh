@@ -69,7 +69,7 @@ if waitUntil "$YN_PREF" -N \
     deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
         "AssociatedTitles*.csv" "LinksToPersons*.csv" "LinksToTitles*.csv" \
         "Episode-Count*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
-        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_*"
+        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_bulk_*"
     exit
 else
     printf "Skipping...\n"
@@ -112,8 +112,11 @@ else
     printf "Skipping...\n"
 fi
 
-if waitUntil "$YN_PREF" -N "Delete all user configuration (.xref_*) files?"; then
-    deleteFiles ".xref_*"
+# Only .xref_bulk_* -- a bare .xref_* glob would also delete the live-fetch
+# branch's .xref_live_* state if someone has switched branches in this working
+# directory, including a scraped cache that is slow and WAF-limited to rebuild.
+if waitUntil "$YN_PREF" -N "Delete all user configuration (.xref_bulk_*) files?"; then
+    deleteFiles ".xref_bulk_*"
 else
     printf "Skipping...\n"
 fi
