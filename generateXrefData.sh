@@ -41,12 +41,13 @@ trap terminate EXIT
 TMPFILE=""
 TCONST_LIST=""
 EVERY_TCONST=""
+SCRAPER_ERR=""
 
 function terminate() {
     if [[ -n $DEBUG ]]; then
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
-        rm -f "$TMPFILE" "$TCONST_LIST" "$EVERY_TCONST"
+        rm -f "$TMPFILE" "$TCONST_LIST" "$EVERY_TCONST" "$SCRAPER_ERR"
     fi
 }
 
@@ -55,8 +56,11 @@ _scraper() {
 }
 
 function processDurations() {
+    # Takes an optional exit status so callers can end non-zero (e.g. after a
+    # failed scrape) while still recording durations/history.
+    local rc="${1:-0}"
     # If we're not in the primary directory or bypassing, don't record times
-    { [[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]]; } && exit
+    { [[ -n $OUTPUT_DIR ]] || [[ -n $BYPASS_PROCESSING ]]; } && exit "$rc"
     saveDurations "$SECONDS"
     # Only keep 10 duration lines for this script
     trimDurations -m 10
@@ -64,7 +68,7 @@ function processDurations() {
     [[ -n $useEveryTconst ]] && saveHistory "$EVERY_TCONST"
     # Keep 20 history files for this script
     trimHistory -m 20
-    exit
+    exit "$rc"
 }
 
 while getopts ":hqrt" opt; do
@@ -92,6 +96,7 @@ shift $((OPTIND - 1))
 TMPFILE=$(mktemp)
 TCONST_LIST=$(mktemp)
 EVERY_TCONST=$(mktemp)
+SCRAPER_ERR=$(mktemp)
 
 # Pick tconst file(s)
 if [[ -z ${TCONST_FILES[*]} ]]; then
@@ -125,6 +130,8 @@ fi
 processed=0
 skipped=0
 fetched=0
+failed=0
+wafBlocked=""
 
 while IFS= read -r tconst; do
     [[ -z $tconst ]] && continue
@@ -143,14 +150,39 @@ while IFS= read -r tconst; do
         continue
     fi
 
-    # Scrape full credits
+    # Scrape full credits. Capture stderr rather than discarding it: a scraper
+    # failure -- above all a WAF CAPTCHA -- must not be silently reinterpreted
+    # as "fetched nothing", which used to leave an empty index behind a
+    # cheerful "==> Done." and made an unseeded repo look identical to a
+    # genuine no-results run.
     [[ -z $QUIET ]] && printf "  Fetching: %s\n" "$tconst"
-    result=$(_scraper --delay 1 full-credits "$tconst" 2>/dev/null)
+    result=$(_scraper --delay 1 full-credits "$tconst" 2>"$SCRAPER_ERR")
+    scrapeRC=$?
+    if [[ $scrapeRC -ne 0 ]] || ! jq . <<<"$result" >/dev/null 2>&1; then
+        # Errors print even with -q; a silent failure is the bug being fixed.
+        reportSearchError "$tconst" "$SCRAPER_ERR" \
+            "==> [${RED}Error${NO_COLOR}] Couldn't fetch credits for \"%s\":"
+        failed=$((failed + 1))
+        processed=$((processed + 1))
+        # A CAPTCHA blocks every later fetch too, and continuing to hammer IMDb
+        # is part of what escalates a silent challenge into a CAPTCHA. Stop.
+        if rg -q "WAFChallengeError|captcha-container|challenge-container" "$SCRAPER_ERR"; then
+            wafBlocked="yes"
+            break
+        fi
+        continue
+    fi
     if [[ -n $result ]] && [[ $result != "[]" ]]; then
         fetched=$((fetched + 1))
     fi
     processed=$((processed + 1))
 done <"$TCONST_LIST"
+
+if [[ -n $wafBlocked ]]; then
+    printf "\n==> [${RED}Stopped${NO_COLOR}] IMDb is blocking automated requests.\n"
+    printf "    Remaining shows were not fetched. Solve the challenge, then\n"
+    printf "    re-run this script -- already-cached shows will be skipped.\n"
+fi
 
 # Rebuild index
 [[ -z $QUIET ]] && printf "\n==> Rebuilding index...\n"
@@ -164,10 +196,20 @@ stats=$(_scraper index-stats 2>/dev/null)
     Processed: $processed shows
     Fetched:   $fetched new
     Skipped:   $skipped cached
+    Failed:    $failed
 
     Index now contains:
 $(echo "$stats" | jq -r 'to_entries[] | "      \(.key): \(.value)"')
 EOF
+
+# A failure count of zero is the only case that earns the "Ready to query"
+# sign-off. Report failures even under -q, and exit non-zero so a caller
+# (or demo seeding step) can tell a scrape that half-worked from one that did.
+if [[ $failed -gt 0 ]]; then
+    printf "\n==> [${YELLOW}Warning${NO_COLOR}] %s show(s) could not be fetched.\n" "$failed"
+    printf "    The index below reflects only what was cached successfully.\n"
+    processDurations 1
+fi
 
 [[ -z $QUIET ]] && printf "\n==> Ready to query. Try:\n"
 [[ -z $QUIET ]] && printf "    ./findCastOf.sh \"Show Name\"\n"
