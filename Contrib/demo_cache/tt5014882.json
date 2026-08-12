@@ -1,0 +1,1343 @@
+{
+  "tconst": "tt5014882",
+  "title": "The Durrells",
+  "original_title": "",
+  "year": 2016,
+  "types": [
+    "tvSeries"
+  ],
+  "genres": [],
+  "runtime": "",
+  "rating": "",
+  "cast": [
+    {
+      "nconst": "nm0325368",
+      "name": "Roger Goldby",
+      "job": "director",
+      "character": "",
+      "episodes": 10,
+      "rank": 1
+    },
+    {
+      "nconst": "nm0006625",
+      "name": "Steve Barron",
+      "job": "director",
+      "character": "",
+      "episodes": 9,
+      "rank": 2
+    },
+    {
+      "nconst": "nm1732975",
+      "name": "Niall MacCormick",
+      "job": "director",
+      "character": "",
+      "episodes": 4,
+      "rank": 3
+    },
+    {
+      "nconst": "nm0355542",
+      "name": "Edward Hall",
+      "job": "director",
+      "character": "",
+      "episodes": 3,
+      "rank": 4
+    },
+    {
+      "nconst": "nm0244355",
+      "name": "Gerald Durrell",
+      "job": "writer",
+      "character": "based on \"The Corfu Trilogy\" by",
+      "episodes": 26,
+      "rank": 1
+    },
+    {
+      "nconst": "nm0638586",
+      "name": "Simon Nye",
+      "job": "writer",
+      "character": "written by",
+      "episodes": 26,
+      "rank": 2
+    },
+    {
+      "nconst": "nm1237017",
+      "name": "Lee Morris",
+      "job": "producer",
+      "character": "executive producer",
+      "episodes": 26,
+      "rank": 1
+    },
+    {
+      "nconst": "nm0638586",
+      "name": "Simon Nye",
+      "job": "producer",
+      "character": "executive producer",
+      "episodes": 26,
+      "rank": 2
+    },
+    {
+      "nconst": "nm0940986",
+      "name": "Sally Woodward Gentle",
+      "job": "producer",
+      "character": "executive producer",
+      "episodes": 26,
+      "rank": 3
+    },
+    {
+      "nconst": "nm0369954",
+      "name": "Keeley Hawes",
+      "job": "producer",
+      "character": "executive producer",
+      "episodes": 6,
+      "rank": 4
+    },
+    {
+      "nconst": "nm0355416",
+      "name": "Christopher Hall",
+      "job": "producer",
+      "character": "producer / produced by",
+      "episodes": 26,
+      "rank": 5
+    },
+    {
+      "nconst": "nm0039120",
+      "name": "Steven Ashley",
+      "job": "producer",
+      "character": "senior series producer: Masterpiece / senior producer: Masterpiece / senior series producer",
+      "episodes": 26,
+      "rank": 6
+    },
+    {
+      "nconst": "nm8612488",
+      "name": "Erin Delaney",
+      "job": "producer",
+      "character": "senior producer: Masterpiece / producer: Masterpiece / associate producer: Masterpiece",
+      "episodes": 26,
+      "rank": 7
+    },
+    {
+      "nconst": "nm0247871",
+      "name": "Rebecca Eaton",
+      "job": "producer",
+      "character": "executive producer: Masterpiece",
+      "episodes": 26,
+      "rank": 8
+    },
+    {
+      "nconst": "nm0458825",
+      "name": "Jody Klein",
+      "job": "producer",
+      "character": "executive producer: ABKCO",
+      "episodes": 26,
+      "rank": 9
+    },
+    {
+      "nconst": "nm0801224",
+      "name": "Susanne Simpson",
+      "job": "producer",
+      "character": "deputy executive producer: Masterpiece / senior series producer: Masterpiece / deputy executive producer",
+      "episodes": 26,
+      "rank": 10
+    },
+    {
+      "nconst": "nm3253874",
+      "name": "Kathleen DiPerna",
+      "job": "producer",
+      "character": "associate producer: Masterpiece",
+      "episodes": 20,
+      "rank": 11
+    },
+    {
+      "nconst": "nm0498732",
+      "name": "Pat Lees",
+      "job": "producer",
+      "character": "line producer",
+      "episodes": 20,
+      "rank": 12
+    },
+    {
+      "nconst": "nm0176865",
+      "name": "Pete Coogan",
+      "job": "producer",
+      "character": "line producer",
+      "episodes": 6,
+      "rank": 13
+    },
+    {
+      "nconst": "nm3136309",
+      "name": "Kostas Raftopoulos",
+      "job": "producer",
+      "character": "line producer: Greece",
+      "episodes": 6,
+      "rank": 14
+    },
+    {
+      "nconst": "nm0369954",
+      "name": "Keeley Hawes",
+      "job": "actor",
+      "character": "Louisa Durrell",
+      "episodes": 26,
+      "rank": 1
+    },
+    {
+      "nconst": "nm4853066",
+      "name": "Josh O'Connor",
+      "job": "actor",
+      "character": "Lawrence Durrell",
+      "episodes": 26,
+      "rank": 2
+    },
+    {
+      "nconst": "nm6057785",
+      "name": "Milo Parker",
+      "job": "actor",
+      "character": "Gerald Durrell",
+      "episodes": 26,
+      "rank": 3
+    },
+    {
+      "nconst": "nm6258273",
+      "name": "Daisy Waterstone",
+      "job": "actor",
+      "character": "Margo Durrell",
+      "episodes": 26,
+      "rank": 4
+    },
+    {
+      "nconst": "nm7424466",
+      "name": "Callum Woodhouse",
+      "job": "actor",
+      "character": "Leslie Durrell",
+      "episodes": 26,
+      "rank": 5
+    },
+    {
+      "nconst": "nm1096845",
+      "name": "Alexis Georgoulis",
+      "job": "actor",
+      "character": "Spiros Halikiopoulos",
+      "episodes": 26,
+      "rank": 6
+    },
+    {
+      "nconst": "nm0438869",
+      "name": "Yorgos Karamihos",
+      "job": "actor",
+      "character": "Dr. Theo Stephanides",
+      "episodes": 26,
+      "rank": 7
+    },
+    {
+      "nconst": "nm0767947",
+      "name": "Anna Savva",
+      "job": "actor",
+      "character": "Lugaretzia",
+      "episodes": 26,
+      "rank": 8
+    },
+    {
+      "nconst": "nm1527293",
+      "name": "Lucy Black",
+      "job": "actor",
+      "character": "Florence Petridis/Florence",
+      "episodes": 21,
+      "rank": 9
+    },
+    {
+      "nconst": "nm2408532",
+      "name": "Ulric von der Esch",
+      "job": "actor",
+      "character": "Sven",
+      "episodes": 11,
+      "rank": 10
+    },
+    {
+      "nconst": "nm0175773",
+      "name": "Alexis Conran",
+      "job": "actor",
+      "character": "Dr. Petridis",
+      "episodes": 9,
+      "rank": 11
+    },
+    {
+      "nconst": "nm1402510",
+      "name": "Miles Jupp",
+      "job": "actor",
+      "character": "Basil",
+      "episodes": 8,
+      "rank": 12
+    },
+    {
+      "nconst": "nm7124582",
+      "name": "Nikorestis Chaniotakis",
+      "job": "actor",
+      "character": "Pavlos/Pavlos the Monk/...",
+      "episodes": 8,
+      "rank": 13
+    },
+    {
+      "nconst": "nm6623407",
+      "name": "Ben Hall",
+      "job": "actor",
+      "character": "Donald",
+      "episodes": 7,
+      "rank": 14
+    },
+    {
+      "nconst": "nm9010877",
+      "name": "Merch Husey",
+      "job": "actor",
+      "character": "Zoltan",
+      "episodes": 7,
+      "rank": 15
+    },
+    {
+      "nconst": "nm6701170",
+      "name": "Elli Tringou",
+      "job": "actor",
+      "character": "Daphne Likourgou/Daphne",
+      "episodes": 7,
+      "rank": 16
+    },
+    {
+      "nconst": "nm0001989",
+      "name": "Leslie Caron",
+      "job": "actor",
+      "character": "Countess Mavrodaki",
+      "episodes": 6,
+      "rank": 17
+    },
+    {
+      "nconst": "nm0487406",
+      "name": "Daniel Lapaine",
+      "job": "actor",
+      "character": "Hugh Jarvis",
+      "episodes": 6,
+      "rank": 18
+    },
+    {
+      "nconst": "nm9763106",
+      "name": "Olivia Lebedeva-Alexopoulou",
+      "job": "actor",
+      "character": "Galini",
+      "episodes": 6,
+      "rank": 19
+    },
+    {
+      "nconst": "nm8589838",
+      "name": "Mossup",
+      "job": "actor",
+      "character": "Roger the Dog",
+      "episodes": 6,
+      "rank": 20
+    },
+    {
+      "nconst": "nm2898639",
+      "name": "Errika Bigiou",
+      "job": "actor",
+      "character": "Vasilia Prifona",
+      "episodes": 5,
+      "rank": 21
+    },
+    {
+      "nconst": "nm0283409",
+      "name": "Barbara Flynn",
+      "job": "actor",
+      "character": "Aunt Hermione",
+      "episodes": 5,
+      "rank": 22
+    },
+    {
+      "nconst": "nm0181920",
+      "name": "James Cosmo",
+      "job": "actor",
+      "character": "Captain Creech",
+      "episodes": 4,
+      "rank": 23
+    },
+    {
+      "nconst": "nm0598748",
+      "name": "Felicity Montagu",
+      "job": "actor",
+      "character": "Prue/Cousin Prue",
+      "episodes": 4,
+      "rank": 24
+    },
+    {
+      "nconst": "nm0712575",
+      "name": "Jeff Rawle",
+      "job": "actor",
+      "character": "Geoffrey",
+      "episodes": 4,
+      "rank": 25
+    },
+    {
+      "nconst": "nm0804105",
+      "name": "Gerasimos Skiadaresis",
+      "job": "actor",
+      "character": "Mr. Likourgos",
+      "episodes": 4,
+      "rank": 26
+    },
+    {
+      "nconst": "nm0842596",
+      "name": "Jeremy Swift",
+      "job": "actor",
+      "character": "Dennis",
+      "episodes": 4,
+      "rank": 27
+    },
+    {
+      "nconst": "nm1699255",
+      "name": "Marina Aslanoglou",
+      "job": "actor",
+      "character": "Dimitra",
+      "episodes": 3,
+      "rank": 28
+    },
+    {
+      "nconst": "nm0229943",
+      "name": "Vernon Dobtcheff",
+      "job": "actor",
+      "character": "Mr. Kralefsky",
+      "episodes": 3,
+      "rank": 29
+    },
+    {
+      "nconst": "nm0066654",
+      "name": "Max Befort",
+      "job": "actor",
+      "character": "Max",
+      "episodes": 3,
+      "rank": 30
+    },
+    {
+      "nconst": "nm1293197",
+      "name": "Kostas Krommidas",
+      "job": "actor",
+      "character": "Superintendent",
+      "episodes": 3,
+      "rank": 31
+    },
+    {
+      "nconst": "nm9696846",
+      "name": "Erifili Kitzoglou",
+      "job": "actor",
+      "character": "Dionisia",
+      "episodes": 3,
+      "rank": 32
+    },
+    {
+      "nconst": "nm7978874",
+      "name": "Hara-Joy Ermidi",
+      "job": "actor",
+      "character": "Alexia(as Hara Ermidi)",
+      "episodes": 3,
+      "rank": 33
+    },
+    {
+      "nconst": "nm5376729",
+      "name": "Sophie May Wake",
+      "job": "actor",
+      "character": "Veronica",
+      "episodes": 3,
+      "rank": 34
+    },
+    {
+      "nconst": "nm1972799",
+      "name": "Lizzy Watts",
+      "job": "actor",
+      "character": "Nancy",
+      "episodes": 3,
+      "rank": 35
+    },
+    {
+      "nconst": "nm4524012",
+      "name": "Jamie Ward",
+      "job": "actor",
+      "character": "Angel",
+      "episodes": 3,
+      "rank": 36
+    },
+    {
+      "nconst": "nm2809884",
+      "name": "Alexandros Zouridakis",
+      "job": "actor",
+      "character": "Argos the Postman/Postman",
+      "episodes": 3,
+      "rank": 37
+    },
+    {
+      "nconst": "nm0189562",
+      "name": "Sarah Crowden",
+      "job": "actor",
+      "character": "Countess De Torro/Melanie Countess De Torro",
+      "episodes": 2,
+      "rank": 38
+    },
+    {
+      "nconst": "nm7765921",
+      "name": "Vangelis Diamantis",
+      "job": "actor",
+      "character": "Fotis",
+      "episodes": 2,
+      "rank": 39
+    },
+    {
+      "nconst": "nm2500517",
+      "name": "Manolis Emmanouel",
+      "job": "actor",
+      "character": "Sotos",
+      "episodes": 2,
+      "rank": 40
+    },
+    {
+      "nconst": "nm6265417",
+      "name": "Maddie Holliday",
+      "job": "actor",
+      "character": "Maud",
+      "episodes": 2,
+      "rank": 41
+    },
+    {
+      "nconst": "nm2424804",
+      "name": "Panos Koronis",
+      "job": "actor",
+      "character": "Anestis/Mr. Anestis",
+      "episodes": 2,
+      "rank": 42
+    },
+    {
+      "nconst": "nm8960656",
+      "name": "Laura Ferries",
+      "job": "actor",
+      "character": "Ruby",
+      "episodes": 2,
+      "rank": 43
+    },
+    {
+      "nconst": "nm9637998",
+      "name": "Vasilis Papadimitriou",
+      "job": "actor",
+      "character": "Filimonas",
+      "episodes": 2,
+      "rank": 44
+    },
+    {
+      "nconst": "nm7749578",
+      "name": "Martin Laer",
+      "job": "actor",
+      "character": "Viggo",
+      "episodes": 2,
+      "rank": 45
+    },
+    {
+      "nconst": "nm1778857",
+      "name": "Thanos Sakellariou",
+      "job": "actor",
+      "character": "Senior Monk",
+      "episodes": 2,
+      "rank": 46
+    },
+    {
+      "nconst": "nm5682064",
+      "name": "Talitha Stone",
+      "job": "actor",
+      "character": "Dorothy",
+      "episodes": 2,
+      "rank": 47
+    },
+    {
+      "nconst": "nm10676821",
+      "name": "Georgios Ntavos",
+      "job": "actor",
+      "character": "Stavros",
+      "episodes": 2,
+      "rank": 48
+    },
+    {
+      "nconst": "nm2880230",
+      "name": "Nestor Kopsidas",
+      "job": "actor",
+      "character": "Police Sergeant",
+      "episodes": 2,
+      "rank": 49
+    },
+    {
+      "nconst": "nm0925544",
+      "name": "Trevor White",
+      "job": "actor",
+      "character": "Henry Miller",
+      "episodes": 2,
+      "rank": 50
+    },
+    {
+      "nconst": "nm0656177",
+      "name": "Gemma Page",
+      "job": "actor",
+      "character": "Mrs. Kemble",
+      "episodes": 2,
+      "rank": 51
+    },
+    {
+      "nconst": "nm6977396",
+      "name": "George Vafakis",
+      "job": "actor",
+      "character": "Sergeant Lambros Zervos",
+      "episodes": 2,
+      "rank": 52
+    },
+    {
+      "nconst": "nm3188858",
+      "name": "Vasilis Vasilakis",
+      "job": "actor",
+      "character": "Fire Chief/Colonel Velvit",
+      "episodes": 2,
+      "rank": 53
+    },
+    {
+      "nconst": "nm10724964",
+      "name": "Ioannis Tsoumarakis",
+      "job": "actor",
+      "character": "Nikos",
+      "episodes": 2,
+      "rank": 54
+    },
+    {
+      "nconst": "nm7654226",
+      "name": "Anna Antoniades",
+      "job": "actor",
+      "character": "Leonora",
+      "episodes": 1,
+      "rank": 55
+    },
+    {
+      "nconst": "nm1089027",
+      "name": "Charlotte Atkinson",
+      "job": "actor",
+      "character": "Elena the Contortionist",
+      "episodes": 1,
+      "rank": 56
+    },
+    {
+      "nconst": "nm1452318",
+      "name": "Alexandra Aidini",
+      "job": "actor",
+      "character": "Mrs. Mavrokondas",
+      "episodes": 1,
+      "rank": 57
+    },
+    {
+      "nconst": "nm1017719",
+      "name": "Luca Calvani",
+      "job": "actor",
+      "character": "Guido Ferrari",
+      "episodes": 1,
+      "rank": 58
+    },
+    {
+      "nconst": "nm1648012",
+      "name": "Peter Bankolé",
+      "job": "actor",
+      "character": "Lumis Bean(as Peter Bankole)",
+      "episodes": 1,
+      "rank": 59
+    },
+    {
+      "nconst": "nm2446898",
+      "name": "Antonia Desplat",
+      "job": "actor",
+      "character": "Clara Ferrari",
+      "episodes": 1,
+      "rank": 60
+    },
+    {
+      "nconst": "nm2466446",
+      "name": "Alice Henley",
+      "job": "actor",
+      "character": "Jonquil",
+      "episodes": 1,
+      "rank": 61
+    },
+    {
+      "nconst": "nm3455998",
+      "name": "Tanmay Dhanania",
+      "job": "actor",
+      "character": "Jeejeebuoy",
+      "episodes": 1,
+      "rank": 62
+    },
+    {
+      "nconst": "nm1097444",
+      "name": "Spyros Ioannou",
+      "job": "actor",
+      "character": "Uncle Leonidas(as Spiros Ioannou)",
+      "episodes": 1,
+      "rank": 63
+    },
+    {
+      "nconst": "nm7435883",
+      "name": "Nicholas Cowell",
+      "job": "actor",
+      "character": "Italian Man",
+      "episodes": 1,
+      "rank": 64
+    },
+    {
+      "nconst": "nm1000807",
+      "name": "Anna-Maria Everett",
+      "job": "actor",
+      "character": "Zob the Bearded Lady",
+      "episodes": 1,
+      "rank": 65
+    },
+    {
+      "nconst": "nm6284979",
+      "name": "Babis Galiatsatos",
+      "job": "actor",
+      "character": "Undertaker",
+      "episodes": 1,
+      "rank": 66
+    },
+    {
+      "nconst": "nm7687390",
+      "name": "Christophe Delesques",
+      "job": "actor",
+      "character": "French Man",
+      "episodes": 1,
+      "rank": 67
+    },
+    {
+      "nconst": "nm6574778",
+      "name": "Grace Hogg-Robinson",
+      "job": "actor",
+      "character": "Nelly",
+      "episodes": 1,
+      "rank": 68
+    },
+    {
+      "nconst": "nm0409520",
+      "name": "Noni Ioannidou",
+      "job": "actor",
+      "character": "Headmistress",
+      "episodes": 1,
+      "rank": 69
+    },
+    {
+      "nconst": "nm9294182",
+      "name": "Sebastiano Kiniger",
+      "job": "actor",
+      "character": "Paolo Ferrari",
+      "episodes": 1,
+      "rank": 70
+    },
+    {
+      "nconst": "nm0661096",
+      "name": "Etela Pardo",
+      "job": "actor",
+      "character": "Mrs. Vadrukakis",
+      "episodes": 1,
+      "rank": 71
+    },
+    {
+      "nconst": "nm9696847",
+      "name": "Fenia Schina",
+      "job": "actor",
+      "character": "Tsanta",
+      "episodes": 1,
+      "rank": 72
+    },
+    {
+      "nconst": "nm1276507",
+      "name": "Alex Macqueen",
+      "job": "actor",
+      "character": "Colonel Ribbindane",
+      "episodes": 1,
+      "rank": 73
+    },
+    {
+      "nconst": "nm0081070",
+      "name": "Andrew Bicknell",
+      "job": "actor",
+      "character": "Headmaster",
+      "episodes": 1,
+      "rank": 74
+    },
+    {
+      "nconst": "nm0681146",
+      "name": "Andreas Karras",
+      "job": "actor",
+      "character": "Judge",
+      "episodes": 1,
+      "rank": 75
+    },
+    {
+      "nconst": "nm0198606",
+      "name": "Olga Damani",
+      "job": "actor",
+      "character": "Mama Kondos",
+      "episodes": 1,
+      "rank": 76
+    },
+    {
+      "nconst": "nm0835939",
+      "name": "Una Stubbs",
+      "job": "actor",
+      "character": "Mrs. Haddock",
+      "episodes": 1,
+      "rank": 77
+    },
+    {
+      "nconst": "nm0668920",
+      "name": "Eve Pearce",
+      "job": "actor",
+      "character": "Mother Kralefsky",
+      "episodes": 1,
+      "rank": 78
+    },
+    {
+      "nconst": "nm1631222",
+      "name": "Henry Lloyd-Hughes",
+      "job": "actor",
+      "character": "Durant",
+      "episodes": 1,
+      "rank": 79
+    },
+    {
+      "nconst": "nm7360106",
+      "name": "Fabienne Piolini-Castle",
+      "job": "actor",
+      "character": "Violetta Ferrari",
+      "episodes": 1,
+      "rank": 80
+    },
+    {
+      "nconst": "nm5310403",
+      "name": "Constantin Symsiris",
+      "job": "actor",
+      "character": "Lazaros Vangelatos(as Konstantinos Symsiris)",
+      "episodes": 1,
+      "rank": 81
+    },
+    {
+      "nconst": "nm10585112",
+      "name": "Marios Kotetsis",
+      "job": "actor",
+      "character": "Young Boy",
+      "episodes": 1,
+      "rank": 82
+    },
+    {
+      "nconst": "nm0781476",
+      "name": "Graham Seed",
+      "job": "actor",
+      "character": "Mr. Trevitt",
+      "episodes": 1,
+      "rank": 83
+    },
+    {
+      "nconst": "nm2853475",
+      "name": "George Kopsidas",
+      "job": "actor",
+      "character": "Crippenopoulos",
+      "episodes": 1,
+      "rank": 84
+    },
+    {
+      "nconst": "nm0623127",
+      "name": "Goran Navojec",
+      "job": "actor",
+      "character": "Dragan the Ringmaster",
+      "episodes": 1,
+      "rank": 85
+    },
+    {
+      "nconst": "nm9806523",
+      "name": "Johnny O.",
+      "job": "actor",
+      "character": "Official 1(as Johnny O)",
+      "episodes": 1,
+      "rank": 86
+    },
+    {
+      "nconst": "nm7639290",
+      "name": "Andreas Mandas",
+      "job": "actor",
+      "character": "Stratos",
+      "episodes": 1,
+      "rank": 87
+    },
+    {
+      "nconst": "nm3216729",
+      "name": "Nikolas Katsaros",
+      "job": "actor",
+      "character": "Bank Clerk",
+      "episodes": 1,
+      "rank": 88
+    },
+    {
+      "nconst": "nm10724963",
+      "name": "Candice Persenda",
+      "job": "actor",
+      "character": "French Woman",
+      "episodes": 1,
+      "rank": 89
+    },
+    {
+      "nconst": "nm1300701",
+      "name": "Alexandros Logothetis",
+      "job": "actor",
+      "character": "Lunar Nerd",
+      "episodes": 1,
+      "rank": 90
+    },
+    {
+      "nconst": "nm2544665",
+      "name": "Christopher Sciueref",
+      "job": "actor",
+      "character": "Kosti Panapoulos",
+      "episodes": 1,
+      "rank": 91
+    },
+    {
+      "nconst": "nm4461254",
+      "name": "Martha Tompoulidou",
+      "job": "actor",
+      "character": "Woman Dignitary",
+      "episodes": 1,
+      "rank": 92
+    },
+    {
+      "nconst": "nm3030452",
+      "name": "Drosos Skotis",
+      "job": "actor",
+      "character": "Rose Beetle Man",
+      "episodes": 1,
+      "rank": 93
+    },
+    {
+      "nconst": "nm8099537",
+      "name": "Stanton Plummer-Cambridge",
+      "job": "actor",
+      "character": "Harry Bunny",
+      "episodes": 1,
+      "rank": 94
+    },
+    {
+      "nconst": "nm3169669",
+      "name": "Doris Zajer",
+      "job": "actor",
+      "character": "German Nun",
+      "episodes": 1,
+      "rank": 95
+    },
+    {
+      "nconst": "nm2068014",
+      "name": "Electra Nikolouzou",
+      "job": "actor",
+      "character": "Pretty Girl in Bar(uncredited)",
+      "episodes": 1,
+      "rank": 96
+    },
+    {
+      "nconst": "nm10929605",
+      "name": "Dora Diamanti",
+      "job": "actor",
+      "character": "Zoo Guest/Leslie's Girlfriend(uncredited)",
+      "episodes": 1,
+      "rank": 97
+    },
+    {
+      "nconst": "nm4056299",
+      "name": "Aleksandros Katehis",
+      "job": "actor",
+      "character": "Burly Gardener(uncredited)",
+      "episodes": 1,
+      "rank": 98
+    },
+    {
+      "nconst": "nm2900435",
+      "name": "Spyros Pantelios",
+      "job": "actor",
+      "character": "Taxi Driver(uncredited)",
+      "episodes": 1,
+      "rank": 99
+    },
+    {
+      "nconst": "nm7384347",
+      "name": "Ileana Handrinou",
+      "job": "actor",
+      "character": "Poisoned Woman in the Market(uncredited)",
+      "episodes": 1,
+      "rank": 100
+    },
+    {
+      "nconst": "nm4131298",
+      "name": "Matthew Charlery-Smith",
+      "job": "actor",
+      "character": "Circus Strongman(uncredited)",
+      "episodes": 1,
+      "rank": 101
+    },
+    {
+      "nconst": "nm9204223",
+      "name": "Thanasis Buras",
+      "job": "actor",
+      "character": "Clarinet Musician(uncredited)",
+      "episodes": 1,
+      "rank": 102
+    },
+    {
+      "nconst": "nm1621448",
+      "name": "Marco Mastrocola",
+      "job": "actor",
+      "character": "Policeman Konstantino(uncredited)",
+      "episodes": 1,
+      "rank": 103
+    },
+    {
+      "nconst": "nm4264825",
+      "name": "David Claudio",
+      "job": "actor",
+      "character": "Constantinos - Painter(uncredited)",
+      "episodes": 1,
+      "rank": 104
+    },
+    {
+      "nconst": "nm2418470",
+      "name": "Ruth Barrett",
+      "job": "composer",
+      "character": "",
+      "episodes": 26,
+      "rank": 1
+    },
+    {
+      "nconst": "nm2037453",
+      "name": "Jon Wygens",
+      "job": "composer",
+      "character": "",
+      "episodes": 20,
+      "rank": 2
+    },
+    {
+      "nconst": "nm0039674",
+      "name": "James Aspinall",
+      "job": "cinematographer",
+      "character": "director of photography",
+      "episodes": 7,
+      "rank": 1
+    },
+    {
+      "nconst": "nm0719887",
+      "name": "Sam Renton",
+      "job": "cinematographer",
+      "character": "",
+      "episodes": 6,
+      "rank": 2
+    },
+    {
+      "nconst": "nm1439751",
+      "name": "Ben Wheeler",
+      "job": "cinematographer",
+      "character": "",
+      "episodes": 4,
+      "rank": 3
+    },
+    {
+      "nconst": "nm0183770",
+      "name": "Julian Court",
+      "job": "cinematographer",
+      "character": "director of photography",
+      "episodes": 3,
+      "rank": 4
+    },
+    {
+      "nconst": "nm0111341",
+      "name": "Damian Bromley",
+      "job": "cinematographer",
+      "character": "director of photography",
+      "episodes": 3,
+      "rank": 5
+    },
+    {
+      "nconst": "nm0746474",
+      "name": "Ashley Rowe",
+      "job": "cinematographer",
+      "character": "",
+      "episodes": 3,
+      "rank": 6
+    },
+    {
+      "nconst": "nm1348581",
+      "name": "David Thrasher",
+      "job": "editor",
+      "character": "",
+      "episodes": 7,
+      "rank": 1
+    },
+    {
+      "nconst": "nm3662373",
+      "name": "Vicky Tooms",
+      "job": "editor",
+      "character": "",
+      "episodes": 7,
+      "rank": 2
+    },
+    {
+      "nconst": "nm0574187",
+      "name": "Nick McPhee",
+      "job": "editor",
+      "character": "",
+      "episodes": 6,
+      "rank": 3
+    },
+    {
+      "nconst": "nm0277987",
+      "name": "Mary Finlay",
+      "job": "editor",
+      "character": "",
+      "episodes": 3,
+      "rank": 4
+    },
+    {
+      "nconst": "nm0946414",
+      "name": "David Yardley",
+      "job": "editor",
+      "character": "",
+      "episodes": 3,
+      "rank": 5
+    },
+    {
+      "nconst": "nm5288134",
+      "name": "Suzanne Crowley",
+      "job": "actor",
+      "character": "",
+      "episodes": 26,
+      "rank": 1
+    },
+    {
+      "nconst": "nm0690818",
+      "name": "Gilly Poole",
+      "job": "actor",
+      "character": "",
+      "episodes": 26,
+      "rank": 2
+    },
+    {
+      "nconst": "nm2156383",
+      "name": "Lydia Georgana",
+      "job": "actor",
+      "character": "casting director: Greece (as Lythia Georgana)",
+      "episodes": 12,
+      "rank": 3
+    },
+    {
+      "nconst": "nm3242193",
+      "name": "Stavros Raptis",
+      "job": "actor",
+      "character": "casting director: Greece",
+      "episodes": 12,
+      "rank": 4
+    },
+    {
+      "nconst": "nm6152108",
+      "name": "Argyris Zachos",
+      "job": "director",
+      "character": "third assistant director / floor runner (as Argyris Zahos)",
+      "episodes": 20,
+      "rank": 1
+    },
+    {
+      "nconst": "nm1192630",
+      "name": "Jennie Fava",
+      "job": "director",
+      "character": "second assistant director",
+      "episodes": 20,
+      "rank": 2
+    },
+    {
+      "nconst": "nm7144527",
+      "name": "Abby Kent",
+      "job": "director",
+      "character": "assistant director: Masterpiece",
+      "episodes": 20,
+      "rank": 3
+    },
+    {
+      "nconst": "nm5440009",
+      "name": "James Hill",
+      "job": "director",
+      "character": "third assistant director",
+      "episodes": 14,
+      "rank": 4
+    },
+    {
+      "nconst": "nm8537892",
+      "name": "Jessica Napier",
+      "job": "director",
+      "character": "assistant director: Masterpiece",
+      "episodes": 14,
+      "rank": 5
+    },
+    {
+      "nconst": "nm3410629",
+      "name": "Elena Priovolou",
+      "job": "director",
+      "character": "crowd assistant director / crowd second assistant director",
+      "episodes": 12,
+      "rank": 6
+    },
+    {
+      "nconst": "nm3328591",
+      "name": "Matt Jennings",
+      "job": "director",
+      "character": "third assistant director / first assistant director",
+      "episodes": 9,
+      "rank": 7
+    },
+    {
+      "nconst": "nm8177627",
+      "name": "Konstantinos Karakostas",
+      "job": "director",
+      "character": "floor runner",
+      "episodes": 8,
+      "rank": 8
+    },
+    {
+      "nconst": "nm1353819",
+      "name": "Alex Mercer",
+      "job": "director",
+      "character": "first assistant director",
+      "episodes": 7,
+      "rank": 9
+    },
+    {
+      "nconst": "nm1555923",
+      "name": "Alex Rendell",
+      "job": "director",
+      "character": "first assistant director",
+      "episodes": 7,
+      "rank": 10
+    },
+    {
+      "nconst": "nm1969489",
+      "name": "Emmanuela Fragiadaki",
+      "job": "director",
+      "character": "third assistant director",
+      "episodes": 6,
+      "rank": 11
+    },
+    {
+      "nconst": "nm1299741",
+      "name": "Hanna Haffenden",
+      "job": "director",
+      "character": "third assistant director",
+      "episodes": 6,
+      "rank": 12
+    },
+    {
+      "nconst": "nm2740776",
+      "name": "Glyn Harper",
+      "job": "director",
+      "character": "second assistant director",
+      "episodes": 6,
+      "rank": 13
+    },
+    {
+      "nconst": "nm2329912",
+      "name": "Matt Storey",
+      "job": "director",
+      "character": "third assistant director (Corfu)",
+      "episodes": 6,
+      "rank": 14
+    },
+    {
+      "nconst": "nm1458635",
+      "name": "Manos Gasteratos",
+      "job": "director",
+      "character": "third assistant director",
+      "episodes": 6,
+      "rank": 15
+    },
+    {
+      "nconst": "nm0717510",
+      "name": "Francesco Reidy",
+      "job": "director",
+      "character": "first assistant director",
+      "episodes": 5,
+      "rank": 16
+    },
+    {
+      "nconst": "nm0003014",
+      "name": "Peter Agnew",
+      "job": "director",
+      "character": "first assistant director",
+      "episodes": 3,
+      "rank": 17
+    },
+    {
+      "nconst": "nm0004204",
+      "name": "Peter Freeman",
+      "job": "director",
+      "character": "first assistant director",
+      "episodes": 3,
+      "rank": 18
+    },
+    {
+      "nconst": "nm5687311",
+      "name": "Madalena Hudson",
+      "job": "director",
+      "character": "directors assistant",
+      "episodes": 3,
+      "rank": 19
+    },
+    {
+      "nconst": "nm10538979",
+      "name": "Katie Mozumder",
+      "job": "actor",
+      "character": "casting assistant",
+      "episodes": 14,
+      "rank": 1
+    },
+    {
+      "nconst": "nm3410629",
+      "name": "Elena Priovolou",
+      "job": "actor",
+      "character": "casting director: corfu",
+      "episodes": 14,
+      "rank": 2
+    },
+    {
+      "nconst": "nm3242193",
+      "name": "Stavros Raptis",
+      "job": "actor",
+      "character": "casting director: Athens",
+      "episodes": 14,
+      "rank": 3
+    },
+    {
+      "nconst": "nm5533077",
+      "name": "Noura Wilewska",
+      "job": "actor",
+      "character": "casting assistant",
+      "episodes": 6,
+      "rank": 4
+    },
+    {
+      "nconst": "nm6505792",
+      "name": "Katie Lovie",
+      "job": "actor",
+      "character": "extras casting",
+      "episodes": 6,
+      "rank": 5
+    },
+    {
+      "nconst": "nm7951680",
+      "name": "Marta Noguera",
+      "job": "actor",
+      "character": "casting assistant",
+      "episodes": 1,
+      "rank": 6
+    }
+  ],
+  "scraped": "2026-07-20T18:28:51.450804"
+}
