@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# Internal function: Convert a show or person name into a safe filename component
+#
+# Spaces become underscores.
+#
+# Apostrophes are removed rather than substituted: "The Hitchhiker's Guide"
+# becomes "The_Hitchhikers_Guide", which reads better than the "Hitchhiker_s" or
+# "Hitchhiker-s" a substitution would produce. Removing them keeps filenames from
+# needing shell quoting, which made tab-completion and copy-paste awkward. Both
+# the ASCII ' and the typographic ’ are handled, since IMDb uses either.
+#
+# Colons are removed. macOS allows them in filenames, but they are a bad idea:
+# Finder still displays a ":" as a "/" (in classic Mac OS ":" was the path
+# separator), so "Spider-Man: Far from Home" showed up in Finder as
+# "Spider-Man/_Far_from_Home" and looked like a corrupt name. A leading
+# "something:" also makes `open` treat the argument as a possible URL scheme and
+# stop to ask which was meant.
+#
+# Forward slashes become "-" since they can't appear in a filename at all.
+#
+# USAGE:
+#   safeFilename "SHOW OR PERSON NAME"
+#
+# EXAMPLES:
+#   safeFilename "Spider-Man: Far from Home"   -> Spider-Man_Far_from_Home
+#   safeFilename "The Huntsman: Winter's War"  -> The_Huntsman_Winters_War
+#   safeFilename "Face/Off"                    -> Face-Off
+
+function safeFilename() {
+    local name="$1"
+
+    # Drop colons and apostrophes before collapsing spaces, so ": " leaves one
+    # "_" and not two
+    name="${name//:/}"
+    name="${name//\'/}"
+    name="${name//’/}"
+    name="${name//\//-}"
+    printf "%s" "${name//[[:space:]]/_}"
+}
