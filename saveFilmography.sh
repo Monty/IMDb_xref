@@ -284,7 +284,7 @@ while read -r line; do
         printf "    Check ${RED}imdb.com/name/$nconstID${NO_COLOR} to get more details.\n"
         continue
     fi
-    noSpaceName="${nconstName//[[:space:]]/_}"
+    noSpaceName="$(safeFilename "$nconstName")"
     filmographyDir="$noSpaceName-Filmography"
     printf "\n==> Any files generated for $nconstName will be saved in ${BLUE}$filmographyDir${NO_COLOR}\n"
     filmographyFile="$filmographyDir/$noSpaceName"

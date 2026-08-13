@@ -411,7 +411,7 @@ fi
 
 # Create a copy to use in spreadsheets
 showName="$(head -2 "$TMPFILE" | tail -1 | cut -f 3)"
-CAST_SPREADSHEET="ShowsWithActorsFrom-${showName//[[:space:]]/_}.csv"
+CAST_SPREADSHEET="ShowsWithActorsFrom-$(safeFilename "$showName").csv"
 printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_COLOR}\n"
 rg -v ' ---' "$TMPFILE" >"$CAST_SPREADSHEET"
 
