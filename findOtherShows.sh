@@ -25,7 +25,9 @@ OPTIONS:
     -l      Use $PAGER to list results a page at a time.
     -m      Maximum matches for a show title allowed in menu, defaults to 25.
     -n      Number of principal cast members to process, 0 = all, defaults to 15.
-    -e      Minimum episodes for cast members in the source show, defaults to 1.
+    -e      Minimum episodes for cast members in the source show, defaults to 0
+            (all). Only TV series carry episode counts; movies always report 0,
+            so any value above 0 excludes films entirely.
     -r      Maximum rank of cast members in other shows to list, 0 = all, defaults to 50
 
 EXAMPLES:
@@ -96,7 +98,11 @@ shift $((OPTIND - 1))
 
 maxCast="${maxCast:-15}"
 maxRank="${maxRank:-50}"
-minEpisodesSource="${minEpisodesSource:-1}"
+# Default 0, not 1: episode counts only exist for TV series, and every movie
+# cast member reports 0 episodes. A default of 1 therefore filtered out the
+# entire cast of any film, and the script reported "No cast found for this show"
+# for a title whose cast was cached and complete. Matches findCastOf.sh's -e.
+minEpisodesSource="${minEpisodesSource:-0}"
 
 ALL_TERMS=$(mktemp)
 TCONST_LIST=$(mktemp)
@@ -211,11 +217,32 @@ while IFS= read -r searchTerm; do
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
     if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]] || [[ -z $castCheck ]] || [[ $castCheck == "[]" ]]; then
         printf "==> Fetching full credits...\n"
-        _scraper --delay 1 full-credits "$tconst" >/dev/null 2>&1
+        # Capture stderr and check the result. This used to be
+        # >/dev/null 2>&1 with no check, so a failed scrape -- a WAF CAPTCHA
+        # above all -- looked identical to a successful one. The script carried
+        # on, title-info returned its plain-text "not found in index" message,
+        # and the four jq calls below each printed a parse error. That noise
+        # was the only symptom, and it pointed at jq rather than at the scrape.
+        if ! _scraper --delay 1 full-credits "$tconst" >/dev/null 2>"$SCRAPER_ERR"; then
+            reportSearchError "$tconst" "$SCRAPER_ERR"
+            if isWAFChallenge "$SCRAPER_ERR"; then
+                printf "    Skipping any remaining search terms.\n"
+                break
+            fi
+            continue
+        fi
         _scraper rebuild-index >/dev/null 2>&1
     fi
 
+    # Re-read, and check before handing it to jq. title-info prints a
+    # plain-text message rather than JSON when the tconst isn't indexed, so an
+    # unchecked value here becomes a run of confusing jq parse errors.
     titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
+    if [[ -z $titleInfo ]] || [[ $titleInfo == *"not found"* ]]; then
+        printf "==> [${RED}Error${NO_COLOR}] No cached data for %s after fetching.\n" "$tconst"
+        printf "    The scrape returned nothing usable. Try again later.\n"
+        continue
+    fi
     showName=$(jq -r '.title' <<<"$titleInfo")
 
     # Confirm the resolved title before using it, mirroring big_IMDb_xref's gate.
@@ -244,7 +271,8 @@ if [[ -z $tconst ]]; then
 fi
 
 # Get cast for the show
-castArgs=("cast-for-show" "$tconst" "--actors-only" "--min-episodes" "$minEpisodesSource")
+castArgs=("cast-for-show" "$tconst" "--actors-only")
+[[ $minEpisodesSource -gt 0 ]] && castArgs+=("--min-episodes" "$minEpisodesSource")
 [[ $maxCast -gt 0 ]] && castArgs+=("--limit" "$maxCast")
 castData=$(_scraper "${castArgs[@]}" 2>/dev/null)
 
@@ -252,6 +280,28 @@ castCount=$(jq 'length' <<<"$castData")
 if [[ $castCount -eq 0 ]]; then
     printf "==> No cast found for this show.\n"
     loopOrExitP
+fi
+
+# Films list every cast member with 0 episodes, so an Episodes column is a wall
+# of zeros; billing rank is what distinguishes the lead from an extra. TV series
+# are the reverse -- episode counts rank the regulars, and rank is only page
+# order. Decide from the data rather than from the title's `types`: full-credits
+# leaves `types` empty for films (IMDb's fullcredits page title carries no type
+# marker for them, unlike "(TV Series ...)"), so a metadata test silently picked
+# Episodes for every movie. If nothing in the cast has an episode count, the
+# column is dead weight.
+#
+# metricMode is passed to jq as a plain string and branched on *inside* the jq
+# program, so the program stays single-quoted -- no shell interpolation into
+# jq. The Episodes column still renders a film's 0 as "n/a": a TV query pulls
+# in film rows for the same person, and a bare 0 there reads as "zero episodes"
+# rather than "not applicable". Matches findCastOf.sh, which already does this.
+if [[ $(jq '[.[].episodes] | max // 0' <<<"$castData") -eq 0 ]]; then
+    metricLabel="Rank"
+    metricMode="rank"
+else
+    metricLabel="Episodes"
+    metricMode="episodes"
 fi
 
 # For each cast member, find their other shows
@@ -269,11 +319,12 @@ while IFS= read -r actorLine; do
         # Anchor each person on the show you searched (linked to the person),
         # then their other shows (linked to each title) -- mirrors big_IMDb_xref.
         {
-            jq -r --arg tc "$tconst" \
+            jq -r --arg tc "$tconst" --arg mode "$metricMode" \
                 '[.[] | select(.tconst == $tc) | select(.job == "actor")][0] // empty
-                 | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/name/\(.nconst)"' \
+                 | "\(.name)\t\(.job)\t\(.title)\t\(if $mode == "rank" then (.rank | tostring) elif .episodes > 0 then (.episodes | tostring) else "n/a" end)\t\(.character // "")\timdb.com/name/\(.nconst)"' \
                 <<<"$actorShows"
-            jq -r '.[] | "\(.name)\t\(.job)\t\(.title)\t\(.episodes | tostring)\t\(.character // "")\timdb.com/title/\(.tconst)"' \
+            jq -r --arg mode "$metricMode" \
+                '.[] | "\(.name)\t\(.job)\t\(.title)\t\(if $mode == "rank" then (.rank | tostring) elif .episodes > 0 then (.episodes | tostring) else "n/a" end)\t\(.character // "")\timdb.com/title/\(.tconst)"' \
                 <<<"$otherShows"
             printf '%s\n' "---"
         } >>"$RESULTS"
@@ -292,13 +343,13 @@ if [[ ! -s $TMPFILE ]]; then
 fi
 
 showName=$(cut -f2 <"$SHOW_NAMES")
-CAST_SPREADSHEET="ShowsWithActorsFrom-${showName//[[:space:]]/_}.csv"
+CAST_SPREADSHEET="ShowsWithActorsFrom-$(safeFilename "$showName").csv"
 printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_COLOR}\n"
 
 # Build the table once (header + data rows, no --- separators) and use it for
 # both the .csv and the on-screen listing, so they match and carry the header.
 {
-    printf "Person\tJob\tShow Title\tEpisodes\tCharacter Name\tLink\n"
+    printf "Person\tJob\tShow Title\t%s\tCharacter Name\tLink\n" "$metricLabel"
     rg -v '^---' "$RESULTS"
 } >"$CAST_SPREADSHEET"
 
