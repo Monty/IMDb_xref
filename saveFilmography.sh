@@ -440,7 +440,7 @@ while IFS= read -r searchTerm; do
     # search, where IMDb tags same-named people. Cosmetic -- the nconst in the
     # filename already prevents collisions.
     cleanName=$(sd ' *\(I[IVX]*\)$' '' <<<"$nconstName")
-    noSpaceName="${cleanName//[[:space:]]/_}"
+    noSpaceName="$(safeFilename "$cleanName")"
     filmographyDir="secondary/filmographies"
     mkdir -p "$filmographyDir"
 

@@ -137,17 +137,23 @@ while IFS= read -r tconst; do
     [[ -z $tconst ]] && continue
 
     if [[ -n $REFRESH ]]; then
-        # Force re-scrape
+        # Force re-scrape. Delete the cache file AND bypass the cache check
+        # below: that check queries the index (title-info / cast-for-show read
+        # .xref_live_index/*.jsonl), not the cache directory, and the index
+        # still holds this show until rebuild-index runs at the end. Checking it
+        # here made -r delete every cache file and then skip every fetch, so a
+        # "reload" silently destroyed the cache and reported "Skipped: N cached"
+        # -- the shows vanished from the index too once it was rebuilt.
         rm -f "$cacheDirectory/${tconst}.json"
-    fi
-
-    # Check if already cached with cast data
-    # title-basics populates the index without cast, so check cast too
-    titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-    castCheck=$(_scraper cast-for-show "$tconst" 2>/dev/null)
-    if [[ -n $titleInfo ]] && [[ $titleInfo != *"not found"* ]] && [[ -n $castCheck ]] && [[ $castCheck != "[]" ]]; then
-        skipped=$((skipped + 1))
-        continue
+    else
+        # Check if already cached with cast data
+        # title-basics populates the index without cast, so check cast too
+        titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
+        castCheck=$(_scraper cast-for-show "$tconst" 2>/dev/null)
+        if [[ -n $titleInfo ]] && [[ $titleInfo != *"not found"* ]] && [[ -n $castCheck ]] && [[ $castCheck != "[]" ]]; then
+            skipped=$((skipped + 1))
+            continue
+        fi
     fi
 
     # Scrape full credits. Capture stderr rather than discarding it: a scraper

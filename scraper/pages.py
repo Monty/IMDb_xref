@@ -237,10 +237,16 @@ def _parse_cast_section(
                 else:
                     character = character + "; " + line
 
-        if job == "actor" and episodes > 0:
-            rank += 1
-        elif job != "actor":
-            rank += 1
+        # Billing order is the row order on the page, so rank simply counts
+        # rows. This used to increment for actors only when episodes > 0, which
+        # left every actor in a film at rank 0 -- films carry no episode counts.
+        # Consumers then had no billing signal at all: `--limit N` sliced an
+        # alphabetically-sorted list, so the lead of a movie could fall outside
+        # the top 50 while extras ranked ahead (Tom Holland never appeared in
+        # `findOtherShows.sh -n 50` for Spider-Man: Far from Home), and `-r`
+        # (max rank) could not filter. Crew were unaffected because they took
+        # the other branch.
+        rank += 1
 
         members.append(
             CastMember(
@@ -288,6 +294,13 @@ def get_full_credits(tconst: str) -> Show:
         types.append("tvMovie")
     elif "Movie" in page_title or "Feature Film" in page_title:
         types.append("movie")
+    else:
+        # IMDb's fullcredits page title carries a type marker only for TV
+        # ("... (TV Series 2016- ) - Full cast & crew"); for a film it is just
+        # the title and year, so every movie was left with types == [] and
+        # callers could not tell what they were looking at. Mirrors the same
+        # default in get_title_basics.
+        types.append("movie")
 
     all_cast: list[CastMember] = []
 
@@ -309,6 +322,16 @@ def get_full_credits(tconst: str) -> Show:
         if not heading:
             continue
         heading_text = heading.inner_text().strip().lower()
+
+        # Skip sections whose heading merely contains a job keyword as a
+        # substring. "Casting" / "Casting Directors" contains "cast", so the
+        # loose `key in heading_text` match below ingested the casting
+        # department as cast: the casting director landed in the index as an
+        # actor at rank 1 of her own section, ahead of the film's lead. Her
+        # character field reads "(as Sarah Halley Finn)", so index.py's
+        # _is_non_acting() character check could not catch her either.
+        if "casting" in heading_text:
+            continue
 
         # Skip wrapper sections that contain nested <section> elements —
         # the first section on IMDb fullcredits wraps all 900+ items under
