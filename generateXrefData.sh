@@ -661,6 +661,46 @@ fi
 # Save file for later searching
 [[ -n $OUTPUT_FILE ]] && cp -p "$CREDITS_PERSON" "$OUTPUT_FILE"
 
+# Populate the per-show cross-reference cache (.xref_bulk_cache/<tconst>) from
+# the finished Credits-Person.csv, so cross-referencing works right after a bulk
+# load -- previously the cache was built only for shows you'd run
+# findOtherShows.sh on. Same 8-column, headerless format findOtherShows.sh
+# writes: Person, Show Title, Episode Title, Rank, Job, Character Name, nconst
+# ID, tconst ID.
+#
+# The Credits-Person.csv header is skipped by the ^tt guard on field 8.
+# actress->actor is normalized (field 5) so the cross-show filter -- rg 'actor',
+# which does not match "actress" -- keeps actresses, the same reason
+# findOtherShows.sh normalizes. Only series-level rows (empty Episode Title) are
+# written, matching findOtherShows.sh: an episode credit carries the *episode's*
+# tconst in field 8, so including them would fan the cache out into one file per
+# episode -- measured at 23x the disk for a single .tconst file. The cache
+# inherits whatever job filter produced Credits-Person.csv (principals only
+# unless -a). Skipped for -d runs so an experiment subdir can't clobber the real
+# cache.
+#
+# Shows are overwritten, never pruned, so running this on one .tconst file adds
+# its shows while leaving the rest of the corpus cached -- the cache builds up
+# incrementally across separate runs. Rows are sorted by tconst so each cache
+# file is opened, filled, and closed exactly once, keeping the open-file count at
+# one no matter how large the corpus grows, in the same in-file order
+# findOtherShows.sh uses (Job, Rank, Person).
+if [[ -z $OUTPUT_DIR ]] && [[ -s $CREDITS_PERSON ]]; then
+    [[ -z $QUIET ]] &&
+        printf "\n==> Populating cross-reference cache in %s\n" "$cacheDirectory"
+    awk -F '\t' -v OFS='\t' '
+        $8 !~ /^tt/ { next }
+        $3 != "" { next }
+        $5 == "actress" { $5 = "actor" }
+        { print }
+    ' "$CREDITS_PERSON" |
+        sort -f -t$'\t' --key=8,8 --key=5,5 --key=4,4n --key=1,1 |
+        awk -F '\t' -v cacheDir="$cacheDirectory" '
+            $8 != prev { if (prev != "") close(cacheDir "/" prev); prev = $8 }
+            { print > (cacheDir "/" $8) }
+        '
+fi
+
 # Shortcut for printing file info (before adding totals)
 function printAdjustedFileInfo() {
     # Print filename, size, date, number of lines

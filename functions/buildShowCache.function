@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#
+# Internal function: Build one show's cast cache from the local .gz datasets
+#
+# Writes "$cacheDirectory/<tconst>" in the 8-column, headerless format every
+# reader on this branch expects:
+#
+#   Person, Show Title, Episode Title, Rank, Job, Character Name, nconst, tconst
+#
+# The cast is joined from title.principals.tsv.gz (ordering, nconst, category,
+# characters) and name.basics.tsv.gz (nconst -> name). IMDb's fullcredits page
+# is React-rendered and WAF-protected, so the old live fetch is retired; the
+# local datasets are the only source.
+#
+# Written headerless on purpose. This branch labels columns inline in the output
+# line, e.g. (Name|Job|Show|Rank|Role|Link). A header row here is read back as
+# data by findCastOf.sh, which displays the cache directly, and shows up as a
+# phantom cast member at the top of the billing-order list.
+#
+# Episode Title is always empty: only the series' own principals are cached. An
+# episode credit carries the *episode's* tconst, so caching episodes fans the
+# corpus out into one file per episode -- measured at 23x the disk for a single
+# .tconst file. generateXrefData.sh filters episode rows out for the same reason,
+# so all three writers agree.
+#
+# "actress" is normalized to "actor" (as the retired getFullcredits.awk did)
+# because the cross-show filter in findOtherShows.sh is `rg 'actor'`, which does
+# not match the substring "actress" -- without this, every actress silently
+# drops out of cross-referenced results.
+#
+# Multiple characters portrayed are separated with "; " rather than ", ", so a
+# comma inside a single character name ("Smith, John") stays unambiguous. This
+# matches what generateXrefData.sh writes.
+#
+# Uses its own temp files rather than the caller's. The join is FILENAME-keyed
+# over two real files (not process substitution), so an empty name map can never
+# be mistaken for principal rows.
+#
+# Returns 1 without creating a file if the show has no principals, so an empty
+# cache file can't mark the show as permanently cached.
+#
+# USAGE:
+#   buildShowCache TCONST "SHOW TITLE"
+#
+# EXAMPLE:
+#   buildShowCache tt1606375 "Downton Abbey"
+
+function buildShowCache() {
+    local tconst="$1"
+    local showTitle="$2"
+    local principals nconstList nameMap
+
+    principals=$(mktemp)
+    nconstList=$(mktemp)
+    nameMap=$(mktemp)
+
+    rg -Nz "^$tconst\t" title.principals.tsv.gz >"$principals"
+    if [[ ! -s $principals ]]; then
+        rm -f "$principals" "$nconstList" "$nameMap"
+        return 1
+    fi
+
+    cut -f 3 "$principals" | sort -u >"$nconstList"
+    rg -wNz -f "$nconstList" name.basics.tsv.gz | cut -f 1,2 >"$nameMap"
+
+    awk -F '\t' -v show="$showTitle" -v names="$nameMap" '
+        FILENAME == names { name[$1] = $2; next }
+        {
+            chars = $6
+            gsub(/\\N/, "", chars)
+            # ["A","B"] -> A; B, leaving a comma inside one name alone
+            sub(/^\[/, "", chars)
+            sub(/\]$/, "", chars)
+            gsub(/","/, "; ", chars)
+            gsub(/"/, "", chars)
+            gsub(/, */, ", ", chars)
+            job = $4
+            if (job == "actress") job = "actor"
+            printf "%s\t%s\t\t%02d\t%s\t%s\t%s\t%s\n", \
+                name[$3], show, $2, job, chars, $3, $1
+        }
+    ' "$nameMap" "$principals" |
+        sort -f -t$'\t' --key=5,5 --key=4,4n --key=1,1 \
+            >"$cacheDirectory/$tconst"
+
+    rm -f "$principals" "$nconstList" "$nameMap"
+}
