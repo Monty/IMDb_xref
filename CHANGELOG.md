@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased] — 2026-08-13
+
+### Changed
+
+- **`Contrib/*.xlate`** — Audited every translation against the re-augmented `.tconst` files and repaired the drift. IMDb had changed 37 primary titles since these were written, and because a translation is keyed on the primary title, each change silently disabled a rule with no error. Removed 18 lines that had become no-ops (IMDb's primary title now equals the translation): `Det som göms i snö`, `Innan vi dör`, the Millennium trilogy, `En man som heter Ove`, `Aanrijding in Moscou`, and 11 MHz titles including `Il commissario Montalbano` and `Les petits meurtres d'Agatha Christie`. Re-keyed 7 lines whose left-hand side no longer matched, restoring series grouping that had quietly broken apart: `Brandvägg`→`Firewall` (Wallander), `Schneewittchen muss sterben`→`Snow White Must Die` plus `Eine unbeliebte Frau`→`An Unpopular Woman` and `Tiefe Wunden`→`Deep Wounds` (Nele Neuhaus Mysteries), `Fallet G`→`The G File` (Van Veeteren), and both `Varg Veum` TV movies. Fixed 2 case-only mismatches that were failing silently because the generated perl substitution has no `/i`: `Arne Dahl: Europa blues` and `Les années perdues`. Changed 10 `Murder In...` right-hand sides to `Murder In` to match MHz's current series name, and dropped `Meurtres à...`, whose literal `...` could only ever match exactly three characters before the anchoring tab and so matched nothing real. `Brandvägg` was then restored alongside `Firewall` as insurance — IMDb has flip-flopped between the two, and duplicate left-hand sides mapping to the same translation are permitted (only differing translations are an error).
+
+- **`Contrib/*.tconst`** — Merged in the watched-show lists and re-augmented. Dropped the high-episode-count anthologies and franchises that bloat the generated spreadsheets without adding cross-reference value: Tatort (1347 episodes), Polizeiruf 110 (428), Nova (1036), American Experience (396). These expand into thousands of rows of one-off credits — documentary narrators, or a franchise whose regional casts don't overlap — diluting every query while contributing almost no cross-show links. Long-running dramas with real recurring casts (Murdoch Mysteries 336, Don Matteo 287, SOKO Kitzbühel 263) were kept. Runtime for the MHz list dropped from 3:18 to 2:14 as a result.
+
 ## [Unreleased] — 2026-08-11
 
 ### Fixed
