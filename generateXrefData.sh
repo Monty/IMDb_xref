@@ -464,7 +464,11 @@ if [[ -z $BYPASS_PROCESSING ]]; then
         # to prevent missing file errors during further processing
         printf "tt0000000\n" >"$TEMP_SKIPS"
     else
-        rg -v -e "^#" -e "^$" "${SKIP_EPISODES[*]}" | cut -f 1 >"$TEMP_SKIPS"
+        # "${SKIP_EPISODES[@]}", not [*]: [*] collapses the array into a single
+        # argument, so with two or more .skipEpisodes files rg is handed one
+        # bogus filename, fails, and leaves TEMP_SKIPS empty -- silently
+        # restoring every episode of every show meant to be skipped.
+        rg -v -e "^#" -e "^$" "${SKIP_EPISODES[@]}" | cut -f 1 >"$TEMP_SKIPS"
     fi
 
     # We should now be conflict free
