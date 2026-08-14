@@ -65,16 +65,7 @@ CACHE_LIST $CACHE_LIST
 SEARCH_LIST $SEARCH_LIST
 TCONST_LIST $TCONST_LIST
 SHOW_NAMES $SHOW_NAMES
-EPISODES_LIST $EPISODES_LIST
-NCONST_LIST $NCONST_LIST
 
-SHOWS_PL $SHOWS_PL
-EPISODES_PL $EPISODES_PL
-EPISODE_NAMES_PL $EPISODE_NAMES_PL
-NAMES_PL $NAMES_PL
-
-CREDITS_CSV $CREDITS_CSV
-EPISODES_CSV $EPISODES_CSV
 CAST_CSV $CAST_CSV
 
 TMPFILE $TMPFILE
@@ -83,9 +74,8 @@ EOT
     else
         rm -f "$ALL_TERMS" "$TCONST_TERMS" "$SHOWS_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$ALL_MATCHES" "$CACHE_LIST" "$SEARCH_LIST"
-        rm -f "$TCONST_LIST" "$SHOW_NAMES" "$EPISODES_LIST" "$NCONST_LIST"
-        rm -f "$SHOWS_PL" "$EPISODES_PL" "$EPISODE_NAMES_PL" "$NAMES_PL"
-        rm -f "$CREDITS_CSV" "$EPISODES_CSV" "$CAST_CSV" "$TMPFILE"
+        rm -f "$TCONST_LIST" "$SHOW_NAMES"
+        rm -f "$CAST_CSV" "$TMPFILE"
         [[ ! -s $favoritesFile ]] && rm -f "$favoritesFile"
     fi
 }
@@ -149,16 +139,7 @@ CACHE_LIST=$(mktemp)
 SEARCH_LIST=$(mktemp)
 TCONST_LIST=$(mktemp)
 SHOW_NAMES=$(mktemp)
-EPISODES_LIST=$(mktemp)
-NCONST_LIST=$(mktemp)
 #
-SHOWS_PL=$(mktemp)
-EPISODES_PL=$(mktemp)
-EPISODE_NAMES_PL=$(mktemp)
-NAMES_PL=$(mktemp)
-#
-CREDITS_CSV=$(mktemp)
-EPISODES_CSV=$(mktemp)
 CAST_CSV=$(mktemp)
 #
 TMPFILE=$(mktemp)
@@ -387,72 +368,15 @@ if [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
     maxCast="$FULLCAST"
 fi
 
-# If everything is cached, skip searching entirely
-if [[ -n "$(rg -c "^tt" "$TCONST_LIST")" ]]; then
-
-    # Create a perl script to GLOBALLY convert a show tconst to a show title
-    printf "==> Searching $num_TB records for show titles.\n"
-    rg -wNz -f "$TCONST_LIST" title.basics.tsv.gz |
-        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[2]}g;";' >"$SHOWS_PL"
-
-    # Use tconst list to lookup episode IDs and generate an EPISODE TCONST file
-    rg -wNz -f "$TCONST_LIST" title.episode.tsv.gz |
-        tee "$EPISODES_CSV" | cut -f 1 >"$EPISODES_LIST"
-    # Create a perl script to convert an episode tconst to its parent show title
-    perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[1]};";' "$EPISODES_CSV" |
-        perl -p -f "$SHOWS_PL" >"$EPISODES_PL"
-
-    # Create a perl script to convert an episode tconst to its episode title
-    rg -wNz -f "$EPISODES_LIST" title.basics.tsv.gz |
-        perl -F"\t" -lane 'print "s{\\b@F[0]\\b}\{@F[3]};";' \
-            >"$EPISODE_NAMES_PL"
-
-    # Get title.principals.tsv.gz file size - should already exist but make sure...
-    num_TP="$(rg -N title.principals.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
-    [[ -z $num_TP ]] && num_TP="$(rg -cz "^t" title.principals.tsv.gz)"
-
-    # Use tconst list to lookup principal titles and generate credits csv
-    # Fix bogus nconst nm0745728, it should be nm0745694. Rearrange fields
-    # Leave the episode title field blank!
-    printf "==> Searching $num_TP records for principal cast & crew members.\n\n"
-    rg -wNz -f "$TCONST_LIST" title.principals.tsv.gz |
-        perl -p -e 's+nm0745728+nm0745694+' |
-        perl -F"\t" -lane 'printf "%s\t%s\t\t%02d\t%s\t%s\n", @F[2,0,1,3,5]' |
-        tee "$CREDITS_CSV" | cut -f 1 | sort -u | tee "$TMPFILE" >"$NCONST_LIST"
-
-    # Use episodes list to lookup principal titles and add to credits csv
-    # Copy field 1 to the episode title field!
-    rg -wNz -f "$EPISODES_LIST" title.principals.tsv.gz |
-        perl -F"\t" -lane 'printf "%s\t%s\t%s\t%02d\t%s\t%s\n", @F[2,0,0,1,3,5]' |
-        tee -a "$CREDITS_CSV" | cut -f 1 | sort -u |
-        rg -v -f "$TMPFILE" >>"$NCONST_LIST"
-
-    # Create a perl script to convert an nconst to a name
-    rg -wNz -f "$NCONST_LIST" name.basics.tsv.gz |
-        perl -F"\t" -lane 'print "s{^@F[0]\\b}\{@F[1]};";' >"$NAMES_PL"
-
-    # Get rid of ugly \N fields, and unneeded characters. Make sure commas are
-    # followed by spaces. Separate multiple characters portrayed with semicolons,
-    # remove quotes
-    perl -pi -e 's+\\N++g; tr+[]++d; s+,+, +g; s+,  +, +g; s+", "+; +g; tr+"++d;' \
-        "$CREDITS_CSV"
-
-    # Translate tconst and nconst into titles and names
-    perl -pi -f "$SHOWS_PL" "$CREDITS_CSV"
-    perl -pi -f "$EPISODES_PL" "$CREDITS_CSV"
-    perl -pi -f "$EPISODE_NAMES_PL" "$CREDITS_CSV"
-    perl -pi -f "$NAMES_PL" "$CREDITS_CSV"
-
-    # Switch from actor|actress to actor only to be compatible with web
-    perl -pi -e 's+\tactress\t+\tactor\t+;' "$CREDITS_CSV"
-
-    # Create the sorted RESULTS
-    printf "Person\tShow Title\tEpisode Title\tRank\tJob\tCharacter Name\n" \
-        >"$CAST_CSV"
-    # Sort by Person (1), Show Title (2), Rank (4), Episode Title (3)
-    sort -f -t$'\t' --key=1,2 --key=4,4 --key=3,3 "$CREDITS_CSV" \
-        >>"$CAST_CSV"
-fi
+# Let the user know if any shows still need a cache built. The cast itself is
+# built per-show by buildShowCache below, which joins title.principals.tsv.gz
+# and name.basics.tsv.gz into the shared 8-column format -- the same function
+# findOtherShows.sh uses, so a show cached by either script now carries the
+# nconst and tconst IDs the cross-reference needs.
+numUncached="$(rg -c "^tt" "$TCONST_LIST")"
+[[ -n $numUncached ]] &&
+    printf "==> Building a cast cache for %s show(s) from the local datasets.\n\n" \
+        "$numUncached"
 
 # Make sure we have an empty file
 true >"$TMPFILE"
@@ -463,15 +387,16 @@ while read -r line; do
     showName=$(cut -f 2 <<<"$line")
     allNames+=("$showName")
     if [[ -z "$(rg -c "^$cacheName$" "$CACHE_LIST")" ]]; then
-        rg "\t$showName\t" "$CAST_CSV" >"$cacheFile"
+        buildShowCache "$cacheName" "$showName"
     fi
+    [[ -s $cacheFile ]] || continue
     cat "$cacheFile" >>"$TMPFILE"
     if [[ -z $MULTIPLE_NAMES_ONLY ]] && [[ -z $SHORT ]]; then
-        # Cast is read from the .gz pipeline cache (Person|Show|Episode|Rank|Job|
-        # Character, no header row). One row per episode, so a person recurs once
-        # per episode they appear in; collapse to unique Name|Job|Show|Role rows
-        # in IMDb billing order (lowest Rank first). Character-name variants
-        # (e.g. "Simon Magellan" vs "SimonMagellan") intentionally stay separate.
+        # Cast is read from the shared 8-column cache (Person|Show|Episode|Rank|
+        # Job|Character|nconst|tconst, no header row); the display needs only the
+        # first six. Collapse to unique Name|Job|Show|Role rows in IMDb billing
+        # order (lowest Rank first). Character-name variants (e.g. "Simon
+        # Magellan" vs "SimonMagellan") intentionally stay separate.
         sort -f -t$'\t' --key=4,4n "$cacheFile" |
             awk -F "\t" '!seen[$1 FS $5 FS $2 FS $6]++ {printf("%s\t%s\t%s\t%s\n",$1,$5,$2,$6)}' >"$CAST_CSV"
         if [[ $maxCast -ge 10 ]]; then
