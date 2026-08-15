@@ -13,6 +13,13 @@ source functions/load_functions
 # Make sure prerequisites are satisfied
 ensurePrerequisites
 
+# A first-time user has no data files. Build them from the committed demo
+# corpus rather than from whatever .tconst files happen to be present, so the
+# questions below always have answers -- and don't ask, since someone who has
+# just launched the demo has no basis on which to decide. Only fires when
+# Credits-Person.csv is genuinely absent, so a populated corpus is left alone.
+[[ ! -e "Credits-Person.csv" ]] && ensureDataFiles -y Contrib/demo.tconst
+
 clear
 cat <<EOF
 
