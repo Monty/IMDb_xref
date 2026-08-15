@@ -138,13 +138,18 @@ if [[ -n $SEARCH_FILE ]]; then
         printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
         loopOrExitP
     fi
+    # An explicit -f wins over FULLCAST. Without this the FULLCAST block below
+    # silently replaced the file the caller asked for with the whole cache --
+    # including findCastOf.sh's internal "xrefCast.sh -f" call, which then
+    # cross-referenced every cached show instead of just the ones searched for.
+    EXPLICIT_SEARCH_FILE="yes"
 else
     SEARCH_FILE="Credits-Person.csv"
     # If it doesn't exist, generate it
     [[ ! -e $SEARCH_FILE ]] && ensureDataFiles
 fi
 
-if [[ -n $FULLCAST ]]; then
+if [[ -n $FULLCAST ]] && [[ -z $EXPLICIT_SEARCH_FILE ]]; then
     # Use the data from the cache
     if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
         # If FULLCAST is an integer -ge 10, limit size

@@ -668,7 +668,12 @@ fi
 # writes: Person, Show Title, Episode Title, Rank, Job, Character Name, nconst
 # ID, tconst ID.
 #
-# The Credits-Person.csv header is skipped by the ^tt guard on field 8.
+# The Credits-Person.csv header is skipped by the ^tt guard on field 8. The
+# leading "'" that generateXrefData.sh prepends to every Show Title and Episode
+# Title is stripped: it exists to stop spreadsheets from reinterpreting a title
+# as a number or date, and has no business in the cache, where findOtherShows.sh
+# and buildShowCache write the bare title. Leaving it in split the cache into two
+# incompatible dialects ('The Durrells vs The Crown) that compare unequal.
 # actress->actor is normalized (field 5) so the cross-show filter -- rg 'actor',
 # which does not match "actress" -- keeps actresses, the same reason
 # findOtherShows.sh normalizes. Only series-level rows (empty Episode Title) are
@@ -691,6 +696,7 @@ if [[ -z $OUTPUT_DIR ]] && [[ -s $CREDITS_PERSON ]]; then
     awk -F '\t' -v OFS='\t' '
         $8 !~ /^tt/ { next }
         $3 != "" { next }
+        { sub(/^'"'"'/, "", $2); sub(/^'"'"'/, "", $3) }
         $5 == "actress" { $5 = "actor" }
         { print }
     ' "$CREDITS_PERSON" |
