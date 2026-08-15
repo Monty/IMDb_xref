@@ -1,0 +1,24 @@
+# This is a sample tab separated file of IMDb tconst IDs to be processed
+#       See https://www.imdb.com/interfaces/ for a description of IMDb datasets
+#       tconst (string) - alphanumeric unique identifier of the title
+#
+# The tconst for any show can be found in its IMDb URL -- e.g. the URL for
+# "The Crown" is:
+#       https://www.imdb.com/title/tt4786824/
+
+# Create a similar tconst file of shows you've watched or are interested in. If
+# it has a .tconst extension, it will be automatically processed. However it can
+# have any name and extension and be passed as a parameter on the command line,
+# e.g. Netflix.tconst.txt
+
+# Your tconst file only needs to contain the tconst field and any comments you'd
+# like. Running ./augment_tconstFiles.sh -i will fill in the other fields for
+# you.
+
+# Only the tconst field is used. Additional fields are not needed, but useful
+# for documentation.
+
+# tconst	Type	Primary Title	Original Title	Date
+tt4786824	tvSeries	The Crown	The Crown	2016
+tt5014882	tvSeries	The Durrells	The Durrells	2016
+tt1399664	tvSeries	The Night Manager	The Night Manager	2016
