@@ -47,10 +47,6 @@ fi
 waitUntil -k 'What actresses played Princess Diana?'
 ./xrefCast.sh -pn "Princess Diana"
 
-if ((had_FULLCAST)); then
-    export FULLCAST=$saved_FULLCAST
-fi
-
 waitUntil -k 'What about Queen Elizabeth?'
 ./xrefCast.sh -pn "Queen Elizabeth II" 'Princess Diana'
 
@@ -60,6 +56,10 @@ waitUntil -k 'What other shows was Olivia Colman in?'
 waitUntil -k \
     'Are there actors in common between "The Night Manager" "The Crown" "The Durrells"?'
 ./xrefCast.sh -dn "The Night Manager" 'The Crown' 'The Durrells'
+
+if ((had_FULLCAST)); then
+    export FULLCAST=$saved_FULLCAST
+fi
 
 waitUntil -k 'Who was in The Crown?'
 ./xrefCast.sh -pn "The Crown"
