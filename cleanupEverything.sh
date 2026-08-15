@@ -20,8 +20,9 @@ which will reset this directory to the state a completely new user would
 encounter. You can't undo this.
 
 If you hit <cr> or answer "no". It will give you the choice of deleting various
-types of files. It always defaults to "No", so just hit <cr> to see what your
-choices would be. Or look at the source code for this script.
+types of files, asked in order of increasing consequence. It always defaults to
+"No", so just hit <cr> to see what your choices would be. Or look at the source
+code for this script.
 
 Note that your preferences file (~/.config/IMDb_xref/config) is never deleted.
 It is shared by every clone of this project, so removing it here would change
@@ -68,34 +69,56 @@ shift $((OPTIND - 1))
 # Quote filenames so globbing takes place in the "deleteFiles" function,
 # i.e. the function is passed the number of parameters seen below, not
 # the expanded list which could be quite long.
+#
+# The questions below run in order of increasing consequence: working files
+# that every run recreates, then research spreadsheets nothing reads, then the
+# files the scripts actually search, then generated state, then the slow
+# download, and last the things you can't get back by re-running anything.
 if waitUntil "$YN_PREF" -N \
     "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
-    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
-        "AssociatedTitles*.csv" "LinksToPersons*.csv" "LinksToTitles*.csv" \
-        "Episode-Count*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
-        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_bulk_*"
+    deleteFiles "secondary" "diffs*.txt" "test_results" \
+        "AssociatedTitles*.csv" "Credits-Show*.csv" "Episode-Count*.csv" \
+        "LinksToPersons*.csv" "LinksToTitles*.csv" "Persons-KnownFor*.csv" \
+        "Shows-*.csv" "Credits-Person*.csv" "uniq*.txt" ".xref_bulk_*" \
+        "*.tsv.gz" "*-Filmography" "*.tconst" "*.xlate"
     exit
 else
     printf "Skipping...\n"
 fi
 
+# "secondary" is not a debugging artifact -- generateXrefData.sh creates it on
+# every run to hold ~30 intermediate files, and empties it on exit unless DEBUG
+# is set. "diffs*.txt" and "test_results" come only from -t. The "baseline"
+# directory this used to delete is a WhatsStreamingToday artifact that came
+# across with the script; nothing here has ever created or read it.
 if waitUntil "$YN_PREF" -N \
-    "Delete primary spreadsheets containing credits, shows, and episodes?"; then
-    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
-        "AssociatedTitles*.csv" "LinksToPersons*.csv"
+    "Delete working files and test baselines (secondary, test_results)?"; then
+    deleteFiles "secondary" "diffs*.txt" "test_results"
 else
     printf "Skipping...\n"
 fi
 
+# No script reads any of these -- generateXrefData.sh writes them and nothing
+# else touches them. They exist so you can explore the data in a spreadsheet
+# without learning any query syntax, which makes them the safest thing here to
+# delete for space and the most annoying to have lost if you wanted them.
 if waitUntil "$YN_PREF" -N \
-    "Delete smaller files that contain lists of persons and shows?"; then
-    deleteFiles "LinksToTitles*.csv" "Episode-Count*.csv" "uniq*.txt"
+    "Delete research spreadsheets of shows, episodes, links, and known-for titles?"; then
+    deleteFiles "AssociatedTitles*.csv" "Credits-Show*.csv" "Episode-Count*.csv" \
+        "LinksToPersons*.csv" "LinksToTitles*.csv" "Persons-KnownFor*.csv" \
+        "Shows-*.csv"
 else
     printf "Skipping...\n"
 fi
 
-if waitUntil "$YN_PREF" -N "Delete all files generated during debugging?"; then
-    deleteFiles "secondary" "diffs*.txt" "baseline" "test_results"
+# These two are the ones the tools query: xrefCast.sh and iQuery.sh search
+# Credits-Person.csv, and iQuery.sh's category search plus start.command's
+# "saved shows" listing read the uniq* lists. Deleting them stops those scripts
+# working until generateXrefData.sh runs again -- which xrefCast.sh and
+# iQuery.sh will offer to do for you.
+if waitUntil "$YN_PREF" -N \
+    "Delete the credits and list files that the scripts search?"; then
+    deleteFiles "Credits-Person*.csv" "uniq*.txt"
 else
     printf "Skipping...\n"
 fi
@@ -121,8 +144,19 @@ else
     printf "Skipping...\n"
 fi
 
-printf "\n[${RED}Warning${NO_COLOR}] The following files are usually manually created. "
+printf "\n[${RED}Warning${NO_COLOR}] The following are created from your own input. "
 printf "They are ignored by git.\n"
+
+# Filmographies get their own question because each one exists only because you
+# asked for that person. The data is local, so any single one can be rebuilt --
+# but nothing records which people you chose, so with dozens saved you'd have to
+# remember the list yourself.
+if waitUntil "$YN_PREF" -N \
+    "Delete all saved filmographies (*-Filmography)?"; then
+    deleteFiles "*-Filmography"
+else
+    printf "Skipping...\n"
+fi
 
 if waitUntil "$YN_PREF" -N \
     "Delete all manually maintained .tconst and .xlate files?"; then
