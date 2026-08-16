@@ -1,7 +1,12 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["playwright", "pydantic"]
+# Pinned to match scraper/uv.lock. Unpinned, uv resolves this script to the
+# newest playwright in its own ephemeral environment, which wants a different
+# chromium build than scraper/cli.py -- so this script reports "run playwright
+# install", and doing so installs browsers the scraper will never look at while
+# leaving the ones it needs missing. Bump both together.
+# dependencies = ["playwright==1.61.0", "pydantic"]
 # ///
 """Open IMDb in a visible browser so a WAF CAPTCHA can be solved by hand.
 
@@ -24,7 +29,7 @@ from pathlib import Path
 # below scraper/), so the tool works from any checkout without a hardcoded path.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from browser import _CHALLENGE_TITLES, STATE_FILE, BrowserManager  # noqa: E402
+from browser import _CHALLENGE_TITLES, STATE_FILE, BrowserManager
 
 URL = "https://www.imdb.com/name/nm0000123/fullcredits"
 

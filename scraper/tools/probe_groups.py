@@ -1,7 +1,8 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["playwright", "pydantic"]
+# Pinned to match scraper/uv.lock -- see the note in solve_challenge.py.
+# dependencies = ["playwright==1.61.0", "pydantic"]
 # ///
 """Probe how category headings and credit rows interleave in the credits section.
 
@@ -21,7 +22,7 @@ from pathlib import Path
 # below scraper/), so the tool works from any checkout without a hardcoded path.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from browser import close_manager, get_manager  # noqa: E402
+from browser import close_manager, get_manager
 
 JS = """
 () => {

@@ -1,7 +1,8 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["playwright", "pydantic"]
+# Pinned to match scraper/uv.lock -- see the note in solve_challenge.py.
+# dependencies = ["playwright==1.61.0", "pydantic"]
 # ///
 """Check whether IMDb is currently serving a WAF CAPTCHA.
 
@@ -29,7 +30,7 @@ from pathlib import Path
 # below scraper/), so the tool works from any checkout without a hardcoded path.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from browser import WAFChallengeError, close_manager, get_manager  # noqa: E402
+from browser import WAFChallengeError, close_manager, get_manager
 
 # A stable, long-standing IMDb title used only as a reachability probe. It is
 # never written to the cache by this tool, so it can't pollute the workflow;
