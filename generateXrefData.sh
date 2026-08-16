@@ -126,6 +126,17 @@ fi
 
 [[ -z $QUIET ]] && printf "==> Processing %s shows...\n\n" "$total"
 
+# Count WAF challenges seen during this run. browser.py appends one line per
+# challenge to this log; taking the count before and after gives the number for
+# this run alone, which an in-process counter can't do because cli.py is a
+# separate process per show. The silent JS challenge is otherwise invisible --
+# goto() waits for it to clear and continues -- so without this a run that
+# cleared three looks identical to one that cleared none.
+challengeLog="$HOME/.config/IMDb_xref/waf_challenges.log"
+challengesBefore=0
+[[ -e $challengeLog ]] && challengesBefore=$(sed -n '$=' "$challengeLog")
+[[ -z $challengesBefore ]] && challengesBefore=0
+
 # Process each tconst
 processed=0
 skipped=0
@@ -194,6 +205,11 @@ fi
 [[ -z $QUIET ]] && printf "\n==> Rebuilding index...\n"
 _scraper rebuild-index >/dev/null 2>&1
 
+challengesAfter=0
+[[ -e $challengeLog ]] && challengesAfter=$(sed -n '$=' "$challengeLog")
+[[ -z $challengesAfter ]] && challengesAfter=0
+challenges=$((challengesAfter - challengesBefore))
+
 # Print stats
 stats=$(_scraper index-stats 2>/dev/null)
 [[ -z $QUIET ]] && cat <<EOF
@@ -203,6 +219,7 @@ stats=$(_scraper index-stats 2>/dev/null)
     Fetched:   $fetched new
     Skipped:   $skipped cached
     Failed:    $failed
+    WAF challenges: $challenges (logged in $challengeLog)
 
     Index now contains:
 $(echo "$stats" | jq -r 'to_entries[] | "      \(.key): \(.value)"')

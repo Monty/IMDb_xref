@@ -16,6 +16,23 @@ DEFAULT_DELAY = 1.5
 STATE_DIR = Path.home() / ".config" / "IMDb_xref"
 STATE_FILE = STATE_DIR / "browser_state.json"
 
+# Append-only record of every WAF challenge seen, one line per event:
+#     ISO-timestamp <TAB> kind <TAB> url
+#
+# Written to a file rather than counted in memory because cli.py runs as a
+# fresh process for every show -- generateXrefData.sh invokes _scraper once per
+# tconst -- so an in-process counter could never report more than one.
+#
+# The point of recording these is that the silent JS challenge is invisible
+# today: goto() waits for it to detach and carries on, so a run that cleared
+# three challenges looks exactly like one that cleared none. Durations showed
+# daytime runs dying at 27-30 minutes regardless of how many shows they had
+# fetched (123, 119, 79), which points at a ~30 minute WAF token lifetime
+# rather than a request-count limit -- but an overnight run went 44:55, which
+# only fits that theory if it cleared a silent challenge partway and continued.
+# This log is what settles it.
+CHALLENGE_LOG = STATE_DIR / "waf_challenges.log"
+
 # Markers for AWS WAF interstitials. The silent JS challenge uses
 # #challenge-container and clears itself; the CAPTCHA uses different markup
 # and needs a human, so it has to be detected by title as well.
@@ -29,6 +46,29 @@ class WAFChallengeError(RuntimeError):
     Raised rather than returning the page, so that an unsolved challenge
     cannot be mistaken for a valid empty result and cached as one.
     """
+
+
+def log_challenge(kind: str, url: str) -> None:
+    """Append one line to CHALLENGE_LOG recording a WAF challenge.
+
+    Never raises: a scrape must not fail because logging did.
+    """
+    try:
+        STATE_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        with CHALLENGE_LOG.open("a") as handle:
+            handle.write(f"{stamp}\t{kind}\t{url}\n")
+    except OSError:
+        pass
+
+
+def challenge_count() -> int:
+    """Return the number of challenges recorded so far."""
+    try:
+        with CHALLENGE_LOG.open() as handle:
+            return sum(1 for _ in handle)
+    except OSError:
+        return 0
 
 
 class BrowserManager:
@@ -110,6 +150,9 @@ class BrowserManager:
             # Wait for AWS WAF challenge to resolve, if present
             if page.is_visible("#challenge-container", timeout=2000):
                 # The challenge page reloads itself. Wait for it to go away.
+                # Logged before the wait so a challenge that never clears is
+                # still recorded -- the timeout below raises out of here.
+                log_challenge("js-challenge", url)
                 page.wait_for_selector(
                     "#challenge-container", state="detached", timeout=15000
                 )
@@ -127,12 +170,14 @@ class BrowserManager:
             # own. Fail loudly instead of handing back a shell page.
             for selector in _CHALLENGE_SELECTORS:
                 if page.query_selector(selector):
+                    log_challenge("unresolved", url)
                     raise WAFChallengeError(
                         f"WAF challenge ({selector}) not cleared for {url}"
                     )
             title = (page.title() or "").lower()
             for marker in _CHALLENGE_TITLES:
                 if marker in title:
+                    log_challenge("captcha", url)
                     raise WAFChallengeError(
                         f"WAF CAPTCHA served for {url} (page title: {title!r})"
                     )
