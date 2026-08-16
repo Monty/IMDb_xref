@@ -31,6 +31,11 @@ OPTIONS:
     -h      Print this message.
     -d      Duplicates -- Only list cast & crew members found in more than one show.
     -m      Maximum matches for a show title allowed in menu - defaults to 25.
+    -n      Number of cast & crew members to list, 0 = all, defaults to 0.
+            "All" means all principals: this branch reads title.principals.tsv.gz,
+            which carries roughly ten names per title. The full cast of hundreds
+            is only available on the live-fetch branch, which scrapes the
+            fullcredits page.
     -f      File -- Add to specific file rather than the default $favoritesFile.
     -s      Short - don't list details, just ask about adding to $favoritesFile.
 
@@ -38,6 +43,7 @@ EXAMPLES:
     ./findCastOf.sh
     ./findCastOf.sh -d
     ./findCastOf.sh "The Crown"
+    ./findCastOf.sh -n 10 "The Crown"
     ./findCastOf.sh tt1606375
     ./findCastOf.sh tt1606375 tt1399664 "Broadchurch"
     ./findCastOf.sh -s tt1606375 tt1399664 "Broadchurch"
@@ -95,7 +101,7 @@ function loopOrExitP() {
     exec ./start.command
 }
 
-while getopts ":hf:dm:s" opt; do
+while getopts ":hf:dm:n:s" opt; do
     case $opt in
     h)
         help
@@ -109,6 +115,9 @@ while getopts ":hf:dm:s" opt; do
         ;;
     m)
         maxMenuSize="$OPTARG"
+        ;;
+    n)
+        maxCast="$OPTARG"
         ;;
     s)
         SHORT="yes"
@@ -356,16 +365,24 @@ printHistory "$favoritesFile" >"$TMPFILE"
 ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
 comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 
-# maxCast caps how many billing-order rows we display, but only if -ge 10
-maxCast=0
-
-# FULLCAST is now only a display cap. The live-fetch path it used to drive --
-# curl the fullcredits page and parse it with getFullcredits.awk -- is retired:
-# IMDb 403s a bot User-Agent, WAF-challenges a browser one, and the fullcredits
-# page is React-rendered now, so the awk matched nothing and left header-only
-# cache files that masked the real data. Cast is read from the .gz files below.
-if [[ -n $FULLCAST ]] && [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null; then
-    maxCast="$FULLCAST"
+# maxCast caps how many billing-order rows we display. 0 means all, matching
+# findOtherShows.sh -n. Set with -n rather than read from the FULLCAST
+# environment variable, which used to set it here: FULLCAST also selected a data
+# source in xrefCast.sh and iQuery.sh, so one variable meant three unrelated
+# things across the branch, and only values >= 10 took effect here while
+# findOtherShows.sh honored any value -- so -n 5 capped at 5 in one script and
+# silently meant "no cap" in the other. Both are now plain -n options.
+#
+# The cast itself is read from the .gz files below. The live-fetch path FULLCAST
+# used to drive -- curl the fullcredits page and parse it with
+# getFullcredits.awk -- is retired: IMDb 403s a bot User-Agent, WAF-challenges a
+# browser one, and the fullcredits page is React-rendered now, so the awk matched
+# nothing and left header-only cache files that masked the real data.
+maxCast="${maxCast:-0}"
+if [[ ! $maxCast =~ ^[0-9]+$ ]]; then
+    printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring non-numeric -n " >&2
+    printf "${YELLOW}$maxCast${NO_COLOR}. Listing all cast & crew members.\n\n" >&2
+    maxCast=0
 fi
 
 # Let the user know if any shows still need a cache built. The cast itself is
@@ -399,11 +416,15 @@ while read -r line; do
         # Magellan" vs "SimonMagellan") intentionally stay separate.
         sort -f -t$'\t' --key=4,4n "$cacheFile" |
             awk -F "\t" '!seen[$1 FS $5 FS $2 FS $6]++ {printf("%s\t%s\t%s\t%s\n",$1,$5,$2,$6)}' >"$CAST_CSV"
-        if [[ $maxCast -ge 10 ]]; then
-            printf "==> Top $maxCast cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
+        # Says "principal" rather than "all" deliberately. The cast comes from
+        # title.principals.tsv.gz -- roughly ten names per title -- so there is
+        # no fuller list to be had here, and "All cast & crew members" promised
+        # the hundreds-long fullcredits page that only live-fetch can reach.
+        if [[ $maxCast -gt 0 ]]; then
+            printf "==> Top $maxCast principal cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
             tsvPrint "$CAST_CSV" | head -"$maxCast"
         else
-            printf "==> All cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
+            printf "==> Principal cast & crew members in IMDb billing order (Name|Job|Show|Role):\n"
             tsvPrint "$CAST_CSV"
         fi
         waitUntil -k

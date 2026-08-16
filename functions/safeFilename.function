@@ -30,6 +30,39 @@
 function safeFilename() {
     local name="$1"
 
+    help() {
+        cat <<EOF
+safeFilename -- Internal: Convert a show or person name into a safe filename.
+
+Spaces become underscores. Colons and apostrophes (ASCII ' and typographic ’)
+are removed rather than substituted. Forward slashes become "-".
+
+Colons matter more than they look: macOS permits them, but Finder still renders
+a ":" as a "/", so "Spider-Man: Far from Home" displayed as a corrupt-looking
+"Spider-Man/_Far_from_Home", and a leading "something:" makes 'open' treat the
+argument as a URL scheme.
+
+USAGE:
+    safeFilename "SHOW OR PERSON NAME"
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLES:
+    safeFilename "Spider-Man: Far from Home"   -> Spider-Man_Far_from_Home
+    safeFilename "The Huntsman: Winter's War"  -> The_Huntsman_Winters_War
+    safeFilename "Face/Off"                    -> Face-Off
+EOF
+    }
+
+    # Tested directly rather than with getopts, which would consume a legitimate
+    # title beginning with "-" (e.g. the film "-30-") as an option string.
+    if [[ $name == "-h" ]]; then
+        help
+        waitUntil -k
+        return
+    fi
+
     # Drop colons and apostrophes before collapsing spaces, so ": " leaves one
     # "_" and not two
     name="${name//:/}"

@@ -34,6 +34,11 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -c      Cache -- Build the search lists from the cross-reference cache
+            instead of the generated Credits-Person*csv and uniq* files.
+            The cache covers every show ever added by findCastOf.sh or
+            findOtherShows.sh, but holds only each show's ~10 principals --
+            wider, and shallower. See ./xrefCast.sh -h.
     -l      Use 'less' to list shows a page at a time rather than all at once.
             Type space bar for next page, 'b' for previous page, 'h' for help,
             '/' to search, 'q' to quit.
@@ -44,6 +49,7 @@ OPTIONS:
 EXAMPLES:
     iQuery.sh
     iQuery.sh -m 30
+    iQuery.sh -c
 EOF
 }
 
@@ -73,11 +79,14 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":hlm:" opt; do
+while getopts ":hclm:" opt; do
     case $opt in
     h)
         help
         exit
+        ;;
+    c)
+        USE_CACHE="yes"
         ;;
     l)
         USE_LESS="yes"
@@ -113,7 +122,12 @@ categories=('show' 'person' 'character')
 # Make sure creditsFile exists
 [[ ! -e $creditsFile ]] && ensureDataFiles
 
-if [[ -n $FULLCAST ]]; then
+# -c builds every search list from the cross-reference cache rather than the
+# generated files. Was keyed off the FULLCAST environment variable, which
+# selected the thinner source on this branch while its name promised the fuller
+# one -- see the note in xrefCast.sh. The temp files built here are handed to
+# xrefCast.sh with -f, which wins over its own source selection.
+if [[ -n $USE_CACHE ]]; then
     # Use the data from the cache
     if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
         cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
@@ -124,6 +138,9 @@ if [[ -n $FULLCAST ]]; then
         #
         uniqFiles=("$TITLES" "$PERSONS" "$CHARACTERS")
         creditsFile="$CREDITS"
+    else
+        printf "==> [${YELLOW}Warning${NO_COLOR}] The cross-reference cache is empty. " >&2
+        printf "Using the generated data files instead.\n\n" >&2
     fi
 fi
 

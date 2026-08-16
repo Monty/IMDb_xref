@@ -10,18 +10,33 @@
 DIRNAME=$(dirname "$0")
 cd "$DIRNAME" || exit
 
-FULLCAST="${FULLCAST:-20}"
-export FULLCAST
+# castLimit caps how many cast & crew members the menu items below list. It is
+# deliberately NOT exported. It used to be, as FULLCAST, which meant a variable
+# set here for menu labels also flipped xrefCast.sh and iQuery.sh onto the
+# cross-reference cache -- so picking item 6 or 7 gave a brand-new user the
+# thinnest available view without their ever having heard of FULLCAST. Those two
+# scripts now take an explicit -c, and the cap travels as -n to the scripts that
+# want it. FULLCAST is still read as the default so existing muscle memory keeps
+# working, but it goes no further than this file.
+castLimit="${FULLCAST:-20}"
+if [[ ! $castLimit =~ ^[0-9]+$ ]]; then
+    printf "==> [Warning] Ignoring non-numeric FULLCAST: $castLimit\n\n" >&2
+    castLimit=20
+fi
 
-# Is FULLCAST an integer?
-# Tested with a regex rather than [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null:
-# inside [[ ]], -eq evaluates its operands arithmetically, and a bare word is
-# read as a variable name -- so an alphabetic value like FULLCAST=all becomes
-# 0 -eq 0, passes as "an integer," and lands in the menu labels as
-# "top all cast & crew members".
-if [[ $FULLCAST =~ ^[0-9]+$ ]]; then
-    maxCast="$FULLCAST "
-    [[ $FULLCAST -eq 0 ]] && maxCast=""
+# 0 means all. Whole phrases rather than an interpolated number, so the labels
+# read as English either way. Note "all" is dropped entirely at 0 rather than
+# written out: this branch's cast comes from title.principals.tsv.gz, ~10 names
+# per title, so there is no fuller list an "all" could be promising. The
+# hundreds-long fullcredits page is a live-fetch capability only.
+if [[ $castLimit -eq 0 ]]; then
+    castDescription="their principal cast & crew members"
+    actorDescription="its principal actors"
+    castHeading="Principal cast & crew members"
+else
+    castDescription="their top $castLimit principal cast & crew members"
+    actorDescription="its top $castLimit actors"
+    castHeading="Top $castLimit principal cast & crew members"
 fi
 
 source functions/define_colors
@@ -31,7 +46,7 @@ source functions/load_functions
 function start_help() {
     cat <<EOF
 
-1) Find shows, then list their top ${maxCast}cast & crew members
+1) Find shows, then list $castDescription
 
         Search IMDb titles for show names or tconst IDs such as tt1606375,
         which is the tconst for Downton Abbey -- taken from this URL:
@@ -43,7 +58,7 @@ function start_help() {
 
         An excerpt from searching for The Crown:
 
-==> Top ${maxCast}cast & crew members in IMDb billing order (Name|Job|Show|Role):
+==> $castHeading in IMDb billing order (Name|Job|Show|Role):
 Claire Foy                  actor     The Crown  Queen Elizabeth II
 Olivia Colman               actor     The Crown  Queen Elizabeth II
 Imelda Staunton             actor     The Crown  Queen Elizabeth II
@@ -78,12 +93,12 @@ EOF
     waitUntil -k
     cat <<EOF
 
-3) Find a show, then list its top ${maxCast}actors that are in your cached shows
+3) Find a show, then list $actorDescription that are in your cached shows
 
         Search IMDb titles for one show name or tconst ID such as tt4786824,
         which is the tconst for The Crown.
 
-        List any of the top ${maxCast}actors who also appear any any show you've
+        List any of those actors who also appear in any show you've
         previously searched for, i.e. not just your saved shows.
 
 ==> Principal cast members that appear in other shows (Name|Job|Show|Rank|Role|Link):
@@ -182,11 +197,11 @@ ensurePrerequisites
 printf "==> What would you like to do next?\n"
 
 # 1
-pickOptions=("Find shows, then list their top ${maxCast}cast & crew members")
+pickOptions=("Find shows, then list $castDescription")
 # 2
 pickOptions+=("Find shows, then list only cast & crew members they share")
 # 3
-pickOptions+=("Find a show, then list its top ${maxCast}actors that are in your cached shows")
+pickOptions+=("Find a show, then list $actorDescription that are in your cached shows")
 # 4
 pickOptions+=("Find people, then list all shows having them as a principal cast or crew member")
 # 5
@@ -209,13 +224,13 @@ select pickMenu in "${pickOptions[@]}"; do
         [[ $REPLY -le ${#pickOptions[@]} ]]; then
         case "$REPLY" in
         1)
-            exec ./findCastOf.sh
+            exec ./findCastOf.sh -n "$castLimit"
             ;;
         2)
-            exec ./findCastOf.sh -d
+            exec ./findCastOf.sh -dn "$castLimit"
             ;;
         3)
-            exec ./findOtherShows.sh -n "$FULLCAST"
+            exec ./findOtherShows.sh -n "$castLimit"
             ;;
         4)
             exec ./findShowsWith.sh

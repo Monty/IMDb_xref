@@ -43,14 +43,6 @@ pause again.
 EOF
 waitUntil -k # Default prompt for -k is: "Hit any key to continue, '^C' to quit."
 
-if [[ -n ${FULLCAST+x} ]]; then
-    saved_FULLCAST=$FULLCAST
-    had_FULLCAST=1
-    unset FULLCAST
-else
-    had_FULLCAST=0
-fi
-
 waitUntil -k 'What actresses played Princess Diana?'
 ./xrefCast.sh -pn "Princess Diana"
 
@@ -64,10 +56,12 @@ waitUntil -k \
     'Are there actors in common between "The Night Manager" "The Crown" "The Durrells"?'
 ./xrefCast.sh -dn "The Night Manager" 'The Crown' 'The Durrells'
 
-if ((had_FULLCAST)); then
-    export FULLCAST=$saved_FULLCAST
-fi
-
+# No FULLCAST save/restore around this last question any more. It existed
+# because FULLCAST switched xrefCast.sh onto the cross-reference cache, so the
+# demo had to unset it to keep the character searches above working, then put it
+# back so the last answer matched what the owner's environment would give. The
+# cache is now reached only with an explicit -c, so every question here reads
+# Credits-Person.csv and the demo gives the same answers to everyone.
 waitUntil -k 'Who was in The Crown?'
 ./xrefCast.sh -pn "The Crown"
 

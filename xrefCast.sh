@@ -38,11 +38,18 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -c      Cache -- Search the cross-reference cache instead of "Credits-Person*csv".
     -p      Principal -- Only print 'Principal cast & crew members' section.
     -d      Duplicates -- Only list cast & crew who are found in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
     -n      No menu - don't bring up the top-level menu upon exiting.
+
+The default source, "Credits-Person*csv", is built from your .tconst lists and
+carries episode-level credits -- so guest and supporting players are in it. The
+-c cache holds only each show's ~10 principals, but covers every show ever added
+by findCastOf.sh or findOtherShows.sh, including ones in no .tconst file. Deeper
+versus wider: use -c to reach a show you looked up but never curated.
 
 EXAMPLES:
     ./xrefCast.sh "Olivia Colman"
@@ -50,6 +57,7 @@ EXAMPLES:
     ./xrefCast.sh "The Crown"
     ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells"
     ./xrefCast.sh -dn "Elizabeth Debicki"
+    ./xrefCast.sh -c "The Crown"
     ./xrefCast.sh -pf Clooney.csv "Brad Pitt"
 EOF
 }
@@ -89,11 +97,14 @@ function loopOrExitP() {
     exec ./start.command
 }
 
-while getopts ":f:hpdin" opt; do
+while getopts ":f:hcpdin" opt; do
     case $opt in
     h)
         help
         exit
+        ;;
+    c)
+        USE_CACHE="yes"
         ;;
     p)
         PRINCIPAL_CAST_ONLY="yes"
@@ -138,10 +149,11 @@ if [[ -n $SEARCH_FILE ]]; then
         printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
         loopOrExitP
     fi
-    # An explicit -f wins over FULLCAST. Without this the FULLCAST block below
+    # An explicit -f wins over -c. Without this the cache block below
     # silently replaced the file the caller asked for with the whole cache --
     # including findCastOf.sh's internal "xrefCast.sh -f" call, which then
     # cross-referenced every cached show instead of just the ones searched for.
+    # (Was FULLCAST rather than -c until the flag replaced it.)
     EXPLICIT_SEARCH_FILE="yes"
 else
     SEARCH_FILE="Credits-Person.csv"
@@ -149,20 +161,33 @@ else
     [[ ! -e $SEARCH_FILE ]] && ensureDataFiles
 fi
 
-if [[ -n $FULLCAST ]] && [[ -z $EXPLICIT_SEARCH_FILE ]]; then
-    # Use the data from the cache
+# -c searches the per-show cross-reference cache instead of Credits-Person.csv.
+# The two corpora differ on two axes, which is why this is a flag rather than a
+# default: the CSV is deeper (it carries episode-level credits, where guest and
+# supporting players live -- measured at 40,140 show+person pairs versus the
+# cache's 6,743), while the cache is wider (it accumulates every show added by
+# findCastOf.sh or findOtherShows.sh, including ones in no .tconst file).
+#
+# This used to be triggered by the FULLCAST environment variable, which was
+# doubly wrong here. FULLCAST means "the fuller source" on live-fetch, where the
+# cache really is a full-cast superset of the CSV; on this branch the cache holds
+# title.principals' ~10 names per show, so it selected the *thinner* source. The
+# integer was inert too -- no ordering value above 10 exists in title.principals,
+# so the old "$4 <= FULLCAST" cap could never fire and FULLCAST=50 and FULLCAST=5
+# gave identical output. Both are gone; the default now works with nothing
+# exported, which is what a new user gets.
+if [[ -n $USE_CACHE ]] && [[ -n $EXPLICIT_SEARCH_FILE ]]; then
+    printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring -c because -f was supplied.\n\n" >&2
+fi
+if [[ -n $USE_CACHE ]] && [[ -z $EXPLICIT_SEARCH_FILE ]]; then
     if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
-        # If FULLCAST is an integer -ge 10, limit size
-        if [[ $FULLCAST -eq $FULLCAST ]] 2>/dev/null &&
-            [[ $FULLCAST -ge 10 ]]; then
-            cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
-                sort -fu | awk -F "\t" -v maxCast="$FULLCAST" \
-                '{if ($4 <= maxCast) print}' >"$CACHEFILE"
-        else
-            cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
-                sort -fu >"$CACHEFILE"
-        fi
+        cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
+            sort -fu >"$CACHEFILE"
         SEARCH_FILE="$CACHEFILE"
+        CAST_SOURCE=" from the cross-reference cache"
+    else
+        printf "==> [${YELLOW}Warning${NO_COLOR}] The cross-reference cache is empty. " >&2
+        printf "Searching $SEARCH_FILE instead.\n\n" >&2
     fi
 fi
 
@@ -272,7 +297,7 @@ fi
 
 # Unless MULTIPLE_NAMES_ONLY, print all search results
 if [[ -z $MULTIPLE_NAMES_ONLY ]]; then
-    printf "\n==> Principal cast & crew members in alphabetical order (Name|Job|Show|Role):\n"
+    printf "\n==> Principal cast & crew members$CAST_SOURCE in alphabetical order (Name|Job|Show|Role):\n"
     tsvPrint -n "$ALL_NAMES"
 fi
 
@@ -284,7 +309,7 @@ if [[ $numMultiple -eq 0 ]]; then
     [[ -n $MULTIPLE_NAMES_ONLY ]] &&
         printf "\n==> I didn't find any cast or crew members who are listed in more than one show.\n"
 else
-    printf "\n==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):\n"
+    printf "\n==> Principal cast & crew members$CAST_SOURCE listed in more than one show (Name|Job|Show|Role):\n"
     tsvPrint -n "$MULTIPLE_NAMES"
 fi
 

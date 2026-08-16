@@ -50,6 +50,44 @@ function buildShowCache() {
     local showTitle="$2"
     local principals nconstList nameMap
 
+    help() {
+        cat <<EOF
+buildShowCache -- Internal: Build one show's cast cache from the local datasets.
+
+Joins title.principals.tsv.gz (ordering, nconst, category, characters) against
+name.basics.tsv.gz (nconst -> name) and writes "\$cacheDirectory/<tconst>" in the
+8-column, headerless format every reader on this branch expects:
+
+    Person, Show Title, Episode Title, Rank, Job, Character Name, nconst, tconst
+
+Shared by generateXrefData.sh, findCastOf.sh, and findOtherShows.sh, so all three
+writers produce one format. Episode Title is always empty -- only the series' own
+principals are cached, since an episode credit carries the episode's tconst and
+would fan the cache out into one file per episode. "actress" is normalized to
+"actor" so the cross-show filter, which matches 'actor', doesn't drop actresses.
+
+Returns 1 without creating a file if the show has no principals, so an empty
+cache file can't mark a show as permanently cached.
+
+USAGE:
+    buildShowCache TCONST "SHOW TITLE"
+
+OPTIONS:
+    -h      Print this message.
+
+EXAMPLE:
+    buildShowCache tt1606375 "Downton Abbey"
+EOF
+    }
+
+    # Tested directly rather than with getopts, which would consume a legitimate
+    # title beginning with "-" (e.g. the film "-30-") as an option string.
+    if [[ $tconst == "-h" ]]; then
+        help
+        waitUntil -k
+        return
+    fi
+
     principals=$(mktemp)
     nconstList=$(mktemp)
     nameMap=$(mktemp)
