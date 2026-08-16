@@ -1,11 +1,12 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# Pinned to match scraper/uv.lock. Unpinned, uv resolves this script to the
-# newest playwright in its own ephemeral environment, which wants a different
-# chromium build than scraper/cli.py -- so this script reports "run playwright
-# install", and doing so installs browsers the scraper will never look at while
-# leaving the ones it needs missing. Bump both together.
+# # Pinned to match scraper/uv.lock. Unpinned, uv resolves this script to the
+# # newest playwright in its own ephemeral environment, which wants a different
+# # chromium build than scraper/cli.py -- so this script reports "run playwright
+# # install", and doing so installs browsers the scraper will never look at
+# # while leaving the ones it needs missing. Bump both together.
+# # (Double '#' because uv strips one before parsing this block as TOML.)
 # dependencies = ["playwright==1.61.0", "pydantic"]
 # ///
 """Open IMDb in a visible browser so a WAF CAPTCHA can be solved by hand.

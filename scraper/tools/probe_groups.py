@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# Pinned to match scraper/uv.lock -- see the note in solve_challenge.py.
+# # Pinned to match scraper/uv.lock -- see the note in solve_challenge.py.
 # dependencies = ["playwright==1.61.0", "pydantic"]
 # ///
 """Probe how category headings and credit rows interleave in the credits section.
