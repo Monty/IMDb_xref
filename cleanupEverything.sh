@@ -76,7 +76,7 @@ shift $((OPTIND - 1))
 # download, and last the things you can't get back by re-running anything.
 if waitUntil "$YN_PREF" -N \
     "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
-    deleteFiles "secondary" "diffs*.txt" "test_results" \
+    deleteFiles "secondary" "diffs*.txt" "test_results" "Demo" \
         "AssociatedTitles*.csv" "Credits-Show*.csv" "Episode-Count*.csv" \
         "LinksToPersons*.csv" "LinksToTitles*.csv" "Persons-KnownFor*.csv" \
         "Shows-*.csv" "Credits-Person*.csv" "uniq*.txt" ".xref_bulk_*" \
@@ -88,12 +88,14 @@ fi
 
 # "secondary" is not a debugging artifact -- generateXrefData.sh creates it on
 # every run to hold ~30 intermediate files, and empties it on exit unless DEBUG
-# is set. "diffs*.txt" and "test_results" come only from -t. The "baseline"
-# directory this used to delete is a WhatsStreamingToday artifact that came
-# across with the script; nothing here has ever created or read it.
+# is set. "diffs*.txt" and "test_results" come only from -t. "Demo" is the
+# self-contained corpus demo.command builds so its questions are answerable
+# regardless of which shows the user has curated. The "baseline" directory this
+# used to delete is a WhatsStreamingToday artifact that came across with the
+# script; nothing here has ever created or read it.
 if waitUntil "$YN_PREF" -N \
-    "Delete working files and test baselines (secondary, test_results)?"; then
-    deleteFiles "secondary" "diffs*.txt" "test_results"
+    "Delete working files, test baselines, and the demo corpus?"; then
+    deleteFiles "secondary" "diffs*.txt" "test_results" "Demo"
 else
     printf "Skipping...\n"
 fi

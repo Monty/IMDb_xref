@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased] — 2026-08-16
+
+### Fixed
+
+- **`demo.command`** — The demo now builds and queries its own corpus in `./Demo/` instead of whatever data files happen to be in the working directory, so its five fixed questions are answerable for everyone. Yesterday's version only generated data when `Credits-Person.csv` was absent, which is the wrong test: an established user has that file built from their own `.tconst` lists, and those lists very likely don't include The Crown, The Durrells, or The Night Manager. Found in a clone containing every show Monty has watched — which doesn't include The Crown — where the demo asked five questions about a show it couldn't see and answered none of them.
+
+  Uses `generateXrefData.sh -q -d Demo Contrib/demo.tconst`. Because `-d` sets `OUTPUT_DIR`, that run also skips populating the cross-reference cache, recording durations, and saving run history, so demonstrating the tool no longer perturbs a real installation — which the previous approach did, by rewriting the top-level `Credits-Person.csv` and `Shows-*.csv` from a three-show corpus. Each question then passes `-f "$demoCredits"` explicitly. The generated file is located by glob rather than by name so a `DEBUG` run, where `DATE_ID` appends a datestamp, still finds it.
+
+  `/Demo/` added to `.gitignore`, and `Demo` added to `cleanupEverything.sh` — both to the EVERYTHING glob and to the working-files prompt, now worded "working files, test baselines, and the demo corpus."
+
+  `ensureDataFiles -y [TCONST_FILE]` is left in place. Nothing calls `-y` now, but the option and its tconst-file argument are correct on their own terms and cost nothing to keep.
+
 ## [Unreleased] — 2026-08-15
 
 ### Added
