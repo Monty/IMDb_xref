@@ -168,9 +168,16 @@ class BrowserManager:
 
             # A challenge still standing at this point will not resolve on its
             # own. Fail loudly instead of handing back a shell page.
+            #
+            # The selector is recorded because the two cases want opposite
+            # responses and were previously indistinguishable in the log:
+            # #challenge-container means a JS challenge that didn't finish in
+            # the 15s allowed above, which on a slow afternoon may just need
+            # longer; #captcha-container means a real CAPTCHA that no amount of
+            # waiting will clear and that needs solve_challenge.py.
             for selector in _CHALLENGE_SELECTORS:
                 if page.query_selector(selector):
-                    log_challenge("unresolved", url)
+                    log_challenge(f"unresolved:{selector}", url)
                     raise WAFChallengeError(
                         f"WAF challenge ({selector}) not cleared for {url}"
                     )
