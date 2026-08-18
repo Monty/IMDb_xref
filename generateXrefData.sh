@@ -174,7 +174,7 @@ while getopts ":d:f:s:x:hraqt" opt; do
         printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     :)
-        printf "==> Option -%s requires an argument'.\n\n" "$OPTARG" >&2
+        printf "==> Option -%s requires an argument.\n\n" "$OPTARG" >&2
         exit 1
         ;;
     esac

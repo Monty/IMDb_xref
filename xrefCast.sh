@@ -43,7 +43,6 @@ OPTIONS:
     -d      Duplicates -- Only list cast & crew who are found in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
-    -n      No menu - don't bring up the top-level menu upon exiting.
 
 The default source, "Credits-Person*csv", is built from your .tconst lists and
 carries episode-level credits -- so guest and supporting players are in it. The
@@ -56,7 +55,7 @@ EXAMPLES:
     ./xrefCast.sh "Queen Elizabeth II" "Princess Diana"
     ./xrefCast.sh "The Crown"
     ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells"
-    ./xrefCast.sh -dn "Elizabeth Debicki"
+    ./xrefCast.sh -d "Elizabeth Debicki"
     ./xrefCast.sh -c "The Crown"
     ./xrefCast.sh -pf Clooney.csv "Brad Pitt"
 EOF
@@ -89,15 +88,15 @@ function cleanup() {
     exit 130
 }
 
-# Should we loop or not? Loop unless we were called with -n
+# Should we loop or not? Loop unless NO_MENUS is set.
 function loopOrExitP() {
     printf "\n"
     terminate
-    [[ -n $noLoop ]] || [[ -n $NO_MENUS ]] && exit
+    [[ -n $NO_MENUS ]] && exit
     exec ./start.command
 }
 
-while getopts ":f:hcpdin" opt; do
+while getopts ":f:hcpdi" opt; do
     case $opt in
     h)
         help
@@ -118,14 +117,11 @@ while getopts ":f:hcpdin" opt; do
     i)
         INFO="yes"
         ;;
-    n)
-        noLoop="yes"
-        ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     :)
-        printf "==> Option -$OPTARG requires a 'search file' argument'.\n\n" >&2
+        printf "==> Option -%s requires an argument.\n\n" "$OPTARG" >&2
         exit 1
         ;;
     esac
@@ -287,7 +283,7 @@ else
 fi
 
 # If in interactive mode, give user a choice of all or duplicates only
-if [[ -z $noLoop ]] && [[ -z $MULTIPLE_NAMES_ONLY ]] &&
+if [[ -z $NO_MENUS ]] && [[ -z $MULTIPLE_NAMES_ONLY ]] &&
     [[ -z $PRINCIPAL_CAST_ONLY ]] && [[ $numMultiple -ne 0 ]]; then
     printf "\n==> I found $numAll principal cast & crew members. "
     printf "$numMultiple $_vb listed in more than one show.\n"

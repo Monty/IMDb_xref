@@ -1,5 +1,25 @@
 # Changelog
 
+## [Unreleased] — 2026-08-18
+
+### Changed
+
+- **`xrefCast.sh`** — Removed the `-n` flag. Suppressing menus is now `NO_MENUS` only. `-n` meant "no menu" here while meaning "number of cast members" in `findCastOf.sh` and `findOtherShows.sh` — the same letter taking an argument in one script and not in its siblings. Renaming it to `-N` would have kept both meanings in play and added a lowercase/uppercase pair that looks like two variants of one idea; deleting it retires the letter from this script entirely and leaves one mechanism instead of two.
+
+  The two were not equivalent, which is the part that made this more than a rename. `loopOrExitP` checked `noLoop || NO_MENUS`, but the gate on the interactive "Should I only print those N?" prompt checked `noLoop` alone. Most call sites passed `-d` or `-p` as well, which set `MULTIPLE_NAMES_ONLY`/`PRINCIPAL_CAST_ONLY` and short-circuited that gate anyway — but `iQuery.sh`'s *full* action passed bare `-n`, where `noLoop` was the only thing holding the prompt back. A straight deletion would have reintroduced a blocking prompt there. That gate now reads `NO_MENUS`, which is what it meant all along: it asks whether we are interactive, and `NO_MENUS` is the variable that tracks that.
+
+  Call sites updated to `NO_MENUS="yes" ./xrefCast.sh …`: `findCastOf.sh`, `iQuery.sh` (both actions), and `demo.command` (five questions). No test changes were needed — every test already exports `NO_MENUS` at the top, and none passed `-n`. Worth noting that this also means the tests would not have caught a mistake here: `test-findCastOf.sh` and `test-cache.sh` reach `xrefCast.sh` only as a child process, which inherits the exported variable and would have passed either way. The `demo.command` paths were checked by hand instead, since the demo runs with nothing exported.
+
+### Fixed
+
+- **Eight scripts** — Standardized the `getopts` error handlers on `printf "==> Option -%s requires an argument.\n\n" "$OPTARG" >&2` and the matching `%s` form for invalid options.
+
+  Three problems, one line each. Four scripts named the wrong option in the message: `findCastOf.sh` and `findOtherShows.sh` reported "requires a 'maximum menu size' argument" for `-f`, `-n`, and `-r` as well as `-m`, so the diagnostic misdirected on every option but one. All eight carried a stray apostrophe (`argument'.`) — including `generateXrefData.sh`, which was otherwise the cleanest of them. And six interpolated `$OPTARG` inside the format string, where a `%` in the offending option would be read as a conversion specifier.
+
+  Also aligned the `==>` prefix and trailing blank line, which four scripts omitted.
+
+- **`tests/test-xrefCast.sh`** — Stray quote in a prompt string (`""The Durrells"`). Display-only; the command below it was correct.
+
 ## [Unreleased] — 2026-08-16
 
 ### Fixed

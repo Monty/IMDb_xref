@@ -56,7 +56,7 @@ while true; do
     fi
 
     if waitUntil "$YN_PREF" -Y \
-        '\nRun ./xrefCast.sh "The Night Manager" ""The Durrells"'; then
+        '\nRun ./xrefCast.sh "The Night Manager" "The Durrells"'; then
         ./xrefCast.sh "The Night Manager" "The Durrells"
     fi
 

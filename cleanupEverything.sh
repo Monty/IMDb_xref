@@ -60,7 +60,7 @@ while getopts ":hiv" opt; do
         TELL="-v"
         ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     esac
 done

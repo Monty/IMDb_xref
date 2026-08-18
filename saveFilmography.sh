@@ -90,10 +90,10 @@ while getopts ":hm:" opt; do
         maxMenuSize="$OPTARG"
         ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     :)
-        printf "Option -$OPTARG requires a 'maximum menu size' argument'.\n" >&2
+        printf "==> Option -%s requires an argument.\n\n" "$OPTARG" >&2
         exit 1
         ;;
     esac

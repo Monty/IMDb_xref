@@ -65,17 +65,17 @@ EOF
 waitUntil -k # Default prompt for -k is: "Hit any key to continue, '^C' to quit."
 
 waitUntil -k 'What actresses played Princess Diana?'
-./xrefCast.sh -pn -f "$demoCredits" "Princess Diana"
+NO_MENUS="yes" ./xrefCast.sh -p -f "$demoCredits" "Princess Diana"
 
 waitUntil -k 'What about Queen Elizabeth?'
-./xrefCast.sh -pn -f "$demoCredits" "Queen Elizabeth II" 'Princess Diana'
+NO_MENUS="yes" ./xrefCast.sh -p -f "$demoCredits" "Queen Elizabeth II" 'Princess Diana'
 
 waitUntil -k 'What other shows was Olivia Colman in?'
-./xrefCast.sh -dn -f "$demoCredits" "Olivia Colman"
+NO_MENUS="yes" ./xrefCast.sh -d -f "$demoCredits" "Olivia Colman"
 
 waitUntil -k \
     'Are there actors in common between "The Night Manager" "The Crown" "The Durrells"?'
-./xrefCast.sh -dn -f "$demoCredits" "The Night Manager" 'The Crown' 'The Durrells'
+NO_MENUS="yes" ./xrefCast.sh -d -f "$demoCredits" "The Night Manager" 'The Crown' 'The Durrells'
 
 # Every question queries the demo corpus explicitly with -f, so the answers are
 # the same for a first-time user and for someone with hundreds of shows already
@@ -87,6 +87,6 @@ waitUntil -k \
 # back so the last answer matched what the owner's environment would give. The
 # cache is now reached only with an explicit -c, and -f wins over -c anyway.
 waitUntil -k 'Who was in The Crown?'
-./xrefCast.sh -pn -f "$demoCredits" "The Crown"
+NO_MENUS="yes" ./xrefCast.sh -p -f "$demoCredits" "The Crown"
 
 printf "\nThat's All!\n\n"

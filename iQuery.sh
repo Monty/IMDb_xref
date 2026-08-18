@@ -95,10 +95,10 @@ while getopts ":hclm:" opt; do
         maxHits="$OPTARG"
         ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     :)
-        printf "==> Option -$OPTARG requires a 'maximum menu size' argument.'\n\n" >&2
+        printf "==> Option -%s requires an argument.\n\n" "$OPTARG" >&2
         exit 1
         ;;
     esac
@@ -275,11 +275,11 @@ while true; do
             continue 2
             ;;
         *full*)
-            ./xrefCast.sh -n -f "$creditsFile" "${searchArray[@]}"
+            NO_MENUS="yes" ./xrefCast.sh -f "$creditsFile" "${searchArray[@]}"
             continue 2
             ;;
         *duplicates*)
-            ./xrefCast.sh -dn -f "$creditsFile" "${searchArray[@]}"
+            NO_MENUS="yes" ./xrefCast.sh -d -f "$creditsFile" "${searchArray[@]}"
             continue 2
             ;;
         Quit)

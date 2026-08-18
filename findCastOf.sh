@@ -123,10 +123,10 @@ while getopts ":hf:dm:n:s" opt; do
         SHORT="yes"
         ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     :)
-        printf "Option -$OPTARG requires a 'maximum menu size' argument'.\n" >&2
+        printf "==> Option -%s requires an argument.\n\n" "$OPTARG" >&2
         exit 1
         ;;
     esac
@@ -441,7 +441,7 @@ fi
 # Check for mutliples if appropriate
 if [[ -z $SHORT ]]; then
     if [[ $numMatches -ne 1 ]] || [[ -n $MULTIPLE_NAMES_ONLY ]]; then
-        ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
+        NO_MENUS="yes" ./xrefCast.sh -f "$TMPFILE" -d "${allNames[@]}"
     else
         printf "\n"
     fi
