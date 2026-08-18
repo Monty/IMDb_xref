@@ -96,6 +96,52 @@ function loopOrExitP() {
     exec ./start.command
 }
 
+# Concatenate the per-show cache into one searchable file. Non-zero if the
+# cache holds no shows, in which case CACHEFILE is left untouched.
+function buildCacheFile() {
+    [[ -n "$(ls -1 "$cacheDirectory" 2>/dev/null | rg "^tt")" ]] || return 1
+    cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
+        sort -fu >"$CACHEFILE"
+}
+
+# How many records would $1 return for these search terms? Deliberately uses the
+# same projection as the real search further down: the searcher only ever sees
+# Name|Job|Show|Role, not the nconst and tconst columns, so counting raw rows
+# here would promise hits that switching corpora can't actually produce.
+function countMatches() {
+    [[ -s $1 ]] || return
+    awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$1" |
+        rg -wNzSI -c -f "$SEARCH_TERMS"
+}
+
+# On an empty result, say whether the *other* corpus would have answered.
+# The two are not coverage levels of one corpus, they answer different
+# questions: "Credits-Person.csv" is built from the .tconst lists, so it means
+# "shows I've committed to", while the cache accumulates everything ever looked
+# up -- including shows deliberately never added. An empty CSV result is
+# therefore often the correct answer rather than a misspelling, but the message
+# above suggests a typo either way, which is the only thing wrong with it.
+function suggestOtherCorpus() {
+    local count
+    local record="records are"
+    # An explicit -f means the caller chose the corpus; don't second-guess it.
+    [[ -n $EXPLICIT_SEARCH_FILE ]] && return
+    if [[ $SEARCH_FILE == "$CACHEFILE" ]]; then
+        count="$(countMatches "Credits-Person.csv")"
+        [[ -z $count ]] && return
+        [[ $count -eq 1 ]] && record="record is"
+        printf "    However, %s matching %s in Credits-Person.csv. " "$count" "$record"
+        printf "Retry without -c.\n"
+    else
+        buildCacheFile || return
+        count="$(countMatches "$CACHEFILE")"
+        [[ -z $count ]] && return
+        [[ $count -eq 1 ]] && record="record is"
+        printf "    However, %s matching %s in the cross-reference cache. " "$count" "$record"
+        printf "Retry with -c.\n"
+    fi
+}
+
 while getopts ":f:hcpdi" opt; do
     case $opt in
     h)
@@ -176,9 +222,7 @@ if [[ -n $USE_CACHE ]] && [[ -n $EXPLICIT_SEARCH_FILE ]]; then
     printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring -c because -f was supplied.\n\n" >&2
 fi
 if [[ -n $USE_CACHE ]] && [[ -z $EXPLICIT_SEARCH_FILE ]]; then
-    if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
-        cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
-            sort -fu >"$CACHEFILE"
+    if buildCacheFile; then
         SEARCH_FILE="$CACHEFILE"
         CAST_SOURCE=" from the cross-reference cache"
     else
@@ -239,19 +283,27 @@ PTAB='%s\t%s\t%s\t%s\n'
 # Make sure TMPFILE is empty in case we don't find anything
 true >"$TMPFILE"
 
-# If we find anything, rearrange it and put it in TMPFILE
+# Rearrange any matches and put them in TMPFILE
 # Sort by Job (2), Person (1), Show Title (3)
-if [[ -n "$(rg -wNzSI -c -f "$SEARCH_TERMS" "$SEARCH_FILE")" ]]; then
-    awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$SEARCH_FILE" |
-        rg -wNzSI --color always -f "$SEARCH_TERMS" |
-        perl -p -e 's+\tactress\t+\tactor\t+;' |
-        sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
-fi
+#
+# The search runs on the projection, not on the source rows, so what is
+# searchable is exactly what is displayed: Name, Job, Show, Character. The
+# nconst, tconst, Episode Title, and Rank columns are dropped before matching
+# and are therefore not searchable -- deliberately. A row matched on a hidden
+# column would come back with nothing highlighted by tsvPrint -p and no visible
+# reason for being in the results. This used to be gated by a second rg over
+# the full 8-column rows, which meant a tconst entered the block and then
+# matched nothing, reporting "I didn't find any" about data that was present.
+awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$SEARCH_FILE" |
+    rg -wNzSI --color always -f "$SEARCH_TERMS" |
+    perl -p -e 's+\tactress\t+\tactor\t+;' |
+    sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
 
 # Any results? If not, don't continue.
 if [[ ! -s $TMPFILE ]]; then
     printf "==> I didn't find ${RED}any${NO_COLOR} matching records.\n"
     printf "    Check the \"Searching for:\" section above.\n"
+    suggestOtherCorpus
     loopOrExitP
 else
     numAll=$(cut -f 1 "$TMPFILE" | sort -fu | sed -n '$=')
