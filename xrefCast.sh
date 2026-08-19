@@ -72,11 +72,13 @@ function terminate() {
 TMPFILE $TMPFILE
 CACHEFILE $CACHEFILE
 SEARCH_TERMS $SEARCH_TERMS
+SEARCH_PATTERNS $SEARCH_PATTERNS
 ALL_NAMES $ALL_NAMES
 MULTIPLE_NAMES $MULTIPLE_NAMES
 EOT
     else
-        rm -rf "$TMPFILE" "$CACHEFILE" "$SEARCH_TERMS" "$ALL_NAMES" "$MULTIPLE_NAMES"
+        rm -rf "$TMPFILE" "$CACHEFILE" "$SEARCH_TERMS" "$SEARCH_PATTERNS" \
+            "$ALL_NAMES" "$MULTIPLE_NAMES"
     fi
 }
 
@@ -111,7 +113,7 @@ function buildCacheFile() {
 function countMatches() {
     [[ -s $1 ]] || return
     awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$1" |
-        rg -wNzSI -c -f "$SEARCH_TERMS"
+        rg -wNzSI -c -f "$SEARCH_PATTERNS"
 }
 
 # On an empty result, say whether the *other* corpus would have answered.
@@ -180,6 +182,7 @@ ensurePrerequisites
 # Need some tempfiles
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
+SEARCH_PATTERNS=$(mktemp)
 ALL_NAMES=$(mktemp)
 MULTIPLE_NAMES=$(mktemp)
 CACHEFILE="Credits-cache.csv"
@@ -272,9 +275,12 @@ numRecords=$(sed -n '$=' "$SEARCH_FILE")
 printf "==> Searching for:\n"
 cat "$SEARCH_TERMS"
 
-# Escape metacharacters known to appear in titles, persons, characters
-cp "$SEARCH_TERMS" "$TMPFILE"
-sed 's+[()?]+\\&+g' "$TMPFILE" >"$SEARCH_TERMS"
+# Escape metacharacters known to appear in titles, persons, characters.
+# The escaped form goes in SEARCH_PATTERNS, used by rg as regex patterns for the
+# search. SEARCH_TERMS keeps the user's literal terms -- it is what "Searching
+# for:" printed above, and what tsvPrint -p highlights with, since -p matches
+# with rg -F where an escaped "\(" would be searched for as two literal chars.
+sed 's+[()?]+\\&+g' "$SEARCH_TERMS" >"$SEARCH_PATTERNS"
 
 # Set up awk printf formats with tabs
 # Name|Job|Show|Role
@@ -289,13 +295,19 @@ true >"$TMPFILE"
 # The search runs on the projection, not on the source rows, so what is
 # searchable is exactly what is displayed: Name, Job, Show, Character. The
 # nconst, tconst, Episode Title, and Rank columns are dropped before matching
-# and are therefore not searchable -- deliberately. A row matched on a hidden
-# column would come back with nothing highlighted by tsvPrint -p and no visible
-# reason for being in the results. This used to be gated by a second rg over
-# the full 8-column rows, which meant a tconst entered the block and then
-# matched nothing, reporting "I didn't find any" about data that was present.
+# and are therefore not searchable -- deliberately. Highlighting happens at
+# display time via tsvPrint -p, so a row matched on a dropped column could not
+# be marked: it would come back with nothing highlighted and no visible reason
+# for being in the results. This used to be gated by a second rg over the full
+# 8-column rows, which meant a tconst entered the block and then matched
+# nothing, reporting "I didn't find any" about data that was present.
+#
+# No --color here: escapes in the data would land in the sort keys (ESC sorts
+# before letters, so name-matched people jumped to the front of their job
+# group) and in tsvPrint's column-width arithmetic, which counted them as
+# visible characters and misaligned every highlighted row.
 awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$SEARCH_FILE" |
-    rg -wNzSI --color always -f "$SEARCH_TERMS" |
+    rg -wNzSI -f "$SEARCH_PATTERNS" |
     perl -p -e 's+\tactress\t+\tactor\t+;' |
     sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
 
@@ -346,7 +358,7 @@ fi
 # Unless MULTIPLE_NAMES_ONLY, print all search results
 if [[ -z $MULTIPLE_NAMES_ONLY ]]; then
     printf "\n==> Principal cast & crew members$CAST_SOURCE in alphabetical order (Name|Job|Show|Role):\n"
-    tsvPrint -n "$ALL_NAMES"
+    tsvPrint -p "$SEARCH_TERMS" "$ALL_NAMES"
 fi
 
 # If PRINCIPAL_CAST_ONLY, exit here
@@ -358,7 +370,7 @@ if [[ $numMultiple -eq 0 ]]; then
         printf "\n==> I didn't find any cast or crew members who are listed in more than one show.\n"
 else
     printf "\n==> Principal cast & crew members$CAST_SOURCE listed in more than one show (Name|Job|Show|Role):\n"
-    tsvPrint -n "$MULTIPLE_NAMES"
+    tsvPrint -p "$SEARCH_TERMS" "$MULTIPLE_NAMES"
 fi
 
 # Do we really want to quit?

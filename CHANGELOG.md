@@ -2,7 +2,23 @@
 
 ## [Unreleased] — 2026-08-18
 
+### Added
+
+- **`xrefCast.sh`** — An empty result now says whether the *other* corpus would have answered, with a real count: `However, 13 matching records are in the cross-reference cache. Retry with -c.` The mirror case is covered too — searching with `-c` and finding nothing points back at `Credits-Person.csv`.
+
+  The old message offered only `Check the "Searching for:" section above.`, which is a misspelling hint, and that was the single most misleading thing the script said. `Credits-Person.csv` is built from the `.tconst` lists, so it answers "shows I've committed to"; the cache accumulates everything ever looked up, including shows deliberately never added. An empty CSV result is therefore frequently the *correct* answer rather than a typo — but nothing distinguished "no such person" from "correct, that's outside your corpus, and here's where it lives."
+
+  The count is deliberately computed through the same projection as the real search, via a new `countMatches`. Counting raw rows would have been easier and wrong: a `tt` or `nm` string appears in the source rows but not in the four searchable columns, so the message would have promised hits that switching corpora cannot produce. The second scan runs only on the empty path, so an ordinary search pays nothing, but a failed search now costs roughly two passes.
+
+  The cache concatenation moved into `buildCacheFile`, shared by the `-c` path and the suggestion path, and its `ls` gained `2>/dev/null` — the suggestion can run before any cache directory exists, and a first-time user searching a typo should not get a stray error beneath the message.
+
 ### Changed
+
+- **`xrefCast.sh`** — The search now runs on the projected columns rather than the source rows, making **what is searchable exactly what is displayed**: Name, Job, Show, Character. The `nconst`, `tconst`, `Episode Title`, and `Rank` columns are no longer searchable.
+
+  This was previously inconsistent rather than restrictive. A gate (`rg` over the full 8-column rows) decided whether to run the query, and the query itself ran on the 4-column projection — so `./xrefCast.sh tt4786824` passed the gate, matched nothing downstream, and reported "I didn't find any matching records" about data sitting in column 8 of the file it had just searched. The fix is the gate's deletion: it was redundant with the empty-`TMPFILE` check that follows, so removing it settles the inconsistency *and* drops a full extra scan of the corpus from every search.
+
+  Resolved toward the narrower reading deliberately. Making IDs searchable was the alternative, but characters have no IDs — shows have tconsts and people have nconsts — so ID search would work on two of this script's three axes and silently fail on the third, in a tool whose premise is that one search term treats shows, actors, and characters alike. Hidden-column matching also breaks highlighting: `rg --color always` marks matches in the *projected* text, so a row matched on `Episode Title` could not be highlighted even in principle, and would return with nothing marked and no visible reason for being in the results. Disambiguating five identically-titled shows — the need that prompted trying a tconst — belongs to `findCastOf.sh`, which talks to IMDb and offers a pick menu. Within your own corpus the title is already unambiguous.
 
 - **`xrefCast.sh`** — Removed the `-n` flag. Suppressing menus is now `NO_MENUS` only. `-n` meant "no menu" here while meaning "number of cast members" in `findCastOf.sh` and `findOtherShows.sh` — the same letter taking an argument in one script and not in its siblings. Renaming it to `-N` would have kept both meanings in play and added a lowercase/uppercase pair that looks like two variants of one idea; deleting it retires the letter from this script entirely and leaves one mechanism instead of two.
 
@@ -11,6 +27,16 @@
   Call sites updated to `NO_MENUS="yes" ./xrefCast.sh …`: `findCastOf.sh`, `iQuery.sh` (both actions), and `demo.command` (five questions). No test changes were needed — every test already exports `NO_MENUS` at the top, and none passed `-n`. Worth noting that this also means the tests would not have caught a mistake here: `test-findCastOf.sh` and `test-cache.sh` reach `xrefCast.sh` only as a child process, which inherits the exported variable and would have passed either way. The `demo.command` paths were checked by hand instead, since the demo runs with nothing exported.
 
 ### Fixed
+
+- **`functions/tsvPrint.function`, `xrefCast.sh`** — Highlighting moved from search time to display time, fixing both sort order and column alignment.
+
+  `xrefCast.sh` searched with `rg --color always`, so ANSI escapes were in the data before `sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu` and before the column-width arithmetic. Two visible symptoms. `ESC` (0x1b) collates ahead of letters, so a person matched *by name* sorted to the front of their job group while a person matched only via the show title sorted normally — `./xrefCast.sh -c "The Crown" "Olivia Colman"` put Olivia Colman ahead of Charles Edwards instead of between Marion Bailey and Matt Smith. And the width calculation counted the invisible bytes as visible characters, so highlighted and unhighlighted rows padded to different widths in the same table. Dedup and the "listed in more than one show" comparison were unaffected, since `rg` highlights every occurrence of a term and a name-matched person is therefore decorated identically in all their rows.
+
+  The fix already existed on `live-fetch` and had never been ported: `tsvPrint` gains `-p PATTERNS_FILE`, which highlights caller-supplied terms wherever they appear using `rg --passthru --color always -F`. `--passthru` is the load-bearing part — a plain `rg` filter would drop every non-matching row, which is why the existing `-c`/default path could not serve as a display-time highlighter.
+
+  `xrefCast.sh` needed the escaped and raw search terms separated to use it. `SEARCH_TERMS` was previously clobbered in place with a regex-escaped copy; the escaped form now lives in a new `SEARCH_PATTERNS` (used by `rg` for the search) while `SEARCH_TERMS` keeps the user's literal terms — which is both what "Searching for:" prints and what `-p` needs, since `-F` would hunt for a literal `\(`.
+
+  Note this also changes `tsvPrint`'s **default** path, used by `findCastOf.sh`, `findOtherShows.sh`, `findShowsWith.sh`, `saveFilmography.sh`, and `generateXrefData.sh`. Three improvements come with the ported version: `-F` makes matching fully literal (the old `sed` escaped only `(`, `)`, and `?`, so a title containing `.`, `*`, or `[` was still read as a regex); blank column values are dropped rather than becoming empty patterns that match — and therefore highlight — every row; and a column with no values at all now prints plainly instead of being swallowed. The rendering logic, previously written out four times, is factored into `_renderTable`.
 
 - **Eight scripts** — Standardized the `getopts` error handlers on `printf "==> Option -%s requires an argument.\n\n" "$OPTARG" >&2` and the matching `%s` form for invalid options.
 
