@@ -33,7 +33,8 @@ OPTIONS:
     -a      Allow tvEpisodes -- normally they are filtered out
     -i      In place -- overwrite original file
     -y      Yes -- overwrite without asking
-    -f      Fetch -- scrape IMDb for any missing titles
+    -f      Fetch harder -- if a title page yields nothing, also scrape its
+            fullcredits page. Missing titles are looked up either way.
 
 EXAMPLES:
     ./augment_tconstFiles.sh Contrib/Acorn.tconst
@@ -166,7 +167,7 @@ for file in "$@"; do
         year=""
         types=""
 
-        printf "  Fetching: %s\n" "$tconst"
+        printf "  Fetching: %s\n" "$tconst" >&2
 
         # Try index first (from previous title-basics or full-credits scrapes)
         info=$(_scraper title-info "$tconst" 2>/dev/null)
