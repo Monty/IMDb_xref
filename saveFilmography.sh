@@ -19,8 +19,8 @@ unique, but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
 Filmographies are created in subdirectories so they will not overload the
-primary directory. You'll have the opportunity to review results before
-committing.
+primary directory. Every job category is collected; you'll be asked once
+before anything is written, and can page through the results instead.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -138,20 +138,6 @@ EOF
     printf "\n"
 fi
 
-# Do the work of adding the matches to the TCONST_FILE
-function addToFileP() {
-    if waitUntil "$YN_PREF" -Y "==> Shall I add them?"; then
-        printf "OK. Adding...\n"
-        mkdir -p "$filmographyDir"
-        rg -N "^tt" "$FINAL_RESULTS" >>"$TCONST_FILE"
-        waitUntil "$YN_PREF" -Y \
-            "\n==> Shall I generate ${BLUE}$(basename "$filmographyDB")${NO_COLOR}?" &&
-            ./generateXrefData.sh -q -f "$filmographyDB" -d "$filmographyDir" "$filmographyFile"
-    else
-        printf "Skipping....\n"
-    fi
-}
-
 # Get gz file size - which should already exist but make sure...
 numRecords="$(rg -N name.basics.tsv.gz "$numRecordsFile" 2>/dev/null | cut -f 2)"
 [[ -z $numRecords ]] && numRecords="$(rg -cz "^n" name.basics.tsv.gz)"
@@ -177,6 +163,13 @@ perl -pi -e 's+\\N++g; s+,+, +g; s+,  +, +g;' "$POSSIBLE_MATCHES"
 
 # Figure how many matches for each possible match
 cut -f 2 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
+
+# Job categories to save, one per line, "#" for comments -- the same file
+# live-fetch uses to pick markdown sections. A missing or empty file means
+# save everything.
+allowedJobs=$(rg -N '^[^#]' rg_sections.rgx 2>/dev/null | tr '\n' '|')
+allowedJobs="${allowedJobs%|}"
+[[ -z $allowedJobs ]] && allowedJobs=".*"
 
 # Add possible matches one at a time, preceded by URL
 while read -r line; do
@@ -286,38 +279,67 @@ while read -r line; do
     fi
     noSpaceName="$(safeFilename "$nconstName")"
     filmographyDir="$noSpaceName-Filmography"
-    printf "\n==> Any files generated for $nconstName will be saved in ${BLUE}$filmographyDir${NO_COLOR}\n"
-    filmographyFile="$filmographyDir/$noSpaceName"
+    filmographyFile="$filmographyDir/$noSpaceName.tconst"
+    filmographyDB="$filmographyDir/$noSpaceName.csv"
+    TCONST_FILE="$filmographyFile"
+
+    # Collect the whitelisted job categories. Deciding which of those to keep
+    # is easier done by editing the finished file than by answering a prompt
+    # per category, so this only reports what it found. Summary lines are
+    # buffered so the total can be printed above them, as on live-fetch.
+    true >"$TMPFILE"
     while read -r job; do
-        count=$(cut -f 1 <<<"$job")
         match=$(cut -f 2 <<<"$job")
-        printf "\n"
         rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
         ./augment_tconstFiles.sh -y "$JOB_RESULTS"
-        cut -f 2,3,5 "$JOB_RESULTS" |
-            sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 >"$TMPFILE"
+        # Counted after augmenting, which drops tvEpisodes -- so this is the
+        # number of titles that will actually be written, not the raw
+        # principals count.
         numResults=$(sed -n '$=' "$JOB_RESULTS")
-        if [[ $numResults -gt 0 ]]; then
-            printf "I found $numResults titles listing $nconstName as: $match\n"
-            if waitUntil "$YN_PREF" -Y \
-                "==> Do you want to review them before adding them?"; then
-                tsvPrint -n "$TMPFILE"
-            fi
-            if waitUntil "$YN_PREF" -Y "==> Shall I add them?"; then
-                filmographyFile+="-$match"
-                cat "$JOB_RESULTS" >>"$FINAL_RESULTS"
-            fi
+        [[ -z $numResults ]] && numResults=0
+        [[ $numResults -eq 0 ]] && continue
+        # IMDb's bulk dataset spells categories with underscores
+        # (archive_footage) where the credits page -- and so rg_sections.rgx --
+        # uses spaces. Normalize before matching rather than carrying two
+        # spellings in the whitelist.
+        if rg -qxNi -e "$allowedJobs" <<<"$(tr '_' ' ' <<<"$match")"; then
+            printf "  %-20s %s titles\n" "$match:" "$numResults" >>"$TMPFILE"
+            cat "$JOB_RESULTS" >>"$FINAL_RESULTS"
+        else
+            printf "  %-20s %s titles (not saved)\n" "$match:" "$numResults" >>"$TMPFILE"
         fi
     done <"$MATCH_COUNTS"
-    filmographyDB="$filmographyFile.csv"
-    filmographyFile+=".tconst"
-    TCONST_FILE="$filmographyFile"
-    if [[ -s $FINAL_RESULTS ]]; then
-        numlines=$(sed -n '$=' "$FINAL_RESULTS")
-        printf "\nI can add $numlines titles to ${BLUE}$(basename "$TCONST_FILE")${NO_COLOR}\n"
-        addToFileP
-    else
+
+    if [[ ! -s $FINAL_RESULTS ]]; then
         printf "\n==> There aren't ${RED}any${NO_COLOR} $nconstName titles to add.\n"
+        continue
+    fi
+
+    # A title can credit the same person under more than one category (actress
+    # and producer, say), so the per-job files overlap. The job name is not
+    # part of an augmented row, so duplicates are byte-identical.
+    sort -u "$FINAL_RESULTS" -o "$FINAL_RESULTS"
+    numlines=$(sed -n '$=' "$FINAL_RESULTS")
+
+    printf "\n==> Filmography for $nconstName ($numlines titles)\n"
+    cat "$TMPFILE"
+
+    printf "\n==> Save to ${BLUE}$filmographyFile${NO_COLOR}?\n"
+    if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
+        mkdir -p "$filmographyDir"
+        rg -N "^tt" "$FINAL_RESULTS" | sort -f -t$'\t' --key=3,3 >"$TCONST_FILE"
+        printf "==> Saved.\n"
+        waitUntil "$YN_PREF" -Y \
+            "\n==> Shall I generate ${BLUE}$(basename "$filmographyDB")${NO_COLOR}?" &&
+            ./generateXrefData.sh -q -f "$filmographyDB" -d "$filmographyDir" "$filmographyFile"
+    else
+        # Nothing was written, so offer a look at what would have been.
+        # Exploring in $PAGER beats saving a file just to delete it later.
+        if waitUntil "$YN_PREF" -N "==> Would you like to view it instead?"; then
+            cut -f 2,3,5 "$FINAL_RESULTS" |
+                sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 >"$TMPFILE"
+            tsvPrint -n "$TMPFILE" | ${PAGER:-less}
+        fi
     fi
 done <"$NCONST_TERMS"
 
