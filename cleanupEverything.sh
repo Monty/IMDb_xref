@@ -69,7 +69,8 @@ if waitUntil "$YN_PREF" -N \
     deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
         "AssociatedTitles*.csv" "LinksToPersons*.csv" "LinksToTitles*.csv" \
         "Episode-Count*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
-        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" ".xref_live_*"
+        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" \
+        "*-Filmography" ".xref_live_*"
     exit
 else
     printf "Skipping...\n"
@@ -108,6 +109,18 @@ printf "They are ignored by git.\n"
 if waitUntil "$YN_PREF" -N \
     "Delete all manually maintained .tconst and .xlate files?"; then
     deleteFiles "*.tconst" "*.xlate"
+else
+    printf "Skipping...\n"
+fi
+
+# Filmographies get their own question because each one exists only because you
+# asked for that person, and nothing records which people you chose -- with
+# dozens saved you'd have to remember the list yourself. Rebuilding one here
+# means re-scraping IMDb through the WAF, so this is more expensive to undo
+# than the bulk-download equivalent.
+if waitUntil "$YN_PREF" -N \
+    "Delete all saved filmographies (*-Filmography)?"; then
+    deleteFiles "*-Filmography"
 else
     printf "Skipping...\n"
 fi

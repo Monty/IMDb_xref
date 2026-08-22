@@ -46,6 +46,12 @@ node_modules/
 # Files added by Claude
 .claude/
 
+# Saved filmographies -- created deliberately, one per person, and not
+# recorded anywhere, so they are kept out of git rather than tracked.
+# The directory form is transitional; the .md is where this is heading.
+*-Filmography
+*-Filmography.md
+
 # Keep these files
 !rg_jobs.rgx
 !rg_sections.rgx

@@ -18,8 +18,10 @@ Search IMDb for person names or nconst IDs. An nconst ID should be unique,
 but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
-Filmographies are saved as Markdown in secondary/filmographies/. You'll have
-the opportunity to review results before committing.
+Filmographies are saved as Markdown in a per-person "-Filmography"
+directory. Only the job categories listed in rg_sections.rgx are written;
+the rest are reported but skipped. You'll be asked once before anything
+is saved.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -70,6 +72,20 @@ function loopOrExitP() {
 
 _scraper() {
     uv run --directory scraper python cli.py "$@"
+}
+
+# Job categories to write, one per line, "#" for comments. A missing or empty
+# file means include everything. Returned as an rg/jq alternation.
+#
+# Shared by _generate_filmography_md and the on-screen summary on purpose: if
+# the two computed the whitelist separately they could drift, and the summary
+# would again advertise sections that never reach the file.
+_allowedJobs() {
+    local allowed
+    allowed=$(rg -N '^[^#]' rg_sections.rgx 2>/dev/null | tr '\n' '|')
+    allowed="${allowed%|}"
+    [[ -z $allowed ]] && allowed=".*"
+    printf "%s" "$allowed"
 }
 
 # Replacement for _generate_filmography_md() in saveFilmography.sh
@@ -131,9 +147,7 @@ _generate_filmography_md() {
     # Job categories to include, one per line, "#" for comments. Missing or
     # empty file means include everything.
     local allowedJobs
-    allowedJobs=$(rg -N '^[^#]' rg_sections.rgx 2>/dev/null | tr '\n' '|')
-    allowedJobs="${allowedJobs%|}"
-    [[ -z $allowedJobs ]] && allowedJobs=".*"
+    allowedJobs=$(_allowedJobs)
 
     # Header: name as an IMDb link, disambiguation suffix stripped
     jq -r '"# [" + (.name | gsub(" ?\\([IVX]+\\)"; "")) +
@@ -441,10 +455,18 @@ while IFS= read -r searchTerm; do
     # filename already prevents collisions.
     cleanName=$(sd ' *\(I[IVX]*\)$' '' <<<"$nconstName")
     noSpaceName="$(safeFilename "$cleanName")"
-    filmographyDir="secondary/filmographies"
-    mkdir -p "$filmographyDir"
+    # Saved alongside the other per-person output rather than under
+    # "secondary", which cleanupEverything.sh deletes wholesale as a debugging
+    # artifact -- filmographies were being swept away with it. The
+    # "*-Filmography" directory matches bulk-download, so the same cleanup
+    # prompt covers both branches and no glob can collide with README.md.
+    filmographyDir="$noSpaceName-Filmography"
 
     printf "\n==> Filmography for %s (%s roles)\n" "$nconstName" "$roleCount"
+
+    # Only whitelisted sections reach the markdown file, so mark the rest --
+    # otherwise the summary advertises categories that never get written.
+    allowedJobs=$(_allowedJobs)
 
     # Group by job
     jobs=$(jq -r '[.roles[].job // empty] | unique | .[]' <<<"$fgData")
@@ -452,13 +474,20 @@ while IFS= read -r searchTerm; do
         [[ -z $job ]] && continue
         jobCount=$(jq --arg j "$job" '[.roles[] | select(.job == $j)] | length' <<<"$fgData")
         [[ $jobCount -eq 0 ]] && continue
-        printf "  %-20s %s titles\n" "$job:" "$jobCount"
+        if rg -qxNi -e "$allowedJobs" <<<"$job"; then
+            printf "  %-20s %s titles\n" "$job:" "$jobCount"
+        else
+            printf "  %-20s %s titles (not saved)\n" "$job:" "$jobCount"
+        fi
     done <<<"$jobs"
 
     # Offer to save
     filmographyMd="$filmographyDir/${noSpaceName}-${nconst}.md"
     printf "\n==> Save to ${BLUE}$filmographyMd${NO_COLOR}?\n"
     if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
+        # Created only once the answer is yes -- otherwise declining still
+        # left an empty directory behind in the primary directory.
+        mkdir -p "$filmographyDir"
         _generate_filmography_md "$fgData" "$filmographyMd"
         printf "==> Saved.\n"
     fi
