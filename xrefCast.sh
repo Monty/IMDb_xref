@@ -38,17 +38,22 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -c      Cache -- Search the cross-reference cache instead of "Credits-Person*csv".
+    -u      Union -- Also search shows that are in the cross-reference cache but
+            in none of your .tconst lists.
     -p      Principal -- Only print 'Principal cast & crew members' section.
     -d      Duplicates -- Only list cast & crew who are found in more than one show
     -f      File -- Query a specific file rather than "Credits-Person*csv".
     -i      Print info about any files that are searched.
 
-The default source, "Credits-Person*csv", is built from your .tconst lists and
-carries episode-level credits -- so guest and supporting players are in it. The
--c cache holds only each show's ~10 principals, but covers every show ever added
-by findCastOf.sh or findOtherShows.sh, including ones in no .tconst file. Deeper
-versus wider: use -c to reach a show you looked up but never curated.
+"Credits-Person*csv" is built from your .tconst lists and carries episode-level
+credits, so guest and supporting players are in it. The cross-reference cache
+also holds every show ever added by findCastOf.sh or findOtherShows.sh --
+including shows you looked up once and never curated -- but only each show's ~10
+series principals, with no episode credits.
+
+-u searches both: your curated shows at full depth, plus the uncurated ones at
+principals-only depth. Results say which shows came from the cache, because a
+miss on one of those is inconclusive rather than a definite absence.
 
 EXAMPLES:
     ./xrefCast.sh "Olivia Colman"
@@ -56,7 +61,7 @@ EXAMPLES:
     ./xrefCast.sh "The Crown"
     ./xrefCast.sh -d "The Night Manager" "The Crown" "The Durrells"
     ./xrefCast.sh -d "Elizabeth Debicki"
-    ./xrefCast.sh -c "The Crown"
+    ./xrefCast.sh -u "The Crown"
     ./xrefCast.sh -pf Clooney.csv "Brad Pitt"
 EOF
 }
@@ -71,13 +76,14 @@ function terminate() {
         cat <<EOT >&2
 TMPFILE $TMPFILE
 CACHEFILE $CACHEFILE
+FRINGEFILE $FRINGEFILE
+UNIONFILE $UNIONFILE
 SEARCH_TERMS $SEARCH_TERMS
-SEARCH_PATTERNS $SEARCH_PATTERNS
 ALL_NAMES $ALL_NAMES
 MULTIPLE_NAMES $MULTIPLE_NAMES
 EOT
     else
-        rm -rf "$TMPFILE" "$CACHEFILE" "$SEARCH_TERMS" "$SEARCH_PATTERNS" \
+        rm -rf "$TMPFILE" "$CACHEFILE" "$FRINGEFILE" "$UNIONFILE" "$SEARCH_TERMS" \
             "$ALL_NAMES" "$MULTIPLE_NAMES"
     fi
 }
@@ -98,6 +104,44 @@ function loopOrExitP() {
     exec ./start.command
 }
 
+# Build "Credits-Person.csv" plus the cache rows for shows it doesn't contain.
+# Non-zero if the cache holds no shows.
+#
+# Show-level, not row-level, which is what dissolves the dedup problem: for a
+# show present in both stores the cache adds nothing, since both derive their
+# series-level rows from title.principals for the same tconst and the CSV also
+# carries that show's episode rows. Filtering the cache down to tconsts the CSV
+# lacks therefore leaves nothing to deduplicate -- no rank or character-format
+# matching needed. Verified on Money Heist (tt6468322): 12 cache rows vs 12 CSV
+# series-level rows, identical but for actor/actress, which the perl below
+# reconciles anyway.
+function buildUnionFile() {
+    buildCacheFile || return 1
+    awk -F "\t" 'NR==FNR {curated[$8]=1; next} !($8 in curated)' \
+        "$1" "$CACHEFILE" >"$FRINGEFILE"
+    cat "$1" "$FRINGEFILE" >"$UNIONFILE"
+}
+
+# Name the shows in a result that came from the cache rather than from the
+# .tconst corpus. The two contribute at different depths -- a curated show
+# carries episode-level credits, a fringe show only its ~10 series principals --
+# and nothing in a four-column row shows which is which. So a character search
+# that misses on a fringe show is inconclusive rather than negative: Elizabeth
+# Debicki's Princess Diana is credited on The Crown's episodes, and if The Crown
+# is a fringe show here those rows don't exist to be found. Named after the
+# results, where the ambiguity is, rather than marked per row -- that would touch
+# the projection, the column widths, and tsvPrint.
+function printFringeFooter() {
+    local matched
+    [[ -s $FRINGEFILE ]] || return
+    matched=$(awk -F "\t" 'NR==FNR {fringe[$2]=1; next} ($3 in fringe) {print $3}' \
+        "$FRINGEFILE" "$1" | sort -fu)
+    [[ -z $matched ]] && return
+    printf "\n    From the cross-reference cache, which has no episode credits --\n"
+    printf "    a missing character or guest actor is inconclusive, not an absence:\n"
+    printf "%s\n" "$matched" | awk '{print "      " $0}'
+}
+
 # Concatenate the per-show cache into one searchable file. Non-zero if the
 # cache holds no shows, in which case CACHEFILE is left untouched.
 function buildCacheFile() {
@@ -113,45 +157,40 @@ function buildCacheFile() {
 function countMatches() {
     [[ -s $1 ]] || return
     awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$1" |
-        rg -wNzSI -c -f "$SEARCH_PATTERNS"
+        rg -wNzSIF -c -f "$SEARCH_TERMS"
 }
 
-# On an empty result, say whether the *other* corpus would have answered.
-# The two are not coverage levels of one corpus, they answer different
+# On an empty result, say whether the uncurated shows would have answered.
+# The corpora are not coverage levels of one store, they answer different
 # questions: "Credits-Person.csv" is built from the .tconst lists, so it means
 # "shows I've committed to", while the cache accumulates everything ever looked
-# up -- including shows deliberately never added. An empty CSV result is
-# therefore often the correct answer rather than a misspelling, but the message
-# above suggests a typo either way, which is the only thing wrong with it.
+# up -- including shows deliberately never added. An empty result is therefore
+# often the correct answer rather than a misspelling, but the message above
+# suggests a typo either way, which is the only thing wrong with it.
 function suggestOtherCorpus() {
     local count
     local record="records are"
     # An explicit -f means the caller chose the corpus; don't second-guess it.
     [[ -n $EXPLICIT_SEARCH_FILE ]] && return
-    if [[ $SEARCH_FILE == "$CACHEFILE" ]]; then
-        count="$(countMatches "Credits-Person.csv")"
-        [[ -z $count ]] && return
-        [[ $count -eq 1 ]] && record="record is"
-        printf "    However, %s matching %s in Credits-Person.csv. " "$count" "$record"
-        printf "Retry without -c.\n"
-    else
-        buildCacheFile || return
-        count="$(countMatches "$CACHEFILE")"
-        [[ -z $count ]] && return
-        [[ $count -eq 1 ]] && record="record is"
-        printf "    However, %s matching %s in the cross-reference cache. " "$count" "$record"
-        printf "Retry with -c.\n"
-    fi
+    # Already searched everything there is.
+    [[ -n $USE_UNION ]] && return
+    buildUnionFile "Credits-Person.csv" || return
+    count="$(countMatches "$FRINGEFILE")"
+    [[ -z $count ]] && return
+    [[ $count -eq 1 ]] && record="record is"
+    printf "    However, %s matching %s in shows that are cached but in none of\n" \
+        "$count" "$record"
+    printf "    your .tconst lists. Retry with -u.\n"
 }
 
-while getopts ":f:hcpdi" opt; do
+while getopts ":f:hupdi" opt; do
     case $opt in
     h)
         help
         exit
         ;;
-    c)
-        USE_CACHE="yes"
+    u)
+        USE_UNION="yes"
         ;;
     p)
         PRINCIPAL_CAST_ONLY="yes"
@@ -182,7 +221,8 @@ ensurePrerequisites
 # Need some tempfiles
 TMPFILE=$(mktemp)
 SEARCH_TERMS=$(mktemp)
-SEARCH_PATTERNS=$(mktemp)
+FRINGEFILE=$(mktemp)
+UNIONFILE=$(mktemp)
 ALL_NAMES=$(mktemp)
 MULTIPLE_NAMES=$(mktemp)
 CACHEFILE="Credits-cache.csv"
@@ -194,11 +234,11 @@ if [[ -n $SEARCH_FILE ]]; then
         printf "==> [${RED}Error${NO_COLOR}] Missing search file: $SEARCH_FILE\n\n" >&2
         loopOrExitP
     fi
-    # An explicit -f wins over -c. Without this the cache block below
-    # silently replaced the file the caller asked for with the whole cache --
-    # including findCastOf.sh's internal "xrefCast.sh -f" call, which then
-    # cross-referenced every cached show instead of just the ones searched for.
-    # (Was FULLCAST rather than -c until the flag replaced it.)
+    # An explicit -f wins over -u. Without this the union block below
+    # silently replaced the file the caller asked for -- including
+    # findCastOf.sh's internal "xrefCast.sh -f" call, which would then
+    # cross-reference every cached show instead of just the ones searched for.
+    # (Was FULLCAST, then -c, before -u replaced them.)
     EXPLICIT_SEARCH_FILE="yes"
 else
     SEARCH_FILE="Credits-Person.csv"
@@ -206,31 +246,28 @@ else
     [[ ! -e $SEARCH_FILE ]] && ensureDataFiles
 fi
 
-# -c searches the per-show cross-reference cache instead of Credits-Person.csv.
-# The two corpora differ on two axes, which is why this is a flag rather than a
-# default: the CSV is deeper (it carries episode-level credits, where guest and
-# supporting players live -- measured at 40,140 show+person pairs versus the
-# cache's 6,743), while the cache is wider (it accumulates every show added by
-# findCastOf.sh or findOtherShows.sh, including ones in no .tconst file).
+# -u widens the search to shows that are cached but in none of the .tconst
+# lists. It is a union, not a corpus swap: the curated shows keep their
+# episode-level depth and the uncurated ones are added at principals-only depth.
 #
-# This used to be triggered by the FULLCAST environment variable, which was
-# doubly wrong here. FULLCAST means "the fuller source" on live-fetch, where the
-# cache really is a full-cast superset of the CSV; on this branch the cache holds
-# title.principals' ~10 names per show, so it selected the *thinner* source. The
-# integer was inert too -- no ordering value above 10 exists in title.principals,
-# so the old "$4 <= FULLCAST" cap could never fire and FULLCAST=50 and FULLCAST=5
-# gave identical output. Both are gone; the default now works with nothing
-# exported, which is what a new user gets.
-if [[ -n $USE_CACHE ]] && [[ -n $EXPLICIT_SEARCH_FILE ]]; then
-    printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring -c because -f was supplied.\n\n" >&2
+# Deliberately not the default. The CSV means "shows I've committed to"; the
+# cache means "everything I've ever looked at", which on a personal corpus
+# includes shows considered and rejected. Folding those into "my shows" would
+# break the question this tool exists to answer.
+#
+# The predecessor -c swapped corpora instead, trading away episode depth on
+# every curated show to reach the fringe -- and before that, the FULLCAST
+# environment variable did the same thing under a name that promised the
+# opposite. Both are gone.
+if [[ -n $USE_UNION ]] && [[ -n $EXPLICIT_SEARCH_FILE ]]; then
+    printf "==> [${YELLOW}Warning${NO_COLOR}] Ignoring -u because -f was supplied.\n\n" >&2
 fi
-if [[ -n $USE_CACHE ]] && [[ -z $EXPLICIT_SEARCH_FILE ]]; then
-    if buildCacheFile; then
-        SEARCH_FILE="$CACHEFILE"
-        CAST_SOURCE=" from the cross-reference cache"
+if [[ -n $USE_UNION ]] && [[ -z $EXPLICIT_SEARCH_FILE ]]; then
+    if buildUnionFile "$SEARCH_FILE"; then
+        SEARCH_FILE="$UNIONFILE"
     else
         printf "==> [${YELLOW}Warning${NO_COLOR}] The cross-reference cache is empty. " >&2
-        printf "Searching $SEARCH_FILE instead.\n\n" >&2
+        printf "Searching $SEARCH_FILE alone.\n\n" >&2
     fi
 fi
 
@@ -275,13 +312,6 @@ numRecords=$(sed -n '$=' "$SEARCH_FILE")
 printf "==> Searching for:\n"
 cat "$SEARCH_TERMS"
 
-# Escape metacharacters known to appear in titles, persons, characters.
-# The escaped form goes in SEARCH_PATTERNS, used by rg as regex patterns for the
-# search. SEARCH_TERMS keeps the user's literal terms -- it is what "Searching
-# for:" printed above, and what tsvPrint -p highlights with, since -p matches
-# with rg -F where an escaped "\(" would be searched for as two literal chars.
-sed 's+[()?]+\\&+g' "$SEARCH_TERMS" >"$SEARCH_PATTERNS"
-
 # Set up awk printf formats with tabs
 # Name|Job|Show|Role
 PTAB='%s\t%s\t%s\t%s\n'
@@ -306,8 +336,16 @@ true >"$TMPFILE"
 # before letters, so name-matched people jumped to the front of their job
 # group) and in tsvPrint's column-width arithmetic, which counted them as
 # visible characters and misaligned every highlighted row.
+#
+# -F matches the terms literally. They are show titles, person names, and
+# character names -- never regex. The previous sed escaped only ( ) and ?, so
+# every other metacharacter stayed live and produced real false positives:
+# "D.S." returned "Bertrand (DGSE)" and "DCSU Russell Cornish", the dots
+# matching DGSE and DCSU. That sed was a hand-rolled partial -F; -F does
+# completely what it did partially, and it makes search and highlight agree,
+# since tsvPrint -p has always matched literally.
 awk -F "\t" -v PF="$PTAB" '{printf(PF, $1,$5,$2,$6)}' "$SEARCH_FILE" |
-    rg -wNzSI -f "$SEARCH_PATTERNS" |
+    rg -wNzSIF -f "$SEARCH_TERMS" |
     perl -p -e 's+\tactress\t+\tactor\t+;' |
     sort -f -t$'\t' --key=2,2 --key=1,1 --key=3,3 -fu >"$TMPFILE"
 
@@ -357,8 +395,9 @@ fi
 
 # Unless MULTIPLE_NAMES_ONLY, print all search results
 if [[ -z $MULTIPLE_NAMES_ONLY ]]; then
-    printf "\n==> Principal cast & crew members$CAST_SOURCE in alphabetical order (Name|Job|Show|Role):\n"
+    printf "\n==> Principal cast & crew members in alphabetical order (Name|Job|Show|Role):\n"
     tsvPrint -p "$SEARCH_TERMS" "$ALL_NAMES"
+    printFringeFooter "$ALL_NAMES"
 fi
 
 # If PRINCIPAL_CAST_ONLY, exit here
@@ -369,8 +408,9 @@ if [[ $numMultiple -eq 0 ]]; then
     [[ -n $MULTIPLE_NAMES_ONLY ]] &&
         printf "\n==> I didn't find any cast or crew members who are listed in more than one show.\n"
 else
-    printf "\n==> Principal cast & crew members$CAST_SOURCE listed in more than one show (Name|Job|Show|Role):\n"
+    printf "\n==> Principal cast & crew members listed in more than one show (Name|Job|Show|Role):\n"
     tsvPrint -p "$SEARCH_TERMS" "$MULTIPLE_NAMES"
+    printFringeFooter "$MULTIPLE_NAMES"
 fi
 
 # Do we really want to quit?

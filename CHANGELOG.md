@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased] — 2026-08-26
+
+### Fixed
+
+- **`xrefCast.sh`** — Search now matches terms literally (`rg -F`) instead of as regexes. `SEARCH_PATTERNS` and the `sed 's+[()?]+\\&+g'` that fed it are deleted. That sed was a hand-rolled partial `-F`: its purpose was to stop regex interpretation, but it escaped only `(`, `)`, and `?`, leaving every other metacharacter live. The result was real false positives, not hypothetical ones — `./xrefCast.sh "D.S."` returned `Bertrand (DGSE)` and `DCSU Russell Cornish`, the dots matching `DGSE` and `DCSU`. Working around it meant typing `"D\.S\."`, hand-escaping regex inside a title search, which is the wrong interface. `-F` also makes search and highlight agree, since `tsvPrint -p` has always matched literally; previously a term could match the search but highlight nothing. Search terms here are show titles, person names, and character names — never patterns — so nothing is lost. Removes a tempfile and a pipeline stage.
+
+### Changed
+
+- **`xrefCast.sh`, `iQuery.sh`** — **`-c` is retired and replaced by `-u`, which is a union rather than a corpus swap.** `-c` searched the cross-reference cache *instead of* `Credits-Person.csv`, so reaching an uncurated show meant giving up episode-level credits on every curated one — the same trade `FULLCAST` made before it, under a name that promised the opposite. `-u` searches `Credits-Person.csv` **plus** the cache rows for shows in none of your `.tconst` lists, so it is a genuine superset and the name is honest.
+
+  The letter changed because `-c` was ambiguous in the worst available way: cast and crew both begin with c, and the string the user reads most often is `Principal cast & crew members`, priming both readings at once. `-u` reads as union and was free across the family.
+
+  **The union is computed at show level, which is what dissolves the deduplication problem.** For a show present in both stores the cache adds nothing — both derive series-level rows from `title.principals` for the same tconst, and the CSV additionally carries that show's episode rows — so filtering the cache down to tconsts the CSV lacks leaves nothing to deduplicate. No rank or character-format matching needed. Verified on Money Heist (`tt6468322`, present in both): 12 cache rows against 12 CSV series-level rows, identical in people, ranks, characters, and nconsts, differing only in `actor` vs `actress`, which the existing `perl s/actress/actor/` reconciles anyway.
+
+  **Not the default, deliberately.** `Credits-Person.csv` means "shows I've committed to"; the cache means "everything I've ever looked at," which on a personal corpus includes shows considered and rejected. Folding those into "my shows" would break the question the tool exists to answer. They are two questions, not two coverage levels.
+
+- **`xrefCast.sh`** — Results from `-u` now end with a footer naming which shows in that result came from the cache. Curated shows contribute episode-level depth while cached-only shows contribute ~10 series principals, and nothing in a four-column row distinguishes them — so a character search that misses on a cached-only show looks identical to a real absence. The CHEATSHEET's own gotcha is exactly this case: Elizabeth Debicki as Princess Diana is credited on The Crown's *episodes*, not the series. The footer makes such a miss read as inconclusive rather than negative. Chosen over a per-row marker, which would have touched the projection, the column widths, and `tsvPrint`, and over documenting it in `-h` alone, where nobody reads it at the moment the ambiguity bites. One extra line; four-column output undisturbed.
+
+- **`xrefCast.sh`** — The header no longer names the source. It read `Principal cast & crew members from the cross-reference cache …` under `-c`, which described a whole-result property that no longer exists now that one result can mix both sources. The footer carries that per show instead.
+
+- **`xrefCast.sh`** — The empty-result hint added 2026-08-18 follows suit: instead of `Retry with -c`, it counts matches among the cached-but-uncurated shows only and says `Retry with -u`. It stays silent when `-u` was already used, since there is nothing further to search.
+
+- **`iQuery.sh`** — `-u` builds its three search lists from the same union. In union mode it hands `xrefCast.sh` a `-u` rather than `-f TEMPFILE`: the child builds the identical union itself, and `-f` would suppress not only that but the cache footer — the entire point of marking mixed-depth results. The default path still passes `-f Credits-Person.csv` as before.
+
 ## [Unreleased] — 2026-08-18
 
 ### Added

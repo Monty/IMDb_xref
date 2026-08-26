@@ -34,11 +34,10 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -c      Cache -- Build the search lists from the cross-reference cache
-            instead of the generated Credits-Person*csv and uniq* files.
-            The cache covers every show ever added by findCastOf.sh or
-            findOtherShows.sh, but holds only each show's ~10 principals --
-            wider, and shallower. See ./xrefCast.sh -h.
+    -u      Union -- Also include shows that are in the cross-reference cache but
+            in none of your .tconst lists. Those contribute only each show's ~10
+            series principals, with no episode credits, so the search lists grow
+            wider without growing deeper. See ./xrefCast.sh -h.
     -l      Use 'less' to list shows a page at a time rather than all at once.
             Type space bar for next page, 'b' for previous page, 'h' for help,
             '/' to search, 'q' to quit.
@@ -49,7 +48,7 @@ OPTIONS:
 EXAMPLES:
     iQuery.sh
     iQuery.sh -m 30
-    iQuery.sh -c
+    iQuery.sh -u
 EOF
 }
 
@@ -65,9 +64,11 @@ TITLES $TITLES
 PERSONS $PERSONS
 CHARACTERS $CHARACTERS
 CREDITS $CREDITS
+CACHED $CACHED
+FRINGE $FRINGE
 EOT
     else
-        rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
+        rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS" "$CACHED" "$FRINGE"
     fi
 }
 
@@ -79,14 +80,14 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":hclm:" opt; do
+while getopts ":hulm:" opt; do
     case $opt in
     h)
         help
         exit
         ;;
-    c)
-        USE_CACHE="yes"
+    u)
+        USE_UNION="yes"
         ;;
     l)
         USE_LESS="yes"
@@ -113,6 +114,8 @@ TITLES=$(mktemp)
 PERSONS=$(mktemp)
 CHARACTERS=$(mktemp)
 CREDITS=$(mktemp)
+CACHED=$(mktemp)
+FRINGE=$(mktemp)
 
 # Setup default search files and corresponding categories
 creditsFile="Credits-Person.csv"
@@ -122,25 +125,35 @@ categories=('show' 'person' 'character')
 # Make sure creditsFile exists
 [[ ! -e $creditsFile ]] && ensureDataFiles
 
-# -c builds every search list from the cross-reference cache rather than the
-# generated files. Was keyed off the FULLCAST environment variable, which
-# selected the thinner source on this branch while its name promised the fuller
-# one -- see the note in xrefCast.sh. The temp files built here are handed to
-# xrefCast.sh with -f, which wins over its own source selection.
-if [[ -n $USE_CACHE ]]; then
-    # Use the data from the cache
-    if [[ -n "$(ls -1 "$cacheDirectory" | rg "^tt")" ]]; then
+# What to hand xrefCast.sh. By default, the same file we built our lists from.
+xrefArgs=(-f "$creditsFile")
+
+# -u widens the search lists to include shows that are cached but in none of the
+# .tconst lists, matching xrefCast.sh -u. Union, not a corpus swap: curated shows
+# keep their episode-level rows and the uncurated ones are appended at
+# principals-only depth. The predecessor -c replaced the corpus outright, and
+# before that the FULLCAST environment variable did the same under a name that
+# promised the opposite.
+#
+# In union mode we pass -u rather than -f: xrefCast.sh builds the identical
+# union itself, and -f would suppress not just that but the footer naming which
+# shows came from the cache -- the whole point of marking mixed-depth results.
+if [[ -n $USE_UNION ]]; then
+    if [[ -n "$(ls -1 "$cacheDirectory" 2>/dev/null | rg "^tt")" ]]; then
         cat "$cacheDirectory"/tt* | rg -v '^Person\tShow Title\t' | rg -v '^$' |
-            sort -fu >"$CREDITS"
+            sort -fu >"$CACHED"
+        awk -F "\t" 'NR==FNR {curated[$8]=1; next} !($8 in curated)' \
+            "$creditsFile" "$CACHED" >"$FRINGE"
+        cat "$creditsFile" "$FRINGE" >"$CREDITS"
         cut -f 2 "$CREDITS" | sort -fu >"$TITLES"
         cut -f 1 "$CREDITS" | sort -fu >"$PERSONS"
         cut -f 6 "$CREDITS" | sort -fu >"$CHARACTERS"
         #
         uniqFiles=("$TITLES" "$PERSONS" "$CHARACTERS")
-        creditsFile="$CREDITS"
+        xrefArgs=(-u)
     else
         printf "==> [${YELLOW}Warning${NO_COLOR}] The cross-reference cache is empty. " >&2
-        printf "Using the generated data files instead.\n\n" >&2
+        printf "Using the generated data files alone.\n\n" >&2
     fi
 fi
 
@@ -165,7 +178,7 @@ done
 # If we don't have any data...
 if [[ ${#missingCategories[@]} -gt 0 ]]; then
     ensureDataFiles
-    rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS"
+    rm -f "$TITLES" "$PERSONS" "$CHARACTERS" "$CREDITS" "$CACHED" "$FRINGE"
     exec ./iQuery.sh
 fi
 
@@ -275,11 +288,11 @@ while true; do
             continue 2
             ;;
         *full*)
-            NO_MENUS="yes" ./xrefCast.sh -f "$creditsFile" "${searchArray[@]}"
+            NO_MENUS="yes" ./xrefCast.sh "${xrefArgs[@]}" "${searchArray[@]}"
             continue 2
             ;;
         *duplicates*)
-            NO_MENUS="yes" ./xrefCast.sh -d -f "$creditsFile" "${searchArray[@]}"
+            NO_MENUS="yes" ./xrefCast.sh -d "${xrefArgs[@]}" "${searchArray[@]}"
             continue 2
             ;;
         Quit)
