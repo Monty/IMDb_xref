@@ -31,8 +31,8 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -a      Allow tvEpisodes -- normally they are filtered out
-    -i      In place -- overwrite original file
-    -y      Yes -- overwrite without asking
+    -i      In place -- overwrite original file, asking first
+    -y      Yes -- overwrite in place without asking. Implies -i.
     -f      Fetch harder -- if a title page yields nothing, also scrape its
             fullcredits page. Missing titles are looked up either way.
 
