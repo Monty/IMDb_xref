@@ -33,13 +33,17 @@ USAGE:
 OPTIONS:
     -h      Print this message.
     -a      Allow tvEpisodes -- normally they are filtered out
-    -i      In place -- overwrite original file
-    -y      Yes -- overwrite without asking "OK to overwrite...
+    -i      In place -- overwrite original file, asking first
+    -y      Yes -- overwrite in place without asking. Implies -i.
+    -r      Reload -- discard the augmented cache and re-read every title from
+            title.basics.tsv.gz. Done automatically when that file is newer
+            than the cache.
 
 EXAMPLES:
     ./augment_tconstFiles.sh Contrib/OPB.tconst
     ./augment_tconstFiles.sh -i Contrib/*.tconst
-    ./augment_tconstFiles.sh -iy Contrib/*.tconst
+    ./augment_tconstFiles.sh -y Contrib/*.tconst
+    ./augment_tconstFiles.sh -ry Contrib/*.tconst
 EOF
 }
 
@@ -70,7 +74,7 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":haiy" opt; do
+while getopts ":hairy" opt; do
     case $opt in
     h)
         help
@@ -81,6 +85,9 @@ while getopts ":haiy" opt; do
         ;;
     i)
         INPLACE="yes"
+        ;;
+    r)
+        RELOAD="yes"
         ;;
     y)
         INPLACE="yes"
@@ -121,6 +128,28 @@ function copyResults() {
 }
 
 cacheFile="$cacheDirectory/augmented"
+
+# Every row in the cache is derived from title.basics.tsv.gz, so a row older
+# than that file is strictly worse than re-reading it -- there is no fetch cost
+# here to justify serving stale data. This matters because a cached tconst is
+# never looked up again: when IMDb revises a title (an Original Title changing
+# is the usual one) the stale row would otherwise win permanently.
+#
+# Same gz-is-newer test generateXrefData.sh uses to decide RELOAD, and -r
+# forces it. The whole cache is discarded rather than individual rows, since
+# they all came from the same dataset. [[ -nt ]] follows symlinks, so the
+# WhatsStreamingToday indirection is compared correctly, and a missing cache
+# file counts as newer, which creates it.
+#
+# Checked before the touch below -- touching first would set the cache's mtime
+# to now and make the comparison always false.
+if [[ -n $RELOAD ]] || [[ title.basics.tsv.gz -nt $cacheFile ]]; then
+    if [[ -s $cacheFile ]]; then
+        printf "==> Refreshing augmented cache from title.basics.tsv.gz.\n"
+        true >"$cacheFile"
+    fi
+fi
+
 touch "$cacheFile"
 rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
 
