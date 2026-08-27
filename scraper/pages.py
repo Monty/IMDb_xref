@@ -607,7 +607,18 @@ def get_filmography(nconst: str) -> Filmography:
             "tconst": item["tconst"],
             "title": item["title"],
             "year": item["year"],
-            "title_type": item["title_type"],
+            # IMDb's person-credits rows carry a type marker only for things
+            # that are not films -- "TV Series", "Short", "Video Game". A
+            # feature film has no marker at all, so _EXTRACT_JS leaves
+            # title_type empty and every film rendered as "-" in the
+            # filmography, indistinguishable from missing data.
+            #
+            # get_full_credits() and get_title_basics() have defaulted the
+            # same way since 2026-08-11; this third path was missed because
+            # that session was working on title pages. Capitalized to match
+            # the page's own vocabulary for the markers it does emit, which
+            # is what lands beside it in a table column.
+            "title_type": item["title_type"] or "Movie",
             "job": item["job"],
             "character": item["character"],
             "episodes": item["episodes"],

@@ -18,10 +18,11 @@ Search IMDb for person names or nconst IDs. An nconst ID should be unique,
 but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
-Filmographies are saved as Markdown in a per-person "-Filmography"
-directory. Only the job categories listed in rg_sections.rgx are written;
-the rest are reported but skipped. You'll be asked once before anything
-is saved.
+Filmographies are saved as a single Markdown file in the primary directory,
+named Person_Name-nconst-Filmography.md. Only the job categories listed in
+rg_sections.rgx are written; the rest are reported but skipped. You'll be
+asked once before anything is saved, and again before a .tconst list of the
+titles is written.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -455,12 +456,6 @@ while IFS= read -r searchTerm; do
     # filename already prevents collisions.
     cleanName=$(sd ' *\(I[IVX]*\)$' '' <<<"$nconstName")
     noSpaceName="$(safeFilename "$cleanName")"
-    # Saved alongside the other per-person output rather than under
-    # "secondary", which cleanupEverything.sh deletes wholesale as a debugging
-    # artifact -- filmographies were being swept away with it. The
-    # "*-Filmography" directory matches bulk-download, so the same cleanup
-    # prompt covers both branches and no glob can collide with README.md.
-    filmographyDir="$noSpaceName-Filmography"
 
     printf "\n==> Filmography for %s (%s roles)\n" "$nconstName" "$roleCount"
 
@@ -482,20 +477,53 @@ while IFS= read -r searchTerm; do
     done <<<"$jobs"
 
     # Offer to save
-    filmographyMd="$filmographyDir/${noSpaceName}-${nconst}.md"
+    #
+    # One file in the primary directory rather than a per-person subdirectory.
+    # A filmography is a single markdown document, and a directory holding one
+    # file was structure without content -- worse on bulk-download, where the
+    # directory also collected generateXrefData.sh's 13-file suite, of which
+    # exactly one artifact had a consumer.
+    #
+    # The nconst is in the filename because it is the only part that is
+    # guaranteed unique: IMDb distinguishes same-named people with a "(II)"
+    # suffix, which is stripped above as meaningless to a reader and useless to
+    # search. Both branches write this same name, so a filmography from either
+    # is recognizable as the same kind of thing.
+    #
+    # Previously "secondary/filmographies/", which cleanupEverything.sh deletes
+    # wholesale as a debugging artifact -- filmographies were being swept away
+    # with it.
+    filmographyMd="${noSpaceName}-${nconst}-Filmography.md"
     printf "\n==> Save to ${BLUE}$filmographyMd${NO_COLOR}?\n"
     if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
-        # Created only once the answer is yes -- otherwise declining still
-        # left an empty directory behind in the primary directory.
-        mkdir -p "$filmographyDir"
         _generate_filmography_md "$fgData" "$filmographyMd"
         printf "==> Saved.\n"
     fi
 
-    # Offer to add titles to tconst file
+    # Offer to save the titles as a .tconst list -- the path from "a person" to
+    # "shows in my corpus", which is the whole reason to read a filmography
+    # here rather than on imdb.com. Every populator on both branches takes a
+    # .tconst file, so this is the handoff. Second prompt, matching
+    # bulk-download, and deliberately -N: it is a corpus edit, not a read.
     tconsts=$(jq -r '[.roles[].tconst] | unique | .[]' <<<"$fgData")
-    tconstCount=$(echo "$tconsts" | rg -c "^tt")
+    tconstCount=$(rg -c "^tt" <<<"$tconsts")
     printf "\n==> This filmography includes %s unique titles.\n" "$tconstCount"
+
+    filmographyTconst="${noSpaceName}-${nconst}.tconst"
+    if waitUntil "$YN_PREF" -N \
+        "==> Shall I save them to ${BLUE}$filmographyTconst${NO_COLOR}?"; then
+        printf "%s\n" "$tconsts" | rg "^tt" >"$filmographyTconst"
+        printf "==> Saved.\n"
+        # Deliberately not "now run augment_tconstFiles.sh" here. On this branch
+        # that means one scrape per title -- 664 for George Clooney, which at
+        # ~2-3s each across a WAF session that expires every ~30 minutes is
+        # hours and a dozen CAPTCHAs. The same file augments in seconds on
+        # bulk-download, which reads the local .tsv.gz datasets. The list is
+        # still worth producing here: it carries every title from the full
+        # credits page, where bulk sees only principals (664 vs 107).
+        printf "    Augment it on bulk-download -- seconds there, hours here:\n"
+        printf "    ./augment_tconstFiles.sh %s\n" "$filmographyTconst"
+    fi
 
 done <"$ALL_TERMS"
 

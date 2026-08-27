@@ -1,5 +1,53 @@
 # Changelog
 
+## [Unreleased] — 2026-08-26
+
+### Fixed
+
+- **`scraper/pages.py`** — `get_filmography()` left `title_type` empty for every feature film, so half of a typical filmography rendered as `-` in the Type column, indistinguishable from missing data. IMDb's person-credits rows carry a type marker only for things that are _not_ films — `TV Series`, `Short`, `Video Game` — so `_EXTRACT_JS` finds nothing to claim on a movie row and leaves the field blank. Now defaults to `Movie`.
+
+  **This is the same defect in a third code path.** `get_full_credits()` and `get_title_basics()` were both given a `types.append("movie")` fallback on 2026-08-11, for exactly this reason; that session was working on title pages and the person-credits path was never checked. Worth remembering that a fix to "the scraper" may need applying in more than one place — there may yet be a fourth. Capitalized as `Movie` to sit alongside the markers IMDb does emit (`TV Mini Series`, `Short`), since they land together in a table column. Note `bulk-download` spells this `movie`, from `title.basics` vocabulary, so the two branches will differ in case until one normalizes.
+
+### Changed
+
+- **`saveFilmography.sh`** — Output is now a single Markdown file in the primary directory, `Person_Name-nconst-Filmography.md`, replacing `Person_Name-Filmography/Person_Name-nconst.md`. A filmography is one document, and a directory holding one file was structure without content. `bulk-download` writes the same name, so a filmography from either branch is recognizably the same artifact. The `mkdir` and the `filmographyDir` variable are gone.
+
+  The nconst stays in the filename because it is the only guaranteed-unique part; IMDb's `(II)` disambiguation suffix is still stripped, as it means nothing to a reader and is not something anyone would search for.
+
+- **`saveFilmography.sh`** — A second prompt now offers to save the titles as `Person_Name-nconst.tconst`. The `.tconst` list is the path from "a person" to "shows in my corpus" — the reason to read a filmography here rather than on imdb.com — and the script already computed the title list and printed its count without ever offering to keep it. Defaults to no: it is a corpus edit, not a read.
+
+  The follow-up line deliberately does **not** say "now run `augment_tconstFiles.sh`". On this branch that means one scrape per title — 664 for George Clooney — at roughly 2-3s each, across a WAF session that expires about every 30 minutes: hours of work and a dozen CAPTCHAs, started by following printed advice. It points at `bulk-download` instead, where the same file augments in seconds from the local datasets. The list is still worth generating here rather than there, because it carries every title from the full credits page where bulk sees only principals — 664 against 107 for Clooney.
+
+### Known issue
+
+- **A saved `*.tconst` sits in `generateXrefData.sh`'s glob.** The old per-person subdirectory hid it by accident; a flat file does not. A forgotten 664-title filmography list will be picked up by a later corpus rebuild and scraped in full. Proposed fix, not yet made: name it `Person_Name-nconst-Filmography.tconst` to match the `.md`, and exclude `*-Filmography.tconst` from the glob on both branches. A save-time warning is worth adding too, but cannot be the defense — the hazard arrives weeks later, when the file has been forgotten.
+
+## [Unreleased] — 2026-08-21
+
+### Changed
+
+- **`saveFilmography.sh`** — Per-category prompts ("review them?" / "add them?") replaced by a single gate: collect all categories, print a summary, then one `Save filmography?`. Declining now offers a `${PAGER:-less}` view, so exploring a filmography no longer requires saving a file in order to delete it.
+
+- **`saveFilmography.sh`** — The summary now marks the categories that `rg_sections.rgx` excludes. It previously advertised all 8 of Olivia Colman's categories while writing only 4 — 316 roles summarized, 156 written. A new `_allowedJobs()` helper is shared by the summary and `_generate_filmography_md` so the two cannot drift apart again, which is how the discrepancy arose.
+
+- **`saveFilmography.sh`** — `mkdir` moved inside the save branch, so declining no longer left an empty directory behind. (Moot as of 2026-08-26, which removes the directory entirely.)
+
+- **`augment_tconstFiles.sh`** — The `Fetching:` progress line moved to stderr. Without `-i` the augmented table goes to stdout, so redirecting output mixed progress into the data. The `==> $file` banner stays on stdout deliberately: `bulk-download` prints the identical line, and moving it would create a new divergence.
+
+- **`augment_tconstFiles.sh`** — `-h` corrected. It claimed `-f` was "scrape IMDb for any missing titles," but the `title-basics` scrape happens either way; `-f` only adds the heavier `full-credits` fallback when the title page yields nothing.
+
+- **`.gitignore`** — Added `*-Filmography` and `*-Filmography.md`.
+
+## [Unreleased] — 2026-08-16
+
+### Added
+
+- **`scraper/browser.py`, `generateXrefData.sh`** — WAF challenges are now logged. `browser.py` appends one line per challenge to `~/.config/IMDb_xref/waf_challenges.log` as `timestamp <TAB> kind <TAB> url`, where kind is `js-challenge`, `captcha`, or `unresolved:<selector>`; `generateXrefData.sh` reports the per-run delta in its summary. A file rather than an in-process counter, because `cli.py` runs as a fresh process per show — a counter could never report more than one.
+
+  The silent JS challenge was otherwise invisible: `goto()` waits for `#challenge-container` to detach and carries on, so a run that cleared three challenges looked identical to one that cleared none. The selector is recorded on the unresolved path because the two cases want opposite responses — `#challenge-container` means a challenge that did not finish in the 15s allowed and might merely need longer, while `#captcha-container` means a real CAPTCHA that no amount of waiting will clear.
+
+- **`scraper/tools/*.py`** — Playwright pinned to `playwright==1.61.0` in all four PEP-723 inline scripts, matching `scraper/uv.lock`. Unpinned, `uv` resolved them to the newest Playwright in a separate ephemeral environment wanting a different Chromium build than `scraper/cli.py` — so `solve_challenge.py` would report "run playwright install", and doing so installed browsers the scraper never looks at while leaving the ones it needs missing. Note comments inside a `# /// script` block need a doubled `# #`: `uv` strips one `# ` before parsing the block as TOML, and a single-hash comment breaks every tool with a parse error.
+
 ## [Unreleased] — 2026-08-11
 
 ### Added
@@ -14,7 +62,7 @@
 
 - **`functions/saveHistory.function`**, **`functions/trimHistory.function`** — Drop the `.sh` extension from history filenames (`240620.112822-generateXrefData.sh` → `240620.112822-generateXrefData`). These are data files, and the extension made them turn up in searches for shell scripts. Both functions had to change together: `trimHistory` globs `*-"$appendName"`, so stripping in only one place would have left the trim silently matching nothing and history growing without bound. Callers that pass an explicit `appendName` (`$favoritesFile`) are unaffected.
 
-- **`xrefCast.sh`** — The `-f SEARCH_FILE` branch no longer passes `--color always` when selecting matching rows. It was embedding ANSI escapes into the data *before* `sort` and before the table was rendered, so the invisible bytes threw off `xsv`'s column-width calculation and would have defeated the new `-F` literal matching in `tsvPrint -p`. The `rg` call still filters rows as before; coloring now happens once, at display time, for both the index and file paths.
+- **`xrefCast.sh`** — The `-f SEARCH_FILE` branch no longer passes `--color always` when selecting matching rows. It was embedding ANSI escapes into the data _before_ `sort` and before the table was rendered, so the invisible bytes threw off `xsv`'s column-width calculation and would have defeated the new `-F` literal matching in `tsvPrint -p`. The `rg` call still filters rows as before; coloring now happens once, at display time, for both the index and file paths.
 
 ### Fixed
 
@@ -22,7 +70,7 @@
 
 - **`scraper/pages.py`** — Stop ingesting the casting department as cast. Section headings were matched by substring (`if key in heading_text`), and `"cast"` is a substring of `"casting"`, so IMDb's Casting / Casting Directors section was parsed with `job="actor"`. The casting director was therefore stored at rank 1 of her own section and, on films where no episode counts exist to sort by, came back ahead of the film's lead — `findOtherShows.sh` on Spider-Man: Far from Home listed Sarah Finn and her 26 other Marvel credits before Tom Holland. TV titles were affected too, just less visibly: The Crown's cached cast has casting directors Robert Sterne and Nina Gold at ranks 1 and 2 with 50 and 30 episodes, above Claire Foy. `index.py`'s `_is_non_acting()` filter could not catch them because it inspects the character field, which for these rows is empty or an alias like `(as Sarah Halley Finn)`. Headings containing `"casting"` are now skipped outright. Affects newly scraped data only; existing cache entries keep the bad rows until re-fetched.
 
-- **`generateXrefData.sh`** — `-r` (reload) deleted the cache without re-fetching it. The refresh branch removed `$cacheDirectory/${tconst}.json`, but the "already cached?" test immediately below queries the *index* (`title-info` and `cast-for-show` read `.xref_live_index/*.jsonl`), which still held every show because `rebuild-index` doesn't run until the end of the script. Each title therefore looked cached and was skipped — after its JSON had just been deleted — and the final `rebuild-index` then dropped them from the index too. `./generateXrefData.sh -r Contrib/Marvelous.tconst` reported `Fetched: 0 new / Skipped: 36 cached` in under 8 seconds and destroyed all 36 cached shows, which then had to be re-scraped. The cache check is now skipped entirely when `-r` is given, which is what "ignoring cache" was always meant to mean.
+- **`generateXrefData.sh`** — `-r` (reload) deleted the cache without re-fetching it. The refresh branch removed `$cacheDirectory/${tconst}.json`, but the "already cached?" test immediately below queries the _index_ (`title-info` and `cast-for-show` read `.xref_live_index/*.jsonl`), which still held every show because `rebuild-index` doesn't run until the end of the script. Each title therefore looked cached and was skipped — after its JSON had just been deleted — and the final `rebuild-index` then dropped them from the index too. `./generateXrefData.sh -r Contrib/Marvelous.tconst` reported `Fetched: 0 new / Skipped: 36 cached` in under 8 seconds and destroyed all 36 cached shows, which then had to be re-scraped. The cache check is now skipped entirely when `-r` is given, which is what "ignoring cache" was always meant to mean.
 
 - **`scraper/pages.py`** — Record billing rank for movie cast. `_parse_cast_section` incremented `rank` for actors only when `episodes > 0`; films carry no episode counts, so every actor in a movie was stored with `rank: 0` and IMDb's billing order — which is simply the row order on the fullcredits page — was discarded. Crew were unaffected, taking the other branch. With no ranking signal, `cast-for-show --limit N` sliced an alphabetically-sorted list: `./findOtherShows.sh -n 50 tt6320628` returned Angourie Rice and a string of uncredited extras while Tom Holland, the lead, never appeared. `-r` (max rank) was equally inert for films. Rank is now a plain row counter for every job. Note this only affects newly scraped data: titles already cached keep `rank: 0` until re-fetched with `generateXrefData.sh -r`.
 
@@ -53,7 +101,7 @@
 
 - **`scraper/pages.py` (`search_title`)** — Filter podcast results out of title search. IMDb podcast rows (`Podcast Episode`, `Podcast Series`) weren't in `type_map`, so they were never tagged and the `skip_types` filter never dropped them — a podcast episode surfaced as a pickable "show". Worse, a podcast whose title contains "Video" (e.g. "Tiempos de Videoclub") was mis-tagged `video` by the loose substring match and shown as a video. Added both podcast keys — positioned before the `Video`/`Video Game` keys so they win the first-match, since the substring test also scans the title — and added `podcastSeries` to `skip_types`. Verified against the live `Reservoir Dogs` rows via `verify_podcast_filter.py`.
 
-- **`scraper/cli.py` (`cmd_query`)** — Sort cast results by prominence (most episodes, then best billing) before applying `--limit`, so a capped query keeps the billed principals instead of whoever sorts first alphabetically. With `FULLCAST=50` set, `xrefCast` was returning each show's first 50 cast *by name*, which dropped leads like Olivia Colman and made `-d` cross-referencing miss obvious overlaps. Only affects rows carrying a `rank` field (`cast.jsonl`).
+- **`scraper/cli.py` (`cmd_query`)** — Sort cast results by prominence (most episodes, then best billing) before applying `--limit`, so a capped query keeps the billed principals instead of whoever sorts first alphabetically. With `FULLCAST=50` set, `xrefCast` was returning each show's first 50 cast _by name_, which dropped leads like Olivia Colman and made `-d` cross-referencing miss obvious overlaps. Only affects rows carrying a `rank` field (`cast.jsonl`).
 
 ### Changed
 
@@ -91,7 +139,7 @@
 
 ### Added
 
-- **`findCastOf.sh`** — A `Does that look correct? [Y/n]` confirmation before a resolved title is used, mirroring the gate in `big_IMDb_xref`. It fires on the two paths that resolve a tconst with no user interaction — a typed tconst ID (`tt…`) and a show name that matches exactly one title — printing the resolved `imdb.com/title/<tconst>  <type>  <title>  <original-title>  <year>` line, so a mistyped ID that silently lands on the wrong show is caught before the cast is listed or saved to favorites. Answering "no" skips that term. The multi-match name path already confirms through its selection menu and is exempt (tracked via a per-term `needConfirm` flag). The prompt runs *after* the full-credits fetch, so a brand-new, un-indexed ID is fetched once before it can be rejected; anything already in the index confirms instantly. The `original-title` column comes from `title-info` and is blank when the scraper didn't capture one (e.g. Magellan), so it won't always match `big_IMDb_xref`'s bulk-dataset original title.
+- **`findCastOf.sh`** — A `Does that look correct? [Y/n]` confirmation before a resolved title is used, mirroring the gate in `big_IMDb_xref`. It fires on the two paths that resolve a tconst with no user interaction — a typed tconst ID (`tt…`) and a show name that matches exactly one title — printing the resolved `imdb.com/title/<tconst>  <type>  <title>  <original-title>  <year>` line, so a mistyped ID that silently lands on the wrong show is caught before the cast is listed or saved to favorites. Answering "no" skips that term. The multi-match name path already confirms through its selection menu and is exempt (tracked via a per-term `needConfirm` flag). The prompt runs _after_ the full-credits fetch, so a brand-new, un-indexed ID is fetched once before it can be rejected; anything already in the index confirms instantly. The `original-title` column comes from `title-info` and is blank when the scraper didn't capture one (e.g. Magellan), so it won't always match `big_IMDb_xref`'s bulk-dataset original title.
 
 - **`findShowsWith.sh`** — Same gate in batch form: after all search terms resolve, it prints `These are the results I can process:` with the resolved people and asks `Does that look correct?` before listing their shows; "no" restarts. Mirrors the twin's confirmation in `big_IMDb_xref`.
 
@@ -110,7 +158,7 @@
 
 ### Bugfixes
 
-- **`saveFilmography.sh`** — A failed person search (e.g. a WAF challenge) was silently reported as "No matches found": the `search-person` call used `2>/dev/null` and ignored the exit code, so an empty result from a blocked fetch looked identical to a genuine no-match. It now captures stderr, checks the exit code, and on failure prints "Couldn't search IMDb" with the underlying error — the same masking fix applied to the other search scripts last week, which had reached this script's *filmography* fetch but not its *person-search*. Surfaced by running `saveFilmography.sh "Jacques Spiesser"` against a live WAF block, which reported "No matches" while `waf_check.py` confirmed the CAPTCHA was up.
+- **`saveFilmography.sh`** — A failed person search (e.g. a WAF challenge) was silently reported as "No matches found": the `search-person` call used `2>/dev/null` and ignored the exit code, so an empty result from a blocked fetch looked identical to a genuine no-match. It now captures stderr, checks the exit code, and on failure prints "Couldn't search IMDb" with the underlying error — the same masking fix applied to the other search scripts last week, which had reached this script's _filmography_ fetch but not its _person-search_. Surfaced by running `saveFilmography.sh "Jacques Spiesser"` against a live WAF block, which reported "No matches" while `waf_check.py` confirmed the CAPTCHA was up.
 - **`findCastOf.sh`** — The full-credits fetch failure message was misleading: any scrape failure printed "Scraper failed. Make sure Playwright is installed: playwright install chromium", a diagnosis left over from when that was the common failure. The common failure is now a WAF CAPTCHA, so the message sent you to reinstall Playwright when the actual fix is `solve_challenge.py`. It now routes through `reportSearchError`, which detects a WAF challenge and says so (with the correct remedy) or otherwise prints the specific error. Surfaced by `./findCastOf.sh tt32868688` reporting the Playwright message during a live WAF block.
 - **`functions/reportSearchError.function`** — Generalized to also handle non-search failures: it now accepts an optional header template (defaulting to the search wording) and accepts the captured output as either a file path or a string, so the full-credits fetch path can reuse the same WAF-aware reporting.
 
@@ -124,7 +172,7 @@
 ### Notes
 
 - Investigated the recurring WAF CAPTCHA on the interactive path. Evidence points to cold-session re-initialization as the trigger, not request volume or browser fingerprint: two long continuous batch runs (560 shows 7/19, full rebuild 7/26) sailed through hundreds of sequential fetches with no challenge, while single interactive lookups get challenged even 45 minutes after activity. A diagnostic (`scraper/tools/waf_experiment.py`) confirmed that real Chrome via `channel="chrome"` still gets challenged on a cold start, ruling out the cheap fingerprint fix. The durable fix would be a persistent-browser daemon keeping one warm session across commands — deferred, as the current workaround (run `waf_check.py`, solve if needed) is adequate for weekly interactive use.
-- Known, not yet fixed: `findOtherShows.sh` (line ~198) fetches full-credits with `>/dev/null 2>&1` and never checks the result, so a WAF failure there fails *silently* — the show ends up with no cast and no explanation. Same class as the `findCastOf` misleading-message bug but the opposite symptom (silent vs. wrong). Fixing it means capturing and checking the result like `findCastOf` does, then routing through `reportSearchError`. Deferred. **(Fixed 2026-08-12 — see that entry.)**
+- Known, not yet fixed: `findOtherShows.sh` (line ~198) fetches full-credits with `>/dev/null 2>&1` and never checks the result, so a WAF failure there fails _silently_ — the show ends up with no cast and no explanation. Same class as the `findCastOf` misleading-message bug but the opposite symptom (silent vs. wrong). Fixing it means capturing and checking the result like `findCastOf` does, then routing through `reportSearchError`. Deferred. **(Fixed 2026-08-12 — see that entry.)**
 
 ---
 
