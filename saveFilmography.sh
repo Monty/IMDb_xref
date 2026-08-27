@@ -433,8 +433,15 @@ while IFS= read -r searchTerm; do
     # discarded; a failed scrape is not the same as a person with no credits.
     printf "==> Fetching filmography for %s...\n" "$nconst"
     if ! fgData=$(_scraper filmography "$nconst" 2>"$SCRAPER_ERR"); then
-        printf "\n==> Could not fetch filmography for %s:\n" "$nconstName"
-        tail -n 2 "$SCRAPER_ERR" | sed 's/^/    /'
+        reportSearchError "$nconstName" "$SCRAPER_ERR" \
+            '\n==> Could not fetch filmography for "%s":'
+        # A CAPTCHA blocks every later fetch too, so stop rather than repeat
+        # the same failure for each remaining person -- matching the search
+        # loop above.
+        if isWAFChallenge "$SCRAPER_ERR"; then
+            printf "    Skipping any remaining search terms.\n"
+            break
+        fi
         continue
     fi
 
