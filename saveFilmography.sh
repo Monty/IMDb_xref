@@ -18,13 +18,15 @@ Search IMDb titles for person names or nconst IDs. An nconst ID should be
 unique, but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
-Filmographies are created in subdirectories so they will not overload the
-primary directory. Every job category is collected; you'll be asked once
-before anything is written, and can page through the results instead.
+Filmographies are saved in the primary directory, named
+Person_Name-nconst-Filmography.md, matching live-fetch. Only the job
+categories listed in rg_sections.rgx are written; the rest are reported but
+skipped. You'll be asked once before the markdown file is saved, and again
+before a .tconst list of the titles is written.
 
-Two files are written: a .tsv listing the person's credits by job category,
-with an IMDb URL per title, and a .tconst list of the same titles suitable
-for augment_tconstFiles.sh or generateXrefData.sh.
+Note that this branch reads IMDb's bulk .tsv.gz datasets, which list only the
+principal names per title. Supporting and guest work is under-represented --
+use live-fetch for a complete filmography.
 
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
@@ -58,16 +60,19 @@ PERSON_TERMS $PERSON_TERMS
 POSSIBLE_MATCHES $POSSIBLE_MATCHES
 MATCH_COUNTS $MATCH_COUNTS
 PERSON_RESULTS $PERSON_RESULTS
-JOB_RESULTS $JOB_RESULTS
 JOB_ROLES $JOB_ROLES
 ALLOWED_ROLES $ALLOWED_ROLES
+TITLE_INFO $TITLE_INFO
+EPISODE_MAP $EPISODE_MAP
+EPISODE_COUNTS $EPISODE_COUNTS
 FINAL_RESULTS $FINAL_RESULTS
 TMPFILE $TMPFILE
 EOT
     else
         rm -f "$ALL_TERMS" "$NCONST_TERMS" "$PERSON_TERMS" "$POSSIBLE_MATCHES"
-        rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS" "$FINAL_RESULTS"
-        rm -f "$JOB_ROLES" "$ALLOWED_ROLES" "$TMPFILE"
+        rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$FINAL_RESULTS" "$TITLE_INFO"
+        rm -f "$JOB_ROLES" "$ALLOWED_ROLES" "$EPISODE_MAP" "$EPISODE_COUNTS"
+        rm -f "$TMPFILE"
     fi
 }
 
@@ -116,9 +121,11 @@ PERSON_TERMS=$(mktemp)
 POSSIBLE_MATCHES=$(mktemp)
 MATCH_COUNTS=$(mktemp)
 PERSON_RESULTS=$(mktemp)
-JOB_RESULTS=$(mktemp)
 JOB_ROLES=$(mktemp)
 ALLOWED_ROLES=$(mktemp)
+TITLE_INFO=$(mktemp)
+EPISODE_MAP=$(mktemp)
+EPISODE_COUNTS=$(mktemp)
 FINAL_RESULTS=$(mktemp)
 TMPFILE=$(mktemp)
 
@@ -179,27 +186,42 @@ allowedJobs=$(rg -N '^[^#]' rg_sections.rgx 2>/dev/null | tr '\n' '|')
 allowedJobs="${allowedJobs%|}"
 [[ -z $allowedJobs ]] && allowedJobs=".*"
 
-# Build the filmography .tsv. $1 holds augmented title rows (tconst, titleType,
-# primaryTitle, originalTitle, startYear), $2 holds the principals rows kept
-# before augmenting (tconst, nconst, category, characters).
+# Emit one sorted row per credit. Columns: rank, upcoming, job, year, title,
+# type, character, episodes, tconst.
 #
-# Sections are separated by a blank row and a job name rather than carrying a
-# job column. Both are padded to the full column count so the file stays
-# rectangular. Note the tradeoff: a spreadsheet sort across the whole file
-# will pull the job rows into the data. Sort a selected range, or sort before
-# generating.
-function _generate_filmography_tsv() {
-    awk -F'\t' -v OFS='\t' '
-        # First file: title data, keyed by tconst
-        NR == FNR {
+# $1 holds title rows (tconst, titleType, primaryTitle, originalTitle,
+# startYear), $2 holds the principals credit rows (tconst, nconst, category,
+# characters), $3 holds episode counts keyed by nconst, series tconst and
+# category.
+#
+# Files are matched by FILENAME rather than the usual NR == FNR chain: any of
+# them can legitimately be empty -- a person with no episode credits is the
+# common case -- and an empty file would silently shift every later one into
+# the wrong branch.
+#
+# rank sorts acting first, then the other credited roles, before everything
+# else -- matching live-fetch's section order. upcoming floats titles with no
+# startYear to the top of their section, where live-fetch puts Post-production
+# and Pre-production. Bulk has no status field, so a missing year is the only
+# available proxy: usually an unreleased title, but an obscure old credit with
+# no recorded year lands there too. The emitter drops these two columns.
+_filmography_rows() {
+    awk -F'\t' -v OFS='\t' -v titlesFile="$1" -v epsFile="$3" '
+        # Title data, keyed by tconst
+        FILENAME == titlesFile {
             type[$1] = $2; title[$1] = $3; year[$1] = $5
             next
         }
-        # Second file: one row per credit
+        # Episode counts, keyed by nconst, series tconst and category
+        FILENAME == epsFile {
+            eps[$1 FS $2 FS $3] = $4
+            next
+        }
+        # One row per credit
         {
             tconst = $1
-            # augment_tconstFiles.sh drops tvEpisodes, so a tconst with no
-            # title entry is an episode row and is skipped here too.
+            # tvEpisodes were filtered out of the title lookup, so a tconst
+            # with no title entry is an episode row and is skipped here too.
             if (!(tconst in title)) next
             # characters is a JSON array string: ["Ryan Bingham"] or \N
             chars = $4
@@ -207,26 +229,90 @@ function _generate_filmography_tsv() {
             sub(/^\[/, "", chars); sub(/\]$/, "", chars)
             gsub(/","/, "; ", chars)
             gsub(/"/, "", chars)
+            episodes = eps[$2 FS tconst FS $3]
             # Bulk spells categories with underscores, the credits page uses
             # spaces. Match live-fetch.
             job = $3
             gsub(/_/, " ", job)
-            print job, year[tconst], title[tconst], type[tconst], chars, \
-                "https://www.imdb.com/title/" tconst "/"
+            rank = 4
+            if (job == "actor" || job == "actress") rank = 0
+            else if (job == "director") rank = 1
+            else if (job == "writer")   rank = 2
+            else if (job == "producer") rank = 3
+            upcoming = (year[tconst] == "") ? 0 : 1
+            print rank, upcoming, job, year[tconst], title[tconst], \
+                type[tconst], chars, episodes, tconst
         }
-    ' "$1" "$2" |
-        sort -f -t$'\t' --key=1,1 --key=2,2r --key=3,3 |
-        awk -F'\t' -v OFS='\t' '
-            BEGIN { print "Year", "Title", "Type", "Character", "URL" }
-            # Separator and section rows are padded to the full column count.
-            # A ragged row is not just untidy here -- tsvPrint parses this file
-            # as CSV and errors out on a row with the wrong number of fields.
-            $1 != job {
-                job = $1
-                print "", "", "", "", ""
-                print job, "", "", "", ""
+    ' "$1" "$3" "$2" |
+        sort -f -t$'\t' --key=1,1 --key=3,3 --key=2,2 --key=4,4r --key=5,5
+}
+
+# Markdown, matching live-fetch's layout so a filmography from either branch
+# reads the same. $4 is the person name, $5 the nconst.
+#
+# The note under the title is not decoration. title.principals caps at roughly
+# ten names per title, so this output silently omits work rather than
+# truncating visibly -- Elizabeth Debicki's The Crown is absent entirely, and
+# her Night Manager episode count comes in under the real one. A reader who
+# does not know that will read a short filmography as a complete one.
+_generate_filmography_md() {
+    _filmography_rows "$1" "$2" "$3" |
+        awk -F'\t' -v name="$4" -v nconst="$5" '
+            function esc(s) { gsub(/\|/, "\\&#124;", s); return s }
+            function titleCase(s,   i, parts, count, out) {
+                count = split(s, parts, " ")
+                out = ""
+                for (i = 1; i <= count; i++)
+                    out = out (i > 1 ? " " : "") \
+                        toupper(substr(parts[i], 1, 1)) substr(parts[i], 2)
+                return out
             }
-            { print $2, $3, $4, $5, $6 }
+            # Buffered per section: the Episodes column is only written when
+            # the section has data for it, which is not known until the last
+            # row of that section has been read.
+            function flush(   i, charHeader, when, cell, eps) {
+                if (rows == 0) return
+                printf("\n## %s (%d)\n\n", titleCase(job), rows)
+                charHeader = (job == "actor" || job == "actress") ? "Character" : "Credit"
+                if (hasEps) {
+                    printf("| Year | Title | Type | %s | Episodes |\n", charHeader)
+                    printf("|------|-------|------|-----------|---------:|\n")
+                } else {
+                    printf("| Year | Title | Type | %s |\n", charHeader)
+                    printf("|------|-------|------|-----------|\n")
+                }
+                for (i = 1; i <= rows; i++) {
+                    when = (bYear[i] == "" ? "-" : bYear[i])
+                    cell = (bChar[i] == "" ? "-" : esc(bChar[i]))
+                    printf("| %s | [%s](https://www.imdb.com/title/%s/) | %s | %s",
+                        when, esc(bTitle[i]), bTconst[i],
+                        (bType[i] == "" ? "-" : esc(bType[i])), cell)
+                    if (hasEps) {
+                        eps = (bEps[i] == "" || bEps[i] == 0) ? "-" : bEps[i]
+                        printf(" | %s", eps)
+                    }
+                    printf(" |\n")
+                }
+                rows = 0; hasEps = 0
+            }
+            BEGIN {
+                print "# [" name "](https://www.imdb.com/name/" nconst "/)"
+                print ""
+                print "> Generated from IMDb'"'"'s bulk .tsv.gz datasets, which list only"
+                print "> the principal names per title. Supporting and guest work is"
+                print "> under-represented: some titles are missing entirely, and episode"
+                print "> counts are the episodes where this person was a principal, not"
+                print "> IMDb'"'"'s credited-episode totals. Use the live-fetch branch for a"
+                print "> complete filmography."
+            }
+            $3 != job { flush(); job = $3 }
+            {
+                rows++
+                bYear[rows] = $4; bTitle[rows] = $5; bType[rows] = $6
+                bChar[rows] = $7; bEps[rows] = $8; bTconst[rows] = $9
+                if ($8 != "" && $8 != 0) hasEps = 1
+            }
+            END { flush() }
         '
 }
 
@@ -317,11 +403,32 @@ if ! waitUntil "$YN_PREF" -Y; then
 fi
 
 cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
-# tconst, nconst, category, characters. The characters field is kept for the
-# .tsv -- augment_tconstFiles.sh replaces these rows with title.basics columns,
-# so anything not saved before augmenting is lost.
+# tconst, nconst, category, characters. The characters field feeds the
+# Character column; the episode counts below need these rows before the
+# tvEpisode entries are filtered out of the title lookup.
 rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz |
     cut -f 1,3,4,6 >"$POSSIBLE_MATCHES"
+
+# Episode counts. title.principals credits a person once per episode they were
+# a principal in, so the count is the number of those rows whose parent series
+# is the title being listed. Computed from the raw principals rows, which still
+# carry the tvEpisode entries the title lookup filters out.
+#
+# Note what this counts: episodes where the person made the ~10-name principals
+# cut, not the credited-episode total IMDb's own page reports. Expect leads to
+# match and supporting players to undercount.
+cut -f 1 "$POSSIBLE_MATCHES" | sort -u |
+    perl -p -e 's/^/^/; s/$/\\t/;' >"$TMPFILE"
+rg -Nz -f "$TMPFILE" title.episode.tsv.gz | cut -f 1,2 >"$EPISODE_MAP"
+awk -F'\t' -v OFS='\t' -v mapFile="$EPISODE_MAP" '
+    # episode tconst -> parent series tconst
+    FILENAME == mapFile { parent[$1] = $2; next }
+    # Credit rows: tconst, nconst, category, characters. Only rows whose
+    # tconst is an episode contribute; a series-level row is the thing being
+    # counted for, not a count of one.
+    ($1 in parent) { count[$2 FS parent[$1] FS $3]++ }
+    END { for (key in count) print key, count[key] }
+' "$EPISODE_MAP" "$POSSIBLE_MATCHES" >"$EPISODE_COUNTS"
 
 # Filmography data comes from the local title.principals.tsv.gz read above. The
 # FULLCAST live-fetch path (curl the person's fullcredits page, parse with
@@ -331,6 +438,7 @@ rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz |
 while read -r line; do
     true >"$FINAL_RESULTS"
     true >"$ALLOWED_ROLES"
+    savedAnything=""
     nconstID="$line"
     nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
     rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
@@ -341,11 +449,31 @@ while read -r line; do
         continue
     fi
     noSpaceName="$(safeFilename "$nconstName")"
-    filmographyDir="$noSpaceName-Filmography"
-    filmographyFile="$filmographyDir/$noSpaceName.tconst"
-    filmographyTsv="$filmographyDir/$noSpaceName.tsv"
-    filmographyDB="$filmographyDir/$noSpaceName.csv"
+    # Top level, not a per-person subdirectory, and carrying the nconst --
+    # matching live-fetch, so a filmography from either branch is recognizable
+    # as the same kind of thing. The nconst is the only part guaranteed
+    # unique.
+    filmographyMd="${noSpaceName}-${nconstID}-Filmography.md"
+    filmographyFile="${noSpaceName}-${nconstID}.tconst"
+    filmographyDB="${noSpaceName}-${nconstID}.csv"
     TCONST_FILE="$filmographyFile"
+
+    # One title.basics lookup for every title this person is credited on,
+    # replacing augment_tconstFiles.sh -y. That was called once per job
+    # category -- six scans of the same .gz for George Clooney -- and
+    # overwrote its argument, so the credit rows had to be copied aside before
+    # each call. Its behaviours are reproduced here: cut -f 1-4,6 for the
+    # column set, dropping tvEpisodes so a series is one row rather than one
+    # row per episode, and stripping IMDb's \N NULL marker -- without that
+    # last step an unreleased title with no startYear renders a literal \N in
+    # the Year column instead of being treated as missing.
+    #
+    # The .tconst written below is augmented separately by
+    # augment_tconstFiles.sh, so nothing here has to match its column format.
+    rg -Nz -f <(rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 1 | sort -u |
+        perl -p -e 's/^/^/; s/$/\\t/;') title.basics.tsv.gz |
+        cut -f 1-4,6 | perl -p -e 's+\\N++g;' |
+        rg -wNv "tvEpisode" >"$TITLE_INFO"
 
     # Collect the whitelisted job categories. Deciding which of those to keep
     # is easier done by editing the finished file than by answering a prompt
@@ -354,16 +482,15 @@ while read -r line; do
     true >"$TMPFILE"
     while read -r job; do
         match=$(cut -f 2 <<<"$job")
-        rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
-        # augment_tconstFiles.sh overwrites its argument, so keep the credit
-        # rows -- job category and characters -- for the .tsv first.
-        cp "$JOB_RESULTS" "$JOB_ROLES"
-        ./augment_tconstFiles.sh -y "$JOB_RESULTS"
-        # Counted after augmenting, which drops tvEpisodes -- so this is the
-        # number of titles that will actually be written, not the raw
-        # principals count.
-        numResults=$(sed -n '$=' "$JOB_RESULTS")
-        [[ -z $numResults ]] && numResults=0
+        rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_ROLES"
+        # Unique titles for this category that survived the tvEpisode filter
+        # -- the number that will actually be written, not the raw principals
+        # count.
+        numResults=$(awk -F'\t' -v titlesFile="$TITLE_INFO" '
+            FILENAME == titlesFile { keep[$1]; next }
+            ($1 in keep) && !seen[$1]++ { n++ }
+            END { print n + 0 }
+        ' "$TITLE_INFO" "$JOB_ROLES")
         [[ $numResults -eq 0 ]] && continue
         # IMDb's bulk dataset spells categories with underscores
         # (archive_footage) where the credits page -- and so rg_sections.rgx --
@@ -371,43 +498,73 @@ while read -r line; do
         # spellings in the whitelist.
         if rg -qxNi -e "$allowedJobs" <<<"$(tr '_' ' ' <<<"$match")"; then
             printf "  %-20s %s titles\n" "$match:" "$numResults" >>"$TMPFILE"
-            cat "$JOB_RESULTS" >>"$FINAL_RESULTS"
             cat "$JOB_ROLES" >>"$ALLOWED_ROLES"
         else
             printf "  %-20s %s titles (not saved)\n" "$match:" "$numResults" >>"$TMPFILE"
         fi
     done <"$MATCH_COUNTS"
 
+    # The title rows behind the whitelisted credits, one per title. A title can
+    # credit the same person under more than one category (actress and
+    # producer, say), so the categories overlap and duplicates are dropped
+    # here.
+    awk -F'\t' -v OFS='\t' -v titlesFile="$TITLE_INFO" '
+        FILENAME == titlesFile { row[$1] = $0; next }
+        ($1 in row) && !seen[$1]++ { print row[$1] }
+    ' "$TITLE_INFO" "$ALLOWED_ROLES" |
+        sort -f -t$'\t' --key=3,3 >"$FINAL_RESULTS"
+
     if [[ ! -s $FINAL_RESULTS ]]; then
         printf "\n==> There aren't ${RED}any${NO_COLOR} $nconstName titles to add.\n"
         continue
     fi
 
-    # A title can credit the same person under more than one category (actress
-    # and producer, say), so the per-job files overlap. The job name is not
-    # part of an augmented row, so duplicates are byte-identical.
-    sort -u "$FINAL_RESULTS" -o "$FINAL_RESULTS"
     numlines=$(sed -n '$=' "$FINAL_RESULTS")
 
     printf "\n==> Filmography for $nconstName ($numlines titles)\n"
     cat "$TMPFILE"
 
-    printf "\n==> Save to ${BLUE}$filmographyTsv${NO_COLOR}\n"
-    printf "        and ${BLUE}$filmographyFile${NO_COLOR}?\n"
-    if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
-        mkdir -p "$filmographyDir"
-        rg -N "^tt" "$FINAL_RESULTS" | sort -f -t$'\t' --key=3,3 >"$TCONST_FILE"
-        _generate_filmography_tsv "$FINAL_RESULTS" "$ALLOWED_ROLES" >"$filmographyTsv"
+    # Two prompts, as on live-fetch. They have different audiences -- the .md
+    # is the readable artifact, the .tconst is a corpus edit -- and bundling
+    # them meant answering yes to both to get either.
+    printf "\n"
+    if waitUntil "$YN_PREF" -Y \
+        "==> Save filmography to ${BLUE}$filmographyMd${NO_COLOR}?"; then
+        _generate_filmography_md "$FINAL_RESULTS" "$ALLOWED_ROLES" \
+            "$EPISODE_COUNTS" "$nconstName" "$nconstID" >"$filmographyMd"
         printf "==> Saved.\n"
-        waitUntil "$YN_PREF" -Y \
-            "\n==> Shall I generate ${BLUE}$(basename "$filmographyDB")${NO_COLOR}?" &&
-            ./generateXrefData.sh -q -f "$filmographyDB" -d "$filmographyDir" "$filmographyFile"
-    else
-        # Nothing was written, so offer a look at what would have been.
-        # Exploring in $PAGER beats saving a file just to delete it later.
+        savedAnything="yes"
+    fi
+
+    # Written as bare tconst IDs, then augmented in place to add the Type,
+    # Primary Title, Original Title and Date columns.
+    #
+    # A corpus edit rather than a read, so -N. generateXrefData.sh reads this
+    # file, so the .csv offer is nested rather than asked when there would be
+    # nothing to read.
+    printf "\n==> This filmography includes %s unique titles.\n" "$numlines"
+    if waitUntil "$YN_PREF" -N \
+        "==> Shall I save them to ${BLUE}$filmographyFile${NO_COLOR}?"; then
+        cut -f 1 "$FINAL_RESULTS" | sort -u >"$TCONST_FILE"
+        # Augmented right away rather than leaving bare IDs and printing the
+        # command. On this branch that is a local .gz lookup taking seconds,
+        # it matches every other .tconst in the corpus, and it seeds
+        # augment_tconstFiles.sh's own cache for later runs. Live-fetch prints
+        # the hint instead because there it means one scrape per title.
+        ./augment_tconstFiles.sh -y "$TCONST_FILE"
+        printf "==> Saved.\n"
+        savedAnything="yes"
+        waitUntil "$YN_PREF" -N \
+            "\n==> Shall I generate ${BLUE}$filmographyDB${NO_COLOR}?" &&
+            ./generateXrefData.sh -q -f "$filmographyDB" "$filmographyFile"
+    fi
+
+    # Nothing was written, so offer a look at what would have been.
+    # Exploring in $PAGER beats saving a file just to delete it later.
+    if [[ -z $savedAnything ]]; then
         if waitUntil "$YN_PREF" -N "==> Would you like to view it instead?"; then
-            _generate_filmography_tsv "$FINAL_RESULTS" "$ALLOWED_ROLES" >"$TMPFILE"
-            tsvPrint -n "$TMPFILE" | ${PAGER:-less}
+            _generate_filmography_md "$FINAL_RESULTS" "$ALLOWED_ROLES" \
+                "$EPISODE_COUNTS" "$nconstName" "$nconstID" | ${PAGER:-less}
         fi
     fi
 done <"$NCONST_TERMS"

@@ -1,5 +1,95 @@
 # Changelog
 
+## [Unreleased] — 2026-08-27
+
+### Added
+
+- **`saveFilmography.sh`** — Filmographies are now written as Markdown,
+  `Person_Name-nconst-Filmography.md` in the primary directory, matching
+  `live-fetch` file for file. Sections are ordered acting first, then director,
+  writer, producer, then the rest; titles link to IMDb; the Episodes column
+  appears per section only when that section has counts.
+
+  **The file opens with a note saying the data is incomplete, and that note is the point rather than a disclaimer.** `title.principals` lists roughly ten names per title, so this branch omits work *silently* — it does not truncate visibly. Elizabeth Debicki is the case that settled it: her Crown credits are absent from the bulk data entirely, and her Night Manager episode count comes in under the real one. A reader who does not know that reads a short filmography as a complete one. Pedro Alonso, checked first, matched `live-fetch` closely — but he is a lead, and leads clear the ten-name cut in nearly every episode. Testing one lead would have confirmed the wrong half of the hypothesis.
+
+- **`saveFilmography.sh`** — Episode counts, derived from
+  `title.episode.tsv.gz`. `title.principals` credits a person once per episode
+  they were a principal in, so the count is the number of those rows whose
+  parent series is the title being listed, keyed by nconst, series tconst and
+  category — a person credited on one series as both actor and director gets a
+  separate count in each section.
+
+  Computed from the raw principals rows before the tvEpisode entries are filtered out, since they are unrecoverable afterwards. **This is not IMDb's credited-episode total** and will undercount anyone who did not make the principals cut in every episode; the file's header note covers it.
+
+- **`augment_tconstFiles.sh`** — `-r` (reload) discards the augmented cache and
+  re-reads every title from `title.basics.tsv.gz`.
+
+### Changed
+
+- **`augment_tconstFiles.sh`** — **The augmented cache now invalidates itself
+  when `title.basics.tsv.gz` is newer than it.** A cached tconst was never
+  looked up again, so when IMDb revised a title — an Original Title changing is
+  the usual one — the stale row won permanently. Nothing in the script could
+  ever have corrected it; the only remedy was deleting the cache by hand.
+
+  Every row in the cache derives from that one local dataset, so a row older than it is strictly worse than re-reading — there is no fetch cost here to justify serving stale data, which is exactly why `live-fetch` cannot do the same thing and has no natural expiry. Same gz-is-newer test `generateXrefData.sh` already uses to decide `RELOAD`. The whole cache is discarded rather than matching rows, since a partial invalidation would leave you reasoning about which rows are trustworthy; rebuilding costs one scan of a local file. `[[ -nt ]]` follows symlinks, which matters here — the link's own timestamp is 2026-08-13 and the target's is 2026-08-18, so comparing against the link would give the wrong answer.
+
+  **The check runs before the existing `touch "$cacheFile"`, and that ordering is load-bearing** — touching first sets the cache's mtime to now and makes the comparison permanently false.
+
+- **`saveFilmography.sh`** — `augment_tconstFiles.sh -y` is no longer called
+  from the job loop. It ran once per job category — six scans of the same
+  `.gz` for George Clooney — and overwrote its argument, so the credit rows had
+  to be copied aside before each call to keep the job category and `characters`
+  field. Replaced by a single `title.basics` lookup per person, reproducing
+  augment's three behaviours explicitly: `cut -f 1-4,6`, dropping tvEpisodes,
+  and stripping `\N`. Per-category counts now come from an awk intersection
+  against that lookup rather than from counting lines in the file augment had
+  overwritten.
+
+- **`saveFilmography.sh`** — The `.tconst` is written as bare IDs and then
+  augmented in place with `-y`. On this branch that is a local lookup taking
+  seconds, it matches every other `.tconst` in the corpus, and it seeds
+  augment's own cache for later runs, so printing the command for the user to
+  run — as `live-fetch` does, where it means one scrape per title — would be
+  busywork dressed as choice.
+
+- **`saveFilmography.sh`** — The `.md` and the `.tconst` get separate prompts,
+  as on `live-fetch`; bundling them meant answering yes to both to get either.
+  The `.csv` offer is nested under the `.tconst`, which `generateXrefData.sh`
+  needs to exist. The decline path pages the Markdown rather than a different
+  rendering of the same data.
+
+- **`saveFilmography.sh`** — The save prompt is one question rather than two. It
+  printed `==> Save to <file>?` and then asked `==> Save filmography?`;
+  `waitUntil` takes the prompt string, so the `printf` was always redundant.
+
+- **`generateXrefData.sh`** — **Filmography lists are excluded from the default
+  `*.tconst` glob.** A filmography is a person's whole credit list, hundreds of
+  titles mostly unrelated to the corpus, so picking one up implicitly turned a
+  routine run into a very long one. Matched on the `-nm#######.tconst` suffix,
+  which both branches now write. Naming one on the command line still works —
+  only the bare default skips them, and the count is reported rather than
+  silent. If a filmography list is the only `.tconst` present, the script now
+  errors out with the explicit command instead of processing nothing.
+
+  This is also the boundary between the two tools rather than only a runtime guard: with `findShowsWith.sh` going local, `saveFilmography.sh` becomes the deliberate global view, and its output staying out of the corpus glob is what keeps those separate.
+
+- **`augment_tconstFiles.sh`** — Help text: `-y` is documented as implying `-i`,
+  which it has always done, and the example uses `-y` alone rather than `-iy`.
+  The old example suggested `-y` needed `-i` to work.
+
+### Fixed
+
+- **`saveFilmography.sh`** — Titles with no `startYear` rendered a literal `\N`
+  in the Year column and sorted to the bottom of their section. The inline
+  `title.basics` lookup that replaced `augment_tconstFiles.sh` reproduced its
+  `cut` and its tvEpisode filter but not its `perl -p -e 's+\\N++g;'`. With the
+  marker stripped, the missing-year test works and those titles float to the
+  top of their section, where `live-fetch` puts Post-production and
+  Pre-production.
+
+  **A missing year is a proxy for unreleased, not the same thing.** This branch has no status field, so an obscure old credit with no recorded year sorts up there too. Debicki's `Code Name Hélène` is the honest case — in development, and per IMDb only fully available on IMDbPro, which is also why `live-fetch` does not see it at all.
+
 ## [Unreleased] — 2026-08-26
 
 ### Fixed
