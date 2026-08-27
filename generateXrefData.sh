@@ -101,12 +101,42 @@ SCRAPER_ERR=$(mktemp)
 # Pick tconst file(s)
 if [[ -z ${TCONST_FILES[*]} ]]; then
     if [[ $# -eq 0 ]]; then
-        TCONST_FILES=(*.tconst)
+        # Filmography lists written by saveFilmography.sh are excluded from
+        # the default glob. On this branch every title is a scrape: a single
+        # filmography can be hundreds of them at ~2-3s each, across a WAF
+        # session that expires every ~30 minutes -- hours of work and a dozen
+        # CAPTCHAs, started by a bare ./generateXrefData.sh. Name one on the
+        # command line to use it deliberately.
+        TCONST_FILES=()
+        SKIPPED_FILMOGRAPHIES=()
+        for file in *.tconst; do
+            [[ -e $file ]] || continue
+            if [[ $file =~ -nm[0-9]{7,8}\.tconst$ ]]; then
+                SKIPPED_FILMOGRAPHIES+=("$file")
+                continue
+            fi
+            TCONST_FILES+=("$file")
+        done
+        if [[ ${#TCONST_FILES[@]} -eq 0 ]]; then
+            printf "==> [${RED}Error${NO_COLOR}] No .tconst files to process.\n" >&2
+            if [[ ${#SKIPPED_FILMOGRAPHIES[@]} -gt 0 ]]; then
+                printf "    Only filmography lists were found. Name one " >&2
+                printf "explicitly to use it:\n" >&2
+                printf "    ./generateXrefData.sh %s\n" \
+                    "${SKIPPED_FILMOGRAPHIES[0]}" >&2
+            fi
+            exit 1
+        fi
+        if [[ -z $QUIET ]] && [[ ${#SKIPPED_FILMOGRAPHIES[@]} -gt 0 ]]; then
+            printf "==> Skipping %s filmography list(s). " \
+                "${#SKIPPED_FILMOGRAPHIES[@]}"
+            printf "Name one explicitly to include it.\n"
+        fi
         [[ -z $QUIET ]] && printf "\n==> Searching all .tconst files for IMDb title IDs.\n"
         # Cache is only enabled if *.tconst is used, which is the usual mode.
         useEveryTconst="yes"
         # The history file should contain the contents of every tconst file used
-        head -9999 -- *.tconst | rg -v "^$|#" >"$EVERY_TCONST"
+        head -9999 -- "${TCONST_FILES[@]}" | rg -v "^$|#" >"$EVERY_TCONST"
     else
         TCONST_FILES=("$@")
         [[ -z $QUIET ]] && printf "\n==> Searching %s for IMDb title IDs.\n" "${TCONST_FILES[*]}"

@@ -1,5 +1,50 @@
 # Changelog
 
+## [Unreleased] — 2026-08-27
+
+### Fixed
+
+- **`saveFilmography.sh`** — **A failed filmography fetch now reports what to do
+  about it, and stops.** The fetch path predated `reportSearchError` and
+  `isWAFChallenge` and printed `tail -n 2` of the traceback instead, so a WAF
+  block surfaced as a bare `browser.WAFChallengeError: WAF challenge
+  (#captcha-container) not cleared` — accurate, and useless next to
+  `waf_check.py` and `augment_tconstFiles.sh`, which both name
+  `scraper/tools/solve_challenge.py`. Now routed through the same helper, with
+  the same wording.
+
+  **The `continue` became a `break`, which is the half that changes behaviour.** A CAPTCHA blocks every later fetch too, so with several people on the command line the old code re-hit IMDb once per person and printed the same traceback each time — part of what escalates a silent challenge into a CAPTCHA. The search loop above already stopped on a WAF hit; the fetch loop did not.
+
+### Changed
+
+- **`generateXrefData.sh`** — **Filmography lists are excluded from the default
+  `*.tconst` glob.** Matched on the `-nm#######.tconst` suffix that
+  `saveFilmography.sh` writes on both branches. This matters more here than on
+  `bulk-download`: every title is a scrape, so one filmography is hundreds of
+  them at ~2-3s each across a session that expires every ~30 minutes — hours of
+  work and a dozen CAPTCHAs, started by a bare `./generateXrefData.sh`. Naming
+  one explicitly still works, the skipped count is reported, and a directory
+  holding only filmography lists now errors out with the explicit command
+  rather than processing nothing.
+
+- **`saveFilmography.sh`** — The save prompt is one question rather than two. It
+  printed `==> Save to <file>?` and then asked `==> Save filmography?`;
+  `waitUntil` takes the prompt string, so the `printf` was always redundant.
+
+- **`augment_tconstFiles.sh`** — Help text: `-y` is documented as implying `-i`,
+  which it has always done. The `-fy` example stays, since `-f` is real on this
+  branch.
+
+### Notes
+
+- **The `-` in the Type column is not a live defect any more, but cached JSON
+  written before yesterday's `pages.py` fix still carries it.**
+  `.xref_live_cache/nm0000123.json` was written at 16:12 on 2026-08-26 and the
+  fix landed at 16:41, so a filmography generated this morning still rendered
+  146 roles with an empty `title_type`. `nm1469236.json` predates it too.
+  Delete and re-scrape both; nothing in the code needs changing. Worth
+  remembering that a scraper fix does not reach anything already cached.
+
 ## [Unreleased] — 2026-08-26
 
 ### Fixed

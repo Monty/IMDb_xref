@@ -501,8 +501,9 @@ while IFS= read -r searchTerm; do
     # wholesale as a debugging artifact -- filmographies were being swept away
     # with it.
     filmographyMd="${noSpaceName}-${nconst}-Filmography.md"
-    printf "\n==> Save to ${BLUE}$filmographyMd${NO_COLOR}?\n"
-    if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
+    printf "\n"
+    if waitUntil "$YN_PREF" -Y \
+        "==> Save filmography to ${BLUE}$filmographyMd${NO_COLOR}?"; then
         _generate_filmography_md "$fgData" "$filmographyMd"
         printf "==> Saved.\n"
     fi
@@ -528,7 +529,7 @@ while IFS= read -r searchTerm; do
         # bulk-download, which reads the local .tsv.gz datasets. The list is
         # still worth producing here: it carries every title from the full
         # credits page, where bulk sees only principals (664 vs 107).
-        printf "    Augment it on bulk-download -- seconds there, hours here:\n"
+        printf "    Augment it on the bulk-download branch -- seconds there, hours here:\n"
         printf "    ./augment_tconstFiles.sh %s\n" "$filmographyTconst"
     fi
 
