@@ -22,6 +22,10 @@ Filmographies are created in subdirectories so they will not overload the
 primary directory. Every job category is collected; you'll be asked once
 before anything is written, and can page through the results instead.
 
+Two files are written: a .tsv listing the person's credits by job category,
+with an IMDb URL per title, and a .tconst list of the same titles suitable
+for augment_tconstFiles.sh or generateXrefData.sh.
+
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
 
@@ -55,13 +59,15 @@ POSSIBLE_MATCHES $POSSIBLE_MATCHES
 MATCH_COUNTS $MATCH_COUNTS
 PERSON_RESULTS $PERSON_RESULTS
 JOB_RESULTS $JOB_RESULTS
+JOB_ROLES $JOB_ROLES
+ALLOWED_ROLES $ALLOWED_ROLES
 FINAL_RESULTS $FINAL_RESULTS
 TMPFILE $TMPFILE
 EOT
     else
         rm -f "$ALL_TERMS" "$NCONST_TERMS" "$PERSON_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS" "$FINAL_RESULTS"
-        rm -f "$TMPFILE"
+        rm -f "$JOB_ROLES" "$ALLOWED_ROLES" "$TMPFILE"
     fi
 }
 
@@ -111,6 +117,8 @@ POSSIBLE_MATCHES=$(mktemp)
 MATCH_COUNTS=$(mktemp)
 PERSON_RESULTS=$(mktemp)
 JOB_RESULTS=$(mktemp)
+JOB_ROLES=$(mktemp)
+ALLOWED_ROLES=$(mktemp)
 FINAL_RESULTS=$(mktemp)
 TMPFILE=$(mktemp)
 
@@ -170,6 +178,57 @@ cut -f 2 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
 allowedJobs=$(rg -N '^[^#]' rg_sections.rgx 2>/dev/null | tr '\n' '|')
 allowedJobs="${allowedJobs%|}"
 [[ -z $allowedJobs ]] && allowedJobs=".*"
+
+# Build the filmography .tsv. $1 holds augmented title rows (tconst, titleType,
+# primaryTitle, originalTitle, startYear), $2 holds the principals rows kept
+# before augmenting (tconst, nconst, category, characters).
+#
+# Sections are separated by a blank row and a job name rather than carrying a
+# job column. Both are padded to the full column count so the file stays
+# rectangular. Note the tradeoff: a spreadsheet sort across the whole file
+# will pull the job rows into the data. Sort a selected range, or sort before
+# generating.
+function _generate_filmography_tsv() {
+    awk -F'\t' -v OFS='\t' '
+        # First file: title data, keyed by tconst
+        NR == FNR {
+            type[$1] = $2; title[$1] = $3; year[$1] = $5
+            next
+        }
+        # Second file: one row per credit
+        {
+            tconst = $1
+            # augment_tconstFiles.sh drops tvEpisodes, so a tconst with no
+            # title entry is an episode row and is skipped here too.
+            if (!(tconst in title)) next
+            # characters is a JSON array string: ["Ryan Bingham"] or \N
+            chars = $4
+            if (chars == "\\N") chars = ""
+            sub(/^\[/, "", chars); sub(/\]$/, "", chars)
+            gsub(/","/, "; ", chars)
+            gsub(/"/, "", chars)
+            # Bulk spells categories with underscores, the credits page uses
+            # spaces. Match live-fetch.
+            job = $3
+            gsub(/_/, " ", job)
+            print job, year[tconst], title[tconst], type[tconst], chars, \
+                "https://www.imdb.com/title/" tconst "/"
+        }
+    ' "$1" "$2" |
+        sort -f -t$'\t' --key=1,1 --key=2,2r --key=3,3 |
+        awk -F'\t' -v OFS='\t' '
+            BEGIN { print "Year", "Title", "Type", "Character", "URL" }
+            # Separator and section rows are padded to the full column count.
+            # A ragged row is not just untidy here -- tsvPrint parses this file
+            # as CSV and errors out on a row with the wrong number of fields.
+            $1 != job {
+                job = $1
+                print "", "", "", "", ""
+                print job, "", "", "", ""
+            }
+            { print $2, $3, $4, $5, $6 }
+        '
+}
 
 # Add possible matches one at a time, preceded by URL
 while read -r line; do
@@ -258,8 +317,11 @@ if ! waitUntil "$YN_PREF" -Y; then
 fi
 
 cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
+# tconst, nconst, category, characters. The characters field is kept for the
+# .tsv -- augment_tconstFiles.sh replaces these rows with title.basics columns,
+# so anything not saved before augmenting is lost.
 rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz |
-    cut -f 1,3,4 >"$POSSIBLE_MATCHES"
+    cut -f 1,3,4,6 >"$POSSIBLE_MATCHES"
 
 # Filmography data comes from the local title.principals.tsv.gz read above. The
 # FULLCAST live-fetch path (curl the person's fullcredits page, parse with
@@ -268,6 +330,7 @@ rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz |
 
 while read -r line; do
     true >"$FINAL_RESULTS"
+    true >"$ALLOWED_ROLES"
     nconstID="$line"
     nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
     rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
@@ -280,6 +343,7 @@ while read -r line; do
     noSpaceName="$(safeFilename "$nconstName")"
     filmographyDir="$noSpaceName-Filmography"
     filmographyFile="$filmographyDir/$noSpaceName.tconst"
+    filmographyTsv="$filmographyDir/$noSpaceName.tsv"
     filmographyDB="$filmographyDir/$noSpaceName.csv"
     TCONST_FILE="$filmographyFile"
 
@@ -291,6 +355,9 @@ while read -r line; do
     while read -r job; do
         match=$(cut -f 2 <<<"$job")
         rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
+        # augment_tconstFiles.sh overwrites its argument, so keep the credit
+        # rows -- job category and characters -- for the .tsv first.
+        cp "$JOB_RESULTS" "$JOB_ROLES"
         ./augment_tconstFiles.sh -y "$JOB_RESULTS"
         # Counted after augmenting, which drops tvEpisodes -- so this is the
         # number of titles that will actually be written, not the raw
@@ -305,6 +372,7 @@ while read -r line; do
         if rg -qxNi -e "$allowedJobs" <<<"$(tr '_' ' ' <<<"$match")"; then
             printf "  %-20s %s titles\n" "$match:" "$numResults" >>"$TMPFILE"
             cat "$JOB_RESULTS" >>"$FINAL_RESULTS"
+            cat "$JOB_ROLES" >>"$ALLOWED_ROLES"
         else
             printf "  %-20s %s titles (not saved)\n" "$match:" "$numResults" >>"$TMPFILE"
         fi
@@ -324,10 +392,12 @@ while read -r line; do
     printf "\n==> Filmography for $nconstName ($numlines titles)\n"
     cat "$TMPFILE"
 
-    printf "\n==> Save to ${BLUE}$filmographyFile${NO_COLOR}?\n"
+    printf "\n==> Save to ${BLUE}$filmographyTsv${NO_COLOR}\n"
+    printf "        and ${BLUE}$filmographyFile${NO_COLOR}?\n"
     if waitUntil "$YN_PREF" -Y "==> Save filmography?"; then
         mkdir -p "$filmographyDir"
         rg -N "^tt" "$FINAL_RESULTS" | sort -f -t$'\t' --key=3,3 >"$TCONST_FILE"
+        _generate_filmography_tsv "$FINAL_RESULTS" "$ALLOWED_ROLES" >"$filmographyTsv"
         printf "==> Saved.\n"
         waitUntil "$YN_PREF" -Y \
             "\n==> Shall I generate ${BLUE}$(basename "$filmographyDB")${NO_COLOR}?" &&
@@ -336,8 +406,7 @@ while read -r line; do
         # Nothing was written, so offer a look at what would have been.
         # Exploring in $PAGER beats saving a file just to delete it later.
         if waitUntil "$YN_PREF" -N "==> Would you like to view it instead?"; then
-            cut -f 2,3,5 "$FINAL_RESULTS" |
-                sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 >"$TMPFILE"
+            _generate_filmography_tsv "$FINAL_RESULTS" "$ALLOWED_ROLES" >"$TMPFILE"
             tsvPrint -n "$TMPFILE" | ${PAGER:-less}
         fi
     fi
