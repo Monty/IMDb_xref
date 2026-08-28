@@ -20,8 +20,16 @@ which will reset this directory to the state a completely new user would
 encounter. You can't undo this.
 
 If you hit <cr> or answer "no". It will give you the choice of deleting various
-types of files. It always defaults to "No", so just hit <cr> to see what your
-choices would be. Or look at the source code for this script.
+types of files, asked in order of increasing consequence. It always defaults to
+"No", so just hit <cr> to see what your choices would be.
+
+Every question lists the files it would delete before asking, and a question
+with nothing to delete is skipped -- so what you see is what you have.
+
+Note that your preferences file (~/.config/IMDb_xref/config) is never deleted.
+It is shared by every clone of this project, so removing it here would change
+the behavior of the others. Neither is ~/.config/IMDb_xref/browser_state.json,
+which holds the WAF session -- deleting it means solving a CAPTCHA again.
 
 USAGE:
     ./cleanupEverything.sh [OPTIONS]
@@ -41,6 +49,58 @@ function deleteFiles() {
     printf "\n"
 }
 
+# Does a set of globs match anything? Silent -- for callers that need the test
+# without the output, such as the warning below that covers two groups which
+# then list themselves.
+function hasMatches() {
+    local pattern
+    # Globbing needs to take place here, so don't quote $@.
+    # shellcheck disable=SC2068
+    for pattern in $@; do
+        [[ -e $pattern ]] && return 0
+    done
+    return 1
+}
+
+# Print what a set of globs matches, one per line, after a blank line.
+#
+# This turns "delete all saved filmographies?" from a question you have to
+# answer from memory into one you can answer from the screen -- nothing records
+# which people you asked for, so with dozens saved the list is the only way to
+# know what you are agreeing to.
+function showMatches() {
+    local -a matches=()
+    local pattern
+    # Globbing needs to take place here, so don't quote $@.
+    # shellcheck disable=SC2068
+    for pattern in $@; do
+        [[ -e $pattern ]] && matches+=("$pattern")
+    done
+    printf "\n"
+    printf "    %s\n" "${matches[@]}"
+}
+
+# Offer one group for deletion, skipping the question entirely when the group
+# matches nothing. That matters more on this branch than on bulk-download: this
+# script was copied across and then carried questions for .gz downloads and
+# generated spreadsheets that nothing on live-fetch has ever created.
+#
+# $1 names the group for the "keeping" message. That message has to name what it
+# refers to: a bare "Skipping..." printed under the question reads as though it
+# applies to the list that follows it rather than the question above it. The
+# ambiguity only appeared once the lists did.
+function offerDelete() {
+    local name="$1" question="$2"
+    shift 2
+    hasMatches "$@" || return 0
+    showMatches "$@"
+    if waitUntil "$YN_PREF" -N "$question"; then
+        deleteFiles "$@"
+    else
+        printf "==> Keeping %s.\n" "$name"
+    fi
+}
+
 # Allow switches -v or -i to be passed to the rm command
 while getopts ":hiv" opt; do
     case $opt in
@@ -55,81 +115,119 @@ while getopts ":hiv" opt; do
         TELL="-v"
         ;;
     \?)
-        printf "==> Ignoring invalid option: -$OPTARG\n\n" >&2
+        printf "==> Ignoring invalid option: -%s\n\n" "$OPTARG" >&2
         ;;
     esac
 done
 shift $((OPTIND - 1))
 
-# Quote filenames so globbing takes place in the "deleteFiles" function,
-# i.e. the function is passed the number of parameters seen below, not
-# the expanded list which could be quite long.
-if waitUntil "$YN_PREF" -N \
-    "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
-    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
-        "AssociatedTitles*.csv" "LinksToPersons*.csv" "LinksToTitles*.csv" \
-        "Episode-Count*.csv" "uniq*.txt" "secondary" "diffs*.txt" \
-        "baseline" "test_results" "*.tsv.gz" "*.tconst" "*.xlate" \
-        "*-Filmography" ".xref_live_*"
-    exit
-else
-    printf "Skipping...\n"
-fi
-
-if waitUntil "$YN_PREF" -N \
-    "Delete primary spreadsheets containing credits, shows, and episodes?"; then
-    deleteFiles "Shows-*.csv" "Credits-*.csv" "Persons-KnownFor*.csv" \
-        "AssociatedTitles*.csv" "LinksToPersons*.csv"
-else
-    printf "Skipping...\n"
-fi
-
-if waitUntil "$YN_PREF" -N \
-    "Delete smaller files that contain lists of persons and shows?"; then
-    deleteFiles "LinksToTitles*.csv" "Episode-Count*.csv" "uniq*.txt"
-else
-    printf "Skipping...\n"
-fi
-
-if waitUntil "$YN_PREF" -N "Delete all files generated during debugging?"; then
-    deleteFiles "secondary" "diffs*.txt" "baseline" "test_results"
-else
-    printf "Skipping...\n"
-fi
-
-if waitUntil "$YN_PREF" -N "Delete all the .gz files downloaded from IMDb?"; then
-    deleteFiles "*.tsv.gz"
-else
-    printf "Skipping...\n"
-fi
-
-printf "\n[${RED}Warning${NO_COLOR}] The following files are usually manually created. "
-printf "They are ignored by git.\n"
-
-if waitUntil "$YN_PREF" -N \
-    "Delete all manually maintained .tconst and .xlate files?"; then
-    deleteFiles "*.tconst" "*.xlate"
-else
-    printf "Skipping...\n"
-fi
+# Patterns are grouped once and reused by both the EVERYTHING sweep and the
+# individual questions, so the two can't drift.
+#
+# Quoted so globbing takes place inside deleteFiles/showMatches rather than
+# here, i.e. those functions see the patterns, not an expanded list.
+#
+# Several groups that exist on bulk-download are deliberately absent, because
+# nothing on this branch creates them: the generated spreadsheets (Shows-*.csv,
+# Credits-*.csv, Persons-KnownFor*, AssociatedTitles*, LinksTo*, Episode-Count*,
+# uniq*.txt), the IMDb .gz downloads, and the "baseline" directory. Two whole
+# questions here used to delete nothing at all.
 
 # Filmographies get their own question because each one exists only because you
-# asked for that person, and nothing records which people you chose -- with
-# dozens saved you'd have to remember the list yourself. Rebuilding one here
-# means re-scraping IMDb through the WAF, so this is more expensive to undo
-# than the bulk-download equivalent.
-if waitUntil "$YN_PREF" -N \
-    "Delete all saved filmographies (*-Filmography)?"; then
-    deleteFiles "*-Filmography"
-else
-    printf "Skipping...\n"
+# asked for that person and a backup is the only way back -- and nothing records
+# which people you chose, hence the listing above the prompt. Rebuilding one
+# here also means re-scraping IMDb through the WAF, so this is materially more
+# expensive to undo than the bulk-download equivalent, where the same file
+# regenerates from local data in seconds.
+#
+# The matching .tconst sits with the manually maintained files above: it is
+# regenerable by re-running saveFilmography.sh with the nconst already in the
+# filename.
+FILMOGRAPHIES=("*-Filmography.md")
+
+MANUAL=("*.tconst" "*.xlate")
+
+# This branch has no scratch directory. bulk-download's generateXrefData.sh
+# builds its spreadsheets through ~30 intermediate files in "secondary" and
+# compares against "test_results"; the scraper works from the cache and index
+# instead, so none of that exists here and none of it is cleaned here either.
+# The same rule applies to .xref_bulk_* files: if a branch switch in this
+# working directory has left the other branch's files behind, switch back and
+# clean them there. Each branch is responsible for its own.
+#
+# Run state, all cheap. The index is rebuilt from the cache automatically by
+# seven scripts (_scraper rebuild-index), so deleting it is self-healing --
+# though note that makes it cheap only while the cache survives. Durations and
+# history are records of past runs, useful but not load-bearing.
+#
+# .xref_live_numRecords is no longer created (functions/define_files), but is
+# still listed so an existing one left over from before gets cleaned up.
+#
+# Listed explicitly rather than as .xref_live_* so the cache below can be asked
+# separately. A new .xref_live_* file would need adding here by hand.
+RUNSTATE=(".xref_live_durations" ".xref_live_history" ".xref_live_index"
+    ".xref_live_numRecords")
+
+# The scraped cache is asked last -- after even the filmographies. It is the
+# one thing in this directory that only a backup can restore: every show ever
+# scraped, hours of fetching across WAF sessions that expire every ~30 minutes,
+# and the index above cannot be rebuilt without it.
+#
+# It was previously bundled with the run state above and labeled "user
+# configuration", which was wrong twice over. The real user configuration is
+# $configFile (~/.config/IMDb_xref/config), shared across clones and never
+# deleted here.
+#
+# Only .xref_live_cache -- a bare .xref_* glob would also delete the
+# bulk-download branch's state if someone has switched branches in this working
+# directory.
+CACHE=(".xref_live_cache")
+
+EVERYTHING=("${RUNSTATE[@]}" "${MANUAL[@]}" "${FILMOGRAPHIES[@]}" "${CACHE[@]}")
+
+if hasMatches "${EVERYTHING[@]}"; then
+    showMatches "${EVERYTHING[@]}"
+    printf "\n[${RED}Warning${NO_COLOR}] Answering yes will delete everything listed "
+    printf "above -- every saved\nfilmography, anything you have maintained by "
+    printf "hand, and the scraped cache,\nwhich costs hours of WAF-limited "
+    printf "fetching to rebuild. There is no undo.\nAnswering no asks about each "
+    printf "group separately, so you can keep some groups.\n\n"
+    if waitUntil "$YN_PREF" -N \
+        "${RED}Delete EVERYTHING above, created by scripts and users?${NO_COLOR}"; then
+        deleteFiles "${EVERYTHING[@]}"
+        exit
+    else
+        printf "==> OK, asking about each group instead.\n"
+    fi
 fi
 
-# Only .xref_live_* -- a bare .xref_* glob would also delete the bulk-download
-# branch's .xref_bulk_* state if someone has switched branches in this working
-# directory, including a scraped cache that is slow and WAF-limited to rebuild.
-if waitUntil "$YN_PREF" -N "Delete all user configuration (.xref_live_*) files?"; then
-    deleteFiles ".xref_live_*"
-else
-    printf "Skipping...\n"
+offerDelete "the run state" \
+    "Delete the above index and run history? (the index rebuilds itself)" \
+    "${RUNSTATE[@]}"
+
+if hasMatches "${MANUAL[@]}" "${FILMOGRAPHIES[@]}"; then
+    printf "\n[${RED}Warning${NO_COLOR}] The following are created from your own input. "
+    printf "They are ignored by git.\n"
+fi
+
+offerDelete "the manually maintained files" \
+    "Delete the above manually maintained .tconst and .xlate files?" \
+    "${MANUAL[@]}"
+
+# Filmographies sit second-to-last: a backup is the only way back, and on this
+# branch rebuilding one also costs a WAF session. The .tconst lists above look
+# comparably precious but are regenerated by script from the shows Monty has
+# watched.
+offerDelete "the saved filmographies" \
+    "Delete the above saved filmographies?" \
+    "${FILMOGRAPHIES[@]}"
+
+if hasMatches "${CACHE[@]}"; then
+    printf "\n[${RED}Warning${NO_COLOR}] .xref_live_cache holds every show you have "
+    printf "ever scraped, and\nonly a backup can bring it back. Rebuilding it means "
+    printf "re-fetching every title\nthrough the WAF, ~30 minutes of session at a "
+    printf "time. The index cannot be\nrebuilt without it either.\n"
+    offerDelete "the scraped cache" \
+        "Delete the above scraped cache?" \
+        "${CACHE[@]}"
 fi
