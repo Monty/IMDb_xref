@@ -51,8 +51,12 @@ favoritesFile="favorites.tconst"
 durationFile=".xref_live_durations"
 [[ ! -e $durationFile ]] && touch "$durationFile"
 
-numRecordsFile=".xref_live_numRecords"
-[[ ! -e $numRecordsFile ]] && touch "$numRecordsFile"
+# numRecordsFile is not defined on this branch. It counted the lines in
+# title.principals.tsv.gz so scripts could report "Searching NNN records" --
+# a bulk-download concept with no meaning here, where the scraper fetches
+# titles individually and there is no record count to cache. It survived the
+# .xref_live_* rename as an empty file that was created on every run and read
+# by nothing.
 
 # All state on this branch is prefixed .xref_live_* so it can't be confused
 # with -- or deleted by -- the bulk-download branch's .xref_bulk_* files if
