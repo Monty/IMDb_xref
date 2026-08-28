@@ -21,8 +21,10 @@ encounter. You can't undo this.
 
 If you hit <cr> or answer "no". It will give you the choice of deleting various
 types of files, asked in order of increasing consequence. It always defaults to
-"No", so just hit <cr> to see what your choices would be. Or look at the source
-code for this script.
+"No", so just hit <cr> to see what your choices would be.
+
+Every question lists the files it would delete before asking, and a question
+with nothing to delete is skipped -- so what you see is what you have.
 
 Note that your preferences file (~/.config/IMDb_xref/config) is never deleted.
 It is shared by every clone of this project, so removing it here would change
@@ -46,6 +48,58 @@ function deleteFiles() {
     printf "\n"
 }
 
+# Does a set of globs match anything? Silent -- for callers that need the test
+# without the output, such as the warning below that covers two groups which
+# then list themselves.
+function hasMatches() {
+    local pattern
+    # Globbing needs to take place here, so don't quote $@.
+    # shellcheck disable=SC2068
+    for pattern in $@; do
+        [[ -e $pattern ]] && return 0
+    done
+    return 1
+}
+
+# Print what a set of globs matches, one per line, after a blank line.
+#
+# This turns "delete all saved filmographies?" from a question you have to
+# answer from memory into one you can answer from the screen -- nothing records
+# which people you asked for, so with dozens saved the list is the only way to
+# know what you are agreeing to.
+function showMatches() {
+    local -a matches=()
+    local pattern
+    # Globbing needs to take place here, so don't quote $@.
+    # shellcheck disable=SC2068
+    for pattern in $@; do
+        [[ -e $pattern ]] && matches+=("$pattern")
+    done
+    printf "\n"
+    printf "    %s\n" "${matches[@]}"
+}
+
+# Offer one group for deletion, skipping the question entirely when the group
+# matches nothing. That keeps this script honest as the branches diverge: a
+# prompt for something this branch never creates stops appearing rather than
+# sitting here implying it might.
+#
+# $1 names the group for the "keeping" message. That message has to name what it
+# refers to: a bare "Skipping..." printed under the question reads as though it
+# applies to the list that follows it rather than the question above it. The
+# ambiguity only appeared once the lists did.
+function offerDelete() {
+    local name="$1" question="$2"
+    shift 2
+    hasMatches "$@" || return 0
+    showMatches "$@"
+    if waitUntil "$YN_PREF" -N "$question"; then
+        deleteFiles "$@"
+    else
+        printf "==> Keeping %s.\n" "$name"
+    fi
+}
+
 # Allow switches -v or -i to be passed to the rm command
 while getopts ":hiv" opt; do
     case $opt in
@@ -66,26 +120,14 @@ while getopts ":hiv" opt; do
 done
 shift $((OPTIND - 1))
 
-# Quote filenames so globbing takes place in the "deleteFiles" function,
-# i.e. the function is passed the number of parameters seen below, not
-# the expanded list which could be quite long.
+# Patterns are grouped once and reused by both the EVERYTHING sweep and the
+# individual questions, so the two can't drift -- previously the same globs were
+# written twice and a new one could reach a question but not the sweep.
 #
-# The questions below run in order of increasing consequence: working files
-# that every run recreates, then research spreadsheets nothing reads, then the
-# files the scripts actually search, then generated state, then the slow
-# download, and last the things you can't get back by re-running anything.
-if waitUntil "$YN_PREF" -N \
-    "${RED}Delete EVERYTHING created by scripts and users?${NO_COLOR}"; then
-    deleteFiles "secondary" "diffs*.txt" "test_results" "Demo" \
-        "AssociatedTitles*.csv" "Credits-Show*.csv" "Episode-Count*.csv" \
-        "LinksToPersons*.csv" "LinksToTitles*.csv" "Persons-KnownFor*.csv" \
-        "Shows-*.csv" "Credits-Person*.csv" "uniq*.txt" ".xref_bulk_*" \
-        "*.tsv.gz" "*-Filmography" "*.tconst" "*.xlate"
-    exit
-else
-    printf "Skipping...\n"
-fi
-
+# Quoted so globbing takes place inside deleteFiles/showMatches rather than
+# here, i.e. those functions see the patterns, not an expanded list that could
+# be quite long.
+#
 # "secondary" is not a debugging artifact -- generateXrefData.sh creates it on
 # every run to hold ~30 intermediate files, and empties it on exit unless DEBUG
 # is set. "diffs*.txt" and "test_results" come only from -t. "Demo" is the
@@ -93,37 +135,22 @@ fi
 # regardless of which shows the user has curated. The "baseline" directory this
 # used to delete is a WhatsStreamingToday artifact that came across with the
 # script; nothing here has ever created or read it.
-if waitUntil "$YN_PREF" -N \
-    "Delete working files, test baselines, and the demo corpus?"; then
-    deleteFiles "secondary" "diffs*.txt" "test_results" "Demo"
-else
-    printf "Skipping...\n"
-fi
+WORKING=("secondary" "diffs*.txt" "test_results" "Demo")
 
 # No script reads any of these -- generateXrefData.sh writes them and nothing
 # else touches them. They exist so you can explore the data in a spreadsheet
 # without learning any query syntax, which makes them the safest thing here to
 # delete for space and the most annoying to have lost if you wanted them.
-if waitUntil "$YN_PREF" -N \
-    "Delete research spreadsheets of shows, episodes, links, and known-for titles?"; then
-    deleteFiles "AssociatedTitles*.csv" "Credits-Show*.csv" "Episode-Count*.csv" \
-        "LinksToPersons*.csv" "LinksToTitles*.csv" "Persons-KnownFor*.csv" \
-        "Shows-*.csv"
-else
-    printf "Skipping...\n"
-fi
+RESEARCH=("AssociatedTitles*.csv" "Credits-Show*.csv" "Episode-Count*.csv"
+    "LinksToPersons*.csv" "LinksToTitles*.csv" "Persons-KnownFor*.csv"
+    "Shows-*.csv")
 
 # These two are the ones the tools query: xrefCast.sh and iQuery.sh search
 # Credits-Person.csv, and iQuery.sh's category search plus start.command's
 # "saved shows" listing read the uniq* lists. Deleting them stops those scripts
 # working until generateXrefData.sh runs again -- which xrefCast.sh and
 # iQuery.sh will offer to do for you.
-if waitUntil "$YN_PREF" -N \
-    "Delete the credits and list files that the scripts search?"; then
-    deleteFiles "Credits-Person*.csv" "uniq*.txt"
-else
-    printf "Skipping...\n"
-fi
+SEARCHED=("Credits-Person*.csv" "uniq*.txt")
 
 # Only .xref_bulk_* -- a bare .xref_* glob would also delete the live-fetch
 # branch's .xref_live_* state if someone has switched branches in this working
@@ -133,36 +160,83 @@ fi
 # above the manually-created warning below. Note that actual user configuration
 # lives in $configFile (~/.config/IMDb_xref/config), which is shared by every
 # clone and is deliberately never deleted here.
-if waitUntil "$YN_PREF" -N \
-    "Delete the cross-reference cache and run history (.xref_bulk_*) files?"; then
-    deleteFiles ".xref_bulk_*"
-else
-    printf "Skipping...\n"
+STATE=(".xref_bulk_*")
+
+GZFILES=("*.tsv.gz")
+
+# Filmographies get their own question, asked last, because each one exists
+# only because you asked for that person and a backup is the only way back.
+# The data is local, so any one can be rebuilt in seconds -- but only if you
+# remember whose it was, which is why the list is printed before the question.
+#
+# The matching .tconst and .csv are NOT here; they sit with the manually
+# maintained files above, since both are regenerable by re-running
+# saveFilmography.sh with the nconst that is already in the filename.
+FILMOGRAPHIES=("*-Filmography.md")
+
+# "*-nm[0-9]*.csv" is saveFilmography.sh's optional cross-reference CSV
+# (Person_Name-nconst.csv). Narrow enough not to touch the corpus CSVs above,
+# all of which are named for their content rather than a person.
+MANUAL=("*.tconst" "*.xlate" "*-nm[0-9]*.csv")
+
+EVERYTHING=("${WORKING[@]}" "${RESEARCH[@]}" "${SEARCHED[@]}" "${STATE[@]}"
+    "${GZFILES[@]}" "${MANUAL[@]}" "${FILMOGRAPHIES[@]}")
+
+# The questions below run in order of increasing consequence: working files
+# that every run recreates, then research spreadsheets nothing reads, then the
+# files the scripts actually search, then generated state, then the slow
+# download, then the hand-maintained lists, and last the filmographies -- the
+# only thing here that no script can rebuild from something else you still
+# have.
+if hasMatches "${EVERYTHING[@]}"; then
+    showMatches "${EVERYTHING[@]}"
+    printf "\n[${RED}Warning${NO_COLOR}] Answering yes will delete everything listed "
+    printf "above -- the .gz\ndownloads, anything you have maintained by hand, and "
+    printf "every saved filmography.\nThere is no undo. Answering no asks about "
+    printf "each group separately, so you\ncan keep some groups.\n\n"
+    if waitUntil "$YN_PREF" -N \
+        "${RED}Delete EVERYTHING above, created by scripts and users?${NO_COLOR}"; then
+        deleteFiles "${EVERYTHING[@]}"
+        exit
+    else
+        printf "==> OK, asking about each group instead.\n"
+    fi
 fi
 
-if waitUntil "$YN_PREF" -N "Delete all the .gz files downloaded from IMDb?"; then
-    deleteFiles "*.tsv.gz"
-else
-    printf "Skipping...\n"
+offerDelete "working files" \
+    "Delete the above working files, test baselines, and demo corpus?" \
+    "${WORKING[@]}"
+
+offerDelete "research spreadsheets" \
+    "Delete the above research spreadsheets?" \
+    "${RESEARCH[@]}"
+
+offerDelete "the searched credits and list files" \
+    "Delete the above credits and list files that the scripts search?" \
+    "${SEARCHED[@]}"
+
+offerDelete "the cross-reference cache and history" \
+    "Delete the above cross-reference cache and run history files?" \
+    "${STATE[@]}"
+
+offerDelete "the downloaded .gz files" \
+    "Delete the above .gz files downloaded from IMDb?" \
+    "${GZFILES[@]}"
+
+if hasMatches "${MANUAL[@]}" "${FILMOGRAPHIES[@]}"; then
+    printf "\n[${RED}Warning${NO_COLOR}] The following are created from your own input. "
+    printf "They are ignored by git.\n"
 fi
 
-printf "\n[${RED}Warning${NO_COLOR}] The following are created from your own input. "
-printf "They are ignored by git.\n"
+offerDelete "the manually maintained files" \
+    "Delete the above manually maintained .tconst and .xlate files?" \
+    "${MANUAL[@]}"
 
-# Filmographies get their own question because each one exists only because you
-# asked for that person. The data is local, so any single one can be rebuilt --
-# but nothing records which people you chose, so with dozens saved you'd have to
-# remember the list yourself.
-if waitUntil "$YN_PREF" -N \
-    "Delete all saved filmographies (*-Filmography)?"; then
-    deleteFiles "*-Filmography"
-else
-    printf "Skipping...\n"
-fi
-
-if waitUntil "$YN_PREF" -N \
-    "Delete all manually maintained .tconst and .xlate files?"; then
-    deleteFiles "*.tconst" "*.xlate"
-else
-    printf "Skipping...\n"
-fi
+# Filmographies are asked last because they are the only thing here that a
+# backup is the sole way to recover. The .tconst lists ahead of them look
+# comparably precious but are regenerated by script from the shows Monty has
+# watched -- so the common case is wanting to clear everything above and keep
+# these.
+offerDelete "the saved filmographies" \
+    "Delete the above saved filmographies?" \
+    "${FILMOGRAPHIES[@]}"
