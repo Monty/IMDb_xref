@@ -107,6 +107,19 @@
 
 ### Fixed
 
+- **`augment_tconstFiles.sh`** — **A tconst appearing in two files on the same
+  command line was written twice into the second file.** `CACHE_LIST` was built
+  once before the loop, but each iteration appends its results to the cache, so
+  the list went stale as soon as the first file was processed. The shared tconst
+  then satisfied the cache lookup *and* still appeared in `TCONST_LIST`, so it
+  was fetched from `title.basics.tsv.gz` and appended a second time — Happy
+  Valley (`tt3428912`) in both `Acorn.tconst` and `BBox.tconst`. Now rebuilt per
+  file.
+
+  **Not a `-r` bug, though that is what exposed it.** The duplicate only appears when the shared tconst was not already cached, so an ordinary run with a warm cache hid it. `-r` empties the cache, and so does a first run on a fresh clone — which is precisely when someone augments several `.tconst` files at once.
+
+  The cache itself was never corrupted: it is written through `sort -u`, which drops the identical second row. Only the output file carried it.
+
 - **`saveFilmography.sh`** — Titles with no `startYear` rendered a literal `\N`
   in the Year column and sorted to the bottom of their section. The inline
   `title.basics` lookup that replaced `augment_tconstFiles.sh` reproduced its
