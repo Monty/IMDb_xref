@@ -188,7 +188,6 @@ if [[ -n $RELOAD ]] || [[ title.basics.tsv.gz -nt $cacheFile ]]; then
 fi
 
 touch "$cacheFile"
-rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
 
 for file in "$@"; do
     [[ -z $INPLACE ]] && printf "==> %s\n" "$file"
@@ -208,6 +207,15 @@ for file in "$@"; do
 
     # Gather all the lines with tconsts in column 1
     rg -N "^tt" "$file" | cut -f 1 | sort -u >"$SEARCH_LIST"
+
+    # Which tconsts are cached? Rebuilt per file, not once before the loop:
+    # each iteration appends its results to the cache, so a list built up front
+    # goes stale the moment the first file is processed. A tconst shared by two
+    # files then satisfied the cache lookup below *and* still appeared in
+    # TCONST_LIST, so it was written twice -- Happy Valley in both Acorn.tconst
+    # and BBox.tconst. Only visible when the tconst was not already cached, so
+    # -r and first runs on a fresh clone showed it while ordinary runs did not.
+    rg -N "^tt" "$cacheFile" | cut -f 1 | sort >"$CACHE_LIST"
 
     # Figure out which tconst IDs are cached and which aren't
     comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
