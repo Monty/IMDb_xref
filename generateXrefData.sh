@@ -143,6 +143,37 @@ if [[ -z ${TCONST_FILES[*]} ]]; then
     fi
 fi
 
+# Which titles have already been fetched with credits?
+#
+# One jq pass over the cache, replacing two `uv run` subprocesses per show
+# inside the loop below. At 639 shows that was ~1,278 interpreter starts and
+# essentially all of a four-minute run -- time spent from the same ~30-minute
+# WAF session as the fetching, so it directly reduced how many new shows a run
+# could pull.
+#
+# The test is a non-empty cast array in the cached file, not the file's
+# existence: title-basics also writes a cache file, legitimately with no cast,
+# so file-existence would mark a title done that has never had its credits
+# fetched.
+#
+# It is also not "does the index list cast for this show?", which is what this
+# used to ask. rebuild_index filters cast against rg_jobs.rgx (actor, actress,
+# director, writer), so a title crewed entirely by cinematographers, composers
+# and producers indexes zero cast rows and looked permanently unfetched --
+# re-scraped on every run, forever, with no possible outcome that would change
+# it. tt6953912 (Moving Art) and tt6978970 (The Alps Murders) were doing exactly
+# that.
+#
+# Held as a |-delimited string rather than an associative array: /bin/bash on
+# macOS is 3.2, which has none.
+fetchedIds="|"
+if [[ -n $(find "$cacheDirectory" -name 'tt*.json' -print -quit 2>/dev/null) ]]; then
+    while read -r cachedTconst; do
+        [[ -n $cachedTconst ]] && fetchedIds+="$cachedTconst|"
+    done < <(jq -r 'select((.cast | length) > 0) | .tconst' \
+        "$cacheDirectory"/tt*.json 2>/dev/null)
+fi
+
 # Extract all tconst IDs
 rg -IN "^tt" "${TCONST_FILES[@]}" | cut -f1 | sort -u >"$TCONST_LIST"
 total=$(sed -n '$=' "$TCONST_LIST")
@@ -178,20 +209,14 @@ while IFS= read -r tconst; do
     [[ -z $tconst ]] && continue
 
     if [[ -n $REFRESH ]]; then
-        # Force re-scrape. Delete the cache file AND bypass the cache check
-        # below: that check queries the index (title-info / cast-for-show read
-        # .xref_live_index/*.jsonl), not the cache directory, and the index
-        # still holds this show until rebuild-index runs at the end. Checking it
-        # here made -r delete every cache file and then skip every fetch, so a
-        # "reload" silently destroyed the cache and reported "Skipped: N cached"
-        # -- the shows vanished from the index too once it was rebuilt.
+        # Force re-scrape. Delete the cache file AND bypass the fetched-list
+        # check below: that list was built before the loop, so it still holds
+        # this show even though the file is now gone.
         rm -f "$cacheDirectory/${tconst}.json"
     else
-        # Check if already cached with cast data
-        # title-basics populates the index without cast, so check cast too
-        titleInfo=$(_scraper title-info "$tconst" 2>/dev/null)
-        castCheck=$(_scraper cast-for-show "$tconst" 2>/dev/null)
-        if [[ -n $titleInfo ]] && [[ $titleInfo != *"not found"* ]] && [[ -n $castCheck ]] && [[ $castCheck != "[]" ]]; then
+        # Already fetched? A substring test against the list built before the
+        # loop -- no subprocess, where this previously spawned two.
+        if [[ $fetchedIds == *"|$tconst|"* ]]; then
             skipped=$((skipped + 1))
             continue
         fi

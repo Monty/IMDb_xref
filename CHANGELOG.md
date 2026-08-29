@@ -15,6 +15,20 @@
 
   **The `continue` became a `break`, which is the half that changes behaviour.** A CAPTCHA blocks every later fetch too, so with several people on the command line the old code re-hit IMDb once per person and printed the same traceback each time — part of what escalates a silent challenge into a CAPTCHA. The search loop above already stopped on a WAF hit; the fetch loop did not.
 
+- **`generateXrefData.sh`** — **Two titles were being re-scraped on every run,
+  permanently, and no outcome could have stopped it.** The "already fetched?"
+  test asked the index whether the show had cast rows. `rebuild_index` filters
+  cast against `rg_jobs.rgx` (actor, actress, director, writer), so a title
+  crewed entirely by cinematographers, composers, editors and producers indexes
+  zero rows and looks unfetched forever — `tt6953912` (Moving Art, 37 crew, no
+  actors) and `tt6978970` (The Alps Murders, 5 producers) were doing exactly
+  that, costing two WAF-exposed fetches per run that could never succeed at
+  making themselves skippable.
+
+  The test now reads the cache directly: a cached file with a non-empty `cast` array. That is the honest question. **Not** file existence — `title-basics` also writes a cache file, legitimately with no cast, so file-existence would mark a title done that has never had its credits fetched. Three states, correctly distinguished: no file (never fetched), file with empty cast (title-basics only), file with cast (full credits, crew-only included).
+
+  Found because those two showed up as "somewhat randomly picked" in a run summary. They were not random — they were the only two crew-only titles in the corpus.
+
 ### Changed
 
 - **`generateXrefData.sh`** — **Filmography lists are excluded from the default
@@ -56,6 +70,21 @@
   was being swept up by the "manually maintained" question instead. Now matched
   as `*-Filmography.md`, with the `.tconst` deliberately left in the manual group
   — it is regenerable by re-running with the nconst already in the filename.
+
+- **`generateXrefData.sh`** — **The skip check no longer spawns subprocesses.** It
+  ran `title-info` and `cast-for-show` per show, two `uv run` interpreter starts
+  each time: ~1,278 processes for 639 shows, and essentially the entire four
+  minutes of a run where only two titles needed fetching. Replaced with one `jq`
+  pass over the cache before the loop, and a substring test inside it. **A
+  no-op run went from 4:10 to 1.5 seconds.**
+
+  The point is not the four minutes. That time came out of the same ~30-minute WAF session as the fetching, so it directly reduced how many new shows a run could pull before the session expired.
+
+  The fetched list is a `|`-delimited string rather than an associative array: `/bin/bash` on macOS is 3.2, and `declare -A` is bash 4+.
+
+  **This also removes the need to rebuild the index before a run.** The check no longer consults the index, so a missing `.xref_live_index` can no longer cause a full re-scrape — previously, cleaning the index while keeping the cache would have silently re-fetched all 639 shows. `rebuild-index` still runs at the end of every run. Note the gap that remains: `findCastOf.sh` and other query scripts read the index directly and will fail until a run regenerates it.
+
+  The `-r` bypass is unchanged but now exists for a different reason, and the comment says so: the fetched list is built before the loop, so it still holds a show whose cache file the refresh branch has just deleted.
 
 ### Removed
 
