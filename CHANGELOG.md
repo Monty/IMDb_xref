@@ -92,6 +92,19 @@
 
   Prompt wording was rewritten to stop describing settled outcomes to someone who has not decided yet: the EVERYTHING warning says what each answer *will* do rather than asserting the deletion as fact, questions read `Delete the above ...` so the list above them is unambiguously theirs, and the decline message names its group — a bare `Skipping...` printed under a question reads as though it applies to the list that follows it.
 
+- **`augment_tconstFiles.sh`** — **A matching `.xlate` file now translates the
+  Primary Title**, so `Netflix.tconst` picks up `Netflix.xlate` and `Grenseland`
+  is written as `Borderliner`. Same convention `live-fetch` and
+  `generateXrefData.sh` already use.
+
+  This exists so one hand-maintained `.tconst` can be augmented here and copied to every clone. Previously it could not: `live-fetch` applied the `.xlate` but had no real Original Title to show (its `original_title` comes from a div on the title page, which the `fullcredits` scrape never visits), while this branch had the Original Title from `title.basics` but no translation. Neither file was right on its own, and merging them by hand was the only way to get both.
+
+  **The column 4 rule deliberately differs from `live-fetch`'s.** There, a match does `$4 = $3` unconditionally, which is harmless when `$4` is usually empty. Here it would discard real data — Ørnen's Original Title is `Ørnen: En krimi-odyssé`, and that rule leaves plain `Ørnen`. Column 4 is now only filled from column 3 when it holds nothing better, so the output is strictly better than either branch produced before: translated title *and* true original.
+
+  **Applied at display time, not to `$RESULT`.** `$RESULT` is appended to the shared `augmented` cache at the end of each iteration, so translating in place would store one file's translations in a cache every other file reads. Verified after the change that the cache still holds `Grenseland`.
+
+  Sorting happens after translation, so rows order by the titles actually written — `The Eagle`, not `Ørnen`. Existing files will reorder noticeably on their first pass.
+
 ### Fixed
 
 - **`saveFilmography.sh`** — Titles with no `startYear` rendered a literal `\N`

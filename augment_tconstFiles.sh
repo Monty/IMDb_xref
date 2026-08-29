@@ -17,6 +17,10 @@ function help() {
     cat <<EOF
 augment_tconstFiles.sh -- Add Type, Primary Title, Original Title, Date. Sort by Primary Title.
 
+      A matching .xlate file, if present, translates the Primary Title --
+      Netflix.tconst pairs with Netflix.xlate. The Original Title from IMDb is
+      preserved, so a translated row shows both.
+
       For example, expand:
           tt1606375
           tt1399664
@@ -116,14 +120,47 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+# Apply the .xlate translations, if this file has any, to $RESULT on its way
+# out. Column 1 of a .xlate is the IMDb title, column 2 the English/service
+# title -- so a match replaces the Primary Title and the real Original Title is
+# kept alongside it.
+#
+# Applied here rather than to $RESULT itself because $RESULT is appended to the
+# shared augmented cache at the end of each iteration. Translating in place
+# would store one file's translations in a cache every other file reads.
+#
+# Deliberately NOT the same rule live-fetch uses. There, "$3 in xlate1 { $4 =
+# $3; ... }" overwrites the Original Title unconditionally, which is harmless
+# because its scraped original_title is usually empty anyway. Here it would
+# throw away real title.basics data: Ørnen's Original Title is "Ørnen: En
+# krimi-odyssé", and that rule would leave plain "Ørnen". So column 4 is only
+# filled from column 3 when it holds nothing better.
+function applyXlate() {
+    if [[ -z $XLATE ]]; then
+        cat "$RESULT"
+        return
+    fi
+    awk -F'\t' -v OFS='\t' '
+        NR == FNR { xlate1[$1] = $2; xlate2[$2] = $1; next }
+        $3 in xlate1 {
+            if ($4 == "" || $4 == $3) $4 = $3
+            $3 = xlate1[$3]
+        }
+        $4 == "" && $3 in xlate2 { $4 = xlate2[$3] }
+        { print }
+    ' "$XLATE" "$RESULT"
+}
+
 function copyResults() {
     # Preserve comments at top
     cat "$COMMENTS"
-    # Then add the sorted tconst lines
+    # Then add the sorted tconst lines. Sorting after translation, so the order
+    # follows the titles actually written -- matching live-fetch, where the
+    # same file sorts "The Eagle" rather than "Ørnen".
     if [[ -n $ALLOW_EPISODES ]]; then
-        sort -f -t$'\t' --key=3,3 "$RESULT"
+        applyXlate | sort -f -t$'\t' --key=3,3
     else
-        sort -f -t$'\t' --key=3,3 "$RESULT" | rg -wNv "tvEpisode"
+        applyXlate | sort -f -t$'\t' --key=3,3 | rg -wNv "tvEpisode"
     fi
 }
 
@@ -158,6 +195,13 @@ for file in "$@"; do
 
     # Make sure there is no carryover
     true >"$RESULT"
+
+    # A matching .xlate beside the .tconst supplies title translations --
+    # Netflix.tconst pairs with Netflix.xlate. Same convention as live-fetch,
+    # and the same file generateXrefData.sh reads.
+    XLATE=""
+    base="${file%.tconst}"
+    [[ -f "${base}.xlate" ]] && XLATE="${base}.xlate"
 
     # Gather and preserve all non-tconst lines
     rg -Nv "^tt" "$file" >"$COMMENTS"
