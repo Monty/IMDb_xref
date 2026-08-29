@@ -44,8 +44,26 @@ def get_show(tconst: str) -> Optional[Show]:
 
 
 def save_show(show: Show) -> Path:
-    """Write a Show to cache. Returns the cache file path."""
+    """Write a Show to cache. Returns the cache file path.
+
+    Merges rather than overwrites for fields the incoming scrape could not have
+    seen. The two scrapes read different pages: get_title_basics visits the
+    title page, which carries the "Original title:" div, while get_full_credits
+    reads /fullcredits, which does not. So a full-credits scrape always has an
+    empty original_title, and a plain overwrite would blank a value an earlier
+    title-basics fetch had already paid for -- augment_tconstFiles.sh fetches
+    exactly that way, and the next generateXrefData.sh run would undo it.
+
+    Only fills gaps: a non-empty incoming value always wins, so a genuine
+    correction still lands.
+    """
     path = _cache_path(show.tconst)
+    existing = get_show(show.tconst)
+    if existing is not None:
+        if not show.original_title and existing.original_title:
+            show.original_title = existing.original_title
+        if not show.cast and existing.cast:
+            show.cast = existing.cast
     path.write_text(show.model_dump_json(indent=2), encoding="utf-8")
     return path
 

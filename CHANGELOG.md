@@ -86,6 +86,17 @@
 
   The `-r` bypass is unchanged but now exists for a different reason, and the comment says so: the fetched list is built before the loop, so it still holds a show whose cache file the refresh branch has just deleted.
 
+- **`scraper/cache.py`** — **`save_show` merged rather than overwritten.** The two
+  scrapes read different pages and populate different fields:
+  `get_title_basics` visits the title page, which carries the `Original title:`
+  div and no cast; `get_full_credits` reads `/fullcredits`, which has the cast
+  and no such div. A plain overwrite meant whichever ran last erased what the
+  other had paid a fetch for.
+
+  The cast direction is the one that would have hurt: `title-basics` returns a cast-less Show, and `augment_tconstFiles.sh` calls it — so augmenting a title that already had full credits could wipe its entire cast. Both directions now only fill gaps; a non-empty incoming value always wins, so a genuine correction still lands.
+
+  Note this does not populate `original_title` for titles already cached. `augment_tconstFiles.sh` checks the index first, and every corpus title is already indexed from a `full-credits` scrape, so `title-basics` is never reached and the value is never acquired. Obtaining it for real would cost one page fetch per title across many WAF sessions, for data `bulk-download` reads from `title.basics.tsv.gz` in seconds. The `$4 = $3` fallback that fills column 4 with the primary title is deliberate (see the comment at the end of the augment loop) and matches the bulk dataset's convention, not a defect.
+
 ### Removed
 
 - **Six files that no longer do anything on this branch.** All predate the
