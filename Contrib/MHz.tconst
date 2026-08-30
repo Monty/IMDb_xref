@@ -5,6 +5,7 @@ tt5759648	tvSeries	Aber Bergen: Partners in Law	Aber Bergen	2016
 tt3582458	tvSeries	Acquitted	Frikjent	2015
 tt0459579	tvMiniSeries	Agatha Christie's Family Murder Party	Petits meurtres en famille	2006
 tt13667622	tvSeries	Agatha Christie's Hjerson	Agatha Christies Hjerson	2021
+tt8185098	tvSeries	Alexandra Ehle	Alexandra Ehle	2018
 tt10261292	tvSeries	Alice Nevers	Alice Nevers	2019
 tt5207522	tvMiniSeries	Allmen	Allmen	2016
 tt9018960	tvSeries	Anatomy of Evil	Spuren des Bösen	2010
@@ -38,10 +39,11 @@ tt3032968	tvSeries	Blochin	Blochin: Die Lebenden und die Toten	2015
 tt1809792	tvSeries	Blood of the Vine	Le sang de la vigne	2011
 tt2039582	tvSeries	Blood on the Docks	Deux flics sur les docks	2011
 tt2158526	tvMovie	Borsellino	Paolo Borsellino - I 57 giorni	2012
-tt27759508	tvSeries	Brocéliande	Brocéliande	2024
+tt27759508	tvSeries	Broceliande	Brocéliande	2024
 tt3175512	tvSeries	Bulletproof Heart	Una pallottola nel cuore	2014
 tt2364258	tvSeries	Caïn	Caïn	2012
 tt2216856	movie	Camilla Lackberg	Tyskungen	2013
+tt32129958	tvSeries	Camilla Lackberg's Erica	Erica	2025
 tt1895318	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: Havet ger, havet tar	2013
 tt2183070	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: Ljusets drottning	2013
 tt2188743	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: Strandridaren	2013
@@ -72,7 +74,6 @@ tt0178132	tvSeries	Don Matteo	Don Matteo	2000
 tt1131145	tvSeries	Donna Detective	Donna detective	2007
 tt0896667	tvSeries	Donna Leon's Brunetti Mysteries	Donna Leon	2000
 tt9348970	tvSeries	Double vie	Double vie	2019
-tt32129958	tvSeries	Erica	Erica	2025
 tt1595384	tvMovie	Fabel	Wolfsfährte	2010
 tt2186701	tvMovie	Fabel	Blutadler	2012
 tt4977680	tvMovie	Fabel	Brandmal	2015
@@ -88,6 +89,7 @@ tt1482968	tvSeries	Flemming	Flemming	2009
 tt0763275	tvSeries	Fog and Crimes	Nebbie e delitti	2005
 tt23826450	tvMiniSeries	Forest of the Missing	La Forêt des disparus	2022
 tt15452200	tvMiniSeries	Fosca Innocenti	Fosca Innocenti	2022
+tt34161442	tvSeries	Fred Vargas' The Adamsberg Mysteries	Sur la dalle	2024
 tt4716466	tvSeries	Gasmamman	Gåsmamman	2015
 tt0810076	tvMovie	Georges Simenon Mysteries	Les innocents	2006
 tt1447496	tvMovie	Georges Simenon Mysteries	Jusqu'à l'Enfer	2009
@@ -107,7 +109,6 @@ tt1726409	tvMiniSeries	House of Rocheville	La maison des Rocheville	2010
 tt12359250	tvSeries	Hvide Sande	Hvide Sande	2021
 tt8805438	tvMiniSeries	Il Capitano Maria	Il Capitano Maria	2018
 tt10895664	tvSeries	Imma Tataranni: Deputy Prosecutor	Imma Tataranni sostituto procuratore	2019
-tt5595238	tvSeries	In Tandem	Tandem	2016
 tt1223917	tvMiniSeries	In the Face of Crime	Im Angesicht des Verbrechens	2010
 tt1556087	tvSeries	Inspector Coliandro	L'ispettore Coliandro	2003
 tt8613776	tvSeries	Inspector Dupin	Kommissar Dupin	2014
@@ -132,7 +133,7 @@ tt1548331	tvSeries	Magellan	Commissaire Magellan	2009
 tt0167644	tvSeries	Maigret	Maigret	1991
 tt14255042	tvSeries	Màkari	Màkari	2021
 tt2377081	tvSeries	Mammon	Mammon	2014
-tt22025926	tvSeries	Marianne	Marianne	2022
+tt22025926	tvSeries	Marianne, One of a Kind!	Marianne	2022
 tt10598848	tvMiniSeries	Marnow Murders	Die Toten von Marnow	2021
 tt3268308	tvMovie	Mary Higgins Clark Mysteries	Toi que j'aimais tant	2014
 tt3351208	tvMovie	Mary Higgins Clark Mysteries	Deux petites filles en bleu	2014
@@ -159,7 +160,6 @@ tt8178502	tvMovie	Murder In	Crime dans le Luberon	2018
 tt1129398	tvSeries	Murder in Sweden	Maria Wern	2008
 tt10320056	tvMovie	Murderous Memories: The Walls of Memory	Les murs du souvenir	2019
 tt9610556	tvSeries	Murders at Barlume	I delitti del BarLume	2013
-tt29055782	tvSeries	Murha Hangossa	Murha Hangossa	2024
 tt2678356	tvMovie	Nele Neuhaus Mysteries	Schneewittchen muss sterben	2013
 tt2837704	tvMovie	Nele Neuhaus Mysteries	Eine unbeliebte Frau	2013
 tt3297484	tvMovie	Nele Neuhaus Mysteries	Tiefe Wunden	2015
@@ -195,20 +195,20 @@ tt5194410	tvSeries	Springfloden	Springfloden	2016
 tt2568206	tvMovie	Steirerblut	Steirerblut	2014
 tt32868688	tvSeries	Stucky	Stucky	2024
 tt10375672	tvSeries	Super Jimmy	Double je	2019
-tt34161442	tvSeries	Sur la dalle	Sur la dalle	2024
+tt5595238	tvSeries	Tandem	Tandem	2016
 tt9816692	tvSeries	Tatort: Borowski	Inspector Borowski	2016
 tt6438886	tvSeries	The Bastards of Pizzofalcone	I bastardi di Pizzofalcone	2017
 tt4792480	tvSeries	The Break	La trêve	2016
-tt8185098	tvSeries	The Coroner	Alexandra Ehle	2018
 tt3456290	tvMiniSeries	The Fourth Man	Den fjärde mannen	2014
 tt8747378	tvSeries	The Fox	Die Füchsin	2015
 tt1343097	movie	The Girl Who Kicked the Hornet's Nest	Luftslottet som sprängdes	2009
 tt1216487	movie	The Girl Who Played with Fire	Flickan som lekte med elden	2009
 tt1132620	movie	The Girl with the Dragon Tattoo	Män som hatar kvinnor	2009
+tt29055782	tvSeries	The Hanko Murder	Murha Hangossa	2024
 tt7059774	tvSeries	The Hunters	Jägarna	2018
 tt0826960	tvSeries	The Inspector and the Sea	Der Kommissar und das Meer	2007
-tt15375008	tvSeries	The Invisibles	Les invisibles	2021
 tt5678308	tvSeries	The Lady Diplomat	Die Diplomatin	2016
+tt21301298	tvMiniSeries	The Lake Trilogy	Dolina roz	2022
 tt1349600	tvSeries	The Little Murders of Agatha Christie	Les petits meurtres d'Agatha Christie	2009
 tt12404772	tvMiniSeries	The Promise	La promesse	2020
 tt1846197	tvSeries	The Sandhamn Murders	Morden i Sandhamn	2010
@@ -223,8 +223,8 @@ tt6975960	tvSeries	Treufoc	Treufoc	2017
 tt4451240	tvMovie	Tu es mon fils	Tu es mon fils	2015
 tt6710454	tvSeries	Twin	Twin	2019
 tt6280900	tvSeries	Über die Grenze	Über die Grenze	2017
+tt15375008	tvSeries	Unclaimed	Les invisibles	2021
 tt0220261	tvSeries	Unit One	Rejseholdet	2000
-tt21301298	tvMiniSeries	Valley of Flowers	Dolina roz	2022
 tt0421947	movie	Van Veeteren	Carambole	2005
 tt0871899	video	Van Veeteren	Fallet G	2006
 tt0871900	video	Van Veeteren	Svalan, katten, rosen, döden	2006
