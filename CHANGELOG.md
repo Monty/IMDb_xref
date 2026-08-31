@@ -1,8 +1,27 @@
 # Changelog
 
-## [Unreleased] — 2026-08-27
+## [Unreleased] — 2026-08-31
 
 ### Fixed
+
+- **`findOtherShows.sh`** — **Answering `n` to "Does that look correct?" ran the
+  search anyway.** The prompt worked; the guard after the loop did not. That
+  `continue` skips the two lines that append to `$SHOW_NAMES` and
+  `$TCONST_LIST`, but `tconst` is reset at the *top* of each iteration, so on
+  exit it still held the ID that had just been declined. The post-loop test was
+  `[[ -z $tconst ]]`, which therefore passed, and every scraper call below it
+  uses `$tconst` directly — the full cast table for a rejected show.
+
+  **The empty `ShowsWithActorsFrom-.csv` was the same bug seen from the other side.** `showName` is read back from `$SHOW_NAMES`, the file the `continue` skipped, so the name went missing while the tconst did not. Two variables disagreeing about whether a show had been chosen, with only one of them consulted.
+
+  The guard now tests `[[ ! -s $TCONST_LIST ]]`, and `tconst` and `showName` are both re-read from the files immediately after it. The files are the only thing the confirmation prompt actually controls. `findCastOf.sh` already did it this way — it tests `$ALL_MATCHES` — so this was drift introduced here during the shared-cache refactor, not a shared design flaw.
+
+- **`findOtherShows.sh`** — **Choosing "Skip" from the match menu didn't skip.**
+  `Skip*) break ;;` leaves the `select` with `tconst` empty and nothing tested it,
+  so the term ran `cast-for-show` and `title-info` on an empty string and failed
+  with `No cached data for  after fetching` — the same missing-value signature as
+  the CSV filename, from the same root cause. Added `[[ -z $tconst ]] && continue`
+  after the `select`, matching `findCastOf.sh` line for line.
 
 - **`saveFilmography.sh`** — **A failed filmography fetch now reports what to do
   about it, and stops.** The fetch path predated `reportSearchError` and

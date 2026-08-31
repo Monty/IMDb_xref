@@ -205,6 +205,11 @@ while IFS= read -r searchTerm; do
                     case "$REPLY" in [Qq]*) loopOrExitP ;; esac
                 fi
             done </dev/tty
+            # "Skip" breaks out of the select with tconst still empty. Without
+            # this, the scraper calls below run on an empty tconst and the term
+            # fails with "No cached data for  after fetching" instead of
+            # quietly skipping. Matches findCastOf.sh.
+            [[ -z $tconst ]] && continue
         else
             tconst=$(jq -r '.[0].tconst' <<<"$searchResults")
             needConfirm="yes"
@@ -265,10 +270,21 @@ while IFS= read -r searchTerm; do
     printf "%s\n" "$tconst" >>"$TCONST_LIST"
 done <"$ALL_TERMS"
 
-if [[ -z $tconst ]]; then
+# Test the files, not $tconst. $tconst is reset at the top of each iteration,
+# so after the loop it still holds the last resolved ID even when the term was
+# rejected at the "Does that look correct?" prompt -- that continue skips the
+# two appends below it but leaves $tconst set. Testing it here let a declined
+# show run all the way through with an empty showName, producing
+# ShowsWithActorsFrom-.csv. $TCONST_LIST is written only on the accepting path.
+if [[ ! -s $TCONST_LIST ]]; then
     printf "\n==> I didn't find ${RED}any${NO_COLOR} matching shows.\n"
     loopOrExitP
 fi
+
+# Both files are appended to once per search term, but everything below treats
+# the show as a single value, so take the first row of each.
+tconst=$(head -1 "$TCONST_LIST")
+showName=$(cut -f2 "$SHOW_NAMES" | head -1)
 
 # Get cast for the show
 castArgs=("cast-for-show" "$tconst" "--actors-only")
@@ -342,7 +358,6 @@ if [[ ! -s $TMPFILE ]]; then
     loopOrExitP
 fi
 
-showName=$(cut -f2 <"$SHOW_NAMES")
 CAST_SPREADSHEET="ShowsWithActorsFrom-$(safeFilename "$showName").csv"
 printf "==> The shared cast list will be saved in ${BLUE}$CAST_SPREADSHEET${NO_COLOR}\n"
 
