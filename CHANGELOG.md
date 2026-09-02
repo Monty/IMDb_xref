@@ -4,6 +4,19 @@
 
 ### Fixed
 
+- **`scraper/pages.py`** — **A title containing `&` was searched for as
+  everything up to the ampersand.** `search_title` and `search_person` both
+  interpolated the raw query into the find URL, so `Heer & Meester` was sent as
+  `q=Heer`, with `%20Meester` arriving as a nameless parameter and IMDb
+  answering the truncated query — 7 unrelated matches led by `tt11052708`
+  "Heer". Both now escape with `quote_plus`.
+
+  **The failure was invisible because it produced results.** A search that returns the wrong seven shows looks like IMDb having a bad day, not like a malformed request, and the workaround — typing `and` for `&` — works for the wrong reason: it removes the ampersand rather than matching IMDb's preferred spelling. `tt2952002` is titled "Heer & Meester" on IMDb and always was. Also affects `+`, `%`, and `#`; `#` would have truncated client-side, before the request left.
+
+  `exact=true` still matches across the ampersand, which was the open question: searching `Recipes for Love & Murder` finds `tt11698202`, whose IMDb title spells it "and". No fallback retry needed.
+
+  The other four URL builders (`get_full_credits`, `get_title_basics`, `_scrape_rows`, and the title page) take tconst/nconst into path segments rather than a query string, so they were never exposed. `search-title` and `search-person` are the only two subcommands that put arbitrary user input into a parameter.
+
 - **`findOtherShows.sh`** — **Answering `n` to "Does that look correct?" ran the
   search anyway.** The prompt worked; the guard after the loop did not. That
   `continue` skips the two lines that append to `$SHOW_NAMES` and

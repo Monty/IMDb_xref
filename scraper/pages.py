@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from typing import Optional
+from urllib.parse import quote_plus
 
 from playwright.sync_api import Page
 
@@ -31,7 +32,13 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
     Filters out tvEpisode and podcastEpisode results.
     """
     manager = get_manager()
-    page = manager.goto(f"https://www.imdb.com/find/?q={query}&s=tt&exact=true")
+    # quote_plus, not raw interpolation: an unescaped "&" ends the q parameter,
+    # so "Heer & Meester" was sent as q=Heer and IMDb answered the truncated
+    # query -- 7 unrelated matches led by tt11052708 "Heer". Same for "+", "#"
+    # and "%". Spaces were always tolerated, which is why this went unnoticed.
+    page = manager.goto(
+        f"https://www.imdb.com/find/?q={quote_plus(query)}&s=tt&exact=true"
+    )
 
     results: list[SearchResult] = []
     items = page.query_selector_all("li.ipc-metadata-list-summary-item")
@@ -123,7 +130,10 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
 def search_person(query: str, limit: int = 25) -> list[Person]:
     """Search IMDb for people matching *query*."""
     manager = get_manager()
-    page = manager.goto(f"https://www.imdb.com/find/?q={query}&s=nm&exact=true")
+    # See search_title: the query must be escaped or an "&" truncates it.
+    page = manager.goto(
+        f"https://www.imdb.com/find/?q={quote_plus(query)}&s=nm&exact=true"
+    )
 
     results: list[Person] = []
     items = page.query_selector_all("li.ipc-metadata-list-summary-item")
