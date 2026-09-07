@@ -18,7 +18,7 @@
 # Only the tconst field is used. Additional fields are not needed, but useful
 # for documentation.
 
-# tconst	Type	Primary Title	Original Title	Date
+# tconst	Type	Primary Title	Alternate Title	Date
 tt4786824	tvSeries	The Crown	The Crown	2016
 tt5014882	tvSeries	The Durrells	The Durrells	2016
 tt1399664	tvSeries	The Night Manager	The Night Manager	2016
