@@ -14,7 +14,7 @@
 # Only the tconst field is used. Additional fields are not needed, but useful
 # for documentation.
 
-# tconst	Service	Primary Title	Original Title
+# tconst	Service	Primary Title	Alternate Title
 tt4380324	Acorn	800 Words	800 Words
 tt5433600	Acorn	Black Widows	Black Widows
 tt0408381	Acorn	Doc Martin	Doc Martin

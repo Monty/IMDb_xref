@@ -1,6 +1,6 @@
 # This is a sample of IMDb tconst identifiers of shows on Acorn TV - https://acorn.tv
 
-# tconst	Type	Primary Title	Original Title	Date
+# tconst	Type	Primary Title	Alternate Title	Date
 tt4380324	tvSeries	800 Words	800 Words	2015
 tt31502721	tvSeries	A Remarkable Place to Die	A Remarkable Place to Die	2024
 tt14055260	tvMiniSeries	A Taste of Italy	A Taste of Italy	2021

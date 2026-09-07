@@ -1,6 +1,6 @@
 # This is a sample of IMDb tconst identifiers of shows on PBS - https://www.pbs.org
 
-# tconst	Type	Primary Title	Original Title	Date
+# tconst	Type	Primary Title	Alternate Title	Date
 tt10964992	tvMovie	Agatha and the Curse of Ishtar	Agatha and the Curse of Ishtar	2019
 tt11062400	tvMovie	Agatha and the Midnight Murders	Agatha and the Midnight Murders	2020
 tt5221612	tvSeries	Agathe Koltès	Agathe Koltès	2016

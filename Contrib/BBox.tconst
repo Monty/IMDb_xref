@@ -1,6 +1,6 @@
 # This is a sample of IMDb tconst identifiers of shows on Britbox - https://www.britbox.com
 
-# tconst	Type	Primary Title	Original Title	Date
+# tconst	Type	Primary Title	Alternate Title	Date
 tt9140432	tvSeries	15 Days	15 Days	2019
 tt3919200	tvSeries	35 Days	35 Diwrnod	2014
 tt9131050	tvMiniSeries	A Confession	A Confession	2019
