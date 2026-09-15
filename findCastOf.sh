@@ -21,6 +21,9 @@ match or skip if there are too many.
 List principal cast & crew members and any characters portrayed. If you search for
 multiple shows, also list cast & crew members who are found in more than one.
 
+A show title only matches the title types listed in rg_types.rgx. A tconst
+bypasses that list, so it can look up a tvEpisode, short, or any other type.
+
 If you don't enter a parameter on the command line, you'll be prompted for
 input.
 
@@ -29,6 +32,8 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -a      Allow all title types -- normally only those in rg_types.rgx match.
+            No effect on a tconst, which always bypasses the type list.
     -d      Duplicates -- Only list cast & crew members found in more than one show.
     -m      Maximum matches for a show title allowed in menu - defaults to 25.
     -n      Number of cast & crew members to list, 0 = all, defaults to 0.
@@ -62,7 +67,10 @@ function terminate() {
         cat <<EOT >&2
 ALL_TERMS $ALL_TERMS
 TCONST_TERMS $TCONST_TERMS
+TCONST_PATTERNS $TCONST_PATTERNS
 SHOWS_TERMS $SHOWS_TERMS
+SHOWS_PATTERNS $SHOWS_PATTERNS
+SHOWS_RAW $SHOWS_RAW
 POSSIBLE_MATCHES $POSSIBLE_MATCHES
 MATCH_COUNTS $MATCH_COUNTS
 ALL_MATCHES $ALL_MATCHES
@@ -79,6 +87,7 @@ EOT
         [[ ! -s $favoritesFile ]] && printf "favoritesFile $favoritesFile\n" >&2
     else
         rm -f "$ALL_TERMS" "$TCONST_TERMS" "$SHOWS_TERMS" "$POSSIBLE_MATCHES"
+        rm -f "$TCONST_PATTERNS" "$SHOWS_PATTERNS" "$SHOWS_RAW"
         rm -f "$MATCH_COUNTS" "$ALL_MATCHES" "$CACHE_LIST" "$SEARCH_LIST"
         rm -f "$TCONST_LIST" "$SHOW_NAMES"
         rm -f "$CAST_CSV" "$TMPFILE"
@@ -101,11 +110,14 @@ function loopOrExitP() {
     exec ./start.command
 }
 
-while getopts ":hf:dm:n:s" opt; do
+while getopts ":ahf:dm:n:s" opt; do
     case $opt in
     h)
         help
         exit
+        ;;
+    a)
+        allowAllTypes="yes"
         ;;
     f)
         favoritesFile="$OPTARG"
@@ -139,7 +151,10 @@ ensurePrerequisites
 # Need some tempfiles
 ALL_TERMS=$(mktemp)
 TCONST_TERMS=$(mktemp)
+TCONST_PATTERNS=$(mktemp)
 SHOWS_TERMS=$(mktemp)
+SHOWS_PATTERNS=$(mktemp)
+SHOWS_RAW=$(mktemp)
 POSSIBLE_MATCHES=$(mktemp)
 MATCH_COUNTS=$(mktemp)
 ALL_MATCHES=$(mktemp)
@@ -196,14 +211,55 @@ rg -wNv "^tt[0-9]{7,8}" "$ALL_TERMS" | sort -fu >"$SHOWS_TERMS"
 printf "==> Searching $num_TB records for:\n"
 cat "$TCONST_TERMS" "$SHOWS_TERMS"
 
-# Reconstitute ALL_TERMS with column guards
-perl -p -e 's/^/^/; s/$/\\t/;' "$TCONST_TERMS" >"$ALL_TERMS"
-perl -p -e 's/^/\\t/; s/$/\\t/;' "$SHOWS_TERMS" | sed 's+[()?]+\\&+g' >>"$ALL_TERMS"
+# Reconstitute the search patterns with column guards, but keep the two kinds
+# in separate files -- they are filtered differently below.
+perl -p -e 's/^/^/; s/$/\\t/;' "$TCONST_TERMS" >"$TCONST_PATTERNS"
+perl -p -e 's/^/\\t/; s/$/\\t/;' "$SHOWS_TERMS" | sed 's+[()?]+\\&+g' >"$SHOWS_PATTERNS"
+cat "$TCONST_PATTERNS" "$SHOWS_PATTERNS" >"$ALL_TERMS"
 numTerms="$(sed -n '$=' "$ALL_TERMS")"
 
-# Get all possible matches at once
-rg -NzSI -f "$ALL_TERMS" title.basics.tsv.gz | rg -v "tvEpisode" | cut -f 1-4,6 |
-    perl -p -e 's+\\N++g;' | sort -f -t$'\t' --key=3 >"$POSSIBLE_MATCHES"
+# Get all possible matches.
+#
+# A tconst names one exact title, so it bypasses rg_types.rgx entirely -- that
+# is the only way to ask for a tvEpisode, short, or anything else the type list
+# leaves out. A show title is a guess that can match thousands of episode rows,
+# so it keeps the filter.
+#
+# The filter tests field 2 rather than the whole line, so a title such as
+# "Home Video" can't pass itself off as a type, and a title containing
+# "tvEpisode" isn't dropped for saying so. Shares rg_types.rgx with
+# findOtherShows.sh: the two used to disagree, because this script excluded
+# only tvEpisode while that one allowed just the five listed types. The same
+# search reported 38 matches here and 18 there, the extra 20 all shorts.
+true >"$TMPFILE"
+if [[ -s $TCONST_PATTERNS ]]; then
+    rg -NzSI -f "$TCONST_PATTERNS" title.basics.tsv.gz >>"$TMPFILE"
+fi
+if [[ -s $SHOWS_PATTERNS ]]; then
+    rg -NzSI -f "$SHOWS_PATTERNS" title.basics.tsv.gz >"$SHOWS_RAW"
+    if [[ -n $allowAllTypes ]]; then
+        cat "$SHOWS_RAW" >>"$TMPFILE"
+    else
+        awk -F"\t" 'NR==FNR {types[$0]; next} $2 in types' \
+            rg_types.rgx "$SHOWS_RAW" >>"$TMPFILE"
+        # Say what the filter removed. "I didn't find any matching shows" reads
+        # the same whether the title isn't on IMDb or a short was filtered out,
+        # and -a is no help to someone who can't tell those apart. Reported
+        # whenever anything was dropped, not only on a total miss: 5 matches
+        # out of 53 is also worth knowing about. Types are listed in the order
+        # they first appear, since awk's for-in order is unspecified.
+        awk -F"\t" 'NR==FNR {types[$0]; next}
+            !($2 in types) {if (!($2 in n)) order[++k] = $2; n[$2]++}
+            END {
+                if (k == 0) exit
+                for (i = 1; i <= k; i++)
+                    out = out (i > 1 ? ", " : "") n[order[i]] " " order[i]
+                printf("==> Filtered out %s. Use -a to include all types.\n", out)
+            }' rg_types.rgx "$SHOWS_RAW"
+    fi
+fi
+cut -f 1-4,6 "$TMPFILE" | perl -p -e 's+\\N++g;' |
+    sort -f -t$'\t' --key=3 >"$POSSIBLE_MATCHES"
 
 # Figure how many matches for each possible match
 cut -f 3 "$POSSIBLE_MATCHES" | frequency -s >"$MATCH_COUNTS"
