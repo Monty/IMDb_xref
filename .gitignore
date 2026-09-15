@@ -48,3 +48,4 @@
 # Keep these files
 !rg_sections.rgx
 !rg_noxlate.rgx
+!rg_types.rgx
