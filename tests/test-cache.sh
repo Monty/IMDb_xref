@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
@@ -22,11 +23,11 @@ export NO_MENUS="yes"
 
 function cacheSize() {
     numFiles="$(find "$cacheDirectory" -maxdepth 1 -mindepth 1 | sed -n '$=')"
-    if [ -z "$numFiles" ]; then
+    if [[ -z "$numFiles" ]]; then
         printf "\n==> There are no cached files.\n"
         return
     fi
-    if [ "$numFiles" -eq 1 ]; then
+    if [[ "$numFiles" -eq 1 ]]; then
         printf "\n==> There is %d cached file.\n" "$numFiles"
         du -sh "$cacheDirectory"/* | sed -e s+"$cacheDirectory"/++
     else

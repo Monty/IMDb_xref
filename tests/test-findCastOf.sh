@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
@@ -29,7 +30,7 @@ while true; do
     printf "==> Verify script lists details, asks about adding 1 show to favorites\n\n"
 
     printf "==> Removing $favoritesFile\n\n"
-    rm -f $favoritesFile
+    rm -f "$favoritesFile"
     if waitUntil "$YN_PREF" -Y 'Run ./findCastOf.sh tt1606375?'; then
         ./findCastOf.sh tt1606375
     fi
@@ -40,7 +41,7 @@ while true; do
     printf "\n==> Verify -s doesn't list details, asks about adding to favorites\n\n"
 
     printf "\n==> Removing $favoritesFile\n\n"
-    rm -f $favoritesFile
+    rm -f "$favoritesFile"
     if waitUntil "$YN_PREF" -Y 'Run ./findCastOf.sh -s tt1606375?'; then
         ./findCastOf.sh -s tt1606375
     fi

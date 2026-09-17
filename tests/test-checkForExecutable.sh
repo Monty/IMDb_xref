@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1091
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")

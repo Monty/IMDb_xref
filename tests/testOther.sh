@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-#
 # testOther.sh -- Non-interactive report of findOtherShows.sh title searches
+# shellcheck disable=SC1091
 
 # Make sure we are in the correct directory
 DIRNAME=$(dirname "$0")
