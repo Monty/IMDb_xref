@@ -18,6 +18,7 @@ node_modules/
 # Output from running any commands
 *.gz
 *.csv
+*.tsv
 *.txt
 .xref*
 
