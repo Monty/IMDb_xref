@@ -211,7 +211,7 @@ if [[ -s $SHOWS_PATTERNS ]]; then
                 if (k == 0) exit
                 for (i = 1; i <= k; i++)
                     out = out (i > 1 ? ", " : "") n[order[i]] " " order[i]
-                printf("==> Filtered out %s. Use -a to include all types.\n", out)
+                printf("\n==> Filtered out %s. Use -a to include all types.\n", out)
             }' rg_types.rgx "$SHOWS_RAW"
     fi
 fi
