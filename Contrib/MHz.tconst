@@ -1,88 +1,94 @@
 # This is a sample of IMDb tconst identifiers of shows on MHz Choice - https://watch.mhzchoice.com
 
-# tconst	Type	Primary Title	Alternate Title	Date
-tt5759648	tvSeries	Aber Bergen: Partners in Law	Aber Bergen	2016
+# tconst	Type	Primary Title	Original Title	Date
+tt5759648	tvSeries	Aber Bergen	Aber Bergen	2016
 tt3582458	tvSeries	Acquitted	Frikjent	2015
 tt0459579	tvMiniSeries	Agatha Christie's Family Murder Party	Petits meurtres en famille	2006
 tt13667622	tvSeries	Agatha Christie's Hjerson	Agatha Christies Hjerson	2021
 tt8185098	tvSeries	Alexandra Ehle	Alexandra Ehle	2018
 tt10261292	tvSeries	Alice Nevers	Alice Nevers	2019
 tt5207522	tvMiniSeries	Allmen	Allmen	2016
+tt10375672	tvSeries	Alter Ego	Double je	2019
+tt8747308	movie	Amsterdam Vice	Baantjer het begin	2019
 tt9018960	tvSeries	Anatomy of Evil	Spuren des Bösen	2010
-tt0294939	movie	Annika Bengtzon: Crime Reporter	Sprängaren	2001
-tt0305945	movie	Annika Bengtzon: Crime Reporter	Paradiset	2003
-tt1794886	movie	Annika Bengtzon: Crime Reporter	Nobels testamente	2012
-tt2183302	video	Annika Bengtzon: Crime Reporter	Studio Sex	2012
-tt2230434	video	Annika Bengtzon: Crime Reporter	En plats i solen	2012
+tt0294939	movie	Annika Bengtzon: Crime Reporter (2001)	Sprängaren	2001
+tt0305945	movie	Annika Bengtzon: Crime Reporter (2003)	Paradiset	2003
+tt1794886	movie	Annika Bengtzon: Crime Reporter (2012)	Nobels testamente	2012
+tt2180578	video	Annika Bengtzon: Crime Reporter (2012)	Prime Time	2012
+tt2183302	video	Annika Bengtzon: Crime Reporter (2012)	Studio Sex	2012
+tt2230422	video	Annika Bengtzon: Crime Reporter (2012)	Livstid	2012
+tt2230434	video	Annika Bengtzon: Crime Reporter (2012)	En plats i solen	2012
 tt1866379	tvSeries	Anti-Drug Squad	Caccia al re - La narcotici	2011
-tt7684260	tvMiniSeries	Arde Madrid	Arde Madrid	2018
-tt2113148	tvMiniSeries	Arne Dahl	Arne Dahl: Misterioso	2011
-tt2113149	tvMiniSeries	Arne Dahl	Arne Dahl: Ont blod	2012
-tt2208264	tvMiniSeries	Arne Dahl	Arne Dahl: Upp till toppen av berget	2012
-tt2219106	tvMiniSeries	Arne Dahl	Arne Dahl: Europa Blues	2012
-tt2220954	tvMiniSeries	Arne Dahl	Arne Dahl: De största vatten	2012
-tt4396192	tvMiniSeries	Arne Dahl	Arne Dahl: En midsommarnattsdröm	2015
-tt4428744	tvMiniSeries	Arne Dahl	Arne Dahl: Dödsmässa	2015
-tt4473482	tvMiniSeries	Arne Dahl	Arne Dahl: Mörkertal	2015
-tt4514896	tvMiniSeries	Arne Dahl	Arne Dahl: Efterskalv	2015
-tt4548050	tvMiniSeries	Arne Dahl	Arne Dahl: Himmelsöga	2015
-tt0111887	tvSeries	Baantjer	Baantjer	1995
-tt8747308	movie	Baantjer het begin	Baantjer het begin	2019
+tt7684260	tvMiniSeries	Arde Madrid: Burn Madrid Burn	Arde Madrid	2018
+tt2113148	tvMiniSeries	Arne Dahl (2011)	Arne Dahl: Misterioso	2011
+tt2113149	tvMiniSeries	Arne Dahl (2012)	Arne Dahl: Ont blod	2012
+tt2208264	tvMiniSeries	Arne Dahl (2012)	Arne Dahl: Upp till toppen av berget	2012
+tt2219106	tvMiniSeries	Arne Dahl (2012)	Arne Dahl: Europa Blues	2012
+tt2220954	tvMiniSeries	Arne Dahl (2012)	Arne Dahl: De största vatten	2012
+tt4396192	tvMiniSeries	Arne Dahl (2015)	Arne Dahl: En midsommarnattsdröm	2015
+tt4428744	tvMiniSeries	Arne Dahl (2015)	Arne Dahl: Dödsmässa	2015
+tt4473482	tvMiniSeries	Arne Dahl (2015)	Arne Dahl: Mörkertal	2015
+tt4514896	tvMiniSeries	Arne Dahl (2015)	Arne Dahl: Efterskalv	2015
+tt4548050	tvMiniSeries	Arne Dahl (2015)	Arne Dahl: Himmelsöga	2015
+tt0111887	tvSeries	Baantjer Mysteries	Baantjer	1995
 tt4378376	tvSeries	Babylon Berlin	Babylon Berlin	2017
 tt2843344	movie	Back in Crime	L'autre vie de Richard Kemp	2013
+tt2568206	tvMovie	Backwoods Crime	Steirerblut	2014
 tt7633516	tvSeries	Banking District	Quartier des Banques	2017
 tt6647212	tvSeries	Barcelona Crime	Der Barcelona Krimi	2017
 tt0907683	tvSeries	Beck	Beck	1997
-tt11962166	tvMiniSeries	Bella da morire	Bella da morire	2020
 tt7844518	movie	Bellingcat: Truth in a Post-Truth World	Bellingcat: Truth in a Post-Truth World	2018
 tt3032968	tvSeries	Blochin	Blochin: Die Lebenden und die Toten	2015
 tt1809792	tvSeries	Blood of the Vine	Le sang de la vigne	2011
 tt2039582	tvSeries	Blood on the Docks	Deux flics sur les docks	2011
+tt6280900	tvSeries	Borderland	Über die Grenze	2017
 tt2158526	tvMovie	Borsellino	Paolo Borsellino - I 57 giorni	2012
 tt27759508	tvSeries	Broceliande	Brocéliande	2024
+tt5134242	tvEpisode	Bukow and Konig	Angst heiligt die Mittel	2017
 tt3175512	tvSeries	Bulletproof Heart	Una pallottola nel cuore	2014
-tt2364258	tvSeries	Caïn	Caïn	2012
+tt2364258	tvSeries	Cain	Caïn	2012
 tt2216856	movie	Camilla Lackberg	Tyskungen	2013
 tt32129958	tvSeries	Camilla Lackberg's Erica	Erica	2025
-tt1895318	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: Havet ger, havet tar	2013
-tt2183070	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: Ljusets drottning	2013
-tt2188743	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: Strandridaren	2013
-tt2190252	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: Vänner för livet	2013
-tt2259268	tvMovie	Camilla Lackberg’s Fjallbacka Murders	Fjällbackamorden: I betraktarens öga	2012
+tt2259268	tvMovie	Camilla Lackberg’s Fjallbacka Murders (2012)	Fjällbackamorden: I betraktarens öga	2012
+tt1895318	tvMovie	Camilla Lackberg’s Fjallbacka Murders (2013)	Fjällbackamorden: Havet ger, havet tar	2013
+tt2183070	tvMovie	Camilla Lackberg’s Fjallbacka Murders (2013)	Fjällbackamorden: Ljusets drottning	2013
+tt2188743	tvMovie	Camilla Lackberg’s Fjallbacka Murders (2013)	Fjällbackamorden: Strandridaren	2013
+tt2190252	tvMovie	Camilla Lackberg’s Fjallbacka Murders (2013)	Fjällbackamorden: Vänner för livet	2013
+tt8805438	tvMiniSeries	Captain Maria	Il Capitano Maria	2018
 tt5684214	tvSeries	Captain Marleau	Capitaine Marleau	2014
-tt2707504	tvSeries	Captain Sharif	Cherif	2013
 tt4598136	tvSeries	Cassandre	Cassandre	2015
+tt1230077	tvEpisode	Cenk Batu Undercover Agent	Auf der Sonnenseite	2008
 tt14911430	tvSeries	Chantal	Chantal	2022
+tt42721684	tvSeries	Charlotte Link	Charlotte Link	1999
 tt3355142	tvSeries	Chefs	Chefs	2015
-tt13761678	tvMiniSeries	Crime Is Her Game	Le crime lui va si bien	2019
-tt2477910	tvMovie	Crimes of Passion	Inte flera mord	2013
-tt2504308	movie	Crimes of Passion	Mördaren ljuger inte ensam	2013
-tt2511752	tvMovie	Crimes of Passion	Kung Liljekonvalje av dungen	2013
-tt2511776	tvMovie	Crimes of Passion	Rosor, kyssar och döden	2013
-tt2573414	tvMovie	Crimes of Passion	Farliga drömmar	2013
-tt2621118	tvMovie	Crimes of Passion	Tragedi på en lantkyrkogård	2013
+tt2707504	tvSeries	Cherif	Cherif	2013
+tt13761678	tvMiniSeries	Crime is Her Game	Le crime lui va si bien	2019
+tt2147995	tvSeries	Crime Scene Cleaner	Der Tatortreiniger	2011
+tt2477910	tvMovie	Crimes of Passion (2013)	Inte flera mord	2013
+tt2504308	movie	Crimes of Passion (2013)	Mördaren ljuger inte ensam	2013
+tt2511752	tvMovie	Crimes of Passion (2013)	Kung Liljekonvalje av dungen	2013
+tt2511776	tvMovie	Crimes of Passion (2013)	Rosor, kyssar och döden	2013
+tt2573414	tvMovie	Crimes of Passion (2013)	Farliga drömmar	2013
+tt2621118	tvMovie	Crimes of Passion (2013)	Tragedi på en lantkyrkogård	2013
 tt6258764	tvSeries	Daughter of the Law	Filha da Lei	2017
 tt10688206	tvSeries	Deadly Tropics	Tropiques criminels	2019
 tt2602070	tvMiniSeries	Death of a Pilgrim	En pilgrims död	2013
-tt1565810	tvSeries	Den som dræber	Den som dræber	2011
-tt2147995	tvSeries	Der Tatortreiniger	Der Tatortreiniger	2011
+tt0907688	tvSeries	Detective Ellen Lucas	Kommissarin Lucas	2003
 tt0920489	tvSeries	Detective Montalbano	Il commissario Montalbano	1999
-tt0907688	tvSeries	Detective Mrs. Ellen Lucas	Kommissarin Lucas	2003
 tt2980074	tvSeries	Detectives	Détectives	2013
 tt13938328	tvSeries	Divided We Stand	ZERV - Zeit der Abrechnung	2022
 tt0178132	tvSeries	Don Matteo	Don Matteo	2000
+tt13734336	tvSeries	Don't Leave Me	Non mi lasciare	2022
 tt1131145	tvSeries	Donna Detective	Donna detective	2007
 tt0896667	tvSeries	Donna Leon's Brunetti Mysteries	Donna Leon	2000
-tt9348970	tvSeries	Double vie	Double vie	2019
-tt1595384	tvMovie	Fabel	Wolfsfährte	2010
-tt2186701	tvMovie	Fabel	Blutadler	2012
-tt4977680	tvMovie	Fabel	Brandmal	2015
-tt18749920	tvSeries	Face à Face	Face à face	2021
+tt9348970	tvSeries	Double Life	Double vie	2019
+tt1595384	tvMovie	Fabel (2010)	Wolfsfährte	2010
+tt2186701	tvMovie	Fabel (2012)	Blutadler	2012
+tt4977680	tvMovie	Fabel (2015)	Brandmal	2015
 tt19818812	tvSeries	Fallen	Sanningen	2023
 tt17009060	tvSeries	Family Cases	Les Pennac(s)	2021
-tt0138234	tvMiniSeries	Fantômas	Fantômas	1980
+tt0138234	tvMiniSeries	Fantomas	Fantômas	1980
 tt26629862	tvSeries	Fatal Crossing	Pigerne fra Englandsbåden	2023
-tt8090714	tvMovie	Fear on Base	Peur sur la Base	2017
 tt6601950	tvSeries	Felix	Félix	2018
 tt6116110	tvMiniSeries	Fin Ar Bed	Fin Ar Bed	2017
 tt1482968	tvSeries	Flemming	Flemming	2009
@@ -90,27 +96,25 @@ tt0763275	tvSeries	Fog and Crimes	Nebbie e delitti	2005
 tt23826450	tvMiniSeries	Forest of the Missing	La Forêt des disparus	2022
 tt15452200	tvMiniSeries	Fosca Innocenti	Fosca Innocenti	2022
 tt34161442	tvSeries	Fred Vargas' The Adamsberg Mysteries	Sur la dalle	2024
+tt5736758	tvMiniSeries	Frozen Dead	Glacé	2016
 tt4716466	tvSeries	Gasmamman	Gåsmamman	2015
-tt0810076	tvMovie	Georges Simenon Mysteries	Les innocents	2006
-tt1447496	tvMovie	Georges Simenon Mysteries	Jusqu'à l'Enfer	2009
-tt1599286	tvMovie	Georges Simenon Mysteries	En cas de malheur	2010
-tt2701262	tvMovie	Georges Simenon Mysteries	L'escalier de fer	2013
-tt3687762	tvMovie	Georges Simenon Mysteries	La boule noire	2015
-tt4714066	tvMovie	Georges Simenon Mysteries	La mort d'Auguste	2015
+tt0810076	tvMovie	Georges Simenon Mysteries (2006)	Les innocents	2006
+tt1447496	tvMovie	Georges Simenon Mysteries (2009)	Jusqu'à l'Enfer	2009
+tt1599286	tvMovie	Georges Simenon Mysteries (2010)	En cas de malheur	2010
+tt2701262	tvMovie	Georges Simenon Mysteries (2013)	L'escalier de fer	2013
+tt3687762	tvMovie	Georges Simenon Mysteries (2015)	La boule noire	2015
+tt4714066	tvMovie	Georges Simenon Mysteries (2015)	La mort d'Auguste	2015
 tt27047437	tvSeries	Gerri	Gerri	2025
-tt5736758	tvMiniSeries	Glacé	Glacé	2016
 tt14271432	tvMiniSeries	Gloria	Gloria	2021
-tt33808995	tvSeries	Guerrieri: La regola dell'equilibrio	Guerrieri: La regola dell'equilibrio	2026
 tt9420566	tvSeries	Happily Never After	Pabbahelgar	2019
-tt21960214	tvSeries	Helsinki-syndrooma	Helsinki-syndrooma	2022
+tt21960214	tvSeries	Helsinki Syndrome	Helsinki-syndrooma	2022
 tt1163573	tvSeries	Homicide Hills	Mord mit Aussicht	2008
 tt0406447	tvMiniSeries	Homicide Squad	La omicidi	2004
 tt4566672	tvMiniSeries	Hotel Almirante	Hotel Almirante	2015
 tt1726409	tvMiniSeries	House of Rocheville	La maison des Rocheville	2010
-tt12359250	tvSeries	Hvide Sande	Hvide Sande	2021
-tt8805438	tvMiniSeries	Il Capitano Maria	Il Capitano Maria	2018
-tt10895664	tvSeries	Imma Tataranni: Deputy Prosecutor	Imma Tataranni sostituto procuratore	2019
+tt10895664	tvSeries	Imma Tataranni	Imma Tataranni sostituto procuratore	2019
 tt1223917	tvMiniSeries	In the Face of Crime	Im Angesicht des Verbrechens	2010
+tt0826960	tvSeries	Inspector and the Sea	Der Kommissar und das Meer	2007
 tt1556087	tvSeries	Inspector Coliandro	L'ispettore Coliandro	2003
 tt8613776	tvSeries	Inspector Dupin	Kommissar Dupin	2014
 tt1100935	tvSeries	Inspector Manara	Il commissario Manara	2008
@@ -119,87 +123,101 @@ tt1233559	tvSeries	Inspector Vivaldi Mysteries	Io e mio figlio - Nuove storie pe
 tt1534083	tvSeries	Inspector Winter	Kommissarie Winter	2010
 tt6410134	tvSeries	Irene Huss	Irene Huss	2007
 tt9076154	tvSeries	Irish Crime	Der Irland-Krimi	2019
-tt2208885	tvSeries	Kabul Kitchen	Kaboul Kitchen	2012
+tt2208885	tvSeries	Kaboul Kitchen	Kaboul Kitchen	2012
 tt1353097	tvMovie	Kennedy's Brain	Kennedys Hirn	2010
 tt8235246	tvSeries	Kieler Street	Kielergata	2018
-tt11628096	tvMiniSeries	L'alligatore	L'alligatore	2020
-tt6190050	tvSeries	L'art du crime	L'art du crime	2017
-tt3355088	tvSeries	La loi de...	La loi de...	2014
-tt8274252	tvMovie	La mossa del cavallo: c'era una volta Vigata	La mossa del cavallo: c'era una volta Vigata	2018
-tt9421436	tvMiniSeries	Les secrets	Les secrets	2018
-tt2230422	video	Lifetime	Livstid	2012
-tt28247370	tvSeries	Lost River	Rivière perdue	2024
+tt9421436	tvMiniSeries	Les Secrets	Les secrets	2018
 tt0807686	tvSeries	Mafiosa	Mafiosa	2006
 tt1548331	tvSeries	Magellan	Commissaire Magellan	2009
 tt0167644	tvSeries	Maigret	Maigret	1991
-tt14255042	tvSeries	Màkari	Màkari	2021
+tt14255042	tvSeries	Makari	Màkari	2021
 tt2377081	tvSeries	Mammon	Mammon	2014
+tt1129398	tvSeries	Maria Wern	Maria Wern	2008
 tt22025926	tvSeries	Marianne, One of a Kind!	Marianne	2022
+tt1192877	tvEpisode	Marie's Mind for Murder	Marie Brand und die tödliche Gier	2008
 tt10598848	tvMiniSeries	Marnow Murders	Die Toten von Marnow	2021
-tt3268308	tvMovie	Mary Higgins Clark Mysteries	Toi que j'aimais tant	2014
-tt3351208	tvMovie	Mary Higgins Clark Mysteries	Deux petites filles en bleu	2014
-tt4387348	tvMovie	Mary Higgins Clark Mysteries	La Clinique du Docteur H	2015
-tt4542814	tvMovie	Mary Higgins Clark Mysteries	Souviens-toi	2015
-tt5040826	tvMovie	Mary Higgins Clark Mysteries	Les Années Perdues	2015
-tt7849576	tvMovie	Mary Higgins Clark Mysteries	Ce Que Vivent les Roses	2018
+tt3268308	tvMovie	Mary Higgins Clark Mysteries (2014)	Toi que j'aimais tant	2014
+tt3351208	tvMovie	Mary Higgins Clark Mysteries (2014)	Deux petites filles en bleu	2014
+tt3572570	tvMovie	Mary Higgins Clark Mysteries (2014)	Où es-tu maintenant?	2014
+tt4387348	tvMovie	Mary Higgins Clark Mysteries (2015)	La Clinique du Docteur H	2015
+tt4542814	tvMovie	Mary Higgins Clark Mysteries (2015)	Souviens-toi	2015
+tt5040826	tvMovie	Mary Higgins Clark Mysteries (2015)	Les Années Perdues	2015
+tt7849576	tvMovie	Mary Higgins Clark Mysteries (2018)	Ce Que Vivent les Roses	2018
 tt29550481	tvMiniSeries	Master Crimes	Master Crimes	2023
-tt26793712	tvMovie	Miss Merkel - Ein Uckermark-Krimi	Miss Merkel - Ein Uckermark-Krimi	2023
+tt18749920	tvSeries	Mismatch	Face à face	2021
+tt26793712	tvMovie	Miss Merkel	Miss Merkel - Ein Uckermark-Krimi	2023
 tt6367940	tvMiniSeries	Missing	Saknad	2017
-tt5700562	tvMiniSeries	Money. Murder. Zurich.	Der Zürich-Krimi	2016
+tt5700562	tvMiniSeries	Money Murder Zurich	Der Zürich-Krimi	2016
 tt2843368	tvSeries	Mongeville	Mongeville	2013
 tt14732120	tvSeries	Monterossi	Monterossi - La serie	2022
 tt8648176	tvSeries	Murder by the Lake	Die Toten vom Bodensee	2014
 tt12333526	tvMovie	Murder In	Crime dans l'Hérault	
-tt3248842	tvMovie	Murder In	Crime en Aveyron	2014
-tt3777352	tvMovie	Murder In	Crime en Lozère	2014
-tt4816894	tvMovie	Murder In	Crime à Aigues-Mortes	2015
-tt5768912	tvMovie	Murder In	Crime à Martigues	2016
-tt6431610	tvMovie	Murder In	Les mystères de l'île	2017
-tt7442320	tvMovie	Murder In	Les crimes silencieux	2017
-tt7623452	tvMovie	Murder In	Crime dans les Alpilles	2017
-tt8178502	tvMovie	Murder In	Crime dans le Luberon	2018
-tt1129398	tvSeries	Murder in Sweden	Maria Wern	2008
-tt10320056	tvMovie	Murderous Memories: The Walls of Memory	Les murs du souvenir	2019
+tt3248842	tvMovie	Murder In (2014)	Crime en Aveyron	2014
+tt3777352	tvMovie	Murder In (2014)	Crime en Lozère	2014
+tt4816894	tvMovie	Murder In (2015)	Crime à Aigues-Mortes	2015
+tt5768912	tvMovie	Murder In (2016)	Crime à Martigues	2016
+tt6431610	tvMovie	Murder In (2017)	Les mystères de l'île	2017
+tt7442320	tvMovie	Murder In (2017)	Les crimes silencieux	2017
+tt7623452	tvMovie	Murder In (2017)	Crime dans les Alpilles	2017
+tt8178502	tvMovie	Murder In (2018)	Crime dans le Luberon	2018
+tt10320056	tvMovie	Murderous Memories	Les murs du souvenir	2019
 tt9610556	tvSeries	Murders at Barlume	I delitti del BarLume	2013
-tt2678356	tvMovie	Nele Neuhaus Mysteries	Schneewittchen muss sterben	2013
-tt2837704	tvMovie	Nele Neuhaus Mysteries	Eine unbeliebte Frau	2013
-tt3297484	tvMovie	Nele Neuhaus Mysteries	Tiefe Wunden	2015
-tt5680698	tvMiniSeries	Nele Neuhaus Mysteries	Die Lebenden und die Toten	2017
+tt2678356	tvMovie	Nele Neuhaus Mysteries (2013)	Schneewittchen muss sterben	2013
+tt2837704	tvMovie	Nele Neuhaus Mysteries (2013)	Eine unbeliebte Frau	2013
+tt3297484	tvMovie	Nele Neuhaus Mysteries (2015)	Tiefe Wunden	2015
+tt5680698	tvMiniSeries	Nele Neuhaus Mysteries (2017)	Die Lebenden und die Toten	2017
 tt2164423	tvSeries	Nero Wolfe	Nero Wolfe	2012
 tt0101152	tvSeries	Nestor Burma	Nestor Burma	1991
-tt13734336	tvSeries	Non mi lasciare	Non mi lasciare	2022
 tt26678108	tvMiniSeries	Off Track	L'abîme	2023
+tt8274252	tvMovie	Once Upon a Time in Vigata	La mossa del cavallo: c'era una volta Vigata	2018
 tt11278600	tvSeries	Pacific Criminal	O.P.J.	2019
 tt1726834	tvSeries	Palermo Connection	Il segreto dell'acqua	2011
 tt7770794	tvMiniSeries	Perfect Murders	Crimes parfaits	2017
 tt10964100	tvSeries	Petra	Petra	2020
-tt8924868	tvMovie	Piégés	Piégés	2018
+tt8924868	tvMovie	Pieges	Piégés	2018
+tt11835538	tvEpisode	Poquelin and De Beaumont	Poquelin	2020
 tt14611738	tvSeries	Preppers	Preppers	2021
-tt13505010	tvSeries	Prière d'enquêter	Prière d'enquêter	2019
-tt2180578	video	Prime Time	Prime Time	2012
-tt13752206	tvSeries	Primeri inspektorja Vrenka	Primeri inspektorja Vrenka	2021
-tt1604231	movie	Private Eye Vares	Vares - Pahan suudelma	2011
-tt1625350	movie	Private Eye Vares	Vares - Kaidan tien kulkijat	2012
-tt1836210	movie	Private Eye Vares	Vares - Huhtikuun tytöt	2011
-tt1901033	movie	Private Eye Vares	Vares - Sukkanauhakäärme	2011
-tt1919184	movie	Private Eye Vares	Vares - Pimeyden tango	2012
-tt2073137	movie	Private Eye Vares	Vares - Uhkapelimerkki	2012
-tt3657684	movie	Private Eye Vares	Vares - Sheriffi	2015
+tt1604231	movie	Private Eye Vares (2011)	Vares - Pahan suudelma	2011
+tt1836210	movie	Private Eye Vares (2011)	Vares - Huhtikuun tytöt	2011
+tt1901033	movie	Private Eye Vares (2011)	Vares - Sukkanauhakäärme	2011
+tt1625350	movie	Private Eye Vares (2012)	Vares - Kaidan tien kulkijat	2012
+tt1919184	movie	Private Eye Vares (2012)	Vares - Pimeyden tango	2012
+tt2073137	movie	Private Eye Vares (2012)	Vares - Uhkapelimerkki	2012
+tt3657684	movie	Private Eye Vares (2015)	Vares - Sheriffi	2015
 tt4706558	tvSeries	Public Enemy	Ennemi public	2016
 tt0229924	tvSeries	Raid	Raid	2000
 tt0110998	movie	River of Grass	River of Grass	1994
+tt28247370	tvSeries	Riviere-Perdue	Rivière perdue	2024
 tt1790954	tvSeries	Sebastian Bergman	Den fördömde	2010
 tt17544192	tvSeries	SOKO Linz	SOKO Linz	2022
+tt14304084	tvMiniSeries	Sophie Cross	Sophie Cross	2021
 tt7368268	tvSeries	Speakerine	Speakerine	2018
 tt0477507	tvSeries	Spiral	Engrenages	2005
-tt5194410	tvSeries	Springfloden	Springfloden	2016
-tt2568206	tvMovie	Steirerblut	Steirerblut	2014
+tt6975960	tvSeries	Spitfire	Treufoc	2017
+tt5194410	tvSeries	Spring Tide	Springfloden	2016
 tt32868688	tvSeries	Stucky	Stucky	2024
-tt10375672	tvSeries	Super Jimmy	Double je	2019
 tt5595238	tvSeries	Tandem	Tandem	2016
 tt9816692	tvSeries	Tatort: Borowski	Inspector Borowski	2016
+tt0454964	tvEpisode	Tatort: Bremen	Scheherazade	2005
+tt0197942	tvEpisode	Tatort: Cologne	Kinder der Gewalt	1999
+tt2188054	tvEpisode	Tatort: Dortmund	Alter Ego	2012
+tt2455960	tvEpisode	Tatort: Falke	Feuerteufel	2013
+tt14711006	tvEpisode	Tatort: Harbor Crimes	Neugeboren	2021
+tt1254687	tvEpisode	Tatort: Lindholm	Salzleiche	2008
+tt5307884	tvEpisode	Tatort: Munich	Mia san jetz da wo's weh tut	2016
+tt0404483	tvEpisode	Tatort: Munster	Mörderspiele	2004
+tt0090134	tvEpisode	Tatort: Schimanski	Doppelspiel	1985
+tt4458164	tvEpisode	Tatort: Streets of Berlin	Das Muli	2015
+tt1314329	tvEpisode	Tatort: Vienna	Baum der Erlösung	2009
+tt2851040	tvEpisode	Tatort: Weimar	Die fette Hoppe	2013
+tt11628096	tvMiniSeries	The Alligator	L'alligatore	2020
+tt6190050	tvSeries	The Art of Crime	L'art du crime	2017
 tt6438886	tvSeries	The Bastards of Pizzofalcone	I bastardi di Pizzofalcone	2017
+tt8090714	tvMovie	The Berken Case	Peur sur la Base	2017
 tt4792480	tvSeries	The Break	La trêve	2016
+tt33808995	tvSeries	The Cases of Attorney Guerrieri	Guerrieri: La regola dell'equilibrio	2026
+tt13752206	tvSeries	The Cases of Inspector Vrenko	Primeri inspektorja Vrenka	2021
+tt5678308	tvSeries	The Diplomat	Die Diplomatin	2016
 tt3456290	tvMiniSeries	The Fourth Man	Den fjärde mannen	2014
 tt8747378	tvSeries	The Fox	Die Füchsin	2015
 tt1343097	movie	The Girl Who Kicked the Hornet's Nest	Luftslottet som sprängdes	2009
@@ -207,9 +225,8 @@ tt1216487	movie	The Girl Who Played with Fire	Flickan som lekte med elden	2009
 tt1132620	movie	The Girl with the Dragon Tattoo	Män som hatar kvinnor	2009
 tt29055782	tvSeries	The Hanko Murder	Murha Hangossa	2024
 tt7059774	tvSeries	The Hunters	Jägarna	2018
-tt0826960	tvSeries	The Inspector and the Sea	Der Kommissar und das Meer	2007
-tt5678308	tvSeries	The Lady Diplomat	Die Diplomatin	2016
 tt21301298	tvMiniSeries	The Lake Trilogy	Dolina roz	2022
+tt3355088	tvSeries	The Law of	La loi de...	2014
 tt1349600	tvSeries	The Little Murders of Agatha Christie	Les petits meurtres d'Agatha Christie	2009
 tt12404772	tvMiniSeries	The Promise	La promesse	2020
 tt1846197	tvSeries	The Sandhamn Murders	Morden i Sandhamn	2010
@@ -218,34 +235,36 @@ tt10410442	tvSeries	The Traveller	Le voyageur	2019
 tt6879486	tvMiniSeries	The Typist	Die Protokollantin	2018
 tt2265544	tvSeries	The Undertaker	Der Bestatter	2013
 tt1600419	movie	The Vanishing of Pato	La scomparsa di Patò	2010
+tt1565810	tvSeries	Those Who Kill	Den som dræber	2011
 tt10462338	tvSeries	Time Is a Killer	Le temps est assassin	2019
 tt22694974	tvSeries	Toutouyoutou	Toutouyoutou	2022
-tt6975960	tvSeries	Treufoc	Treufoc	2017
-tt4451240	tvMovie	Tu es mon fils	Tu es mon fils	2015
+tt4451240	tvMovie	Tu Es Mon Fils	Tu es mon fils	2015
 tt6710454	tvSeries	Twin	Twin	2019
-tt6280900	tvSeries	Über die Grenze	Über die Grenze	2017
 tt15375008	tvSeries	Unclaimed	Les invisibles	2021
+tt13505010	tvSeries	Under Law and Grace	Prière d'enquêter	2019
 tt0220261	tvSeries	Unit One	Rejseholdet	2000
-tt0421947	movie	Van Veeteren	Carambole	2005
-tt0871899	video	Van Veeteren	Fallet G	2006
-tt0871900	video	Van Veeteren	Svalan, katten, rosen, döden	2006
+tt0421947	movie	Van Veeteren (2005)	Carambole	2005
+tt0871899	video	Van Veeteren (2006)	Fallet G	2006
+tt0871900	video	Van Veeteren (2006)	Svalan, katten, rosen, döden	2006
 tt31721916	tvSeries	Vanina	Vanina	2024
-tt0844948	movie	Varg Veum	Varg Veum - Bitre blomster	2007
-tt1010265	movie	Varg Veum	Varg Veum - Falne engler	2008
-tt1135937	video	Varg Veum	Varg Veum - Kvinnen i kjøleskapet	2008
-tt1181935	video	Varg Veum	Varg Veum - Din til døden	2008
-tt1181936	video	Varg Veum	Varg Veum - Tornerose	2008
-tt1296458	video	Varg Veum	Varg Veum - Begravde hunder	2008
-tt1572783	movie	Varg Veum	Varg Veum - Skriften på veggen	2010
-tt1699163	movie	Varg Veum	Varg Veum - Dødens drabanter	2011
-tt1699164	movie	Varg Veum	Varg Veum - Svarte får	2011
-tt2102465	movie	Varg Veum	Varg Veum - I mørket er alle ulver grå	2011
-tt2182237	movie	Varg Veum	Varg Veum - De døde har det godt	2012
-tt2182239	movie	Varg Veum	Varg Veum - Kalde hjerter	2012
-tt14735266	tvSeries	Vincenzo Malinconico, Attorney	Vincenzo Malinconico, avvocato d'insuccesso	2022
+tt0844948	movie	Varg Veum (2007)	Varg Veum - Bitre blomster	2007
+tt28455574	tvSeries	Varg Veum (2007)	Varg Veum	2007
+tt1010265	movie	Varg Veum (2008)	Varg Veum - Falne engler	2008
+tt1135937	video	Varg Veum (2008)	Varg Veum - Kvinnen i kjøleskapet	2008
+tt1181935	video	Varg Veum (2008)	Varg Veum - Din til døden	2008
+tt1181936	video	Varg Veum (2008)	Varg Veum - Tornerose	2008
+tt1296458	video	Varg Veum (2008)	Varg Veum - Begravde hunder	2008
+tt1572783	movie	Varg Veum (2010)	Varg Veum - Skriften på veggen	2010
+tt1699163	movie	Varg Veum (2011)	Varg Veum - Dødens drabanter	2011
+tt1699164	movie	Varg Veum (2011)	Varg Veum - Svarte får	2011
+tt2102465	movie	Varg Veum (2011)	Varg Veum - I mørket er alle ulver grå	2011
+tt2182237	movie	Varg Veum (2012)	Varg Veum - De døde har det godt	2012
+tt2182239	movie	Varg Veum (2012)	Varg Veum - Kalde hjerter	2012
+tt14735266	tvSeries	Vincenzo Malinconico - The Italian Lawyer	Vincenzo Malinconico, avvocato d'insuccesso	2022
+tt11962166	tvMiniSeries	Voiceless	Bella da morire	2020
 tt0907702	tvSeries	Wallander	Wallander	2005
 tt0484335	tvMiniSeries	Wallander: The Original Episodes	Brandvägg	2006
-tt3572570	tvMovie	Where Are You Now?	Où es-tu maintenant?	2014
+tt12359250	tvSeries	White Sands	Hvide Sande	2021
 tt6276768	tvSeries	Wilder	Wilder	2017
 tt0880565	tvSeries	Wilsberg	Wilsberg	1995
 tt8713060	tvSeries	Wolfsland	Wolfsland	2016

@@ -1,9 +1,9 @@
 # This is a sample of IMDb tconst identifiers of shows on PBS - https://www.pbs.org
 
-# tconst	Type	Primary Title	Alternate Title	Date
+# tconst	Type	Primary Title	Original Title	Date
 tt10964992	tvMovie	Agatha and the Curse of Ishtar	Agatha and the Curse of Ishtar	2019
 tt11062400	tvMovie	Agatha and the Midnight Murders	Agatha and the Midnight Murders	2020
-tt5221612	tvSeries	Agathe Koltès	Agathe Koltès	2016
+tt5221612	tvSeries	Agathe Koltes	Agathe Koltès	2016
 tt13643704	tvSeries	Annika	Annika	2021
 tt1008108	tvSeries	Ashes to Ashes	Ashes to Ashes	2008
 tt11950864	tvSeries	Astrid	Astrid et Raphaëlle	2019
@@ -17,13 +17,14 @@ tt35667817	tvSeries	Coastal Unit	À priori	2025
 tt10062652	tvSeries	Cobra	COBRA	2020
 tt30632074	tvSeries	Cold Summer	Il metodo Fenoglio - L'estate fredda	2023
 tt0974077	tvSeries	Cranford	Cranford	2007
-tt3814852	tvSeries	Dengler	Dengler	2015
-tt28285815	tvMiniSeries	Detective Surprenant	Detective Surprenant	2023
-tt15536118	tvSeries	DI Ray	D.I. Ray	2022
+tt15536118	tvSeries	D.I. Ray	D.I. Ray	2022
+tt28285815	tvMiniSeries	Detective Suprenant: Murder On the Island	Detective Surprenant	2023
 tt13099990	tvMiniSeries	Disturbing Disappearances	Disparition inquiétante	2019
 tt1606375	tvSeries	Downton Abbey	Downton Abbey	2010
 tt0079073	movie	Dracula	Dracula	1979
+tt4982674	tvEpisode	Dresden Detectives	Auf einen Schlag	2016
 tt2701582	tvSeries	Endeavour	Endeavour	2012
+tt36220477	tvSeries	Everybody Lies	Tout le monde ment	2022
 tt1800493	tvMiniSeries	Exile	Exile	2011
 tt9704798	tvMiniSeries	Flesh and Blood	Flesh and Blood	2020
 tt6881870	tvSeries	Frankie Drake Mysteries	Frankie Drake Mysteries	2017
@@ -37,10 +38,11 @@ tt1077744	tvSeries	Lark Rise to Candleford	Lark Rise to Candleford	2008
 tt2216156	tvSeries	Last Tango in Halifax	Last Tango in Halifax	2012
 tt14160392	tvSeries	Lolita Lobosco	Le indagini di Lolita Lobosco	2021
 tt2952002	tvSeries	Lord & Master	Heer & meester	2014
-tt8883700	tvSeries	Luna and Sophie	SOKO Potsdam	2018
+tt21241992	tvSeries	Luna and Sophie	Luna & Sophie	2020
 tt26813534	tvMiniSeries	Mademoiselle Holmes	Mademoiselle Holmes	2024
 tt13186264	tvSeries	Magpie Murders	Magpie Murders	2022
 tt33359676	tvSeries	Maigret	Maigret	2025
+tt35617054	tvMiniSeries	Marble Hall Murders	Marble Hall Murders	2026
 tt8270592	tvSeries	Miss Scarlet and The Duke	Miss Scarlet & the Duke	2020
 tt4600404	tvSeries	Modus	Modus	2015
 tt26314987	tvMiniSeries	Moonflower Murders	Moonflower Murders	2024
@@ -51,16 +53,19 @@ tt1129398	tvSeries	Murder in Sweden	Maria Wern	2008
 tt0295620	tvSeries	Murder in the Mountains	SOKO Kitzbühel	2001
 tt15115204	tvMiniSeries	Mystery of Manon	Jugée coupable	2021
 tt32105738	tvMiniSeries	New Kid on the Beat	La recrue	2024
-tt1680044	tvSeries	One Step from Heaven	Un passo dal cielo	2011
+tt1680044	tvSeries	One Step From Heaven	Un passo dal cielo	2011
 tt3335946	tvSeries	Origins	Origines	2014
 tt28247113	tvSeries	Panda	Panda	2023
+tt8883700	tvSeries	Partners In Crime: Potsdam Homicide	SOKO Potsdam	2018
 tt31495377	tvSeries	Patience	Patience	2025
 tt0094525	tvSeries	Poirot	Poirot	1989
+tt3814852	tvSeries	Private Detective Dengler	Dengler	2015
 tt11981644	tvSeries	Professor T	Professor T	2021
-tt3823996	tvSeries	Professor T.	Professor T.	2015
+tt3823996	tvSeries	Professor T (Belgian)	Professor T.	2015
 tt14772170	tvSeries	Ridley	Ridley	2022
 tt10846250	tvMiniSeries	Roadkill	Roadkill	2020
 tt2960144	tvSeries	Seaside Hotel	Badehotellet	2013
+tt2848720	tvEpisode	Silent Hunt	Kinderparadies	2013
 tt5544138	tvSeries	The Blood Pact	Klem	2017
 tt5014882	tvSeries	The Durrells in Corfu	The Durrells	2016
 tt4386224	tvSeries	The Intern	La stagiaire	2014
