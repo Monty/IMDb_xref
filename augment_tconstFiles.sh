@@ -135,13 +135,26 @@ fi
 # throw away real title.basics data: Ørnen's Original Title is "Ørnen: En
 # krimi-odyssé", and that rule would leave plain "Ørnen". So column 4 is only
 # filled from column 3 when it holds nothing better.
+#
+# .xlate keys are perl regexes to generateXrefData.sh, so a title containing a
+# metacharacter is written escaped -- "Where Are You Now\?". This is an exact
+# match, so strip the backslashes or that key never matches here. Comment and
+# blank lines are skipped: they used to load an empty key, which filled column
+# 4 of any row with an empty column 3 with the file's comment text.
 function applyXlate() {
     if [[ -z $XLATE ]]; then
         cat "$RESULT"
         return
     fi
     awk -F'\t' -v OFS='\t' '
-        NR == FNR { xlate1[$1] = $2; xlate2[$2] = $1; next }
+        NR == FNR {
+            if (NF >= 2 && $0 !~ /^#/) {
+                gsub(/\\/, "", $1)
+                xlate1[$1] = $2
+                xlate2[$2] = $1
+            }
+            next
+        }
         $3 in xlate1 {
             if ($4 == "" || $4 == $3) $4 = $3
             $3 = xlate1[$3]
@@ -151,16 +164,43 @@ function applyXlate() {
     ' "$XLATE" "$RESULT"
 }
 
+# Add " (<Date>)" to any Primary Title that appears more than once in the
+# output -- "The Silence (2006)", "The Silence (2010)". Same rule, and the same
+# case-insensitive comparison, generateXrefData.sh uses for duplicate titles,
+# so a Contrib row reads the way that show is later reported. Rows that .xlate
+# collapses onto one name (Arne Dahl, Murder In) are dated too.
+#
+# Only the display column changes: every consumer of a .tconst reads column 1,
+# and re-augmenting rebuilds column 3 from title.basics, so dates never stack.
+function dateDuplicates() {
+    awk -F'\t' -v OFS='\t' '
+        { row[NR] = $0; key[NR] = tolower($3); count[key[NR]]++ }
+        END {
+            for (i = 1; i <= NR; i++) {
+                $0 = row[i]
+                if (NF >= 5 && $3 != "" && $5 != "" && count[key[i]] > 1)
+                    $3 = $3 " (" $5 ")"
+                print
+            }
+        }'
+}
+
 function copyResults() {
     # Preserve comments at top
     cat "$COMMENTS"
     # Then add the sorted tconst lines. Sorting after translation, so the order
     # follows the titles actually written -- matching live-fetch, where the
     # same file sorts "The Eagle" rather than "Ørnen".
+    #
+    # Episodes are dropped before dating, so a title is only dated when it is
+    # duplicated in what is actually written. The type is tested in field 2:
+    # the old 'rg -wNv tvEpisode' also dropped any row whose title contained
+    # that word -- the same bug fixed in findOtherShows.sh and findCastOf.sh.
     if [[ -n $ALLOW_EPISODES ]]; then
-        applyXlate | sort -f -t$'\t' --key=3,3
+        applyXlate | dateDuplicates | sort -f -t$'\t' --key=3,3
     else
-        applyXlate | sort -f -t$'\t' --key=3,3 | rg -wNv "tvEpisode"
+        applyXlate | awk -F'\t' '$2 != "tvEpisode"' | dateDuplicates |
+            sort -f -t$'\t' --key=3,3
     fi
 }
 
