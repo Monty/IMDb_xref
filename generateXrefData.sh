@@ -518,7 +518,17 @@ if [[ -z $BYPASS_PROCESSING ]]; then
     [[ -z $OUTPUT_DIR ]] && printDuration
 
     # Use the tconst list to lookup episode IDs and generate an episode tconst file
-    rg -wNz -f "$TCONST_LIST" title.episode.tsv.gz | perl -p -e 's+\\N++g;' |
+    #
+    # rg -w matches a tconst in any column, so it is only a fast pre-filter:
+    # title.episode is episode<TAB>parentTconst<TAB>season<TAB>episode, and a
+    # tvEpisode listed in a .tconst (Tatort: Munich, tt5307884) matches its own
+    # row in column 1. That made it an episode of a parent no .tconst names
+    # (Tatort, tt0806910), whose tconst then showed up as a show name in
+    # Shows-Episodes.csv and double-counted the episode's cast. Keep only rows
+    # whose parent is in the list; a listed episode stays a standalone show.
+    rg -wNz -f "$TCONST_LIST" title.episode.tsv.gz |
+        awk -F'\t' 'NR == FNR { want[$1]; next } $2 in want' "$TCONST_LIST" - |
+        perl -p -e 's+\\N++g;' |
         sort -f -t$'\t' --key=2,2 --key=3,3n --key=4,4n |
         rg -wv -f "$TEMP_SKIPS" | tee "$UNSORTED_EPISODES" | cut -f 1 >"$EPISODES_LIST"
 
