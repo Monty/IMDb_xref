@@ -270,7 +270,10 @@ while read -r line; do
         match=$(cut -f 2 <<<"$job")
         printf "\n"
         rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
-        ./augment_tconstFiles.sh -y "$JOB_RESULTS"
+        # -e: a person's credits include individual episodes, which this
+        # list has always left out (they were augment's default until it
+        # changed to keeping them).
+        ./augment_tconstFiles.sh -ey "$JOB_RESULTS"
         cut -f 2,3,5 "$JOB_RESULTS" |
             sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 >"$TMPFILE"
         numResults=$(sed -n '$=' "$JOB_RESULTS")

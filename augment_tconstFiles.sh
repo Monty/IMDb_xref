@@ -36,7 +36,10 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
-    -a      Allow tvEpisodes -- normally they are filtered out
+    -e      Exclude tvEpisodes. They are kept by default: services list some
+            episodes as shows (Tatort, Polizeiruf), and dropping rows a file
+            was given would be an unexplained surprise.
+    -a      Accepted for compatibility -- tvEpisodes are now kept by default.
     -i      In place -- overwrite original file, asking first
     -y      Yes -- overwrite in place without asking. Implies -i.
     -r      Reload -- discard the augmented cache and re-read every title from
@@ -48,6 +51,7 @@ EXAMPLES:
     ./augment_tconstFiles.sh -i Contrib/*.tconst
     ./augment_tconstFiles.sh -y Contrib/*.tconst
     ./augment_tconstFiles.sh -ry Contrib/*.tconst
+    ./augment_tconstFiles.sh -ey Contrib/*.tconst
 EOF
 }
 
@@ -78,14 +82,18 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":hairy" opt; do
+while getopts ":haeiry" opt; do
     case $opt in
     h)
         help
         exit
         ;;
     a)
-        ALLOW_EPISODES="yes"
+        # Was "allow tvEpisodes"; now the default. Kept so
+        # existing commands and scripts still run unchanged.
+        ;;
+    e)
+        EXCLUDE_EPISODES="yes"
         ;;
     i)
         INPLACE="yes"
@@ -192,11 +200,16 @@ function copyResults() {
     # follows the titles actually written -- matching live-fetch, where the
     # same file sorts "The Eagle" rather than "Ørnen".
     #
-    # Episodes are dropped before dating, so a title is only dated when it is
-    # duplicated in what is actually written. The type is tested in field 2:
-    # the old 'rg -wNv tvEpisode' also dropped any row whose title contained
-    # that word -- the same bug fixed in findOtherShows.sh and findCastOf.sh.
-    if [[ -n $ALLOW_EPISODES ]]; then
+    # Episodes are kept unless -e. Before that default changed, they were
+    # dropped unless -a, so a user who copied a Contrib file holding Tatort
+    # episodes silently lost them on their first augment.
+    #
+    # When excluded, episodes are dropped before dating, so a title is only
+    # dated when it is duplicated in what is actually written. The type is
+    # tested in field 2: the old 'rg -wNv tvEpisode' also dropped any row whose
+    # title contained that word -- the same bug fixed in findOtherShows.sh and
+    # findCastOf.sh.
+    if [[ -z $EXCLUDE_EPISODES ]]; then
         applyXlate | dateDuplicates | sort -f -t$'\t' --key=3,3
     else
         applyXlate | awk -F'\t' '$2 != "tvEpisode"' | dateDuplicates |

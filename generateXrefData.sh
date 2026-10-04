@@ -79,7 +79,7 @@ OPTIONS:
 EXAMPLES:
     ./generateXrefData.sh
     ./generateXrefData.sh -x Contrib/OPB.xlate Contrib/OPB.tconst
-    ./generateXrefData.sh -s Tarantino.skipEpisodes Tarantino-director.tconst
+    ./generateXrefData.sh -s Contrib/Tarantino.skipEpisodes Contrib/Tarantino-director.tconst
     ./generateXrefData.sh -d Comedies
     ./generateXrefData.sh -arq
     ./generateXrefData.sh -t

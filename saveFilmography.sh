@@ -551,7 +551,9 @@ while read -r line; do
         # it matches every other .tconst in the corpus, and it seeds
         # augment_tconstFiles.sh's own cache for later runs. Live-fetch prints
         # the hint instead because there it means one scrape per title.
-        ./augment_tconstFiles.sh -y "$TCONST_FILE"
+        # -e keeps individual episode credits out, as augment's old default
+        # did before it changed to keeping tvEpisodes.
+        ./augment_tconstFiles.sh -ey "$TCONST_FILE"
         printf "==> Saved.\n"
         savedAnything="yes"
         waitUntil "$YN_PREF" -N \
