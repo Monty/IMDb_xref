@@ -1,12 +1,20 @@
-# This is a sample tab separated file of IMDb tconst IDs to exclude from episode
-# processing.
+# This is a sample tab separated file of IMDb tvSeries tconst IDs whose
+# episodes should not be expanded.
 
-# When a tvSeries is processed, all its tvEpisodes are also automatically looked up,
-# processed, and added into the generated spreadsheets. This can greatly increase
-# their size.
+# When a tvSeries is processed, all its tvEpisodes are also looked up and
+# their credits added to the generated spreadsheets. That is how an episode's
+# guest cast becomes findable with xrefCast.sh, and for most series it is well
+# worth it: a few hundred episodes with a recurring cast and guests who turn
+# up in other shows.
 #
-# If a tvSeries has hundreds of tvEpisodes or its cast & crew aren't relevant,
-# add the tvSeries tconst below and its tvEpisodes will not be processed.
+# The only reason to skip a series is size. A daily soap, a documentary
+# anthology like Nova (over 1,000 episodes, almost no recurring people), or a
+# parent series like Tatort (over 1,300 episodes) adds thousands of credit rows
+# and very few cross-references. Add its tconst below and only its
+# series-level credits are kept.
+#
+# Skipping never changes findOtherShows.sh results -- the cache it reads holds
+# series-level credits only.
 
 # Create a similar skipEpisodes file of shows to exclude from episode processing.
 # If it has a .skipEpisodes extension, it will be automatically processed.
@@ -15,6 +23,11 @@
 
 # Only the tconst field is used. Additional fields are not needed, but useful
 # for documentation.
+#
+# The entries below are for demonstration. Murdoch Mysteries and Silent Witness
+# are among the largest expansions in the Contrib files, so skipping them shows
+# the effect (generateXrefData.sh -s skipEpisodes.example Contrib/Acorn.tconst),
+# but both share enough cast with other shows to be worth keeping in practice.
 
 # tconst	Service	Primary Title	Date
 tt1091909	Acorn	Murdoch Mysteries	2008

@@ -27,12 +27,12 @@
 #       command line
 #
 #
-#    3) .skipEpisodes file(s) with tconst IDs to exclude from processing
+#    3) .skipEpisodes file(s) of tvSeries whose episodes should not be
+#       expanded -- a size control for shows with a huge episode list and
+#       little cast overlap (daily soaps, documentary anthologies)
 #
 #       For example:
-#           tt0094416
-#           tt1091909
-#           tt0115355
+#           tt0206501
 #           ...
 #
 #       Defaults to all .skipEpisodes files, or specify one with -s [file]
@@ -79,7 +79,7 @@ OPTIONS:
 EXAMPLES:
     ./generateXrefData.sh
     ./generateXrefData.sh -x Contrib/OPB.xlate Contrib/OPB.tconst
-    ./generateXrefData.sh -s Contrib/Tarantino.skipEpisodes Contrib/Tarantino-director.tconst
+    ./generateXrefData.sh -s skipEpisodes.example Contrib/Acorn.tconst
     ./generateXrefData.sh -d Comedies
     ./generateXrefData.sh -arq
     ./generateXrefData.sh -t
@@ -484,10 +484,16 @@ if [[ -z $BYPASS_PROCESSING ]]; then
         awk -F "\t" -f "$TEMP_AWK" "$TEMPFILE" >"$RAW_SHOWS"
     fi
 
-    # We don't want to check for episodes in any tvSeries that has hundreds of
-    # tvEpisodes or has episodes with titles that aren't unique like "Episode 1"
-    # that can't be "translated" back to the original show. Manually maintain
-    # a skip list in *.skipEpisodes
+    # Every tvSeries in the list has its tvEpisodes looked up and their
+    # credits added (episode guests are only findable by xrefCast.sh this
+    # way; the .xref_bulk_cache findOtherShows.sh reads holds series-level
+    # credits only, so skipping never changes its results). A series listed
+    # in *.skipEpisodes is not expanded. The only reason left is size: a
+    # daily soap, a documentary anthology like Nova (1,036 episodes, almost
+    # no recurring people), or a parent like Tatort (1,300+) adds thousands
+    # of rows and few cross-references. Episode titles don't matter --
+    # episodes are tied to their show by the parent tconst in title.episode,
+    # so generic titles like "Episode #1.1" are fine.
     if [[ -z "$(ls "${SKIP_EPISODES[@]}" 2>/dev/null)" ]]; then
         # If SKIP_EPISODES is empty, put a non-existent tconst in TEMP_SKIPS
         # to prevent missing file errors during further processing
@@ -764,9 +770,9 @@ if [[ -n "$(rg -c "^tt" "$SHOWS")" ]]; then
         >"$ERRORS"
     rg -N "^tt" "$SHOWS" >>"$ERRORS"
     cat >>"$ERRORS" <<EOF
-### Usually caused by an episode tconst without its parent tconst. If you
-### only want specific episodes, but not all episodes in a show, add the
-### parent tconst to skipEpisodes.example
+### Usually caused by a .tconst listing a tvSeries that title.basics.tsv.gz
+### doesn't have, so its episodes have no show name -- most often stale IMDb
+### .gz files. Refresh them, or check the tconst on imdb.com.
 EOF
     #
     printf "==> [${YELLOW}Warning${NO_COLOR}] Shows in $SHOWS have a tconst for a name:\n"
