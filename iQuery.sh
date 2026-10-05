@@ -38,9 +38,8 @@ OPTIONS:
             in none of your .tconst lists. Those contribute only each show's ~10
             series principals, with no episode credits, so the search lists grow
             wider without growing deeper. See ./xrefCast.sh -h.
-    -l      Use 'less' to list shows a page at a time rather than all at once.
-            Type space bar for next page, 'b' for previous page, 'h' for help,
-            '/' to search, 'q' to quit.
+    -l      Use \$PAGER (default less) to list shows a page at a time rather than
+            all at once.
     -m      Maximum items to be shown in the search menu. Continue typing until
             there will be fewer items. Larger numbers will require less typing,
             but have longer menus. (defaults to 15)
@@ -221,7 +220,7 @@ while true; do
         case "$actionMenu" in
         List*)
             if [[ -n $USE_LESS ]]; then
-                sort -df "${uniqFiles[0]}" | less -EX
+                sort -df "${uniqFiles[0]}" | ${PAGER:-less}
             else
                 sort -df "${uniqFiles[0]}"
             fi
