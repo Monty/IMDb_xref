@@ -47,6 +47,7 @@ EOF
 # Don't leave tempfiles around
 trap terminate EXIT
 TMPFILE=""
+PAGED_RESULTS=""
 ALL_TERMS=""
 PERSON_RESULTS=""
 NCONST_TERMS=""
@@ -57,6 +58,7 @@ function terminate() {
         printf "\nTerminating: $(basename "$0")\n" >&2
     else
         rm -f "$ALL_TERMS" "$PERSON_RESULTS" "$NCONST_TERMS" "$TMPFILE" "$SCRAPER_ERR"
+        rm -f "$PAGED_RESULTS"
     fi
 }
 
@@ -99,6 +101,7 @@ ALL_TERMS=$(mktemp)
 PERSON_RESULTS=$(mktemp)
 NCONST_TERMS=$(mktemp)
 TMPFILE=$(mktemp)
+PAGED_RESULTS=$(mktemp)
 SCRAPER_ERR=$(mktemp)
 
 # Make sure a search term is supplied
@@ -305,7 +308,15 @@ while IFS=$'\t' read -r nconst nconstName _; do
                 jq -r 'sort_by(-(.episodes // 0), .title) | .[] | "\(.title)\t\((.episodes // 0) | if . > 0 then "\(.) episodes" else "" end)\t\(.character // "")\t\(if .tconst then "imdb.com/title/\(.tconst)" else "" end)"' <<<"$jobData"
             } >"$TMPFILE"
             if [[ -n $usePager ]]; then
-                tsvPrint "$TMPFILE" | ${PAGER:-less}
+                # Collected and paged once at the end. A pager per job paused
+                # between sections even with -y, and each one cleared its
+                # table from the screen when it exited.
+                {
+                    [[ -s $PAGED_RESULTS ]] && printf "\n"
+                    printf "==> %s %s listing %s as: %s\n" \
+                        "$jobCount" "$_title" "$nconstName" "$job"
+                    tsvPrint "$TMPFILE"
+                } >>"$PAGED_RESULTS"
             else
                 tsvPrint "$TMPFILE"
             fi
@@ -313,5 +324,7 @@ while IFS=$'\t' read -r nconst nconstName _; do
     done <<<"$jobs"
 
 done <"$PERSON_RESULTS"
+
+[[ -s $PAGED_RESULTS ]] && ${PAGER:-less -EXR} "$PAGED_RESULTS"
 
 loopOrExitP
