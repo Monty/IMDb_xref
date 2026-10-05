@@ -14,14 +14,22 @@
   credited as: producer, self` instead of "I didn't find any principal cast
   member records", which would be false once a filter exists.
 
-- **`findShowsWith.sh`** — Added `-l` to page each job's table through
+- **`findShowsWith.sh`** — Added `-l` to page the results through
   `${PAGER:-less}`, the same letter `iQuery.sh` uses here and all four
-  `live-fetch` query scripts use.
+  `live-fetch` query scripts use. All job sections go into one pager session at
+  the end, each under its `==> N titles listing …` line. A pager per section
+  paused between sections even with `-y`, and each pager cleared its table from
+  the screen on exit, leaving only the headers behind.
 
-- **`iQuery.sh`** — `-l` now pages through `${PAGER:-less}` instead of a
+- **`iQuery.sh`** — `-l` now pages through `${PAGER:-less -EXR}` instead of a
   hardcoded `less -EX`, so it honors `$PAGER` like every other `-l` in both
-  branches. The `-EX` flags are dropped from the fallback. Help text says
-  `$PAGER`, and marks the key bindings as less's.
+  branches. Help text says `$PAGER`, and marks the key bindings as less's.
+
+- **`findShowsWith.sh`, `iQuery.sh`, `saveFilmography.sh`** — The `$PAGER`
+  fallback is `less -EXR` everywhere: `-R` renders `tsvPrint`'s color codes
+  rather than showing them as raw escapes, and `-EX` keeps the old `iQuery.sh`
+  behaviour of quitting at end of file without clearing the screen. Only
+  matters when `$PAGER` is unset.
 
 ## [Unreleased] — 2026-08-27
 

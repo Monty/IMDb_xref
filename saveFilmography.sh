@@ -566,7 +566,7 @@ while read -r line; do
     if [[ -z $savedAnything ]]; then
         if waitUntil "$YN_PREF" -N "==> Would you like to view it instead?"; then
             _generate_filmography_md "$FINAL_RESULTS" "$ALLOWED_ROLES" \
-                "$EPISODE_COUNTS" "$nconstName" "$nconstID" | ${PAGER:-less}
+                "$EPISODE_COUNTS" "$nconstName" "$nconstID" | ${PAGER:-less -EXR}
         fi
     fi
 done <"$NCONST_TERMS"

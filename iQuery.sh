@@ -220,7 +220,7 @@ while true; do
         case "$actionMenu" in
         List*)
             if [[ -n $USE_LESS ]]; then
-                sort -df "${uniqFiles[0]}" | ${PAGER:-less}
+                sort -df "${uniqFiles[0]}" | ${PAGER:-less -EXR}
             else
                 sort -df "${uniqFiles[0]}"
             fi
