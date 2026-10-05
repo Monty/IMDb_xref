@@ -56,11 +56,13 @@ POSSIBLE_MATCHES $POSSIBLE_MATCHES
 MATCH_COUNTS $MATCH_COUNTS
 PERSON_RESULTS $PERSON_RESULTS
 JOB_RESULTS $JOB_RESULTS
+PAGED_RESULTS $PAGED_RESULTS
 TMPFILE $TMPFILE
 EOT
     else
         rm -f "$ALL_TERMS" "$NCONST_TERMS" "$PERSON_TERMS" "$POSSIBLE_MATCHES"
         rm -f "$MATCH_COUNTS" "$PERSON_RESULTS" "$JOB_RESULTS" "$TMPFILE"
+        rm -f "$PAGED_RESULTS"
     fi
 }
 
@@ -116,6 +118,7 @@ POSSIBLE_MATCHES=$(mktemp)
 MATCH_COUNTS=$(mktemp)
 PERSON_RESULTS=$(mktemp)
 JOB_RESULTS=$(mktemp)
+PAGED_RESULTS=$(mktemp)
 TMPFILE=$(mktemp)
 
 # Make sure a search term is supplied
@@ -309,7 +312,15 @@ while read -r line; do
             if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y \
                 "==> Shall I list $_pron?"; then
                 if [[ -n $usePager ]]; then
-                    tsvPrint -n "$TMPFILE" | ${PAGER:-less}
+                    # Collected and paged once at the end. A pager per job
+                    # paused between sections even with -y, and each one
+                    # cleared its table from the screen when it exited.
+                    {
+                        [[ -s $PAGED_RESULTS ]] && printf "\n"
+                        printf "==> %s %s listing %s as: %s\n" \
+                            "$numResults" "$_title" "$nconstName" "$match"
+                        tsvPrint -n "$TMPFILE"
+                    } >>"$PAGED_RESULTS"
                 else
                     tsvPrint -n "$TMPFILE"
                 fi
@@ -317,6 +328,8 @@ while read -r line; do
         fi
     done <"$MATCH_COUNTS"
 done <"$NCONST_TERMS"
+
+[[ -s $PAGED_RESULTS ]] && ${PAGER:-less -EXR} "$PAGED_RESULTS"
 
 # Do we really want to quit?
 loopOrExitP
