@@ -268,6 +268,12 @@ allowedJobs=$(rg -N '^[^#]' rg_jobs.rgx 2>/dev/null | tr '\n' '|')
 allowedJobs="${allowedJobs%|}"
 [[ -z $allowedJobs ]] && allowedJobs=".*"
 
+# With -yl the job headers would only repeat what's in the pager, and with no
+# prompt to introduce there's nothing for them to do on screen. Without -y each
+# header is what the "Shall I list them?" prompt refers to, so it stays.
+pagedOnly=""
+[[ -n $skipPrompts && -n $usePager ]] && pagedOnly="yes"
+
 # Filmography data comes from the local title.principals.tsv.gz read above. The
 # FULLCAST live-fetch path (curl the person's fullcredits page, parse with
 # getFilmography.awk) is retired -- IMDb 403s a bot User-Agent, WAF-challenges a
@@ -295,7 +301,7 @@ while read -r line; do
     while read -r job; do
         count=$(cut -f 1 <<<"$job")
         match=$(cut -f 2 <<<"$job")
-        printf "\n"
+        [[ -z $pagedOnly ]] && printf "\n"
         rg -Nw "$nconstID\t$match" "$POSSIBLE_MATCHES" >"$JOB_RESULTS"
         # -e: a person's credits include individual episodes, which this
         # list has always left out (they were augment's default until it
@@ -308,7 +314,8 @@ while read -r line; do
             _title="title"
             _pron="it"
             [[ $numResults -gt 1 ]] && _title="titles" && _pron="them"
-            printf "==> I found $numResults $_title listing $nconstName as: $match\n"
+            [[ -z $pagedOnly ]] &&
+                printf "==> I found $numResults $_title listing $nconstName as: $match\n"
             if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y \
                 "==> Shall I list $_pron?"; then
                 if [[ -n $usePager ]]; then

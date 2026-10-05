@@ -19,7 +19,9 @@
   `live-fetch` query scripts use. All job sections go into one pager session at
   the end, each under its `==> N titles listing …` line. A pager per section
   paused between sections even with `-y`, and each pager cleared its table from
-  the screen on exit, leaving only the headers behind.
+  the screen on exit, leaving only the headers behind. With `-yl` the on-screen
+  headers are suppressed too, since they only repeated the pager's; with `-l`
+  alone they stay, as each one introduces a "Shall I list them?" prompt.
 
 - **`iQuery.sh`** — `-l` now pages through `${PAGER:-less -EXR}` instead of a
   hardcoded `less -EX`, so it honors `$PAGER` like every other `-l` in both
