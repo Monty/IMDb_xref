@@ -257,6 +257,12 @@ if ! waitUntil "$YN_PREF" -Y "Does that look correct?"; then
 fi
 
 # For each person, list the indexed shows they appear in
+#
+# With -yl the job headers would only repeat what's in the pager, and with no
+# prompt to introduce there's nothing for them to do on screen. Without -y each
+# header is what the "Shall I list them?" prompt refers to, so it stays.
+pagedOnly=""
+[[ -n $skipPrompts && -n $usePager ]] && pagedOnly="yes"
 firstGroup="yes"
 while IFS=$'\t' read -r nconst nconstName _; do
     [[ -z $nconst ]] && continue
@@ -298,9 +304,11 @@ while IFS=$'\t' read -r nconst nconstName _; do
         _title="title"
         _pron="it"
         [[ $jobCount -gt 1 ]] && _title="titles" && _pron="them"
-        [[ -z $firstGroup ]] && printf "\n"
-        firstGroup=""
-        printf "==> I found %s %s listing %s as: %s\n" "$jobCount" "$_title" "$nconstName" "$job"
+        if [[ -z $pagedOnly ]]; then
+            [[ -z $firstGroup ]] && printf "\n"
+            firstGroup=""
+            printf "==> I found %s %s listing %s as: %s\n" "$jobCount" "$_title" "$nconstName" "$job"
+        fi
 
         if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y "==> Shall I list $_pron?"; then
             {

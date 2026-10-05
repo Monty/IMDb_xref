@@ -30,7 +30,9 @@
   session at the end, each under its `==> N titles listing …` line, matching
   `bulk-download`. A pager per section paused between sections even with `-y`,
   and each pager cleared its table from the screen on exit, leaving only the
-  headers behind.
+  headers behind. With `-yl` the on-screen headers are suppressed too, since
+  they only repeated the pager's; with `-l` alone they stay, as each one
+  introduces a "Shall I list them?" prompt.
 
 - **`findShowsWith.sh`, `findCastOf.sh`, `findOtherShows.sh`, `iQuery.sh`** —
   The `$PAGER` fallback is now `less -EXR` rather than bare `less`, at all
