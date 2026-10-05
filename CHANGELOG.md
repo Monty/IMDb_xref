@@ -1,5 +1,28 @@
 # Changelog
 
+## [Unreleased] — 2026-10-05
+
+### Changed
+
+- **`findShowsWith.sh`** — Only job categories listed in the new `rg_jobs.rgx`
+  are shown, using the same rule as `live-fetch`'s `rebuild_index`: a missing
+  or empty file means show everything. Matching is whole-string and
+  case-insensitive, as `saveFilmography.sh` does with `rg_sections.rgx`. Still
+  global — rows come from `title.principals.tsv.gz` as before.
+
+  A person whose credits all fall in unlisted categories now gets `X is only
+  credited as: producer, self` instead of "I didn't find any principal cast
+  member records", which would be false once a filter exists.
+
+- **`findShowsWith.sh`** — Added `-l` to page each job's table through
+  `${PAGER:-less}`, the same letter `iQuery.sh` uses here and all four
+  `live-fetch` query scripts use.
+
+- **`iQuery.sh`** — `-l` now pages through `${PAGER:-less}` instead of a
+  hardcoded `less -EX`, so it honors `$PAGER` like every other `-l` in both
+  branches. The `-EX` flags are dropped from the fallback. Help text says
+  `$PAGER`, and marks the key bindings as less's.
+
 ## [Unreleased] — 2026-08-27
 
 ### Added
