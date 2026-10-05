@@ -432,6 +432,8 @@ while IFS= read -r searchTerm; do
     # the request rate against IMDb's WAF. Errors are surfaced rather than
     # discarded; a failed scrape is not the same as a person with no credits.
     printf "==> Fetching filmography for %s...\n" "$nconst"
+    wasCached=""
+    [[ -e $cacheDirectory/$nconst.json ]] && wasCached="yes"
     if ! fgData=$(_scraper filmography "$nconst" 2>"$SCRAPER_ERR"); then
         reportSearchError "$nconstName" "$SCRAPER_ERR" \
             '\n==> Could not fetch filmography for "%s":'
@@ -444,6 +446,13 @@ while IFS= read -r searchTerm; do
         fi
         continue
     fi
+
+    # A fresh scrape just wrote .xref_live_cache/$nconst.json. rebuild_index
+    # reads filmographies into persons.jsonl (names only, never cast rows), so
+    # without this the person stays unknown to every person-info caller --
+    # findShowsWith.sh said "isn't in the index" right after this ran. Same
+    # rebuild-after-scrape pattern as findCastOf.sh and findOtherShows.sh.
+    [[ -z $wasCached ]] && _scraper rebuild-index >/dev/null 2>&1
 
     roleCount=$(jq '.roles | length' <<<"$fgData" 2>/dev/null)
     roleCount=${roleCount:-0}

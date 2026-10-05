@@ -132,6 +132,11 @@ done
 printf "==> Searching for:\n"
 cat "$ALL_TERMS"
 
+# Ensure index exists and is up to date. Every other index reader does this;
+# without it a filmography cached by saveFilmography.sh, or a show added by
+# anything that doesn't rebuild, stays invisible to person-info here.
+_scraper rebuild-index >/dev/null 2>&1
+
 # Process each search term
 while IFS= read -r searchTerm; do
     [[ -z $searchTerm ]] && continue
@@ -259,8 +264,21 @@ while IFS=$'\t' read -r nconst nconstName _; do
 
     if [[ $showCount -eq 0 ]]; then
         # Local only: don't scrape. The person resolved to a name but has no
-        # cross-referenced shows in the index yet.
-        printf "\n==> No indexed shows for %s. Run ./findCastOf.sh on a show they're in, or use ./saveFilmography.sh %s\n" "$nconstName" "$nconst"
+        # cross-referenced shows in the index yet. If their filmography is
+        # already cached, saveFilmography.sh is not the advice -- they just
+        # ran it, and that's usually how the name resolved at all.
+        printf "\n==> None of your indexed shows list %s.\n" "$nconstName"
+        fgFile=""
+        for f in ./*-"$nconst"-Filmography.md; do
+            [[ -e $f ]] && fgFile="${f#./}"
+        done
+        if [[ -n $fgFile ]]; then
+            printf "    Their IMDb filmography is in ${BLUE}%s${NO_COLOR}\n" "$fgFile"
+        elif [[ -e $cacheDirectory/$nconst.json ]]; then
+            printf "    Their IMDb filmography is cached: ./saveFilmography.sh %s writes it without scraping.\n" "$nconst"
+        else
+            printf "    Run ./findCastOf.sh on a show they're in, or use ./saveFilmography.sh %s\n" "$nconst"
+        fi
         continue
     fi
 

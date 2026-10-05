@@ -1,5 +1,29 @@
 # Changelog
 
+## [Unreleased] — 2026-10-05
+
+### Fixed
+
+- **`findShowsWith.sh`, `saveFilmography.sh`** — **`findShowsWith.sh nm0000158`
+  said "isn't in the index" immediately after `saveFilmography.sh nm0000158`
+  had cached him.** `rebuild_index` does read cached filmographies, into
+  `persons.jsonl`, but nothing ran it: `saveFilmography.sh` scraped and cached
+  without rebuilding, and `findShowsWith.sh` was the one index reader that never
+  rebuilt at startup — `findCastOf.sh`, `findOtherShows.sh`, `xrefCast.sh` and
+  `iQuery.sh` all do. Both halves fixed: `findShowsWith.sh` now rebuilds after
+  printing its search terms like the others, and `saveFilmography.sh` rebuilds
+  after a fetch that was a cache miss, the same rebuild-after-scrape pattern as
+  `findCastOf.sh`.
+
+  **Resolving the name does not make the filmography searchable, deliberately.** Filmographies contribute names only, never cast rows, so `shows-for-person` still answers from cached shows alone and the script stays local. For Tom Hanks that is zero rows: his one cached show is John Adams, where he is an executive producer, and `rg_jobs.rgx` keeps producers out of the index.
+
+- **`findShowsWith.sh`** — The zero-shows message told you to run
+  `saveFilmography.sh` for someone whose filmography was the reason the name
+  resolved at all. It now points at the saved
+  `Person_Name-nconst-Filmography.md` when there is one, notes that the
+  filmography is cached (so re-running costs no scrape) when there is only the
+  cache file, and gives the old advice only when neither exists.
+
 ## [Unreleased] — 2026-08-31
 
 ### Fixed
