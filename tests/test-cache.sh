@@ -45,12 +45,12 @@ cacheSize
 waitUntil -k
 
 printf "\n==> augment_tconstFiles without cache should be slow...\n"
-time ./augment_tconstFiles.sh -ay Contrib/*tconst
+time ./augment_tconstFiles.sh -y Contrib/*tconst
 cacheSize
 waitUntil -k
 
 printf "\n==> augment_tconstFiles with cache should be faster...\n"
-time ./augment_tconstFiles.sh -ay Contrib/*tconst
+time ./augment_tconstFiles.sh -y Contrib/*tconst
 cacheSize
 
 printf "\n==> findCastOf without cache should be slow...\n"

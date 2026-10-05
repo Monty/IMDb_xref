@@ -39,7 +39,6 @@ OPTIONS:
     -e      Exclude tvEpisodes. They are kept by default: services list some
             episodes as shows (Tatort, Polizeiruf), and dropping rows a file
             was given would be an unexplained surprise.
-    -a      Accepted for compatibility -- tvEpisodes are now kept by default.
     -i      In place -- overwrite original file, asking first
     -y      Yes -- overwrite in place without asking. Implies -i.
     -r      Reload -- discard the augmented cache and re-read every title from
@@ -82,15 +81,11 @@ function cleanup() {
     exit 130
 }
 
-while getopts ":haeiry" opt; do
+while getopts ":heiry" opt; do
     case $opt in
     h)
         help
         exit
-        ;;
-    a)
-        # Was "allow tvEpisodes"; now the default. Kept so
-        # existing commands and scripts still run unchanged.
         ;;
     e)
         EXCLUDE_EPISODES="yes"
@@ -201,7 +196,7 @@ function copyResults() {
     # same file sorts "The Eagle" rather than "Ørnen".
     #
     # Episodes are kept unless -e. Before that default changed, they were
-    # dropped unless -a, so a user who copied a Contrib file holding Tatort
+    # dropped by default, so a user who copied a Contrib file holding Tatort
     # episodes silently lost them on their first augment.
     #
     # When excluded, episodes are dropped before dating, so a title is only
