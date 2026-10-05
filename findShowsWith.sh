@@ -18,6 +18,9 @@ Search IMDb titles for person names or nconst IDs. An nconst ID should be
 unique, but a person name can have several or even many matches. Allow user to
 select one match or skip if there are too many.
 
+Only job categories listed in rg_jobs.rgx are shown. A missing or empty
+rg_jobs.rgx shows them all.
+
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
 USAGE:
@@ -25,6 +28,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -l      Use \$PAGER to list results a page at a time.
     -m      Maximum matches for a person name allowed in menu - defaults to 10
     -y      Yes -- assume the answer to job category prompts is "Y".
 
@@ -75,11 +79,14 @@ function loopOrExitP() {
     exec ./start.command
 }
 
-while getopts ":hm:y" opt; do
+while getopts ":hlm:y" opt; do
     case $opt in
     h)
         help
         exit
+        ;;
+    l)
+        usePager="yes"
         ;;
     m)
         maxMenuSize="$OPTARG"
@@ -250,6 +257,14 @@ fi
 cut -f 1 "$PERSON_RESULTS" >"$NCONST_TERMS"
 rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz | cut -f 1,3,4 >"$POSSIBLE_MATCHES"
 
+# Job categories to list, one per line, "#" for comments -- the same file and
+# the same rule as live-fetch's rebuild_index: a missing or empty file means
+# include everything. Matched whole-string, case-insensitive, as an rg -x
+# alternation (saveFilmography.sh does the same with rg_sections.rgx).
+allowedJobs=$(rg -N '^[^#]' rg_jobs.rgx 2>/dev/null | tr '\n' '|')
+allowedJobs="${allowedJobs%|}"
+[[ -z $allowedJobs ]] && allowedJobs=".*"
+
 # Filmography data comes from the local title.principals.tsv.gz read above. The
 # FULLCAST live-fetch path (curl the person's fullcredits page, parse with
 # getFilmography.awk) is retired -- IMDb 403s a bot User-Agent, WAF-challenges a
@@ -258,8 +273,17 @@ rg -Nz -f "$NCONST_TERMS" title.principals.tsv.gz | cut -f 1,3,4 >"$POSSIBLE_MAT
 while read -r line; do
     nconstID="$line"
     nconstName="$(rg -N "$line" "$PERSON_RESULTS" | cut -f 2)"
-    rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 | frequency -t >"$MATCH_COUNTS"
+    rg -Nw "$nconstID" "$POSSIBLE_MATCHES" | cut -f 3 >"$TMPFILE"
+    rg -xNi -e "$allowedJobs" "$TMPFILE" | frequency -t >"$MATCH_COUNTS"
     if [[ ! -s $MATCH_COUNTS ]]; then
+        if [[ -s $TMPFILE ]]; then
+            # Credits exist, just not in a listed job -- say so rather than
+            # report no records, which is what this said before the filter.
+            printf "\n==> ${RED}$nconstName${NO_COLOR} is only credited as: "
+            printf "%s\n" "$(sort -u "$TMPFILE" | paste -sd ',' - | sd ',' ', ')"
+            printf "    None of those are listed in rg_jobs.rgx.\n"
+            continue
+        fi
         printf "\n==> I didn't find any principal cast member records for "
         printf "${RED}$nconstName${NO_COLOR}.\n"
         printf "    Check ${RED}imdb.com/name/$nconstID${NO_COLOR} to get more details.\n"
@@ -284,7 +308,11 @@ while read -r line; do
             printf "==> I found $numResults $_title listing $nconstName as: $match\n"
             if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y \
                 "==> Shall I list $_pron?"; then
-                tsvPrint -n "$TMPFILE"
+                if [[ -n $usePager ]]; then
+                    tsvPrint -n "$TMPFILE" | ${PAGER:-less}
+                else
+                    tsvPrint -n "$TMPFILE"
+                fi
             fi
         fi
     done <"$MATCH_COUNTS"
