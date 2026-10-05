@@ -320,7 +320,7 @@ while IFS= read -r searchTerm; do
             } >"$TMPFILE"
         fi
         if [[ -n $usePager ]]; then
-            tsvPrint "$TMPFILE" | ${PAGER:-less}
+            tsvPrint "$TMPFILE" | ${PAGER:-less -EXR}
         else
             tsvPrint "$TMPFILE"
         fi
@@ -346,7 +346,7 @@ if [[ -z $SHORT ]]; then
         rg -v "^Person\tShow Title" "$CAST_CSV" >"$TMPFILE" 2>/dev/null || true
         if [[ -s $TMPFILE ]]; then
             if [[ -n $usePager ]]; then
-                ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}" | ${PAGER:-less}
+                ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}" | ${PAGER:-less -EXR}
             else
                 ./xrefCast.sh -f "$TMPFILE" -dn "${allNames[@]}"
             fi

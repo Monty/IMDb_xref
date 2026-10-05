@@ -218,7 +218,7 @@ while true; do
         case "$actionMenu" in
         List*)
             if [[ -n $usePager ]]; then
-                _scraper list-titles 2>/dev/null | jq -r '.[].title' | sort -df | ${PAGER:-less}
+                _scraper list-titles 2>/dev/null | jq -r '.[].title' | sort -df | ${PAGER:-less -EXR}
             else
                 _scraper list-titles 2>/dev/null | jq -r '.[].title' | sort -df
             fi
@@ -283,7 +283,7 @@ while true; do
             printf "%s\n" "${searchArray[@]}"
             printf "\n"
             if [[ -n $usePager ]]; then
-                ./xrefCast.sh -n "${searchArray[@]}" | ${PAGER:-less}
+                ./xrefCast.sh -n "${searchArray[@]}" | ${PAGER:-less -EXR}
             else
                 ./xrefCast.sh -n "${searchArray[@]}"
             fi
@@ -294,7 +294,7 @@ while true; do
             printf "%s\n" "${searchArray[@]}"
             printf "\n"
             if [[ -n $usePager ]]; then
-                ./xrefCast.sh -dn "${searchArray[@]}" | ${PAGER:-less}
+                ./xrefCast.sh -dn "${searchArray[@]}" | ${PAGER:-less -EXR}
             else
                 ./xrefCast.sh -dn "${searchArray[@]}"
             fi

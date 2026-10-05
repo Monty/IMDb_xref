@@ -24,6 +24,20 @@
   filmography is cached (so re-running costs no scrape) when there is only the
   cache file, and gives the old advice only when neither exists.
 
+### Changed
+
+- **`findShowsWith.sh`** — `-l` now pages all job sections in one pager
+  session at the end, each under its `==> N titles listing …` line, matching
+  `bulk-download`. A pager per section paused between sections even with `-y`,
+  and each pager cleared its table from the screen on exit, leaving only the
+  headers behind.
+
+- **`findShowsWith.sh`, `findCastOf.sh`, `findOtherShows.sh`, `iQuery.sh`** —
+  The `$PAGER` fallback is now `less -EXR` rather than bare `less`, at all
+  seven call sites. `-R` renders `tsvPrint`'s color codes instead of showing
+  raw escapes; `-EX` quits at end of file without clearing the screen. Only
+  matters when `$PAGER` is unset. Same change on `bulk-download`.
+
 ## [Unreleased] — 2026-08-31
 
 ### Fixed

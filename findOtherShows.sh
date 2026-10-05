@@ -375,7 +375,7 @@ else
 fi
 
 if [[ -n $usePager ]]; then
-    tsvPrint -c 1 "$CAST_SPREADSHEET" | ${PAGER:-less}
+    tsvPrint -c 1 "$CAST_SPREADSHEET" | ${PAGER:-less -EXR}
 else
     tsvPrint -c 1 "$CAST_SPREADSHEET"
 fi
