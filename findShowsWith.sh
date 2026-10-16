@@ -21,6 +21,9 @@ select one match or skip if there are too many.
 Only job categories listed in rg_jobs.rgx are shown. A missing or empty
 rg_jobs.rgx shows them all.
 
+Only title types listed in rg_types.rgx are shown, the same list used by
+findCastOf.sh and findOtherShows.sh. Use -a to show every type.
+
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
 USAGE:
@@ -28,6 +31,7 @@ USAGE:
 
 OPTIONS:
     -h      Print this message.
+    -a      Allow all title types -- normally only those in rg_types.rgx are shown.
     -l      Use \$PAGER to list results a page at a time.
     -m      Maximum matches for a person name allowed in menu - defaults to 10
     -y      Yes -- assume the answer to job category prompts is "Y".
@@ -81,8 +85,11 @@ function loopOrExitP() {
     exec ./start.command
 }
 
-while getopts ":hlm:y" opt; do
+while getopts ":ahlm:y" opt; do
     case $opt in
+    a)
+        allowAllTypes="yes"
+        ;;
     h)
         help
         exit
@@ -307,15 +314,53 @@ while read -r line; do
         # list has always left out (they were augment's default until it
         # changed to keeping them).
         ./augment_tconstFiles.sh -ey "$JOB_RESULTS"
+        # Keep only the title types in rg_types.rgx, the same filter as
+        # findCastOf.sh and findOtherShows.sh: field 2 is titleType, matched
+        # exactly, so a title can't pass itself off as a type. Done before
+        # numResults so the "I found N titles" count matches what's listed.
+        filteredOut=""
+        if [[ -z $allowAllTypes ]]; then
+            cp "$JOB_RESULTS" "$TMPFILE"
+            awk -F"\t" 'NR==FNR {types[$0]; next} $2 in types' \
+                rg_types.rgx "$TMPFILE" >"$JOB_RESULTS"
+            # What was dropped, e.g. "12 short, 3 videoGame", in the order
+            # the types first appear, since awk's for-in order is unspecified.
+            filteredOut=$(awk -F"\t" 'NR==FNR {types[$0]; next}
+                !($2 in types) {if (!($2 in n)) order[++k] = $2; n[$2]++}
+                END {
+                    for (i = 1; i <= k; i++)
+                        out = out (i > 1 ? ", " : "") n[order[i]] " " order[i]
+                    printf("%s", out)
+                }' rg_types.rgx "$TMPFILE")
+        fi
+        filteredNote=""
+        [[ -n $filteredOut ]] &&
+            filteredNote="==> Filtered out $filteredOut. Use -a to include all types."
         cut -f 2,3,5 "$JOB_RESULTS" |
             sort -f -t$'\t' --key=1,1 --key=3,3r --key=2,2 >"$TMPFILE"
         numResults=$(sed -n '$=' "$JOB_RESULTS")
+        if [[ ${numResults:-0} -eq 0 && -n $filteredOut ]]; then
+            # Every title for this job was a filtered type. Say so rather
+            # than let the job vanish without a trace.
+            _allNote="==> Filtered out all titles listing $nconstName as: $match"
+            _allNote+=" -- $filteredOut. Use -a to include all types."
+            if [[ -n $pagedOnly ]]; then
+                {
+                    [[ -s $PAGED_RESULTS ]] && printf "\n"
+                    printf "%s\n" "$_allNote"
+                } >>"$PAGED_RESULTS"
+            else
+                printf "%s\n" "$_allNote"
+            fi
+        fi
         if [[ $numResults -gt 0 ]]; then
             _title="title"
             _pron="it"
             [[ $numResults -gt 1 ]] && _title="titles" && _pron="them"
-            [[ -z $pagedOnly ]] &&
+            if [[ -z $pagedOnly ]]; then
                 printf "==> I found $numResults $_title listing $nconstName as: $match\n"
+                [[ -n $filteredNote ]] && printf "%s\n" "$filteredNote"
+            fi
             if [[ -n $skipPrompts ]] || waitUntil "$YN_PREF" -Y \
                 "==> Shall I list $_pron?"; then
                 if [[ -n $usePager ]]; then
@@ -326,6 +371,7 @@ while read -r line; do
                         [[ -s $PAGED_RESULTS ]] && printf "\n"
                         printf "==> %s %s listing %s as: %s\n" \
                             "$numResults" "$_title" "$nconstName" "$match"
+                        [[ -n $filteredNote ]] && printf "%s\n" "$filteredNote"
                         tsvPrint -n "$TMPFILE"
                     } >>"$PAGED_RESULTS"
                 else
