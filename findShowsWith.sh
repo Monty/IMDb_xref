@@ -22,7 +22,8 @@ Only job categories listed in rg_jobs.rgx are shown. A missing or empty
 rg_jobs.rgx shows them all.
 
 Only title types listed in rg_types.rgx are shown, the same list used by
-findCastOf.sh and findOtherShows.sh. Use -a to show every type.
+findCastOf.sh and findOtherShows.sh. A missing or empty rg_types.rgx shows
+them all, as does -a.
 
 If you don't enter a parameter on the command line, you'll be prompted for input.
 
@@ -116,6 +117,13 @@ shift $((OPTIND - 1))
 
 # Make sure prerequisites are satisfied
 ensurePrerequisites
+
+# Title types to list, one per line, "#" for comments -- the same rule as
+# rg_jobs.rgx: a missing or empty file, or one with only comments, means
+# include every type, just as -a does. Shared with findCastOf.sh and
+# findOtherShows.sh. Without this, a missing file made awk error and an empty
+# one silently matched nothing (NR==FNR stays true into the data file).
+rg -q '^[^#\s]' rg_types.rgx 2>/dev/null || allowAllTypes="yes"
 
 # Need some tempfiles
 ALL_TERMS=$(mktemp)
@@ -321,11 +329,11 @@ while read -r line; do
         filteredOut=""
         if [[ -z $allowAllTypes ]]; then
             cp "$JOB_RESULTS" "$TMPFILE"
-            awk -F"\t" 'NR==FNR {types[$0]; next} $2 in types' \
+            awk -F"\t" 'NR==FNR {if (!/^#/) types[$0]; next} $2 in types' \
                 rg_types.rgx "$TMPFILE" >"$JOB_RESULTS"
             # What was dropped, e.g. "12 short, 3 videoGame", in the order
             # the types first appear, since awk's for-in order is unspecified.
-            filteredOut=$(awk -F"\t" 'NR==FNR {types[$0]; next}
+            filteredOut=$(awk -F"\t" 'NR==FNR {if (!/^#/) types[$0]; next}
                 !($2 in types) {if (!($2 in n)) order[++k] = $2; n[$2]++}
                 END {
                     for (i = 1; i <= k; i++)

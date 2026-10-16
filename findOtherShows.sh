@@ -19,6 +19,7 @@ who appear in more than one saved show. Use -n to limit number of results.
 
 A show title only matches the title types listed in rg_types.rgx. A tconst
 bypasses that list, so it can look up a tvEpisode, short, or any other type.
+A missing or empty rg_types.rgx allows them all, as does -a.
 
 USAGE:
     ./findOtherShows.sh [TCONST] [SHOW TITLE]
@@ -128,6 +129,13 @@ maxRank="${maxRank:-50}"
 # Make sure prerequisites are satisfied
 ensurePrerequisites
 
+# Title types to list, one per line, "#" for comments -- the same rule as
+# rg_jobs.rgx: a missing or empty file, or one with only comments, means
+# include every type, just as -a does. Shared with findCastOf.sh and
+# findShowsWith.sh. Without this, a missing file made awk error and an empty
+# one silently matched nothing (NR==FNR stays true into the data file).
+rg -q '^[^#\s]' rg_types.rgx 2>/dev/null || allowAllTypes="yes"
+
 # Need some tempfiles
 ALL_TERMS=$(mktemp)
 TCONST_TERMS=$(mktemp)
@@ -197,7 +205,7 @@ if [[ -s $SHOWS_PATTERNS ]]; then
     if [[ -n $allowAllTypes ]]; then
         cat "$SHOWS_RAW" >>"$TMPFILE"
     else
-        awk -F"\t" 'NR==FNR {types[$0]; next} $2 in types' \
+        awk -F"\t" 'NR==FNR {if (!/^#/) types[$0]; next} $2 in types' \
             rg_types.rgx "$SHOWS_RAW" >>"$TMPFILE"
         # Say what the filter removed. "I didn't find any matching shows" reads
         # the same whether the title isn't on IMDb or a short was filtered out,
@@ -205,7 +213,7 @@ if [[ -s $SHOWS_PATTERNS ]]; then
         # whenever anything was dropped, not only on a total miss: 5 matches
         # out of 53 is also worth knowing about. Types are listed in the order
         # they first appear, since awk's for-in order is unspecified.
-        awk -F"\t" 'NR==FNR {types[$0]; next}
+        awk -F"\t" 'NR==FNR {if (!/^#/) types[$0]; next}
             !($2 in types) {if (!($2 in n)) order[++k] = $2; n[$2]++}
             END {
                 if (k == 0) exit
