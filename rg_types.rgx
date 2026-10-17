@@ -1,3 +1,5 @@
+# Only type of shows listed here will be shown by find*.sh
+# (one per line, comments allowed)
 tvSeries
 tvMiniSeries
 tvMovie

@@ -1,3 +1,5 @@
+# Only job categories listed here will be shown by findShowsWith.sh
+# (one per line, comments allowed)
 actor
 actress
 director
