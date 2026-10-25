@@ -1,5 +1,46 @@
 # Changelog
 
+## [Unreleased] — 2026-10-25
+
+### Changed
+
+- **`findOtherShows.sh`** renamed to **`findShowsWithActorsFrom.sh`**, here
+  and on `bulk-download`. The new name says what it does: start from a show,
+  list the other shows its actors appear in. Nothing else referred to the old
+  name. Entries below this one use the old name.
+
+- **`scraper/pages.py`** — `search_title` now keeps only the title types
+  listed in `rg_types.rgx`, the same file `bulk-download` uses, read from the
+  repo root with `#` comments skipped as `index.py` does for `rg_jobs.rgx`. It
+  replaces a hardcoded skip list (`tvEpisode`, `podcastEpisode`,
+  `podcastSeries`, `tvShort`), so both branches offer the same kinds of titles
+  in the `findCastOf.sh` and `findShowsWithActorsFrom.sh` menus. With the
+  current list that drops `videoGame` and `tvPilot`, which the skip list let
+  through. `rg_types.rgx` is now tracked (`.gitignore`).
+
+  **Only known title types are ever dropped.** A result whose type couldn't be
+  read from the find page is kept — films often come back untyped — as is
+  `documentary`, which is a genre rather than a `titleType`. An allow list that
+  dropped them would lose titles it never named.
+
+  **A missing or empty `rg_types.rgx` now shows everything**, episodes,
+  podcasts and TV shorts included, the rule shared with `rg_jobs.rgx` and with
+  `bulk-download`. The old skip list removed those regardless.
+
+- **`findCastOf.sh`, `findShowsWithActorsFrom.sh`** — A title search that
+  dropped anything prints `==> Filtered out 2 tvEpisode, 1 short. A tconst
+  bypasses rg_types.rgx.` before the menu, so a short or empty menu says
+  whether the type list or IMDb is responsible. `search-title` writes it to
+  stderr, which these scripts capture and otherwise show only on failure.
+  There is no `-a` as on `bulk-download`: `findCastOf.sh` already uses it for
+  "actors only".
+
+### Fixed
+
+- **`scraper/pages.py`** — A find-page row labelled "Short" was typed
+  `tvShort`; it is now `short`, matching `bulk-download`, where the two are
+  separate types. "TV Short" still maps to `tvShort`.
+
 ## [Unreleased] — 2026-10-05
 
 ### Fixed

@@ -56,4 +56,5 @@ node_modules/
 # Keep these files
 !rg_jobs.rgx
 !rg_sections.rgx
+!rg_types.rgx
 !rg_noxlate.rgx

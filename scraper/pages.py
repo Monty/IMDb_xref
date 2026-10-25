@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 import re
+import sys
+from pathlib import Path
 from typing import Optional
 from urllib.parse import quote_plus
 
@@ -24,12 +26,54 @@ from models import (
 # Title search
 # ---------------------------------------------------------------------------
 
+# Title types the search menus offer, one per line, "#" for comments. The same
+# file and the same rule as the bulk-download branch's findCastOf.sh,
+# findShowsWithActorsFrom.sh and findShowsWith.sh: a missing or empty file, or
+# one with only comments, means every type is offered.
+TYPES_FILE = Path(__file__).resolve().parent.parent / "rg_types.rgx"
+
+# The titleType values search_title can assign. Only these are ever filtered:
+# a result whose type couldn't be read from the find page (films often come
+# back untyped) or that isn't a real titleType ("documentary" is a genre) is
+# kept, since dropping it would silently lose titles the list never named.
+KNOWN_TITLE_TYPES = {
+    "movie",
+    "short",
+    "tvSeries",
+    "tvMiniSeries",
+    "tvMovie",
+    "tvSpecial",
+    "tvPilot",
+    "tvShort",
+    "tvEpisode",
+    "video",
+    "videoGame",
+    "podcastSeries",
+    "podcastEpisode",
+}
+
+
+def _load_allowed_types() -> set[str]:
+    """Load allowed title types from rg_types.rgx; empty set means allow all."""
+    try:
+        text = TYPES_FILE.read_text(encoding="utf-8")
+    except OSError:
+        return set()
+    types = set()
+    for line in text.splitlines():
+        line = line.strip()
+        if line and not line.startswith("#"):
+            types.add(line)
+    return types
+
 
 def search_title(query: str, limit: int = 25) -> list[SearchResult]:
     """Search IMDb for titles matching *query*.
 
     Returns a list of SearchResult, each with tconst, title, year, types.
-    Filters out tvEpisode and podcastEpisode results.
+    Keeps only the title types listed in rg_types.rgx (all of them when the
+    file is missing or empty), plus any result whose type is unknown, and
+    reports what it dropped on stderr.
     """
     manager = get_manager()
     # quote_plus, not raw interpolation: an unescaped "&" ends the q parameter,
@@ -91,7 +135,10 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
             # the skip filter.
             "Podcast Series": "podcastSeries",
             "Podcast Episode": "podcastEpisode",
-            "Short": "tvShort",
+            # A plain "Short" is IMDb's short, not tvShort -- the bulk
+            # datasets keep them apart, and rg_types.rgx is shared with them.
+            # "TV Short" above matches first, so a TV short still gets tvShort.
+            "Short": "short",
             "Video Game": "videoGame",
             "Video": "video",
             "Documentary": "documentary",
@@ -115,9 +162,26 @@ def search_title(query: str, limit: int = 25) -> list[SearchResult]:
 
     page.close()
 
-    # Filter out low-interest types — episodes and shorts
-    skip_types = {"tvEpisode", "podcastEpisode", "podcastSeries", "tvShort"}
-    results = [r for r in results if not r.types or not (r.types[0] in skip_types)]
+    # Keep only the types in rg_types.rgx. This replaces a hardcoded skip list
+    # (tvEpisode, podcastEpisode, podcastSeries, tvShort) so both branches
+    # offer the same kinds of titles from one shared file.
+    allowed = _load_allowed_types()
+    if allowed:
+        kept: list[SearchResult] = []
+        dropped: dict[str, int] = {}  # insertion order = first appearance
+        for r in results:
+            title_type = r.types[0] if r.types else ""
+            if title_type in KNOWN_TITLE_TYPES and title_type not in allowed:
+                dropped[title_type] = dropped.get(title_type, 0) + 1
+            else:
+                kept.append(r)
+        results = kept
+        if dropped:
+            summary = ", ".join(f"{n} {t}" for t, n in dropped.items())
+            print(
+                f"==> Filtered out {summary}. A tconst bypasses rg_types.rgx.",
+                file=sys.stderr,
+            )
 
     return results
 

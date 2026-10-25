@@ -163,6 +163,10 @@ while IFS= read -r searchTerm; do
         fi
         matchCount=$(jq 'length' <<<"$searchResults" 2>/dev/null)
         matchCount=${matchCount:-0}
+        # search-title reports what rg_types.rgx removed on stderr, which only
+        # reaches the screen on failure. Show it, so an empty or short menu
+        # says whether the type list or IMDb is responsible.
+        rg -N '^==> Filtered out' "$SCRAPER_ERR" || true
 
         if [[ $matchCount -eq 0 ]]; then
             printf "==> No matches found for \"%s\"\n" "$searchTerm"
