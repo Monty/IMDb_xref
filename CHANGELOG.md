@@ -1,10 +1,41 @@
 # Changelog
 
-## [Unreleased] — 2026-10-05
+## [Unreleased] — 2026-10-25
 
 ### Changed
 
-- **`findOtherShows.sh`** renamed to **`findShowsWithActorsFrom.sh`**
+- **`findOtherShows.sh`** renamed to **`findShowsWithActorsFrom.sh`**, here
+  and on `live-fetch`. The new name says what it does: start from a show, list
+  the other shows its actors appear in. Nothing else referred to the old name.
+  Entries before 2026-10-15 use the old name.
+
+## [Unreleased] — 2026-10-15
+
+### Added
+
+- **`findShowsWith.sh`** — Only title types listed in `rg_types.rgx` are
+  shown, the same list and the same exact match on `titleType` that
+  `findCastOf.sh` and `findShowsWithActorsFrom.sh` use. `-a` shows every type.
+  The filter runs before the count, so `I found N titles` matches what is
+  listed. Dropped titles are reported under the job header as `==> Filtered
+  out 12 short, 3 videoGame. Use -a to include all types.`, and in the pager
+  with `-l`; a job whose titles were all dropped says so instead of vanishing.
+
+### Changed
+
+- **`findCastOf.sh`, `findShowsWithActorsFrom.sh`, `findShowsWith.sh`** —
+  `rg_types.rgx` now follows the same rules as `rg_jobs.rgx`: a missing or
+  empty file, or one with only comments, means every type, just as `-a` does;
+  `#` lines are comments.
+
+### Fixed
+
+- **`findCastOf.sh`, `findShowsWithActorsFrom.sh`** — **An empty
+  `rg_types.rgx` silently matched nothing.** The awk idiom `NR==FNR` stays
+  true into the data file when the first file is empty, so every row was
+  loaded as a "type" and none were printed — no error, and no "Filtered out"
+  note either. A missing file made awk error and every search came up empty.
+  Both now mean "all types", per the rule above.
 
 ## [Unreleased] — 2026-10-05
 
