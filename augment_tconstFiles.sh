@@ -202,7 +202,7 @@ function copyResults() {
     # When excluded, episodes are dropped before dating, so a title is only
     # dated when it is duplicated in what is actually written. The type is
     # tested in field 2: the old 'rg -wNv tvEpisode' also dropped any row whose
-    # title contained that word -- the same bug fixed in findOtherShows.sh and
+    # title contained that word -- the same bug fixed in findShowsWithActorsFrom.sh and
     # findCastOf.sh.
     if [[ -z $EXCLUDE_EPISODES ]]; then
         applyXlate | dateDuplicates | sort -f -t$'\t' --key=3,3

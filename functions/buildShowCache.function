@@ -24,7 +24,7 @@
 # so all three writers agree.
 #
 # "actress" is normalized to "actor" (as the retired getFullcredits.awk did)
-# because the cross-show filter in findOtherShows.sh is `rg 'actor'`, which does
+# because the cross-show filter in findShowsWithActorsFrom.sh is `rg 'actor'`, which does
 # not match the substring "actress" -- without this, every actress silently
 # drops out of cross-referenced results.
 #
@@ -60,7 +60,7 @@ name.basics.tsv.gz (nconst -> name) and writes "\$cacheDirectory/<tconst>" in th
 
     Person, Show Title, Episode Title, Rank, Job, Character Name, nconst, tconst
 
-Shared by generateXrefData.sh, findCastOf.sh, and findOtherShows.sh, so all three
+Shared by generateXrefData.sh, findCastOf.sh, and findShowsWithActorsFrom.sh, so all three
 writers produce one format. Episode Title is always empty -- only the series' own
 principals are cached, since an episode credit carries the episode's tconst and
 would fan the cache out into one file per episode. "actress" is normalized to

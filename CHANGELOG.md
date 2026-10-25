@@ -4,6 +4,12 @@
 
 ### Changed
 
+- **`findOtherShows.sh`** renamed to **`findShowsWithActorsFrom.sh`**
+
+## [Unreleased] — 2026-10-05
+
+### Changed
+
 - **`findShowsWith.sh`** — Only job categories listed in the new `rg_jobs.rgx`
   are shown, using the same rule as `live-fetch`'s `rebuild_index`: a missing
   or empty file means show everything. Matching is whole-string and

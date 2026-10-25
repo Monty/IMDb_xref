@@ -47,7 +47,7 @@ OPTIONS:
 
 "Credits-Person*csv" is built from your .tconst lists and carries episode-level
 credits, so guest and supporting players are in it. The cross-reference cache
-also holds every show ever added by findCastOf.sh or findOtherShows.sh --
+also holds every show ever added by findCastOf.sh or findShowsWithActorsFrom.sh --
 including shows you looked up once and never curated -- but only each show's ~10
 series principals, with no episode credits.
 

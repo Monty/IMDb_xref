@@ -12,7 +12,7 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findOtherShows.sh -- List other shows that principal cast members are found in.
+findShowsWithActorsFrom.sh -- List other shows that principal cast members are found in.
 
 Search IMDb titles for one show name or tconst ID. List principal cast members
 who appear in more than one saved show. Use -n to limit number of results.
@@ -22,7 +22,7 @@ bypasses that list, so it can look up a tvEpisode, short, or any other type.
 A missing or empty rg_types.rgx allows them all, as does -a.
 
 USAGE:
-    ./findOtherShows.sh [TCONST] [SHOW TITLE]
+    ./findShowsWithActorsFrom.sh [TCONST] [SHOW TITLE]
 
 OPTIONS:
     -h      Print this message.
@@ -33,11 +33,11 @@ OPTIONS:
     -r      Maximum rank of cast members in other shows to list, 0 = all, defaults to 50
 
 EXAMPLES:
-    ./findOtherShows.sh
-    ./findOtherShows.sh "The Crown"
-    ./findOtherShows.sh tt1399664
-    ./findOtherShows.sh -n 10 Broadchurch
-    ./findOtherShows.sh -n 50 -r 100 Broadchurch
+    ./findShowsWithActorsFrom.sh
+    ./findShowsWithActorsFrom.sh "The Crown"
+    ./findShowsWithActorsFrom.sh tt1399664
+    ./findShowsWithActorsFrom.sh -n 10 Broadchurch
+    ./findShowsWithActorsFrom.sh -n 50 -r 100 Broadchurch
 EOF
 }
 
@@ -190,7 +190,7 @@ numTerms="$(sed -n '$=' "$ALL_TERMS")"
 #
 # A tconst names one exact title, so it bypasses rg_types.rgx entirely. That is
 # the only way to ask for a tvEpisode, short, or anything else the type list
-# leaves out: ./findOtherShows.sh tt8517292 used to report "I didn't find any
+# leaves out: ./findShowsWithActorsFrom.sh tt8517292 used to report "I didn't find any
 # matching shows" purely because tt8517292 is a tvEpisode. A show title is a
 # guess that can match thousands of episode rows, so it keeps the filter.
 #

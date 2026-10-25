@@ -486,7 +486,7 @@ if [[ -z $BYPASS_PROCESSING ]]; then
 
     # Every tvSeries in the list has its tvEpisodes looked up and their
     # credits added (episode guests are only findable by xrefCast.sh this
-    # way; the .xref_bulk_cache findOtherShows.sh reads holds series-level
+    # way; the .xref_bulk_cache findShowsWithActorsFrom.sh reads holds series-level
     # credits only, so skipping never changes its results). A series listed
     # in *.skipEpisodes is not expanded. The only reason left is size: a
     # daily soap, a documentary anthology like Nova (1,036 episodes, almost
@@ -709,20 +709,20 @@ fi
 # Populate the per-show cross-reference cache (.xref_bulk_cache/<tconst>) from
 # the finished Credits-Person.csv, so cross-referencing works right after a bulk
 # load -- previously the cache was built only for shows you'd run
-# findOtherShows.sh on. Same 8-column, headerless format findOtherShows.sh
+# findShowsWithActorsFrom.sh on. Same 8-column, headerless format findShowsWithActorsFrom.sh
 # writes: Person, Show Title, Episode Title, Rank, Job, Character Name, nconst
 # ID, tconst ID.
 #
 # The Credits-Person.csv header is skipped by the ^tt guard on field 8. The
 # leading "'" that generateXrefData.sh prepends to every Show Title and Episode
 # Title is stripped: it exists to stop spreadsheets from reinterpreting a title
-# as a number or date, and has no business in the cache, where findOtherShows.sh
+# as a number or date, and has no business in the cache, where findShowsWithActorsFrom.sh
 # and buildShowCache write the bare title. Leaving it in split the cache into two
 # incompatible dialects ('The Durrells vs The Crown) that compare unequal.
 # actress->actor is normalized (field 5) so the cross-show filter -- rg 'actor',
 # which does not match "actress" -- keeps actresses, the same reason
-# findOtherShows.sh normalizes. Only series-level rows (empty Episode Title) are
-# written, matching findOtherShows.sh: an episode credit carries the *episode's*
+# findShowsWithActorsFrom.sh normalizes. Only series-level rows (empty Episode Title) are
+# written, matching findShowsWithActorsFrom.sh: an episode credit carries the *episode's*
 # tconst in field 8, so including them would fan the cache out into one file per
 # episode -- measured at 23x the disk for a single .tconst file. The cache
 # inherits whatever job filter produced Credits-Person.csv (principals only
@@ -734,7 +734,7 @@ fi
 # incrementally across separate runs. Rows are sorted by tconst so each cache
 # file is opened, filled, and closed exactly once, keeping the open-file count at
 # one no matter how large the corpus grows, in the same in-file order
-# findOtherShows.sh uses (Job, Rank, Person).
+# findShowsWithActorsFrom.sh uses (Job, Rank, Person).
 if [[ -z $OUTPUT_DIR ]] && [[ -s $CREDITS_PERSON ]]; then
     [[ -z $QUIET ]] &&
         printf "\n==> Populating cross-reference cache in %s\n" "$cacheDirectory"

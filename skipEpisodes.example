@@ -13,7 +13,7 @@
 # and very few cross-references. Add its tconst below and only its
 # series-level credits are kept.
 #
-# Skipping never changes findOtherShows.sh results -- the cache it reads holds
+# Skipping never changes findShowsWithActorsFrom.sh results -- the cache it reads holds
 # series-level credits only.
 
 # Create a similar skipEpisodes file of shows to exclude from episode processing.

@@ -22,7 +22,7 @@ Only job categories listed in rg_jobs.rgx are shown. A missing or empty
 rg_jobs.rgx shows them all.
 
 Only title types listed in rg_types.rgx are shown, the same list used by
-findCastOf.sh and findOtherShows.sh. A missing or empty rg_types.rgx shows
+findCastOf.sh and findShowsWithActorsFrom.sh. A missing or empty rg_types.rgx shows
 them all, as does -a.
 
 If you don't enter a parameter on the command line, you'll be prompted for input.
@@ -121,7 +121,7 @@ ensurePrerequisites
 # Title types to list, one per line, "#" for comments -- the same rule as
 # rg_jobs.rgx: a missing or empty file, or one with only comments, means
 # include every type, just as -a does. Shared with findCastOf.sh and
-# findOtherShows.sh. Without this, a missing file made awk error and an empty
+# findShowsWithActorsFrom.sh. Without this, a missing file made awk error and an empty
 # one silently matched nothing (NR==FNR stays true into the data file).
 rg -q '^[^#\s]' rg_types.rgx 2>/dev/null || allowAllTypes="yes"
 
@@ -323,7 +323,7 @@ while read -r line; do
         # changed to keeping them).
         ./augment_tconstFiles.sh -ey "$JOB_RESULTS"
         # Keep only the title types in rg_types.rgx, the same filter as
-        # findCastOf.sh and findOtherShows.sh: field 2 is titleType, matched
+        # findCastOf.sh and findShowsWithActorsFrom.sh: field 2 is titleType, matched
         # exactly, so a title can't pass itself off as a type. Done before
         # numResults so the "I found N titles" count matches what's listed.
         filteredOut=""

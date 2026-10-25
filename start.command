@@ -230,7 +230,7 @@ select pickMenu in "${pickOptions[@]}"; do
             exec ./findCastOf.sh -dn "$castLimit"
             ;;
         3)
-            exec ./findOtherShows.sh -n "$castLimit"
+            exec ./findShowsWithActorsFrom.sh -n "$castLimit"
             ;;
         4)
             exec ./findShowsWith.sh

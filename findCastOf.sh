@@ -151,7 +151,7 @@ ensurePrerequisites
 
 # Title types to list, one per line, "#" for comments -- the same rule as
 # rg_jobs.rgx: a missing or empty file, or one with only comments, means
-# include every type, just as -a does. Shared with findOtherShows.sh and
+# include every type, just as -a does. Shared with findShowsWithActorsFrom.sh and
 # findShowsWith.sh. Without this, a missing file made awk error and an empty
 # one silently matched nothing (NR==FNR stays true into the data file).
 rg -q '^[^#\s]' rg_types.rgx 2>/dev/null || allowAllTypes="yes"
@@ -236,7 +236,7 @@ numTerms="$(sed -n '$=' "$ALL_TERMS")"
 # The filter tests field 2 rather than the whole line, so a title such as
 # "Home Video" can't pass itself off as a type, and a title containing
 # "tvEpisode" isn't dropped for saying so. Shares rg_types.rgx with
-# findOtherShows.sh: the two used to disagree, because this script excluded
+# findShowsWithActorsFrom.sh: the two used to disagree, because this script excluded
 # only tvEpisode while that one allowed just the five listed types. The same
 # search reported 38 matches here and 18 there, the extra 20 all shorts.
 true >"$TMPFILE"
@@ -430,11 +430,11 @@ ls -1 "$cacheDirectory" | rg "^tt" >"$CACHE_LIST"
 comm -13 "$CACHE_LIST" "$SEARCH_LIST" >"$TCONST_LIST"
 
 # maxCast caps how many billing-order rows we display. 0 means all, matching
-# findOtherShows.sh -n. Set with -n rather than read from the FULLCAST
+# findShowsWithActorsFrom.sh -n. Set with -n rather than read from the FULLCAST
 # environment variable, which used to set it here: FULLCAST also selected a data
 # source in xrefCast.sh and iQuery.sh, so one variable meant three unrelated
 # things across the branch, and only values >= 10 took effect here while
-# findOtherShows.sh honored any value -- so -n 5 capped at 5 in one script and
+# findShowsWithActorsFrom.sh honored any value -- so -n 5 capped at 5 in one script and
 # silently meant "no cap" in the other. Both are now plain -n options.
 #
 # The cast itself is read from the .gz files below. The live-fetch path FULLCAST
@@ -452,7 +452,7 @@ fi
 # Let the user know if any shows still need a cache built. The cast itself is
 # built per-show by buildShowCache below, which joins title.principals.tsv.gz
 # and name.basics.tsv.gz into the shared 8-column format -- the same function
-# findOtherShows.sh uses, so a show cached by either script now carries the
+# findShowsWithActorsFrom.sh uses, so a show cached by either script now carries the
 # nconst and tconst IDs the cross-reference needs.
 numUncached="$(rg -c "^tt" "$TCONST_LIST")"
 [[ -n $numUncached ]] &&
