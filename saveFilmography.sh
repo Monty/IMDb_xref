@@ -451,7 +451,7 @@ while IFS= read -r searchTerm; do
     # reads filmographies into persons.jsonl (names only, never cast rows), so
     # without this the person stays unknown to every person-info caller --
     # findShowsWith.sh said "isn't in the index" right after this ran. Same
-    # rebuild-after-scrape pattern as findCastOf.sh and findOtherShows.sh.
+    # rebuild-after-scrape pattern as findCastOf.sh and findShowsWithActorsFrom.sh.
     [[ -z $wasCached ]] && _scraper rebuild-index >/dev/null 2>&1
 
     roleCount=$(jq '.roles | length' <<<"$fgData" 2>/dev/null)

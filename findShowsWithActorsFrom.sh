@@ -12,13 +12,13 @@ source functions/load_functions
 
 function help() {
     cat <<EOF
-findOtherShows.sh -- List other shows that principal cast members are found in.
+findShowsWithActorsFrom.sh -- List other shows that principal cast members are found in.
 
 Search IMDb titles for one show name or tconst ID. List principal cast members
 who appear in more than one cached show. Use -n to limit number of results.
 
 USAGE:
-    ./findOtherShows.sh [TCONST] [SHOW TITLE]
+    ./findShowsWithActorsFrom.sh [TCONST] [SHOW TITLE]
 
 OPTIONS:
     -h      Print this message.
@@ -31,11 +31,11 @@ OPTIONS:
     -r      Maximum rank of cast members in other shows to list, 0 = all, defaults to 50
 
 EXAMPLES:
-    ./findOtherShows.sh
-    ./findOtherShows.sh "The Crown"
-    ./findOtherShows.sh tt1399664
-    ./findOtherShows.sh -n 10 Broadchurch
-    ./findOtherShows.sh -n 50 -e 10 Broadchurch
+    ./findShowsWithActorsFrom.sh
+    ./findShowsWithActorsFrom.sh "The Crown"
+    ./findShowsWithActorsFrom.sh tt1399664
+    ./findShowsWithActorsFrom.sh -n 10 Broadchurch
+    ./findShowsWithActorsFrom.sh -n 50 -e 10 Broadchurch
 EOF
 }
 

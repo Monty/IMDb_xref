@@ -253,7 +253,7 @@ def _parse_cast_section(
         # Consumers then had no billing signal at all: `--limit N` sliced an
         # alphabetically-sorted list, so the lead of a movie could fall outside
         # the top 50 while extras ranked ahead (Tom Holland never appeared in
-        # `findOtherShows.sh -n 50` for Spider-Man: Far from Home), and `-r`
+        # `findShowsWithActorsFrom.sh -n 50` for Spider-Man: Far from Home), and `-r`
         # (max rank) could not filter. Crew were unaffected because they took
         # the other branch.
         rank += 1

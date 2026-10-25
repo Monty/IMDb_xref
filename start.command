@@ -167,7 +167,7 @@ select pickMenu in "${pickOptions[@]}"; do
             exec ./findCastOf.sh -d
             ;;
         3)
-            exec ./findOtherShows.sh
+            exec ./findShowsWithActorsFrom.sh
             ;;
         4)
             exec ./findShowsWith.sh
